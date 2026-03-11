@@ -1,4 +1,9 @@
-import { Sparkles, Calendar, Heart, Users } from "lucide-react";
+import { useState } from "react";
+import { Sparkles, Calendar, Heart, Users, X } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { toast } from "sonner";
 import heroImage from "@/assets/hero-workshop.jpg";
 
 const workshops = [
@@ -25,7 +30,40 @@ const workshops = [
   },
 ];
 
+const inscriptionSchema = z.object({
+  name: z.string().trim().min(2, "Le nom doit contenir au moins 2 caractères.").max(100),
+  email: z.string().trim().email("Veuillez entrer un email valide.").max(255),
+  workshop: z.string().min(1, "Veuillez choisir un atelier."),
+});
+
+type InscriptionData = z.infer<typeof inscriptionSchema>;
+
 const Index = () => {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [preselectedWorkshop, setPreselectedWorkshop] = useState("");
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<InscriptionData>({
+    resolver: zodResolver(inscriptionSchema),
+    defaultValues: { name: "", email: "", workshop: "" },
+  });
+
+  const openModal = (workshopTitle?: string) => {
+    reset({ name: "", email: "", workshop: workshopTitle || "" });
+    setPreselectedWorkshop(workshopTitle || "");
+    setModalOpen(true);
+  };
+
+  const onSubmit = (data: InscriptionData) => {
+    toast.success(`Merci ${data.name} ! Votre inscription à "${data.workshop}" a bien été prise en compte.`);
+    setModalOpen(false);
+    reset();
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Nav */}
@@ -57,12 +95,12 @@ const Index = () => {
             <p className="text-lg text-muted-foreground max-w-md leading-relaxed">
               Cocooning Club propose des ateliers créatifs 1 à 2 fois par mois dans une ambiance chaleureuse et bienveillante. Pas besoin d'être artiste, juste d'avoir envie de déconnecter.
             </p>
-            <a
-              href="#ateliers"
+            <button
+              onClick={() => openModal()}
               className="inline-block bg-primary text-primary-foreground px-8 py-4 rounded-full font-medium text-sm hover:opacity-90 transition-opacity"
             >
               Découvrir les prochains ateliers
-            </a>
+            </button>
           </div>
           <div className="relative">
             <div className="rounded-3xl overflow-hidden shadow-2xl">
@@ -133,7 +171,10 @@ const Index = () => {
                   <p className="text-muted-foreground text-sm leading-relaxed">{ws.description}</p>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-muted-foreground">{ws.spots} places disponibles</span>
-                    <button className="bg-primary text-primary-foreground px-5 py-2 rounded-full text-sm font-medium hover:opacity-90 transition-opacity">
+                    <button
+                      onClick={() => openModal(ws.title)}
+                      className="bg-primary text-primary-foreground px-5 py-2 rounded-full text-sm font-medium hover:opacity-90 transition-opacity"
+                    >
                       Réserver
                     </button>
                   </div>
@@ -168,6 +209,69 @@ const Index = () => {
           © 2026 Cocooning Club · Tous droits réservés
         </div>
       </footer>
+
+      {/* Modal d'inscription */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-foreground/40 backdrop-blur-sm" onClick={() => setModalOpen(false)}>
+          <div
+            className="bg-background rounded-3xl border shadow-2xl w-full max-w-md mx-4 p-8 relative animate-in fade-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button onClick={() => setModalOpen(false)} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors">
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="font-display text-2xl font-bold text-foreground mb-1">Inscription</h3>
+            <p className="text-sm text-muted-foreground mb-6">Remplissez le formulaire pour réserver votre place.</p>
+
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">Nom complet</label>
+                <input
+                  {...register("name")}
+                  placeholder="Marie Dupont"
+                  className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+                {errors.name && <p className="text-destructive text-xs mt-1">{errors.name.message}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">Email</label>
+                <input
+                  {...register("email")}
+                  type="email"
+                  placeholder="marie@email.com"
+                  className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+                {errors.email && <p className="text-destructive text-xs mt-1">{errors.email.message}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">Atelier</label>
+                <select
+                  {...register("workshop")}
+                  className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  <option value="">Choisir un atelier…</option>
+                  {workshops.map((ws) => (
+                    <option key={ws.title} value={ws.title}>
+                      {ws.title} — {ws.date}
+                    </option>
+                  ))}
+                </select>
+                {errors.workshop && <p className="text-destructive text-xs mt-1">{errors.workshop.message}</p>}
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-primary text-primary-foreground py-3 rounded-full font-medium text-sm hover:opacity-90 transition-opacity mt-2 disabled:opacity-50"
+              >
+                Confirmer l'inscription
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
