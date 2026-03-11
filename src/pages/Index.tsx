@@ -59,7 +59,18 @@ const Index = () => {
     setModalOpen(true);
   };
 
-  const onSubmit = (data: InscriptionData) => {
+  const onSubmit = async (data: InscriptionData) => {
+    const { error } = await supabase.from("inscriptions").insert({
+      name: data.name,
+      email: data.email,
+      workshop: data.workshop,
+    });
+
+    if (error) {
+      toast.error("Une erreur est survenue. Veuillez réessayer.");
+      return;
+    }
+
     toast.success(`Merci ${data.name} ! Votre inscription à "${data.workshop}" a bien été prise en compte.`);
     setModalOpen(false);
     reset();
