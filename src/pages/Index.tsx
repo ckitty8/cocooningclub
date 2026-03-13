@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Sparkles, Calendar, Heart, Users, X } from "lucide-react";
 import WorkshopCarousel from "@/components/WorkshopCarousel";
+import TestimonialsSection from "@/components/TestimonialsSection";
+import JournalSection from "@/components/JournalSection";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -176,6 +178,12 @@ const Index = () => {
           <WorkshopCarousel workshops={workshops} onReserve={openModal} />
         </div>
       </section>
+
+      {/* Témoignages */}
+      <TestimonialsSection />
+
+      {/* Journal membres */}
+      <JournalSection />
 
       {/* Contact */}
       <section className="py-24 bg-card" id="contact">
