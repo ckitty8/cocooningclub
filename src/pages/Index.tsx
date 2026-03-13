@@ -172,31 +172,7 @@ const Index = () => {
           <p className="text-center text-muted-foreground max-w-lg mx-auto mb-16">
             Réservez votre place pour un moment créatif inoubliable.
           </p>
-          <div className="grid md:grid-cols-3 gap-8">
-            {workshops.map((ws) => (
-              <div key={ws.title} className="bg-card rounded-2xl border overflow-hidden hover:shadow-lg transition-shadow group">
-                <div className="bg-primary/5 p-6 border-b">
-                  <div className="flex items-center gap-2 text-primary text-sm font-medium mb-2">
-                    <Calendar className="w-4 h-4" />
-                    {ws.date} · {ws.time}
-                  </div>
-                  <h3 className="font-display text-xl font-semibold text-foreground">{ws.title}</h3>
-                </div>
-                <div className="p-6 space-y-4">
-                  <p className="text-muted-foreground text-sm leading-relaxed">{ws.description}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">{ws.spots} places disponibles</span>
-                    <button
-                      onClick={() => openModal(ws.title)}
-                      className="bg-primary text-primary-foreground px-5 py-2 rounded-full text-sm font-medium hover:opacity-90 transition-opacity"
-                    >
-                      Réserver
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <WorkshopCarousel workshops={workshops} onReserve={openModal} />
         </div>
       </section>
 
