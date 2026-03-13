@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Sparkles, Calendar, Heart, Users, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Sparkles, Calendar, Heart, Users, X } from "lucide-react";
+import WorkshopCarousel from "@/components/WorkshopCarousel";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
