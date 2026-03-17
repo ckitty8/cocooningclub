@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Sparkles, Calendar, Heart, Users, X } from "lucide-react";
 import WorkshopCarousel from "@/components/WorkshopCarousel";
@@ -12,20 +12,22 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/hero-workshop.jpg";
 
-const workshops = [
-  { title: "Atelier Bougies Parfumées", date: "Samedi 22 Mars", time: "14h – 17h", spots: 8, description: "Créez vos propres bougies avec des cires naturelles et des huiles essentielles.", location: "Gagny", price: "Gratuit" },
-  { title: "Aquarelle & Détente", date: "Samedi 5 Avril", time: "10h – 13h", spots: 10, description: "Initiez-vous à l'aquarelle dans une ambiance douce et bienveillante.", location: "Gagny", price: "Gratuit" },
-  { title: "Macramé Mural", date: "Samedi 19 Avril", time: "14h – 17h", spots: 6, description: "Apprenez les nœuds de base et repartez avec votre création murale.", location: "Gagny", price: "Gratuit" },
-  { title: "Poterie & Modelage", date: "Samedi 3 Mai", time: "10h – 13h", spots: 8, description: "Découvrez le travail de la terre et façonnez votre premier objet en argile.", location: "Gagny", price: "Gratuit" },
-  { title: "Broderie Moderne", date: "Samedi 17 Mai", time: "14h – 17h", spots: 10, description: "Apprenez les points essentiels et créez un motif contemporain sur tambour.", location: "Gagny", price: "Gratuit" },
-  { title: "Atelier Terrarium", date: "Samedi 31 Mai", time: "10h – 13h", spots: 8, description: "Composez votre mini-jardin sous verre avec des plantes tropicales.", location: "Gagny", price: "Gratuit" },
-  { title: "Lettering & Calligraphie", date: "Samedi 14 Juin", time: "14h – 17h", spots: 10, description: "Initiez-vous au brush lettering et repartez avec une œuvre encadrée.", location: "Gagny", price: "Gratuit" },
-  { title: "Savons Naturels", date: "Samedi 28 Juin", time: "10h – 13h", spots: 8, description: "Fabriquez vos savons artisanaux aux huiles végétales et parfums naturels.", location: "Gagny", price: "Gratuit" },
-  { title: "Tissage sur Cadre", date: "Samedi 12 Juillet", time: "14h – 17h", spots: 6, description: "Créez une pièce tissée unique en jouant avec les textures et les couleurs.", location: "Gagny", price: "Gratuit" },
-  { title: "Atelier Céramique", date: "Samedi 26 Juillet", time: "10h – 13h", spots: 8, description: "Modelez et décorez une tasse ou un bol en céramique artisanale.", location: "Gagny", price: "Gratuit" },
-  { title: "Couronnes de Fleurs Séchées", date: "Samedi 9 Août", time: "14h – 17h", spots: 10, description: "Composez une couronne décorative avec des fleurs séchées et stabilisées.", location: "Gagny", price: "Gratuit" },
-  { title: "Initiation Crochet", date: "Samedi 23 Août", time: "10h – 13h", spots: 8, description: "Apprenez les mailles de base et réalisez votre premier accessoire au crochet.", location: "Gagny", price: "Gratuit" },
-];
+interface WorkshopFromDB {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  time: string;
+  location: string;
+  capacity: number;
+  price: string;
+}
+
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr + "T12:00:00");
+  return d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })
+    .replace(/^\w/, (c) => c.toUpperCase());
+}
 
 const inscriptionSchema = z.object({
   name: z.string().trim().min(2, "Le nom doit contenir au moins 2 caractères.").max(100),
@@ -38,6 +40,43 @@ type InscriptionData = z.infer<typeof inscriptionSchema>;
 const Index = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [preselectedWorkshop, setPreselectedWorkshop] = useState("");
+  const [workshops, setWorkshops] = useState<{ id: string; title: string; date: string; time: string; spots: number; description: string; location: string; price: string }[]>([]);
+
+  useEffect(() => {
+    const fetchWorkshops = async () => {
+      const { data: ateliersData } = await supabase
+        .from("ateliers")
+        .select("*")
+        .order("date", { ascending: true });
+
+      if (!ateliersData) return;
+
+      const { data: reservData } = await supabase
+        .from("reservations")
+        .select("atelier_id")
+        .in("status", ["confirmee", "presente"]);
+
+      const counts: Record<string, number> = {};
+      (reservData || []).forEach((r: { atelier_id: string }) => {
+        counts[r.atelier_id] = (counts[r.atelier_id] || 0) + 1;
+      });
+
+      setWorkshops(
+        (ateliersData as WorkshopFromDB[]).map((a) => ({
+          id: a.id,
+          title: a.title,
+          date: formatDate(a.date),
+          time: a.time,
+          spots: a.capacity - (counts[a.id] || 0),
+          description: a.description,
+          location: a.location,
+          price: a.price,
+        }))
+      );
+    };
+
+    fetchWorkshops();
+  }, []);
 
   const {
     register,
@@ -252,7 +291,7 @@ const Index = () => {
                 >
                   <option value="">Choisir un atelier…</option>
                   {workshops.map((ws) => (
-                    <option key={ws.title} value={ws.title}>
+                    <option key={ws.id} value={ws.title}>
                       {ws.title} — {ws.date}
                     </option>
                   ))}
