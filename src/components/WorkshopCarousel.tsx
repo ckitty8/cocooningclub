@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, MapPin, Users, Euro } from "lucide-react";
 
 interface Workshop {
   title: string;
@@ -7,6 +7,8 @@ interface Workshop {
   time: string;
   spots: number;
   description: string;
+  location: string;
+  price: string;
 }
 
 interface WorkshopCarouselProps {
@@ -26,21 +28,37 @@ const WorkshopCarousel = ({ workshops, onReserve }: WorkshopCarouselProps) => {
       {/* Cards */}
       <div className="grid md:grid-cols-3 gap-8">
         {visible.map((ws) => (
-          <div key={ws.title} className="bg-card rounded-2xl border overflow-hidden hover:shadow-lg transition-shadow">
+          <div key={ws.title} className="bg-card rounded-2xl border overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
             <div className="bg-primary/5 p-6 border-b">
-              <div className="flex items-center gap-2 text-primary text-sm font-medium mb-2">
-                <Calendar className="w-4 h-4" />
-                {ws.date} · {ws.time}
-              </div>
               <h3 className="font-display text-xl font-semibold text-foreground">{ws.title}</h3>
             </div>
-            <div className="p-6 space-y-4">
-              <p className="text-muted-foreground text-sm leading-relaxed">{ws.description}</p>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">{ws.spots} places disponibles</span>
+            <div className="p-6 space-y-3 flex-1 flex flex-col">
+              <p className="text-muted-foreground text-sm leading-relaxed mb-2">{ws.description}</p>
+
+              <div className="flex items-center gap-2 text-sm text-foreground">
+                <Calendar className="w-4 h-4 text-primary flex-shrink-0" />
+                <span>{ws.date} · {ws.time}</span>
+              </div>
+
+              <div className="flex items-center gap-2 text-sm text-foreground">
+                <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
+                <span>{ws.location}</span>
+              </div>
+
+              <div className="flex items-center gap-2 text-sm text-foreground">
+                <Users className="w-4 h-4 text-primary flex-shrink-0" />
+                <span>{ws.spots} places restantes</span>
+              </div>
+
+              <div className="flex items-center gap-2 text-sm text-foreground">
+                <Euro className="w-4 h-4 text-primary flex-shrink-0" />
+                <span>{ws.price}</span>
+              </div>
+
+              <div className="pt-2 mt-auto">
                 <button
                   onClick={() => onReserve(ws.title)}
-                  className="bg-primary text-primary-foreground px-5 py-2 rounded-full text-sm font-medium hover:opacity-90 transition-opacity"
+                  className="w-full bg-primary text-primary-foreground py-3 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
                 >
                   Réserver
                 </button>

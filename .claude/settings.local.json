@@ -1,0 +1,20 @@
+{
+  "env": {
+    "VERCEL_TOKEN": ""
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/user/cocooningclub/.claude/deploy.sh",
+            "timeout": 120,
+            "statusMessage": "Déploiement Vercel..."
+          }
+        ]
+      }
+    ]
+  }
+}
