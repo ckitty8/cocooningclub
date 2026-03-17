@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Sparkles, Calendar, Heart, Users, X } from "lucide-react";
 import WorkshopCarousel from "@/components/WorkshopCarousel";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import JournalSection from "@/components/JournalSection";
+import Footer from "@/components/Footer";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -76,12 +78,12 @@ const Index = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b">
         <div className="container mx-auto flex flex-col items-center py-6 px-6 relative">
           {/* Member button - absolute right */}
-          <a
-            href="#contact"
+          <Link
+            to="/connexion"
             className="absolute right-6 top-1/2 -translate-y-1/2 hidden md:inline-flex border border-foreground/40 px-5 py-2 text-xs tracking-[0.2em] uppercase text-foreground hover:bg-foreground hover:text-background transition-colors"
           >
             Espace Membre
-          </a>
+          </Link>
 
           {/* Centered title */}
           <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground tracking-[0.08em] uppercase leading-tight text-center">
@@ -93,6 +95,7 @@ const Index = () => {
           <div className="flex gap-8 mt-4 font-body text-sm tracking-[0.12em] uppercase text-foreground/80">
             <a href="#apropos" className="hover:text-primary transition-colors">À propos</a>
             <a href="#ateliers" className="hover:text-primary transition-colors">Nos Ateliers</a>
+            <Link to="/calendrier" className="hover:text-primary transition-colors">Calendrier</Link>
             <a href="#contact" className="hover:text-primary transition-colors">Contact</a>
           </div>
         </div>
@@ -204,11 +207,7 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 border-t">
-        <div className="container mx-auto px-6 text-center text-sm text-muted-foreground">
-          © 2026 Cocooning Club · Tous droits réservés
-        </div>
-      </footer>
+      <Footer />
 
       {/* Modal d'inscription */}
       {modalOpen && (

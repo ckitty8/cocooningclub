@@ -7,8 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.4"
   }
@@ -37,6 +35,123 @@ export type Database = {
           workshop?: string
         }
         Relationships: []
+      }
+      profiles: {
+        Row: {
+          id: string
+          first_name: string
+          last_name: string
+          email: string
+          phone: string
+          avatar_url: string | null
+          role: "membre" | "admin"
+          status: "actif" | "inactif"
+          created_at: string
+        }
+        Insert: {
+          id: string
+          first_name?: string
+          last_name?: string
+          email?: string
+          phone?: string
+          avatar_url?: string | null
+          role?: "membre" | "admin"
+          status?: "actif" | "inactif"
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          first_name?: string
+          last_name?: string
+          email?: string
+          phone?: string
+          avatar_url?: string | null
+          role?: "membre" | "admin"
+          status?: "actif" | "inactif"
+          created_at?: string
+        }
+        Relationships: []
+      }
+      ateliers: {
+        Row: {
+          id: string
+          title: string
+          description: string
+          date: string
+          time: string
+          location: string
+          capacity: number
+          type: string
+          photo_url: string | null
+          price: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          description?: string
+          date: string
+          time: string
+          location?: string
+          capacity?: number
+          type?: string
+          photo_url?: string | null
+          price?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string
+          date?: string
+          time?: string
+          location?: string
+          capacity?: number
+          type?: string
+          photo_url?: string | null
+          price?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      reservations: {
+        Row: {
+          id: string
+          member_id: string
+          atelier_id: string
+          status: "confirmee" | "presente" | "absente" | "annulee"
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          member_id: string
+          atelier_id: string
+          status?: "confirmee" | "presente" | "absente" | "annulee"
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          member_id?: string
+          atelier_id?: string
+          status?: "confirmee" | "presente" | "absente" | "annulee"
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservations_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservations_atelier_id_fkey"
+            columns: ["atelier_id"]
+            isOneToOne: false
+            referencedRelation: "ateliers"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {
