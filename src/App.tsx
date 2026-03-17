@@ -15,6 +15,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard.tsx";
 import AdminMembres from "./pages/admin/AdminMembres.tsx";
 import AdminAteliers from "./pages/admin/AdminAteliers.tsx";
 import AdminReservations from "./pages/admin/AdminReservations.tsx";
+import MentionsLegales from "./pages/MentionsLegales.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
               <Route path="ateliers" element={<AdminAteliers />} />
               <Route path="reservations" element={<AdminReservations />} />
             </Route>
+            <Route path="/mentions-legales" element={<MentionsLegales />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

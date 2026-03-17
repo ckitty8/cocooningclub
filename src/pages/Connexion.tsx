@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const Connexion = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signIn, profile } = useAuth();
+  const { signIn } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -24,11 +25,23 @@ const Connexion = () => {
 
     toast.success("Connexion réussie !");
 
-    // Wait a bit for profile to load then redirect
-    setTimeout(() => {
-      // We'll check profile in a useEffect instead
+    // Fetch profile to determine redirect destination
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+      if (profile?.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/membre");
+      }
+    } else {
       navigate("/membre");
-    }, 500);
+    }
   };
 
   return (
