@@ -16,6 +16,7 @@ import AdminMembres from "./pages/admin/AdminMembres.tsx";
 import AdminAteliers from "./pages/admin/AdminAteliers.tsx";
 import AdminReservations from "./pages/admin/AdminReservations.tsx";
 import MentionsLegales from "./pages/MentionsLegales.tsx";
+import NouveauMotDePasse from "./pages/NouveauMotDePasse.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
               <Route path="reservations" element={<AdminReservations />} />
             </Route>
             <Route path="/mentions-legales" element={<MentionsLegales />} />
+            <Route path="/nouveau-mot-de-passe" element={<NouveauMotDePasse />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

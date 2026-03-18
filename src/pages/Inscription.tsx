@@ -1,12 +1,19 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 const Inscription = () => {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
+  const [searchParams] = useSearchParams();
+  const emailParam = searchParams.get("email") || "";
+  const nomParam = searchParams.get("nom") || "";
+  const nomParts = nomParam.trim().split(" ");
+  const firstNameParam = nomParts[0] || "";
+  const lastNameParam = nomParts.slice(1).join(" ") || "";
+
+  const [firstName, setFirstName] = useState(firstNameParam);
+  const [lastName, setLastName] = useState(lastNameParam);
+  const [email, setEmail] = useState(emailParam);
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
