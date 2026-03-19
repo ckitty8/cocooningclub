@@ -1,10 +1,8 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Sparkles, Calendar, Heart, Users, X, CheckCircle } from "lucide-react";
+import { useState } from "react";
+import { Sparkles, Calendar, Heart, Users, X } from "lucide-react";
 import WorkshopCarousel from "@/components/WorkshopCarousel";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import JournalSection from "@/components/JournalSection";
-import Footer from "@/components/Footer";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -12,22 +10,20 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/hero-workshop.jpg";
 
-interface WorkshopFromDB {
-  id: string;
-  title: string;
-  description: string;
-  date: string;
-  time: string;
-  location: string;
-  capacity: number;
-  price: string;
-}
-
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + "T12:00:00");
-  return d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })
-    .replace(/^\w/, (c) => c.toUpperCase());
-}
+const workshops = [
+  { title: "Atelier Bougies Parfumées", date: "Samedi 22 Mars", time: "14h – 17h", spots: 8, description: "Créez vos propres bougies avec des cires naturelles et des huiles essentielles.", location: "Gagny", price: "Gratuit" },
+  { title: "Aquarelle & Détente", date: "Samedi 5 Avril", time: "10h – 13h", spots: 10, description: "Initiez-vous à l'aquarelle dans une ambiance douce et bienveillante.", location: "Gagny", price: "Gratuit" },
+  { title: "Macramé Mural", date: "Samedi 19 Avril", time: "14h – 17h", spots: 6, description: "Apprenez les nœuds de base et repartez avec votre création murale.", location: "Chelles", price: "Gratuit" },
+  { title: "Poterie & Modelage", date: "Samedi 3 Mai", time: "10h – 13h", spots: 8, description: "Découvrez le travail de la terre et façonnez votre premier objet en argile.", location: "Le Raincy", price: "Gratuit" },
+  { title: "Broderie Moderne", date: "Samedi 17 Mai", time: "14h – 17h", spots: 10, description: "Apprenez les points essentiels et créez un motif contemporain sur tambour.", location: "Gagny", price: "Gratuit" },
+  { title: "Atelier Terrarium", date: "Samedi 31 Mai", time: "10h – 13h", spots: 8, description: "Composez votre mini-jardin sous verre avec des plantes tropicales.", location: "Chelles", price: "Gratuit" },
+  { title: "Lettering & Calligraphie", date: "Samedi 14 Juin", time: "14h – 17h", spots: 10, description: "Initiez-vous au brush lettering et repartez avec une œuvre encadrée.", location: "Gagny", price: "Gratuit" },
+  { title: "Savons Naturels", date: "Samedi 28 Juin", time: "10h – 13h", spots: 8, description: "Fabriquez vos savons artisanaux aux huiles végétales et parfums naturels.", location: "Le Raincy", price: "Gratuit" },
+  { title: "Tissage sur Cadre", date: "Samedi 12 Juillet", time: "14h – 17h", spots: 6, description: "Créez une pièce tissée unique en jouant avec les textures et les couleurs.", location: "Gagny", price: "Gratuit" },
+  { title: "Atelier Céramique", date: "Samedi 26 Juillet", time: "10h – 13h", spots: 8, description: "Modelez et décorez une tasse ou un bol en céramique artisanale.", location: "Chelles", price: "Gratuit" },
+  { title: "Couronnes de Fleurs Séchées", date: "Samedi 9 Août", time: "14h – 17h", spots: 10, description: "Composez une couronne décorative avec des fleurs séchées et stabilisées.", location: "Le Raincy", price: "Gratuit" },
+  { title: "Initiation Crochet", date: "Samedi 23 Août", time: "10h – 13h", spots: 8, description: "Apprenez les mailles de base et réalisez votre premier accessoire au crochet.", location: "Gagny", price: "Gratuit" },
+];
 
 const inscriptionSchema = z.object({
   name: z.string().trim().min(2, "Le nom doit contenir au moins 2 caractères.").max(100),
@@ -38,47 +34,8 @@ const inscriptionSchema = z.object({
 type InscriptionData = z.infer<typeof inscriptionSchema>;
 
 const Index = () => {
-  const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(false);
   const [preselectedWorkshop, setPreselectedWorkshop] = useState("");
-  const [inscriptionSuccess, setInscriptionSuccess] = useState<{ name: string; email: string } | null>(null);
-  const [workshops, setWorkshops] = useState<{ id: string; title: string; date: string; time: string; spots: number; description: string; location: string; price: string }[]>([]);
-
-  useEffect(() => {
-    const fetchWorkshops = async () => {
-      const { data: ateliersData } = await supabase
-        .from("ateliers")
-        .select("*")
-        .order("date", { ascending: true });
-
-      if (!ateliersData) return;
-
-      const { data: reservData } = await supabase
-        .from("reservations")
-        .select("atelier_id")
-        .in("status", ["confirmee", "presente"]);
-
-      const counts: Record<string, number> = {};
-      (reservData || []).forEach((r: { atelier_id: string }) => {
-        counts[r.atelier_id] = (counts[r.atelier_id] || 0) + 1;
-      });
-
-      setWorkshops(
-        (ateliersData as WorkshopFromDB[]).map((a) => ({
-          id: a.id,
-          title: a.title,
-          date: formatDate(a.date),
-          time: a.time,
-          spots: a.capacity - (counts[a.id] || 0),
-          description: a.description,
-          location: a.location,
-          price: a.price,
-        }))
-      );
-    };
-
-    fetchWorkshops();
-  }, []);
 
   const {
     register,
@@ -93,7 +50,6 @@ const Index = () => {
   const openModal = (workshopTitle?: string) => {
     reset({ name: "", email: "", workshop: workshopTitle || "" });
     setPreselectedWorkshop(workshopTitle || "");
-    setInscriptionSuccess(null);
     setModalOpen(true);
   };
 
@@ -109,7 +65,8 @@ const Index = () => {
       return;
     }
 
-    setInscriptionSuccess({ name: data.name, email: data.email });
+    toast.success(`Merci ${data.name} ! Votre inscription à "${data.workshop}" a bien été prise en compte.`);
+    setModalOpen(false);
     reset();
   };
 
@@ -119,12 +76,12 @@ const Index = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b">
         <div className="container mx-auto flex flex-col items-center py-6 px-6 relative">
           {/* Member button - absolute right */}
-          <Link
-            to="/connexion"
+          <a
+            href="#contact"
             className="absolute right-6 top-1/2 -translate-y-1/2 hidden md:inline-flex border border-foreground/40 px-5 py-2 text-xs tracking-[0.2em] uppercase text-foreground hover:bg-foreground hover:text-background transition-colors"
           >
             Espace Membre
-          </Link>
+          </a>
 
           {/* Centered title */}
           <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground tracking-[0.08em] uppercase leading-tight text-center">
@@ -136,7 +93,6 @@ const Index = () => {
           <div className="flex gap-8 mt-4 font-body text-sm tracking-[0.12em] uppercase text-foreground/80">
             <a href="#apropos" className="hover:text-primary transition-colors">À propos</a>
             <a href="#ateliers" className="hover:text-primary transition-colors">Nos Ateliers</a>
-            <Link to="/calendrier" className="hover:text-primary transition-colors">Calendrier</Link>
             <a href="#contact" className="hover:text-primary transition-colors">Contact</a>
           </div>
         </div>
@@ -248,7 +204,11 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <Footer />
+      <footer className="py-8 border-t">
+        <div className="container mx-auto px-6 text-center text-sm text-muted-foreground">
+          © 2026 Cocooning Club · Tous droits réservés
+        </div>
+      </footer>
 
       {/* Modal d'inscription */}
       {modalOpen && (
@@ -260,91 +220,55 @@ const Index = () => {
             <button onClick={() => setModalOpen(false)} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors">
               <X className="w-5 h-5" />
             </button>
+            <h3 className="font-display text-2xl font-bold text-foreground mb-1">Inscription</h3>
+            <p className="text-sm text-muted-foreground mb-6">Remplissez le formulaire pour réserver votre place.</p>
 
-            {inscriptionSuccess ? (
-              <div className="text-center space-y-4 py-2">
-                <div className="flex justify-center">
-                  <CheckCircle className="w-12 h-12 text-primary" />
-                </div>
-                <h3 className="font-display text-2xl font-bold text-foreground">C'est noté !</h3>
-                <p className="text-sm text-muted-foreground">
-                  Merci <span className="font-medium text-foreground">{inscriptionSuccess.name}</span> ! Votre inscription a bien été enregistrée.
-                </p>
-                <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 text-left space-y-2">
-                  <p className="text-sm font-medium text-foreground">Envie de gérer vos réservations ?</p>
-                  <p className="text-xs text-muted-foreground">Créez un compte gratuit pour retrouver vos inscriptions, annuler une réservation et récupérer votre mot de passe à tout moment.</p>
-                </div>
-                <div className="flex flex-col gap-2 pt-1">
-                  <button
-                    onClick={() => {
-                      setModalOpen(false);
-                      navigate(`/inscription?email=${encodeURIComponent(inscriptionSuccess.email)}&nom=${encodeURIComponent(inscriptionSuccess.name)}`);
-                    }}
-                    className="w-full bg-primary text-primary-foreground py-3 rounded-full font-medium text-sm hover:opacity-90 transition-opacity"
-                  >
-                    Créer mon compte
-                  </button>
-                  <button
-                    onClick={() => setModalOpen(false)}
-                    className="w-full border py-3 rounded-full font-medium text-sm text-foreground hover:bg-muted transition-colors"
-                  >
-                    Plus tard
-                  </button>
-                </div>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">Nom complet</label>
+                <input
+                  {...register("name")}
+                  placeholder="Marie Dupont"
+                  className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+                {errors.name && <p className="text-destructive text-xs mt-1">{errors.name.message}</p>}
               </div>
-            ) : (
-              <>
-                <h3 className="font-display text-2xl font-bold text-foreground mb-1">Inscription</h3>
-                <p className="text-sm text-muted-foreground mb-6">Remplissez le formulaire pour réserver votre place.</p>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-1.5">Nom complet</label>
-                    <input
-                      {...register("name")}
-                      placeholder="Marie Dupont"
-                      className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
-                    {errors.name && <p className="text-destructive text-xs mt-1">{errors.name.message}</p>}
-                  </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">Email</label>
+                <input
+                  {...register("email")}
+                  type="email"
+                  placeholder="marie@email.com"
+                  className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+                {errors.email && <p className="text-destructive text-xs mt-1">{errors.email.message}</p>}
+              </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-1.5">Email</label>
-                    <input
-                      {...register("email")}
-                      type="email"
-                      placeholder="marie@email.com"
-                      className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
-                    {errors.email && <p className="text-destructive text-xs mt-1">{errors.email.message}</p>}
-                  </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">Atelier</label>
+                <select
+                  {...register("workshop")}
+                  className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  <option value="">Choisir un atelier…</option>
+                  {workshops.map((ws) => (
+                    <option key={ws.title} value={ws.title}>
+                      {ws.title} — {ws.date}
+                    </option>
+                  ))}
+                </select>
+                {errors.workshop && <p className="text-destructive text-xs mt-1">{errors.workshop.message}</p>}
+              </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-1.5">Atelier</label>
-                    <select
-                      {...register("workshop")}
-                      className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                    >
-                      <option value="">Choisir un atelier…</option>
-                      {workshops.map((ws) => (
-                        <option key={ws.id} value={ws.title}>
-                          {ws.title} — {ws.date}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.workshop && <p className="text-destructive text-xs mt-1">{errors.workshop.message}</p>}
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full bg-primary text-primary-foreground py-3 rounded-full font-medium text-sm hover:opacity-90 transition-opacity mt-2 disabled:opacity-50"
-                  >
-                    Confirmer l'inscription
-                  </button>
-                </form>
-              </>
-            )}
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-primary text-primary-foreground py-3 rounded-full font-medium text-sm hover:opacity-90 transition-opacity mt-2 disabled:opacity-50"
+              >
+                Confirmer l'inscription
+              </button>
+            </form>
           </div>
         </div>
       )}
