@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar, ChevronLeft, ChevronRight, MapPin, Users, Euro } from "lucide-react";
 
 interface Workshop {
@@ -14,58 +14,82 @@ interface Workshop {
 interface WorkshopCarouselProps {
   workshops: Workshop[];
   onReserve: (title: string) => void;
+  selectedIndex?: number | null;
+  onSelectWorkshop?: (index: number) => void;
 }
 
 const ITEMS_PER_PAGE = 3;
 
-const WorkshopCarousel = ({ workshops, onReserve }: WorkshopCarouselProps) => {
+const WorkshopCarousel = ({ workshops, onReserve, selectedIndex, onSelectWorkshop }: WorkshopCarouselProps) => {
   const [page, setPage] = useState(0);
   const totalPages = Math.ceil(workshops.length / ITEMS_PER_PAGE);
   const visible = workshops.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
+
+  // Navigate to the page containing the selected workshop
+  useEffect(() => {
+    if (selectedIndex != null) {
+      setPage(Math.floor(selectedIndex / ITEMS_PER_PAGE));
+    }
+  }, [selectedIndex]);
 
   return (
     <div className="relative">
       {/* Cards */}
       <div className="grid md:grid-cols-3 gap-8">
-        {visible.map((ws) => (
-          <div key={ws.title} className="bg-card rounded-2xl border overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
-            <div className="bg-primary/5 p-6 border-b">
-              <h3 className="font-display text-xl font-semibold text-foreground">{ws.title}</h3>
+        {visible.map((ws, visibleIdx) => {
+          const actualIndex = page * ITEMS_PER_PAGE + visibleIdx;
+          const isSelected = selectedIndex === actualIndex;
+
+          return (
+            <div
+              key={ws.title}
+              onClick={() => onSelectWorkshop?.(actualIndex)}
+              className={`
+                bg-card rounded-2xl border overflow-hidden flex flex-col cursor-pointer transition-all
+                ${isSelected
+                  ? "ring-2 ring-primary shadow-lg shadow-primary/10"
+                  : "hover:shadow-lg"
+                }
+              `}
+            >
+              <div className={`p-6 border-b transition-colors ${isSelected ? "bg-primary/10" : "bg-primary/5"}`}>
+                <h3 className="font-display text-xl font-semibold text-foreground">{ws.title}</h3>
+              </div>
+              <div className="p-6 space-y-3 flex-1 flex flex-col">
+                <p className="text-muted-foreground text-sm leading-relaxed mb-2">{ws.description}</p>
+
+                <div className="flex items-center gap-2 text-sm text-foreground">
+                  <Calendar className="w-4 h-4 text-primary flex-shrink-0" />
+                  <span>{ws.date} · {ws.time}</span>
+                </div>
+
+                <div className="flex items-center gap-2 text-sm text-foreground">
+                  <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
+                  <span>{ws.location}</span>
+                </div>
+
+                <div className="flex items-center gap-2 text-sm text-foreground">
+                  <Users className="w-4 h-4 text-primary flex-shrink-0" />
+                  <span>{ws.spots} places restantes</span>
+                </div>
+
+                <div className="flex items-center gap-2 text-sm text-foreground">
+                  <Euro className="w-4 h-4 text-primary flex-shrink-0" />
+                  <span>{ws.price}</span>
+                </div>
+
+                <div className="pt-2 mt-auto">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onReserve(ws.title); }}
+                    className="w-full bg-primary text-primary-foreground py-3 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
+                  >
+                    Réserver
+                  </button>
+                </div>
+              </div>
             </div>
-            <div className="p-6 space-y-3 flex-1 flex flex-col">
-              <p className="text-muted-foreground text-sm leading-relaxed mb-2">{ws.description}</p>
-
-              <div className="flex items-center gap-2 text-sm text-foreground">
-                <Calendar className="w-4 h-4 text-primary flex-shrink-0" />
-                <span>{ws.date} · {ws.time}</span>
-              </div>
-
-              <div className="flex items-center gap-2 text-sm text-foreground">
-                <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
-                <span>{ws.location}</span>
-              </div>
-
-              <div className="flex items-center gap-2 text-sm text-foreground">
-                <Users className="w-4 h-4 text-primary flex-shrink-0" />
-                <span>{ws.spots} places restantes</span>
-              </div>
-
-              <div className="flex items-center gap-2 text-sm text-foreground">
-                <Euro className="w-4 h-4 text-primary flex-shrink-0" />
-                <span>{ws.price}</span>
-              </div>
-
-              <div className="pt-2 mt-auto">
-                <button
-                  onClick={() => onReserve(ws.title)}
-                  className="w-full bg-primary text-primary-foreground py-3 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
-                >
-                  Réserver
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Navigation */}
