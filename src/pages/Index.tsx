@@ -3,6 +3,7 @@ import { Sparkles, Calendar, Heart, Users, X } from "lucide-react";
 import WorkshopCarousel from "@/components/WorkshopCarousel";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import JournalSection from "@/components/JournalSection";
+import Footer from "@/components/Footer";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -204,11 +205,7 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 border-t">
-        <div className="container mx-auto px-6 text-center text-sm text-muted-foreground">
-          © 2026 Cocooning Club · Tous droits réservés
-        </div>
-      </footer>
+      <Footer />
 
       {/* Modal d'inscription */}
       {modalOpen && (
