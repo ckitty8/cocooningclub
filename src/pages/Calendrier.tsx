@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { ChevronLeft, ChevronRight, MapPin, Clock, Users, Euro, X } from "lucide-react";
 import { workshops, FRENCH_MONTHS, parseWorkshopDate, Workshop } from "@/data/workshops";
 import { useForm } from "react-hook-form";
@@ -25,20 +25,36 @@ workshops.forEach((ws, i) => {
 });
 
 const Calendrier = () => {
+  const [searchParams] = useSearchParams();
   const firstDate = parseWorkshopDate(workshops[0].date);
   const [viewYear, setViewYear] = useState(firstDate.getFullYear());
   const [viewMonth, setViewMonth] = useState(firstDate.getMonth());
-  const [selected, setSelected] = useState<Workshop | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [popinWorkshop, setPopinWorkshop] = useState<Workshop | null>(null);
+  const [reserveOpen, setReserveOpen] = useState(false);
+
+  // Open pop-in from URL param (e.g. ?workshop=2 from a card click on home page)
+  useEffect(() => {
+    const param = searchParams.get("workshop");
+    if (param !== null) {
+      const idx = parseInt(param);
+      if (!isNaN(idx) && idx >= 0 && idx < workshops.length) {
+        const ws = workshops[idx];
+        const d = parseWorkshopDate(ws.date);
+        setViewYear(d.getFullYear());
+        setViewMonth(d.getMonth());
+        setPopinWorkshop(ws);
+      }
+    }
+  }, [searchParams]);
 
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<InscriptionData>({
     resolver: zodResolver(inscriptionSchema),
     defaultValues: { name: "", email: "", workshop: "" },
   });
 
-  const openModal = (ws: Workshop) => {
+  const openReserve = (ws: Workshop) => {
     reset({ name: "", email: "", workshop: ws.title });
-    setModalOpen(true);
+    setReserveOpen(true);
   };
 
   const onSubmit = async (data: InscriptionData) => {
@@ -47,7 +63,7 @@ const Calendrier = () => {
     });
     if (error) { toast.error("Une erreur est survenue. Veuillez réessayer."); return; }
     toast.success(`Merci ${data.name} ! Votre inscription à "${data.workshop}" a bien été prise en compte.`);
-    setModalOpen(false);
+    setReserveOpen(false);
     reset();
   };
 
@@ -70,11 +86,7 @@ const Calendrier = () => {
   for (let i = 1; i <= lastDay.getDate(); i++) days.push(i);
   while (days.length % 7 !== 0) days.push(null);
 
-  // Workshops this month (for sidebar list)
-  const monthWorkshops = workshops.filter((ws) => {
-    const d = parseWorkshopDate(ws.date);
-    return d.getFullYear() === viewYear && d.getMonth() === viewMonth;
-  });
+  const selectedDate = popinWorkshop ? parseWorkshopDate(popinWorkshop.date) : null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -104,168 +116,153 @@ const Calendrier = () => {
 
       {/* Page content */}
       <main className="pt-40 pb-24">
-        <div className="container mx-auto px-6">
+        <div className="container mx-auto px-6 max-w-3xl">
           <div className="text-center mb-12">
             <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-3">
               Calendrier des ateliers
             </h1>
             <p className="text-muted-foreground">
-              Retrouvez tous nos ateliers créatifs et réservez votre place.
+              Cliquez sur une date pour voir le détail de l'atelier.
             </p>
           </div>
 
-          <div className="flex flex-col lg:flex-row gap-10 items-start">
-            {/* Calendar */}
-            <div className="flex-1 min-w-0">
-              {/* Month nav */}
-              <div className="flex items-center justify-between mb-6">
+          {/* Month nav */}
+          <div className="flex items-center justify-between mb-8">
+            <button
+              onClick={prevMonth}
+              className="w-10 h-10 rounded-full border flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <h2 className="font-display text-xl font-semibold text-foreground capitalize">
+              {FRENCH_MONTHS[viewMonth]} {viewYear}
+            </h2>
+            <button
+              onClick={nextMonth}
+              className="w-10 h-10 rounded-full border flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Day headers */}
+          <div className="grid grid-cols-7 border-b pb-3 mb-2">
+            {FRENCH_DAYS.map((d) => (
+              <div key={d} className="text-center text-xs font-semibold tracking-[0.1em] uppercase text-muted-foreground">
+                {d}
+              </div>
+            ))}
+          </div>
+
+          {/* Days grid */}
+          <div className="grid grid-cols-7">
+            {days.map((day, i) => {
+              if (!day) return <div key={i} className="h-16 md:h-20" />;
+
+              const key = `${viewYear}-${viewMonth}-${day}`;
+              const wsIndex = workshopsByDate[key];
+              const ws = wsIndex !== undefined ? workshops[wsIndex] : null;
+              const isSelected =
+                selectedDate &&
+                selectedDate.getFullYear() === viewYear &&
+                selectedDate.getMonth() === viewMonth &&
+                selectedDate.getDate() === day;
+
+              return (
                 <button
-                  onClick={prevMonth}
-                  className="w-10 h-10 rounded-full border flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
+                  key={i}
+                  onClick={() => ws && setPopinWorkshop(ws)}
+                  disabled={!ws}
+                  className={`
+                    h-16 md:h-20 flex flex-col items-center justify-center gap-1 rounded-xl transition-all
+                    ${ws
+                      ? isSelected
+                        ? "bg-primary text-primary-foreground"
+                        : "hover:bg-primary/8 cursor-pointer"
+                      : "cursor-default"
+                    }
+                  `}
                 >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-                <h2 className="font-display text-xl font-semibold text-foreground capitalize">
-                  {FRENCH_MONTHS[viewMonth]} {viewYear}
-                </h2>
-                <button
-                  onClick={nextMonth}
-                  className="w-10 h-10 rounded-full border flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Day headers */}
-              <div className="grid grid-cols-7 mb-2 border-b pb-2">
-                {FRENCH_DAYS.map((d) => (
-                  <div key={d} className="text-center text-xs font-semibold tracking-[0.1em] uppercase text-muted-foreground py-1">
-                    {d}
-                  </div>
-                ))}
-              </div>
-
-              {/* Days grid */}
-              <div className="grid grid-cols-7 gap-1">
-                {days.map((day, i) => {
-                  if (!day) return <div key={i} className="h-20 md:h-24" />;
-                  const key = `${viewYear}-${viewMonth}-${day}`;
-                  const wsIndex = workshopsByDate[key];
-                  const ws = wsIndex !== undefined ? workshops[wsIndex] : null;
-                  const isSelected = selected?.title === ws?.title && ws !== null;
-
-                  return (
-                    <button
-                      key={i}
-                      onClick={() => ws && setSelected(isSelected ? null : ws)}
-                      disabled={!ws}
-                      className={`
-                        h-20 md:h-24 rounded-xl p-2 text-left flex flex-col transition-all border
-                        ${ws
-                          ? isSelected
-                            ? "bg-primary text-primary-foreground border-primary shadow-md"
-                            : "border-primary/20 bg-primary/5 hover:bg-primary/10 cursor-pointer"
-                          : "border-transparent cursor-default"
-                        }
-                      `}
-                    >
-                      <span className={`text-sm font-semibold ${!ws ? "text-muted-foreground" : ""}`}>
-                        {day}
-                      </span>
-                      {ws && (
-                        <span className={`text-xs mt-1 leading-tight line-clamp-2 ${isSelected ? "text-primary-foreground/90" : "text-primary"}`}>
-                          {ws.title}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Sidebar */}
-            <div className="w-full lg:w-80 flex-shrink-0 lg:sticky lg:top-40">
-              {selected ? (
-                /* Selected workshop detail */
-                <div className="bg-card rounded-2xl border overflow-hidden">
-                  <div className="bg-primary/10 p-6 border-b flex items-start justify-between gap-3">
-                    <h3 className="font-display text-xl font-semibold text-foreground">{selected.title}</h3>
-                    <button
-                      onClick={() => setSelected(null)}
-                      className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0 mt-0.5"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <div className="p-6 space-y-4">
-                    <p className="text-muted-foreground text-sm leading-relaxed">{selected.description}</p>
-                    <div className="space-y-2.5">
-                      <div className="flex items-center gap-2 text-sm text-foreground">
-                        <Clock className="w-4 h-4 text-primary flex-shrink-0" />
-                        <span>{selected.date} · {selected.time}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-foreground">
-                        <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
-                        <span>{selected.location}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-foreground">
-                        <Users className="w-4 h-4 text-primary flex-shrink-0" />
-                        <span>{selected.spots} places restantes</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-foreground">
-                        <Euro className="w-4 h-4 text-primary flex-shrink-0" />
-                        <span>{selected.price}</span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => openModal(selected)}
-                      className="w-full bg-primary text-primary-foreground py-3 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity mt-2"
-                    >
-                      Réserver ma place
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                /* Month workshop list */
-                <div className="bg-card rounded-2xl border p-6">
-                  <h3 className="font-display text-base font-semibold text-foreground mb-4">
-                    {monthWorkshops.length > 0
-                      ? `${monthWorkshops.length} atelier${monthWorkshops.length > 1 ? "s" : ""} ce mois`
-                      : "Aucun atelier ce mois"}
-                  </h3>
-                  {monthWorkshops.length > 0 ? (
-                    <ul className="space-y-3">
-                      {monthWorkshops.map((ws) => (
-                        <li key={ws.title}>
-                          <button
-                            onClick={() => setSelected(ws)}
-                            className="w-full text-left p-3 rounded-xl bg-primary/5 hover:bg-primary/10 transition-colors"
-                          >
-                            <p className="text-sm font-medium text-foreground">{ws.title}</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">{ws.date} · {ws.time}</p>
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      Naviguez vers un autre mois pour voir les prochains ateliers.
-                    </p>
+                  <span className={`text-sm font-medium ${!ws && !isSelected ? "text-muted-foreground" : ""}`}>
+                    {day}
+                  </span>
+                  {ws && (
+                    <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? "bg-primary-foreground" : "bg-primary"}`} />
                   )}
-                </div>
-              )}
-            </div>
+                </button>
+              );
+            })}
           </div>
         </div>
       </main>
 
-      {/* Reservation modal */}
-      {modalOpen && (
+      {/* Workshop detail pop-in */}
+      {popinWorkshop && !reserveOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" onClick={() => setModalOpen(false)} />
+          <div
+            className="absolute inset-0 bg-foreground/30 backdrop-blur-sm"
+            onClick={() => setPopinWorkshop(null)}
+          />
+          <div className="relative bg-background rounded-2xl shadow-2xl w-full max-w-md border overflow-hidden">
+            {/* Header */}
+            <div className="bg-primary/8 px-6 py-5 border-b flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs tracking-[0.15em] uppercase text-primary font-medium mb-1">
+                  {popinWorkshop.date} · {popinWorkshop.time}
+                </p>
+                <h3 className="font-display text-xl font-bold text-foreground">
+                  {popinWorkshop.title}
+                </h3>
+              </div>
+              <button
+                onClick={() => setPopinWorkshop(null)}
+                className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0 mt-0.5"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="px-6 py-5 space-y-4">
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                {popinWorkshop.description}
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex items-center gap-2 text-sm text-foreground">
+                  <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
+                  <span>{popinWorkshop.location}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-foreground">
+                  <Clock className="w-4 h-4 text-primary flex-shrink-0" />
+                  <span>{popinWorkshop.time}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-foreground">
+                  <Users className="w-4 h-4 text-primary flex-shrink-0" />
+                  <span>{popinWorkshop.spots} places restantes</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-foreground">
+                  <Euro className="w-4 h-4 text-primary flex-shrink-0" />
+                  <span>{popinWorkshop.price}</span>
+                </div>
+              </div>
+              <button
+                onClick={() => openReserve(popinWorkshop)}
+                className="w-full bg-primary text-primary-foreground py-3 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
+              >
+                Réserver ma place
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reservation modal */}
+      {reserveOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" onClick={() => setReserveOpen(false)} />
           <div className="relative bg-background rounded-2xl shadow-2xl w-full max-w-md p-8 border">
             <button
-              onClick={() => setModalOpen(false)}
+              onClick={() => setReserveOpen(false)}
               className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground"
             >
               <X className="w-4 h-4" />

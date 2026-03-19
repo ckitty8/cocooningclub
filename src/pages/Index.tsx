@@ -24,7 +24,6 @@ type InscriptionData = z.infer<typeof inscriptionSchema>;
 const Index = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [preselectedWorkshop, setPreselectedWorkshop] = useState("");
-  const [selectedWorkshopIndex, setSelectedWorkshopIndex] = useState<number | null>(null);
 
   const {
     register,
@@ -169,8 +168,6 @@ const Index = () => {
           <WorkshopCarousel
             workshops={workshops}
             onReserve={openModal}
-            selectedIndex={selectedWorkshopIndex}
-            onSelectWorkshop={setSelectedWorkshopIndex}
           />
         </div>
       </section>
