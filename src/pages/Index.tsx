@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Sparkles, Calendar, Heart, Users, X } from "lucide-react";
 import WorkshopCarousel from "@/components/WorkshopCarousel";
 import WorkshopCalendar from "@/components/WorkshopCalendar";
@@ -39,6 +39,25 @@ const Index = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [preselectedWorkshop, setPreselectedWorkshop] = useState("");
   const [selectedWorkshopIndex, setSelectedWorkshopIndex] = useState<number | null>(null);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const calendarDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close calendar dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (calendarDropdownRef.current && !calendarDropdownRef.current.contains(e.target as Node)) {
+        setCalendarOpen(false);
+      }
+    };
+    if (calendarOpen) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [calendarOpen]);
+
+  const handleCalendarSelect = (index: number) => {
+    setSelectedWorkshopIndex(index);
+    setCalendarOpen(false);
+    document.getElementById("ateliers")?.scrollIntoView({ behavior: "smooth" });
+  };
 
   const {
     register,
@@ -76,7 +95,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b">
+      <nav ref={calendarDropdownRef} className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b">
         <div className="container mx-auto flex flex-col items-center py-6 px-6 relative">
           {/* Member button - absolute right */}
           <a
@@ -96,9 +115,31 @@ const Index = () => {
           <div className="flex gap-8 mt-4 font-body text-sm tracking-[0.12em] uppercase text-foreground/80">
             <a href="#apropos" className="hover:text-primary transition-colors">À propos</a>
             <a href="#ateliers" className="hover:text-primary transition-colors">Nos Ateliers</a>
+            <button
+              onClick={() => setCalendarOpen((o) => !o)}
+              className={`hover:text-primary transition-colors ${calendarOpen ? "text-primary" : ""}`}
+            >
+              Calendrier
+            </button>
             <a href="#contact" className="hover:text-primary transition-colors">Contact</a>
           </div>
         </div>
+
+        {/* Calendar dropdown */}
+        {calendarOpen && (
+          <div className="border-t bg-background/98 py-8 shadow-lg">
+            <div className="container mx-auto px-6 flex flex-col items-center gap-3">
+              <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground">
+                Sélectionnez une date pour voir l'atelier
+              </p>
+              <WorkshopCalendar
+                workshops={workshops}
+                selectedIndex={selectedWorkshopIndex}
+                onSelectWorkshop={handleCalendarSelect}
+              />
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero */}
@@ -179,27 +220,12 @@ const Index = () => {
             Réservez votre place pour un moment créatif inoubliable.
           </p>
 
-          {/* Calendar + carousel linked */}
-          <div className="flex flex-col lg:flex-row gap-10 items-start mb-0">
-            <div className="lg:sticky lg:top-28 w-full lg:w-72 flex-shrink-0">
-              <p className="text-xs font-semibold tracking-[0.2em] uppercase text-muted-foreground mb-4 text-center lg:text-left">
-                Calendrier des ateliers
-              </p>
-              <WorkshopCalendar
-                workshops={workshops}
-                selectedIndex={selectedWorkshopIndex}
-                onSelectWorkshop={setSelectedWorkshopIndex}
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <WorkshopCarousel
-                workshops={workshops}
-                onReserve={openModal}
-                selectedIndex={selectedWorkshopIndex}
-                onSelectWorkshop={setSelectedWorkshopIndex}
-              />
-            </div>
-          </div>
+          <WorkshopCarousel
+            workshops={workshops}
+            onReserve={openModal}
+            selectedIndex={selectedWorkshopIndex}
+            onSelectWorkshop={setSelectedWorkshopIndex}
+          />
         </div>
       </section>
 
