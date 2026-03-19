@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Sparkles, Calendar, Heart, Users, X } from "lucide-react";
 import WorkshopCarousel from "@/components/WorkshopCarousel";
+import WorkshopCalendar from "@/components/WorkshopCalendar";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import JournalSection from "@/components/JournalSection";
+import Footer from "@/components/Footer";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -36,6 +38,7 @@ type InscriptionData = z.infer<typeof inscriptionSchema>;
 const Index = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [preselectedWorkshop, setPreselectedWorkshop] = useState("");
+  const [selectedWorkshopIndex, setSelectedWorkshopIndex] = useState<number | null>(null);
 
   const {
     register,
@@ -175,7 +178,28 @@ const Index = () => {
           <p className="text-center text-muted-foreground max-w-lg mx-auto mb-16">
             Réservez votre place pour un moment créatif inoubliable.
           </p>
-          <WorkshopCarousel workshops={workshops} onReserve={openModal} />
+
+          {/* Calendar + carousel linked */}
+          <div className="flex flex-col lg:flex-row gap-10 items-start mb-0">
+            <div className="lg:sticky lg:top-28 w-full lg:w-72 flex-shrink-0">
+              <p className="text-xs font-semibold tracking-[0.2em] uppercase text-muted-foreground mb-4 text-center lg:text-left">
+                Calendrier des ateliers
+              </p>
+              <WorkshopCalendar
+                workshops={workshops}
+                selectedIndex={selectedWorkshopIndex}
+                onSelectWorkshop={setSelectedWorkshopIndex}
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <WorkshopCarousel
+                workshops={workshops}
+                onReserve={openModal}
+                selectedIndex={selectedWorkshopIndex}
+                onSelectWorkshop={setSelectedWorkshopIndex}
+              />
+            </div>
+          </div>
         </div>
       </section>
 
@@ -204,11 +228,7 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 border-t">
-        <div className="container mx-auto px-6 text-center text-sm text-muted-foreground">
-          © 2026 Cocooning Club · Tous droits réservés
-        </div>
-      </footer>
+      <Footer />
 
       {/* Modal d'inscription */}
       {modalOpen && (
