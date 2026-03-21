@@ -13,10 +13,16 @@ import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/hero-workshop.jpg";
 import { workshops } from "@/data/workshops";
 
+const PIERRE_ORACLE = "Atelier Créatif — Pierre & Oracle";
+
 const inscriptionSchema = z.object({
   name: z.string().trim().min(2, "Le nom doit contenir au moins 2 caractères.").max(100),
   email: z.string().trim().email("Veuillez entrer un email valide.").max(255),
   workshop: z.string().min(1, "Veuillez choisir un atelier."),
+  birthdate: z.string().optional(),
+}).refine((d) => d.workshop !== PIERRE_ORACLE || (!!d.birthdate && d.birthdate.trim().length > 0), {
+  message: "La date de naissance est requise pour cet atelier.",
+  path: ["birthdate"],
 });
 
 type InscriptionData = z.infer<typeof inscriptionSchema>;
@@ -29,11 +35,14 @@ const Index = () => {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<InscriptionData>({
     resolver: zodResolver(inscriptionSchema),
-    defaultValues: { name: "", email: "", workshop: "" },
+    defaultValues: { name: "", email: "", workshop: "", birthdate: "" },
   });
+
+  const selectedWorkshop = watch("workshop");
 
   const openModal = (workshopTitle?: string) => {
     reset({ name: "", email: "", workshop: workshopTitle || "" });
@@ -46,6 +55,7 @@ const Index = () => {
       name: data.name,
       email: data.email,
       workshop: data.workshop,
+      ...(data.birthdate ? { birthdate: data.birthdate } : {}),
     });
 
     if (error) {
@@ -72,7 +82,7 @@ const Index = () => {
           </a>
 
           {/* Centered title */}
-          <Link to="/">
+          <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
             <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground tracking-[0.08em] uppercase leading-tight text-center hover:opacity-80 transition-opacity">
               Cocooning Club
             </h2>
@@ -251,6 +261,18 @@ const Index = () => {
                 </select>
                 {errors.workshop && <p className="text-destructive text-xs mt-1">{errors.workshop.message}</p>}
               </div>
+
+              {selectedWorkshop === PIERRE_ORACLE && (
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Date de naissance</label>
+                  <input
+                    {...register("birthdate")}
+                    type="date"
+                    className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                  {errors.birthdate && <p className="text-destructive text-xs mt-1">{errors.birthdate.message}</p>}
+                </div>
+              )}
 
               <button
                 type="submit"

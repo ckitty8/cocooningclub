@@ -10,10 +10,16 @@ import { supabase } from "@/integrations/supabase/client";
 
 const FRENCH_DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
+const PIERRE_ORACLE = "Atelier Créatif — Pierre & Oracle";
+
 const inscriptionSchema = z.object({
   name: z.string().trim().min(2, "Le nom doit contenir au moins 2 caractères.").max(100),
   email: z.string().trim().email("Veuillez entrer un email valide.").max(255),
   workshop: z.string().min(1, "Veuillez choisir un atelier."),
+  birthdate: z.string().optional(),
+}).refine((d) => d.workshop !== PIERRE_ORACLE || (!!d.birthdate && d.birthdate.trim().length > 0), {
+  message: "La date de naissance est requise pour cet atelier.",
+  path: ["birthdate"],
 });
 type InscriptionData = z.infer<typeof inscriptionSchema>;
 
@@ -47,10 +53,12 @@ const Calendrier = () => {
     }
   }, [searchParams]);
 
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<InscriptionData>({
+  const { register, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm<InscriptionData>({
     resolver: zodResolver(inscriptionSchema),
-    defaultValues: { name: "", email: "", workshop: "" },
+    defaultValues: { name: "", email: "", workshop: "", birthdate: "" },
   });
+
+  const selectedWorkshop = watch("workshop");
 
   const openReserve = (ws: Workshop) => {
     reset({ name: "", email: "", workshop: ws.title });
@@ -59,7 +67,10 @@ const Calendrier = () => {
 
   const onSubmit = async (data: InscriptionData) => {
     const { error } = await supabase.from("inscriptions").insert({
-      name: data.name, email: data.email, workshop: data.workshop,
+      name: data.name,
+      email: data.email,
+      workshop: data.workshop,
+      ...(data.birthdate ? { birthdate: data.birthdate } : {}),
     });
     if (error) { toast.error("Une erreur est survenue. Veuillez réessayer."); return; }
     toast.success(`Merci ${data.name} ! Votre inscription à "${data.workshop}" a bien été prise en compte.`);
@@ -290,6 +301,17 @@ const Calendrier = () => {
                 </select>
                 {errors.workshop && <p className="text-xs text-destructive mt-1">{errors.workshop.message}</p>}
               </div>
+              {selectedWorkshop === PIERRE_ORACLE && (
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">Date de naissance</label>
+                  <input
+                    {...register("birthdate")}
+                    type="date"
+                    className="w-full border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                  {errors.birthdate && <p className="text-xs text-destructive mt-1">{errors.birthdate.message}</p>}
+                </div>
+              )}
               <button
                 type="submit"
                 disabled={isSubmitting}
