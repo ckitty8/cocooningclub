@@ -34,7 +34,7 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
 
           return (
             <div
-              key={ws.title}
+              key={actualIndex}
               onClick={() => navigate(`/calendrier?workshop=${actualIndex}`)}
               className="bg-card rounded-2xl border overflow-hidden flex flex-col cursor-pointer transition-all hover:shadow-lg hover:ring-2 hover:ring-primary/30"
             >
