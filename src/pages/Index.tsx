@@ -72,9 +72,11 @@ const Index = () => {
           </a>
 
           {/* Centered title */}
-          <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground tracking-[0.08em] uppercase leading-tight text-center">
-            Cocooning Club
-          </h2>
+          <Link to="/">
+            <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground tracking-[0.08em] uppercase leading-tight text-center hover:opacity-80 transition-opacity">
+              Cocooning Club
+            </h2>
+          </Link>
           <span className="text-xs tracking-[0.35em] uppercase text-muted-foreground mt-1">Club</span>
 
           {/* Navigation links */}
