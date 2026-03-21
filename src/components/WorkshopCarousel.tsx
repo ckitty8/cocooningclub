@@ -1,26 +1,18 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Calendar, ChevronLeft, ChevronRight, MapPin, Users, Euro } from "lucide-react";
-
-interface Workshop {
-  title: string;
-  date: string;
-  time: string;
-  spots: number;
-  description: string;
-  location: string;
-  price: string;
-}
+import type { Workshop } from "@/data/workshops";
 
 interface WorkshopCarouselProps {
   workshops: Workshop[];
   onReserve: (title: string) => void;
   selectedIndex?: number | null;
-  onSelectWorkshop?: (index: number) => void;
 }
 
 const ITEMS_PER_PAGE = 3;
 
-const WorkshopCarousel = ({ workshops, onReserve, selectedIndex, onSelectWorkshop }: WorkshopCarouselProps) => {
+const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarouselProps) => {
+  const navigate = useNavigate();
   const [page, setPage] = useState(0);
   const totalPages = Math.ceil(workshops.length / ITEMS_PER_PAGE);
   const visible = workshops.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
@@ -43,16 +35,10 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex, onSelectWorksho
           return (
             <div
               key={ws.title}
-              onClick={() => onSelectWorkshop?.(actualIndex)}
-              className={`
-                bg-card rounded-2xl border overflow-hidden flex flex-col cursor-pointer transition-all
-                ${isSelected
-                  ? "ring-2 ring-primary shadow-lg shadow-primary/10"
-                  : "hover:shadow-lg"
-                }
-              `}
+              onClick={() => navigate(`/calendrier?workshop=${actualIndex}`)}
+              className="bg-card rounded-2xl border overflow-hidden flex flex-col cursor-pointer transition-all hover:shadow-lg hover:ring-2 hover:ring-primary/30"
             >
-              <div className={`p-6 border-b transition-colors ${isSelected ? "bg-primary/10" : "bg-primary/5"}`}>
+              <div className="p-6 border-b bg-primary/5">
                 <h3 className="font-display text-xl font-semibold text-foreground">{ws.title}</h3>
               </div>
               <div className="p-6 space-y-3 flex-1 flex flex-col">
@@ -81,6 +67,7 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex, onSelectWorksho
                 <div className="pt-2 mt-auto">
                   <button
                     onClick={(e) => { e.stopPropagation(); onReserve(ws.title); }}
+
                     className="w-full bg-primary text-primary-foreground py-3 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
                   >
                     Réserver
