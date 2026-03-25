@@ -28,3 +28,4 @@ supabase/.temp/
 # Environment variables
 .env
 .env.*
+!.env.example
