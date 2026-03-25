@@ -14,6 +14,7 @@ export type Database = {
     Tables: {
       inscriptions: {
         Row: {
+          atelier_id: string | null
           created_at: string
           email: string
           id: string
@@ -21,6 +22,7 @@ export type Database = {
           workshop: string
         }
         Insert: {
+          atelier_id?: string | null
           created_at?: string
           email: string
           id?: string
@@ -28,13 +30,22 @@ export type Database = {
           workshop: string
         }
         Update: {
+          atelier_id?: string | null
           created_at?: string
           email?: string
           id?: string
           name?: string
           workshop?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "inscriptions_atelier_id_fkey"
+            columns: ["atelier_id"]
+            isOneToOne: false
+            referencedRelation: "ateliers"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       profiles: {
         Row: {
@@ -80,10 +91,9 @@ export type Database = {
           date: string
           time: string
           location: string
-          capacity: number
-          type: string
-          photo_url: string | null
+          spots: number
           price: string
+          is_active: boolean
           created_at: string
         }
         Insert: {
@@ -93,10 +103,9 @@ export type Database = {
           date: string
           time: string
           location?: string
-          capacity?: number
-          type?: string
-          photo_url?: string | null
+          spots?: number
           price?: string
+          is_active?: boolean
           created_at?: string
         }
         Update: {
@@ -106,10 +115,9 @@ export type Database = {
           date?: string
           time?: string
           location?: string
-          capacity?: number
-          type?: string
-          photo_url?: string | null
+          spots?: number
           price?: string
+          is_active?: boolean
           created_at?: string
         }
         Relationships: []
@@ -155,7 +163,21 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      inscriptions_avec_atelier: {
+        Row: {
+          id: string | null
+          name: string | null
+          email: string | null
+          created_at: string | null
+          atelier_id: string | null
+          atelier_title: string | null
+          atelier_date: string | null
+          atelier_time: string | null
+          atelier_location: string | null
+          atelier_price: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
