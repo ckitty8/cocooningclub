@@ -45,6 +45,23 @@ const Index = () => {
       .then(({ data, error }) => {
         if (!error && data) setAteliers(data);
       });
+
+    const channel = supabase
+      .channel("ateliers-spots")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "ateliers" },
+        (payload) => {
+          setAteliers((prev) =>
+            prev.map((a) =>
+              a.id === payload.new.id ? { ...a, spots: payload.new.spots } : a
+            )
+          );
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   const {
@@ -82,6 +99,11 @@ const Index = () => {
     }
 
     toast.success(`Merci ${data.name} ! Votre inscription à "${data.workshop}" a bien été prise en compte.`);
+    if (atelier) {
+      setAteliers((prev) =>
+        prev.map((a) => a.id === atelier.id ? { ...a, spots: Math.max(0, a.spots - 1) } : a)
+      );
+    }
     setModalOpen(false);
     reset();
   };
