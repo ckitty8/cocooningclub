@@ -3,8 +3,8 @@ import { Heart, Instagram, Facebook, Mail } from "lucide-react";
 const Footer = () => {
   return (
     <footer className="bg-card border-t">
-      <div className="container mx-auto px-6 py-16">
-        <div className="grid md:grid-cols-3 gap-12 mb-12">
+      <div className="container mx-auto px-6 py-10 md:py-16">
+        <div className="grid md:grid-cols-3 gap-8 md:gap-12 mb-8 md:mb-12">
           {/* Brand */}
           <div className="space-y-4">
             <h3 className="font-display text-2xl font-bold text-foreground tracking-[0.08em] uppercase">
