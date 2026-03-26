@@ -62,7 +62,7 @@ const Footer = () => {
                 <Facebook className="w-4 h-4" />
               </a>
               <a
-                href="mailto:hello@cocooningclub.fr"
+                href="mailto:le.cocooning.club@gmail.com"
                 className="w-9 h-9 flex items-center justify-center rounded-full border border-border text-muted-foreground hover:text-primary hover:border-primary transition-colors"
                 aria-label="Email"
               >
@@ -70,8 +70,8 @@ const Footer = () => {
               </a>
             </div>
             <p className="text-sm text-muted-foreground">
-              <a href="mailto:hello@cocooningclub.fr" className="hover:text-primary transition-colors">
-                hello@cocooningclub.fr
+              <a href="mailto:le.cocooning.club@gmail.com" className="hover:text-primary transition-colors">
+                le.cocooning.club@gmail.com
               </a>
             </p>
           </div>

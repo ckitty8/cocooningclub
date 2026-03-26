@@ -236,10 +236,10 @@ const Index = () => {
             Suivez-nous sur les réseaux ou écrivez-nous pour ne rien manquer des prochains ateliers.
           </p>
           <a
-            href="mailto:hello@cocooningclub.fr"
+            href="mailto:le.cocooning.club@gmail.com"
             className="inline-block bg-primary text-primary-foreground px-8 py-4 rounded-full font-medium text-sm hover:opacity-90 transition-opacity"
           >
-            hello@cocooningclub.fr
+            le.cocooning.club@gmail.com
           </a>
         </div>
       </section>
