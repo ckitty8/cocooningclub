@@ -25,7 +25,7 @@ dist-ssr
 
 supabase/.temp/
 
-# Environment variables (sensitive credentials)
+# Environment variables
 .env
 .env.*
 !.env.example

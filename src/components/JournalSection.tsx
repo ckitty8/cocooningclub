@@ -5,7 +5,7 @@ const JournalSection = () => (
     <div className="container mx-auto px-6">
       <div className="max-w-4xl mx-auto bg-card rounded-3xl border overflow-hidden md:grid md:grid-cols-2">
         {/* Left — visual */}
-        <div className="bg-primary/5 p-10 md:p-14 flex flex-col justify-center space-y-6">
+        <div className="bg-primary/5 p-6 md:p-10 lg:p-14 flex flex-col justify-center space-y-6">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-xs font-medium w-fit">
             <Lock className="w-3.5 h-3.5" />
             Réservé aux membres
@@ -19,7 +19,7 @@ const JournalSection = () => (
         </div>
 
         {/* Right — details */}
-        <div className="p-10 md:p-14 flex flex-col justify-center space-y-6">
+        <div className="p-6 md:p-10 lg:p-14 flex flex-col justify-center space-y-6">
           <div className="space-y-4">
             {[
               { title: "Tutoriels exclusifs", desc: "Des guides illustrés pour prolonger la créativité chez vous." },

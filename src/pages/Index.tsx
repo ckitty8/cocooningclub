@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sparkles, Calendar, Heart, Users, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import WorkshopCarousel from "@/components/WorkshopCarousel";
@@ -11,7 +11,11 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/hero-workshop.jpg";
-import { workshops } from "@/data/workshops";
+import type { Workshop } from "@/data/workshops";
+
+interface Atelier extends Workshop {
+  id: string;
+}
 
 const PIERRE_ORACLE = "Atelier Créatif — Pierre & Oracle";
 
@@ -28,8 +32,37 @@ const inscriptionSchema = z.object({
 type InscriptionData = z.infer<typeof inscriptionSchema>;
 
 const Index = () => {
+  const [ateliers, setAteliers] = useState<Atelier[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [preselectedWorkshop, setPreselectedWorkshop] = useState("");
+
+  useEffect(() => {
+    supabase
+      .from("ateliers")
+      .select("id, title, date, time, spots, description, location, price")
+      .eq("is_active", true)
+      .order("created_at")
+      .then(({ data, error }) => {
+        if (!error && data) setAteliers(data);
+      });
+
+    const channel = supabase
+      .channel("ateliers-spots")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "ateliers" },
+        (payload) => {
+          setAteliers((prev) =>
+            prev.map((a) =>
+              a.id === payload.new.id ? { ...a, spots: payload.new.spots } : a
+            )
+          );
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, []);
 
   const {
     register,
@@ -51,10 +84,12 @@ const Index = () => {
   };
 
   const onSubmit = async (data: InscriptionData) => {
+    const atelier = ateliers.find((a) => a.title === data.workshop);
     const { error } = await supabase.from("inscriptions").insert({
       name: data.name,
       email: data.email,
       workshop: data.workshop,
+      atelier_id: atelier?.id ?? null,
       ...(data.birthdate ? { birthdate: data.birthdate } : {}),
     });
 
@@ -64,6 +99,11 @@ const Index = () => {
     }
 
     toast.success(`Merci ${data.name} ! Votre inscription à "${data.workshop}" a bien été prise en compte.`);
+    if (atelier) {
+      setAteliers((prev) =>
+        prev.map((a) => a.id === atelier.id ? { ...a, spots: Math.max(0, a.spots - 1) } : a)
+      );
+    }
     setModalOpen(false);
     reset();
   };
@@ -90,7 +130,7 @@ const Index = () => {
           <span className="text-xs tracking-[0.35em] uppercase text-muted-foreground mt-1">Club</span>
 
           {/* Navigation links */}
-          <div className="flex gap-8 mt-4 font-body text-sm tracking-[0.12em] uppercase text-foreground/80">
+          <div className="flex flex-wrap justify-center gap-4 md:gap-8 mt-4 font-body text-xs md:text-sm tracking-[0.12em] uppercase text-foreground/80">
             <a href="#apropos" className="hover:text-primary transition-colors">À propos</a>
             <a href="#ateliers" className="hover:text-primary transition-colors">Nos Ateliers</a>
             <Link to="/calendrier" className="hover:text-primary transition-colors">Calendrier</Link>
@@ -107,11 +147,11 @@ const Index = () => {
               <Sparkles className="w-4 h-4" />
               Ateliers créatifs à taille humaine
             </div>
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-bold text-foreground leading-tight">
+            <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-bold text-foreground leading-tight">
               Sortez de la routine,{" "}
               <span className="italic text-primary">créez.</span>
             </h1>
-            <p className="text-lg text-muted-foreground max-w-md leading-relaxed">
+            <p className="text-base md:text-lg text-muted-foreground max-w-md leading-relaxed">
               Cocooning Club propose des ateliers créatifs 1 à 2 fois par mois dans une ambiance chaleureuse et bienveillante. Pas besoin d'être artiste, juste d'avoir envie de déconnecter.
             </p>
             <button
@@ -123,7 +163,7 @@ const Index = () => {
           </div>
           <div className="relative">
             <div className="rounded-3xl overflow-hidden shadow-2xl">
-              <img src={heroImage} alt="Table d'atelier créatif avec bougies, peinture et matériaux" className="w-full h-[500px] object-cover" />
+              <img src={heroImage} alt="Table d'atelier créatif avec bougies, peinture et matériaux" className="w-full h-[280px] sm:h-[380px] md:h-[500px] object-cover" />
             </div>
             <div className="absolute -bottom-6 -left-6 bg-card rounded-2xl p-4 shadow-lg border">
               <div className="flex items-center gap-3">
@@ -176,11 +216,7 @@ const Index = () => {
           <p className="text-center text-muted-foreground max-w-lg mx-auto mb-16">
             Réservez votre place pour un moment créatif inoubliable.
           </p>
-
-          <WorkshopCarousel
-            workshops={workshops}
-            onReserve={openModal}
-          />
+          <WorkshopCarousel workshops={ateliers} onReserve={openModal} />
         </div>
       </section>
 
@@ -215,7 +251,7 @@ const Index = () => {
       {modalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-foreground/40 backdrop-blur-sm" onClick={() => setModalOpen(false)}>
           <div
-            className="bg-background rounded-3xl border shadow-2xl w-full max-w-md mx-4 p-8 relative animate-in fade-in zoom-in-95 duration-200"
+            className="bg-background rounded-2xl md:rounded-3xl border shadow-2xl w-full max-w-md mx-3 p-5 md:p-8 relative animate-in fade-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             <button onClick={() => setModalOpen(false)} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors">
@@ -253,7 +289,7 @@ const Index = () => {
                   className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 >
                   <option value="">Choisir un atelier…</option>
-                  {workshops.map((ws) => (
+                  {ateliers.map((ws) => (
                     <option key={ws.title} value={ws.title}>
                       {ws.title} — {ws.date}
                     </option>
