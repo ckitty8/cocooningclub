@@ -93,6 +93,7 @@ export type Database = {
           location: string
           spots: number
           price: string
+          price_amount: number
           is_active: boolean
           created_at: string
         }
@@ -105,6 +106,7 @@ export type Database = {
           location?: string
           spots?: number
           price?: string
+          price_amount?: number
           is_active?: boolean
           created_at?: string
         }
@@ -117,6 +119,7 @@ export type Database = {
           location?: string
           spots?: number
           price?: string
+          price_amount?: number
           is_active?: boolean
           created_at?: string
         }
