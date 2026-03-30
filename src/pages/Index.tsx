@@ -128,7 +128,7 @@ const Index = () => {
             </h2>
           </Link>
           <span className="text-xs tracking-[0.35em] uppercase text-muted-foreground mt-1">Club</span>
-          <img src="/favicon.png" alt="Logo Cocooning Club" className="mx-auto mt-2 w-12 md:w-16" />
+          <img src="/favicon.png" alt="Logo Cocooning Club" className="mx-auto mt-2 w-16 md:w-20" />
 
           {/* Navigation links */}
           <div className="flex flex-wrap justify-center gap-4 md:gap-8 mt-4 font-body text-xs md:text-sm tracking-[0.12em] uppercase text-foreground/80">
