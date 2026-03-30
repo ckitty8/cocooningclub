@@ -38,21 +38,21 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchStats = async () => {
-      const [profilesRes, inscriptionsRes, messagesRes, ateliersRes] = await Promise.all([
-        supabase.from("profiles").select("role"),
+      const [utilisateursRes, inscriptionsRes, messagesRes, ateliersRes] = await Promise.all([
+        supabase.from("utilisateurs").select("role"),
         supabase.from("inscriptions").select("id", { count: "exact", head: true }),
         supabase.from("contact_messages").select("id", { count: "exact", head: true }).eq("lu", false),
         supabase.from("ateliers").select("id", { count: "exact", head: true }).eq("is_active", true),
       ]);
 
-      const profiles = profilesRes.data ?? [];
+      const utilisateurs = utilisateursRes.data ?? [];
       setStats({
-        membres: profiles.filter(p => p.role === "membre").length,
-        membres_premium: profiles.filter(p => p.role === "membre_premium").length,
-        inscrits: profiles.filter(p => p.role === "inscrit").length,
+        membres:            utilisateurs.filter(u => u.role === "membre").length,
+        membres_premium:    utilisateurs.filter(u => u.role === "membre_premium").length,
+        inscrits:           utilisateurs.filter(u => u.role === "inscrit").length,
         total_inscriptions: inscriptionsRes.count ?? 0,
-        messages_non_lus: messagesRes.count ?? 0,
-        ateliers_actifs: ateliersRes.count ?? 0,
+        messages_non_lus:   messagesRes.count ?? 0,
+        ateliers_actifs:    ateliersRes.count ?? 0,
       });
       setLoading(false);
     };
@@ -77,44 +77,18 @@ const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
-        <StatCard
-          icon={Users}
-          label="Membres actifs"
-          value={totalMembres}
-          sub={`${stats.membres} standard · ${stats.membres_premium} premium`}
-        />
-        <StatCard
-          icon={Star}
-          label="Membres premium"
-          value={stats.membres_premium}
-          sub="Abonnement annuel"
-          accent
-        />
-        <StatCard
-          icon={UserCheck}
-          label="Inscrits (formulaire)"
-          value={stats.inscrits}
-          sub="En attente de validation"
-        />
-        <StatCard
-          icon={CalendarDays}
-          label="Ateliers actifs"
-          value={stats.ateliers_actifs}
-          sub="Publiés sur le site"
-        />
-        <StatCard
-          icon={TrendingUp}
-          label="Inscriptions ateliers"
-          value={stats.total_inscriptions}
-          sub="Total toutes sessions"
-        />
-        <StatCard
-          icon={MessageSquare}
-          label="Messages non lus"
-          value={stats.messages_non_lus}
-          sub="Dans la boîte de réception"
-          accent={stats.messages_non_lus > 0}
-        />
+        <StatCard icon={Users} label="Membres actifs" value={totalMembres}
+          sub={`${stats.membres} standard · ${stats.membres_premium} premium`} />
+        <StatCard icon={Star} label="Membres premium" value={stats.membres_premium}
+          sub="Abonnement annuel" accent />
+        <StatCard icon={UserCheck} label="Inscrits (formulaire)" value={stats.inscrits}
+          sub="En attente de validation" />
+        <StatCard icon={CalendarDays} label="Ateliers actifs" value={stats.ateliers_actifs}
+          sub="Publiés sur le site" />
+        <StatCard icon={TrendingUp} label="Inscriptions ateliers" value={stats.total_inscriptions}
+          sub="Total toutes sessions" />
+        <StatCard icon={MessageSquare} label="Messages non lus" value={stats.messages_non_lus}
+          sub="Dans la boîte de réception" accent={stats.messages_non_lus > 0} />
       </div>
 
       {totalMembres > 0 && (
@@ -131,13 +105,11 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="mt-4 h-2 bg-muted rounded-full overflow-hidden">
-            <div
-              className="h-full bg-primary rounded-full transition-all"
-              style={{ width: `${totalMembres > 0 ? (stats.membres_premium / totalMembres) * 100 : 0}%` }}
-            />
+            <div className="h-full bg-primary rounded-full transition-all"
+              style={{ width: `${Math.round((stats.membres_premium / totalMembres) * 100)}%` }} />
           </div>
           <p className="text-xs text-muted-foreground mt-2 text-right">
-            {totalMembres > 0 ? Math.round((stats.membres_premium / totalMembres) * 100) : 0}% de membres premium
+            {Math.round((stats.membres_premium / totalMembres) * 100)}% de membres premium
           </p>
         </div>
       )}

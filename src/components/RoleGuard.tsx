@@ -20,7 +20,7 @@ const RoleGuard = ({ children, allowedRoles, redirectTo = "/login" }: RoleGuardP
   }
 
   if (!user || !profile) return <Navigate to={redirectTo} replace />;
-  if (!profile.actif) return <Navigate to="/login?inactive=true" replace />;
+  if (!profile.est_actif) return <Navigate to="/login?inactive=true" replace />;
   if (!allowedRoles.includes(profile.role)) return <Navigate to="/" replace />;
 
   return <>{children}</>;

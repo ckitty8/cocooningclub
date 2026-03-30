@@ -6,18 +6,16 @@ export type UserRole = "admin" | "inscrit" | "membre" | "membre_premium";
 
 export interface Profile {
   id: string;
-  numero_membre: string | null;
   nom: string | null;
   prenom: string | null;
   email: string | null;
   telephone: string | null;
-  date_naissance: string | null;
-  photo_profil: string | null;
-  date_adhesion: string | null;
+  url_avatar: string | null;
+  debut_abonnement: string | null;
+  fin_abonnement: string | null;
   role: UserRole;
-  actif: boolean;
-  notes_internes?: string | null;
-  created_at: string;
+  est_actif: boolean;
+  cree_le: string;
 }
 
 interface AuthContextType {
@@ -40,7 +38,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase
-      .from("profiles")
+      .from("utilisateurs")
       .select("*")
       .eq("id", userId)
       .single();
