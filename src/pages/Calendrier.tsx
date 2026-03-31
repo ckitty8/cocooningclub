@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { ChevronLeft, ChevronRight, MapPin, Clock, Users, Euro, X } from "lucide-react";
-import { workshops, FRENCH_MONTHS, parseWorkshopDate, Workshop } from "@/data/workshops";
+import { FRENCH_MONTHS, formatDateFr, formatTimeFr, parseDateAtelier } from "@/data/workshops";
+import type { Workshop } from "@/data/workshops";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -23,35 +24,55 @@ const inscriptionSchema = z.object({
 });
 type InscriptionData = z.infer<typeof inscriptionSchema>;
 
-// Build lookup: "year-month-day" -> workshop index
-const workshopsByDate: Record<string, number> = {};
-workshops.forEach((ws, i) => {
-  const d = parseWorkshopDate(ws.date);
-  workshopsByDate[`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`] = i;
-});
-
 const Calendrier = () => {
   const [searchParams] = useSearchParams();
-  const firstDate = parseWorkshopDate(workshops[0].date);
-  const [viewYear, setViewYear] = useState(firstDate.getFullYear());
-  const [viewMonth, setViewMonth] = useState(firstDate.getMonth());
+  const [ateliers, setAteliers] = useState<Workshop[]>([]);
+  const [viewYear, setViewYear] = useState(new Date().getFullYear());
+  const [viewMonth, setViewMonth] = useState(new Date().getMonth());
   const [popinWorkshop, setPopinWorkshop] = useState<Workshop | null>(null);
   const [reserveOpen, setReserveOpen] = useState(false);
+
+  // Fetch workshops from Supabase
+  useEffect(() => {
+    supabase
+      .from("ateliers")
+      .select("id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, tarif_affichage, tarif_standard, statut")
+      .in("statut", ["publie", "complet"])
+      .order("date_atelier")
+      .then(({ data, error }) => {
+        if (!error && data) {
+          setAteliers(data as Workshop[]);
+          // Set initial view to first workshop's month
+          if (data.length > 0) {
+            const firstDate = parseDateAtelier(data[0].date_atelier);
+            setViewYear(firstDate.getFullYear());
+            setViewMonth(firstDate.getMonth());
+          }
+        }
+      });
+  }, []);
+
+  // Build lookup: "year-month-day" -> workshop index
+  const workshopsByDate: Record<string, number> = {};
+  ateliers.forEach((ws, i) => {
+    const d = parseDateAtelier(ws.date_atelier);
+    workshopsByDate[`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`] = i;
+  });
 
   // Open pop-in from URL param (e.g. ?workshop=2 from a card click on home page)
   useEffect(() => {
     const param = searchParams.get("workshop");
-    if (param !== null) {
+    if (param !== null && ateliers.length > 0) {
       const idx = parseInt(param);
-      if (!isNaN(idx) && idx >= 0 && idx < workshops.length) {
-        const ws = workshops[idx];
-        const d = parseWorkshopDate(ws.date);
+      if (!isNaN(idx) && idx >= 0 && idx < ateliers.length) {
+        const ws = ateliers[idx];
+        const d = parseDateAtelier(ws.date_atelier);
         setViewYear(d.getFullYear());
         setViewMonth(d.getMonth());
         setPopinWorkshop(ws);
       }
     }
-  }, [searchParams]);
+  }, [searchParams, ateliers]);
 
   const { register, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm<InscriptionData>({
     resolver: zodResolver(inscriptionSchema),
@@ -61,19 +82,27 @@ const Calendrier = () => {
   const selectedWorkshop = watch("workshop");
 
   const openReserve = (ws: Workshop) => {
-    reset({ name: "", email: "", workshop: ws.title });
+    reset({ name: "", email: "", workshop: ws.titre });
     setReserveOpen(true);
   };
 
   const onSubmit = async (data: InscriptionData) => {
+    const atelier = ateliers.find((a) => a.titre === data.workshop);
+    const nameParts = data.name.trim().split(/\s+/);
+    const prenom = nameParts[0] || "";
+    const nom = nameParts.slice(1).join(" ") || prenom;
+
     const { error } = await supabase.from("inscriptions").insert({
-      name: data.name,
-      email: data.email,
-      workshop: data.workshop,
-      ...(data.birthdate ? { birthdate: data.birthdate } : {}),
+      atelier_id: atelier?.id ?? null,
+      prenom_invite: prenom,
+      nom_invite: nom,
+      email_invite: data.email,
+      statut: "confirme",
+      statut_paiement: atelier && atelier.tarif_standard > 0 ? "en_attente" : "non_requis",
+      ...(data.birthdate ? { date_naissance: data.birthdate } : {}),
     });
     if (error) { toast.error("Une erreur est survenue. Veuillez réessayer."); return; }
-    toast.success(`Merci ${data.name} ! Votre inscription à "${data.workshop}" a bien été prise en compte.`);
+    toast.success(`Merci ${prenom} ! Votre inscription à "${data.workshop}" a bien été prise en compte.`);
     setReserveOpen(false);
     reset();
   };
@@ -97,7 +126,7 @@ const Calendrier = () => {
   for (let i = 1; i <= lastDay.getDate(); i++) days.push(i);
   while (days.length % 7 !== 0) days.push(null);
 
-  const selectedDate = popinWorkshop ? parseWorkshopDate(popinWorkshop.date) : null;
+  const selectedDate = popinWorkshop ? parseDateAtelier(popinWorkshop.date_atelier) : null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -172,7 +201,7 @@ const Calendrier = () => {
 
               const key = `${viewYear}-${viewMonth}-${day}`;
               const wsIndex = workshopsByDate[key];
-              const ws = wsIndex !== undefined ? workshops[wsIndex] : null;
+              const ws = wsIndex !== undefined ? ateliers[wsIndex] : null;
               const isSelected =
                 selectedDate &&
                 selectedDate.getFullYear() === viewYear &&
@@ -219,10 +248,10 @@ const Calendrier = () => {
             <div className="bg-primary/8 px-6 py-5 border-b flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs tracking-[0.15em] uppercase text-primary font-medium mb-1">
-                  {popinWorkshop.date} · {popinWorkshop.time}
+                  {formatDateFr(popinWorkshop.date_atelier)} · {formatTimeFr(popinWorkshop.heure_debut)}
                 </p>
                 <h3 className="font-display text-xl font-bold text-foreground">
-                  {popinWorkshop.title}
+                  {popinWorkshop.titre}
                 </h3>
               </div>
               <button
@@ -241,19 +270,19 @@ const Calendrier = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
-                  <span>{popinWorkshop.location}</span>
+                  <span>{popinWorkshop.lieu}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <Clock className="w-4 h-4 text-primary flex-shrink-0" />
-                  <span>{popinWorkshop.time}</span>
+                  <span>{formatTimeFr(popinWorkshop.heure_debut)}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <Users className="w-4 h-4 text-primary flex-shrink-0" />
-                  <span>{popinWorkshop.spots} places restantes</span>
+                  <span>{popinWorkshop.places_disponibles} places restantes</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <Euro className="w-4 h-4 text-primary flex-shrink-0" />
-                  <span>{popinWorkshop.price}</span>
+                  <span>{popinWorkshop.tarif_affichage}</span>
                 </div>
               </div>
               <button
@@ -295,8 +324,8 @@ const Calendrier = () => {
                 <label className="block text-sm font-medium text-foreground mb-1">Atelier</label>
                 <select {...register("workshop")} className="w-full border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary">
                   <option value="">Choisir un atelier</option>
-                  {workshops.map((ws) => (
-                    <option key={ws.title} value={ws.title}>{ws.title} — {ws.date}</option>
+                  {ateliers.map((ws) => (
+                    <option key={ws.id} value={ws.titre}>{ws.titre} — {formatDateFr(ws.date_atelier)}</option>
                   ))}
                 </select>
                 {errors.workshop && <p className="text-xs text-destructive mt-1">{errors.workshop.message}</p>}

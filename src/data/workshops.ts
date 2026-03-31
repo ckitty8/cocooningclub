@@ -1,60 +1,17 @@
 export interface Workshop {
-  title: string;
-  date: string;
-  time: string;
-  spots: number;
+  id: string;
+  titre: string;
+  date_atelier: string;
+  heure_debut: string;
+  duree: string;
+  places_disponibles: number;
+  places_max: number;
   description: string;
-  location: string;
-  price: string;
+  lieu: string;
+  tarif_affichage: string;
+  tarif_standard: number;
+  statut: string;
 }
-
-export const workshops: Workshop[] = [
-  {
-    title: "Atelier Papotage",
-    date: "Mardi 30 Mars",
-    time: "14h30 – 16h30",
-    spots: 12,
-    description: "Moment d'échange entre entrepreneuses. Ambiance chill autour d'un thé ou café. Format discussion et partage. Consommation obligatoire sur place.",
-    location: "Le FLOW · Gagny",
-    price: "Consommation sur place",
-  },
-  {
-    title: "Atelier Créatif — Terrarium",
-    date: "Mardi 7 Avril",
-    time: "13h30 –",
-    spots: 8,
-    description: "Activité manuelle et moment cocooning. Créez votre propre terrarium et repartez avec votre mini-jardin sous verre.",
-    location: "À préciser",
-    price: "25€",
-  },
-  {
-    title: "Atelier Papotage",
-    date: "Mardi 28 Avril",
-    time: "14h30 – 16h30",
-    spots: 12,
-    description: "Moment d'échange entre entrepreneuses. Ambiance chill autour d'un thé ou café. Format discussion et partage. Consommation obligatoire sur place.",
-    location: "Le FLOW · Gagny",
-    price: "Consommation sur place",
-  },
-  {
-    title: "Atelier Créatif — Pierre & Oracle",
-    date: "Mardi 5 Mai",
-    time: "À définir",
-    spots: 8,
-    description: "Activité manuelle et moment cocooning autour du thème Pierre et Oracle. Tarif à confirmer.",
-    location: "À préciser",
-    price: "À définir",
-  },
-  {
-    title: "Atelier Papotage",
-    date: "Mardi 26 Mai",
-    time: "14h30 – 16h30",
-    spots: 12,
-    description: "Moment d'échange entre entrepreneuses. Ambiance chill autour d'un thé ou café. Format discussion et partage. Consommation obligatoire sur place.",
-    location: "Le FLOW · Gagny",
-    price: "Consommation sur place",
-  },
-];
 
 export const MONTH_MAP: Record<string, number> = {
   Janvier: 0, Février: 1, Mars: 2, Avril: 3, Mai: 4, Juin: 5,
@@ -66,9 +23,27 @@ export const FRENCH_MONTHS = [
   "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre",
 ];
 
-export function parseWorkshopDate(dateStr: string): Date {
-  const parts = dateStr.split(" ");
-  const day = parseInt(parts[1]);
-  const month = MONTH_MAP[parts[2]];
-  return new Date(2026, month, day);
+export const FRENCH_DAYS_LONG = [
+  "Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi",
+];
+
+/** Format a date_atelier (YYYY-MM-DD) into "Mardi 30 Mars" */
+export function formatDateFr(dateStr: string): string {
+  const d = new Date(dateStr + "T00:00:00");
+  const day = FRENCH_DAYS_LONG[d.getDay()];
+  const num = d.getDate();
+  const month = FRENCH_MONTHS[d.getMonth()];
+  return `${day} ${num} ${month}`;
+}
+
+/** Format heure_debut (HH:MM:SS) into "14h30" */
+export function formatTimeFr(timeStr: string): string {
+  if (!timeStr) return "À définir";
+  const [h, m] = timeStr.split(":");
+  return m === "00" ? `${parseInt(h)}h` : `${parseInt(h)}h${m}`;
+}
+
+/** Parse date_atelier string to Date object */
+export function parseDateAtelier(dateStr: string): Date {
+  return new Date(dateStr + "T00:00:00");
 }

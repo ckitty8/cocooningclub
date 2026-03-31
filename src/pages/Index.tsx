@@ -12,10 +12,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/hero-workshop.jpg";
 import type { Workshop } from "@/data/workshops";
-
-interface Atelier extends Workshop {
-  id: string;
-}
+import { formatDateFr, formatTimeFr } from "@/data/workshops";
 
 const PIERRE_ORACLE = "Atelier Créatif — Pierre & Oracle";
 
@@ -32,18 +29,18 @@ const inscriptionSchema = z.object({
 type InscriptionData = z.infer<typeof inscriptionSchema>;
 
 const Index = () => {
-  const [ateliers, setAteliers] = useState<Atelier[]>([]);
+  const [ateliers, setAteliers] = useState<Workshop[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [preselectedWorkshop, setPreselectedWorkshop] = useState("");
 
   useEffect(() => {
     supabase
       .from("ateliers")
-      .select("id, title, date, time, spots, description, location, price")
-      .eq("is_active", true)
-      .order("created_at")
+      .select("id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, tarif_affichage, tarif_standard, statut")
+      .in("statut", ["publie", "complet"])
+      .order("date_atelier")
       .then(({ data, error }) => {
-        if (!error && data) setAteliers(data);
+        if (!error && data) setAteliers(data as Workshop[]);
       });
 
     const channel = supabase
@@ -54,7 +51,7 @@ const Index = () => {
         (payload) => {
           setAteliers((prev) =>
             prev.map((a) =>
-              a.id === payload.new.id ? { ...a, spots: payload.new.spots } : a
+              a.id === payload.new.id ? { ...a, places_disponibles: payload.new.places_disponibles } : a
             )
           );
         }
@@ -84,13 +81,19 @@ const Index = () => {
   };
 
   const onSubmit = async (data: InscriptionData) => {
-    const atelier = ateliers.find((a) => a.title === data.workshop);
+    const atelier = ateliers.find((a) => a.titre === data.workshop);
+    const nameParts = data.name.trim().split(/\s+/);
+    const prenom = nameParts[0] || "";
+    const nom = nameParts.slice(1).join(" ") || prenom;
+
     const { error } = await supabase.from("inscriptions").insert({
-      name: data.name,
-      email: data.email,
-      workshop: data.workshop,
       atelier_id: atelier?.id ?? null,
-      ...(data.birthdate ? { birthdate: data.birthdate } : {}),
+      prenom_invite: prenom,
+      nom_invite: nom,
+      email_invite: data.email,
+      statut: "confirme",
+      statut_paiement: atelier && atelier.tarif_standard > 0 ? "en_attente" : "non_requis",
+      ...(data.birthdate ? { date_naissance: data.birthdate } : {}),
     });
 
     if (error) {
@@ -98,10 +101,10 @@ const Index = () => {
       return;
     }
 
-    toast.success(`Merci ${data.name} ! Votre inscription à "${data.workshop}" a bien été prise en compte.`);
+    toast.success(`Merci ${prenom} ! Votre inscription à "${data.workshop}" a bien été prise en compte.`);
     if (atelier) {
       setAteliers((prev) =>
-        prev.map((a) => a.id === atelier.id ? { ...a, spots: Math.max(0, a.spots - 1) } : a)
+        prev.map((a) => a.id === atelier.id ? { ...a, places_disponibles: Math.max(0, a.places_disponibles - 1) } : a)
       );
     }
     setModalOpen(false);
@@ -291,8 +294,8 @@ const Index = () => {
                 >
                   <option value="">Choisir un atelier…</option>
                   {ateliers.map((ws) => (
-                    <option key={ws.title} value={ws.title}>
-                      {ws.title} — {ws.date}
+                    <option key={ws.id} value={ws.titre}>
+                      {ws.titre} — {formatDateFr(ws.date_atelier)}
                     </option>
                   ))}
                 </select>

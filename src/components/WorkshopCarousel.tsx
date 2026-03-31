@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calendar, ChevronLeft, ChevronRight, MapPin, Users, Euro } from "lucide-react";
 import type { Workshop } from "@/data/workshops";
+import { formatDateFr, formatTimeFr } from "@/data/workshops";
 
 interface WorkshopCarouselProps {
   workshops: Workshop[];
@@ -39,34 +40,34 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
               className="bg-card rounded-2xl border overflow-hidden flex flex-col cursor-pointer transition-all hover:shadow-lg hover:ring-2 hover:ring-primary/30"
             >
               <div className="p-6 border-b bg-primary/5">
-                <h3 className="font-display text-xl font-semibold text-foreground">{ws.title}</h3>
+                <h3 className="font-display text-xl font-semibold text-foreground">{ws.titre}</h3>
               </div>
               <div className="p-6 space-y-3 flex-1 flex flex-col">
                 <p className="text-muted-foreground text-sm leading-relaxed mb-2">{ws.description}</p>
 
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <Calendar className="w-4 h-4 text-primary flex-shrink-0" />
-                  <span>{ws.date} · {ws.time}</span>
+                  <span>{formatDateFr(ws.date_atelier)} · {formatTimeFr(ws.heure_debut)}</span>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
-                  <span>{ws.location}</span>
+                  <span>{ws.lieu}</span>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <Users className="w-4 h-4 text-primary flex-shrink-0" />
-                  <span>{ws.spots} places restantes</span>
+                  <span>{ws.places_disponibles} places restantes</span>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <Euro className="w-4 h-4 text-primary flex-shrink-0" />
-                  <span>{ws.price}</span>
+                  <span>{ws.tarif_affichage}</span>
                 </div>
 
                 <div className="pt-2 mt-auto">
                   <button
-                    onClick={(e) => { e.stopPropagation(); onReserve(ws.title); }}
+                    onClick={(e) => { e.stopPropagation(); onReserve(ws.titre); }}
 
                     className="w-full bg-primary text-primary-foreground py-3 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
                   >
