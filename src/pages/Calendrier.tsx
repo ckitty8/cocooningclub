@@ -133,12 +133,12 @@ const Calendrier = () => {
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b">
         <div className="container mx-auto flex flex-col items-center py-6 px-6 relative">
-          <a
-            href="/#contact"
+          <Link
+            to="/login"
             className="absolute right-6 top-1/2 -translate-y-1/2 hidden md:inline-flex border border-foreground/40 px-5 py-2 text-xs tracking-[0.2em] uppercase text-foreground hover:bg-foreground hover:text-background transition-colors"
           >
             Espace Membre
-          </a>
+          </Link>
           <Link to="/">
             <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground tracking-[0.08em] uppercase leading-tight text-center hover:opacity-80 transition-opacity">
               Cocooning Club

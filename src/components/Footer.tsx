@@ -34,7 +34,7 @@ const Footer = () => {
                 <a href="#contact" className="hover:text-primary transition-colors">Contact</a>
               </li>
               <li>
-                <a href="#contact" className="hover:text-primary transition-colors">Espace Membre</a>
+                <a href="/login" className="hover:text-primary transition-colors">Espace Membre</a>
               </li>
             </ul>
           </div>
