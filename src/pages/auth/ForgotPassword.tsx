@@ -13,12 +13,13 @@ const ForgotPassword = () => {
     setError("");
     setLoading(true);
 
+    const siteUrl = import.meta.env.VITE_SITE_URL || window.location.origin;
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: `${siteUrl}/reset-password`,
     });
 
     if (error) {
-      setError("Une erreur est survenue. Vérifiez l'adresse email.");
+      setError(error.message);
     } else {
       setSent(true);
     }
