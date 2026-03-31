@@ -10,6 +10,8 @@ import Index from "./pages/Index.tsx";
 import Calendrier from "./pages/Calendrier.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Login from "./pages/auth/Login.tsx";
+import ForgotPassword from "./pages/auth/ForgotPassword.tsx";
+import ResetPassword from "./pages/auth/ResetPassword.tsx";
 import Dashboard from "./pages/admin/Dashboard.tsx";
 import Membres from "./pages/admin/Membres.tsx";
 import AteliersAdmin from "./pages/admin/Ateliers.tsx";
@@ -38,6 +40,8 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/calendrier" element={<Calendrier />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
             {/* Espace membre (à développer plus tard) */}
             <Route path="/espace-membre" element={<Login />} />
