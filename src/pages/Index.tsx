@@ -31,7 +31,6 @@ type InscriptionData = z.infer<typeof inscriptionSchema>;
 const Index = () => {
   const [ateliers, setAteliers] = useState<Workshop[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
-  const [preselectedWorkshop, setPreselectedWorkshop] = useState("");
 
   useEffect(() => {
     supabase
@@ -76,7 +75,6 @@ const Index = () => {
 
   const openModal = (workshopTitle?: string) => {
     reset({ name: "", email: "", workshop: workshopTitle || "" });
-    setPreselectedWorkshop(workshopTitle || "");
     setModalOpen(true);
   };
 
