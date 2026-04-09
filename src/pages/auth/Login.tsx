@@ -17,16 +17,11 @@ const Login = () => {
 
   // Redirection quand profile est chargé
   useEffect(() => {
-    if (!authLoading && profile) {
+    if (profile) {
       if (profile.role === "administrateur") navigate("/admin/dashboard", { replace: true });
       else navigate("/espace-membre", { replace: true });
     }
-    // Si auth est terminé, user connecté mais pas de profil dans utilisateurs
-    if (!authLoading && submitting && !profile) {
-      setError("Compte introuvable dans la base de données. Contactez l'administrateur.");
-      setSubmitting(false);
-    }
-  }, [profile, authLoading, navigate, submitting]);
+  }, [profile, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
