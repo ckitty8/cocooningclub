@@ -4,35 +4,39 @@ import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Login = () => {
-  const { signIn, profile, user } = useAuth();
+  const { signIn, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const isInactive = searchParams.get("inactive") === "true";
 
-  // Redirection si déjà connecté
+  // Redirection quand profile est chargé
   useEffect(() => {
-    if (profile) {
+    if (!authLoading && profile) {
       if (profile.role === "administrateur") navigate("/admin/dashboard", { replace: true });
       else navigate("/espace-membre", { replace: true });
     }
-  }, [profile, navigate]);
+    // Si auth est terminé, user connecté mais pas de profil dans utilisateurs
+    if (!authLoading && submitting && !profile) {
+      setError("Compte introuvable dans la base de données. Contactez l'administrateur.");
+      setSubmitting(false);
+    }
+  }, [profile, authLoading, navigate, submitting]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
+    setSubmitting(true);
     const { error } = await signIn(email, password);
     if (error) {
       setError("Email ou mot de passe incorrect.");
-      setLoading(false);
+      setSubmitting(false);
     }
-    // La redirection se fait via useEffect quand profile est chargé
   };
 
   return (
@@ -97,10 +101,10 @@ const Login = () => {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={submitting}
               className="w-full bg-primary text-primary-foreground py-3 rounded-full font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
             >
-              {loading ? "Connexion en cours..." : "Se connecter"}
+              {submitting ? "Connexion en cours..." : "Se connecter"}
             </button>
           </form>
         </div>
