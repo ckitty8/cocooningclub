@@ -34,7 +34,7 @@ const Footer = () => {
                 <a href="#contact" className="hover:text-primary transition-colors">Contact</a>
               </li>
               <li>
-                <a href="#contact" className="hover:text-primary transition-colors">Espace Membre</a>
+                <a href="/login" className="hover:text-primary transition-colors">Espace Membre</a>
               </li>
             </ul>
           </div>
@@ -44,7 +44,7 @@ const Footer = () => {
             <h4 className="text-xs font-semibold tracking-[0.25em] uppercase text-foreground">Nous suivre</h4>
             <div className="flex gap-3">
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/cocooningclub?igsh=d2xkcWYxM3B6YTJo"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-9 h-9 flex items-center justify-center rounded-full border border-border text-muted-foreground hover:text-primary hover:border-primary transition-colors"

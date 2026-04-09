@@ -12,10 +12,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/hero-workshop.jpg";
 import type { Workshop } from "@/data/workshops";
-
-interface Atelier extends Workshop {
-  id: string;
-}
+import { formatDateFr, formatTimeFr } from "@/data/workshops";
 
 const PIERRE_ORACLE = "Atelier Créatif — Pierre & Oracle";
 
@@ -32,18 +29,17 @@ const inscriptionSchema = z.object({
 type InscriptionData = z.infer<typeof inscriptionSchema>;
 
 const Index = () => {
-  const [ateliers, setAteliers] = useState<Atelier[]>([]);
+  const [ateliers, setAteliers] = useState<Workshop[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
-  const [preselectedWorkshop, setPreselectedWorkshop] = useState("");
 
   useEffect(() => {
     supabase
       .from("ateliers")
-      .select("id, title, date, time, spots, description, location, price")
-      .eq("is_active", true)
-      .order("created_at")
+      .select("id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, tarif_affichage, tarif_standard, statut")
+      .in("statut", ["publie", "complet"])
+      .order("date_atelier")
       .then(({ data, error }) => {
-        if (!error && data) setAteliers(data);
+        if (!error && data) setAteliers(data as Workshop[]);
       });
 
     const channel = supabase
@@ -54,7 +50,7 @@ const Index = () => {
         (payload) => {
           setAteliers((prev) =>
             prev.map((a) =>
-              a.id === payload.new.id ? { ...a, spots: payload.new.spots } : a
+              a.id === payload.new.id ? { ...a, places_disponibles: payload.new.places_disponibles } : a
             )
           );
         }
@@ -79,18 +75,23 @@ const Index = () => {
 
   const openModal = (workshopTitle?: string) => {
     reset({ name: "", email: "", workshop: workshopTitle || "" });
-    setPreselectedWorkshop(workshopTitle || "");
     setModalOpen(true);
   };
 
   const onSubmit = async (data: InscriptionData) => {
-    const atelier = ateliers.find((a) => a.title === data.workshop);
+    const atelier = ateliers.find((a) => a.titre === data.workshop);
+    const nameParts = data.name.trim().split(/\s+/);
+    const prenom = nameParts[0] || "";
+    const nom = nameParts.slice(1).join(" ") || prenom;
+
     const { error } = await supabase.from("inscriptions").insert({
-      name: data.name,
-      email: data.email,
-      workshop: data.workshop,
       atelier_id: atelier?.id ?? null,
-      ...(data.birthdate ? { birthdate: data.birthdate } : {}),
+      prenom_invite: prenom,
+      nom_invite: nom,
+      email_invite: data.email,
+      statut: "confirme",
+      statut_paiement: atelier && atelier.tarif_standard > 0 ? "en_attente" : "non_requis",
+      ...(data.birthdate ? { date_naissance: data.birthdate } : {}),
     });
 
     if (error) {
@@ -98,10 +99,10 @@ const Index = () => {
       return;
     }
 
-    toast.success(`Merci ${data.name} ! Votre inscription à "${data.workshop}" a bien été prise en compte.`);
+    toast.success(`Merci ${prenom} ! Votre inscription à "${data.workshop}" a bien été prise en compte.`);
     if (atelier) {
       setAteliers((prev) =>
-        prev.map((a) => a.id === atelier.id ? { ...a, spots: Math.max(0, a.spots - 1) } : a)
+        prev.map((a) => a.id === atelier.id ? { ...a, places_disponibles: Math.max(0, a.places_disponibles - 1) } : a)
       );
     }
     setModalOpen(false);
@@ -114,21 +115,21 @@ const Index = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b">
         <div className="container mx-auto flex flex-col items-center py-6 px-6 relative">
           {/* Member button - absolute right */}
-          <a
-            href="/login"
+          <Link
+            to="/login"
             className="absolute right-6 top-1/2 -translate-y-1/2 hidden md:inline-flex border border-foreground/40 px-5 py-2 text-xs tracking-[0.2em] uppercase text-foreground hover:bg-foreground hover:text-background transition-colors"
           >
             Espace Membre
-          </a>
+          </Link>
 
           {/* Centered title */}
+          <img src="/favicon.png" alt="Logo Cocooning Club" className="mx-auto mb-2 w-16 md:w-20" />
           <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
             <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground tracking-[0.08em] uppercase leading-tight text-center hover:opacity-80 transition-opacity">
               Cocooning Club
             </h2>
           </Link>
           <span className="text-xs tracking-[0.35em] uppercase text-muted-foreground mt-1">Club</span>
-          <img src="/favicon.png" alt="Logo Cocooning Club" className="mx-auto mt-2 w-16 md:w-20" />
 
           {/* Navigation links */}
           <div className="flex flex-wrap justify-center gap-4 md:gap-8 mt-4 font-body text-xs md:text-sm tracking-[0.12em] uppercase text-foreground/80">
@@ -141,7 +142,7 @@ const Index = () => {
       </nav>
 
       {/* Hero */}
-      <section className="relative min-h-[90vh] flex items-center pt-20">
+      <section className="relative min-h-[90vh] flex items-center pt-52">
         <div className="container mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium">
@@ -165,17 +166,6 @@ const Index = () => {
           <div className="relative">
             <div className="rounded-3xl overflow-hidden shadow-2xl">
               <img src={heroImage} alt="Table d'atelier créatif avec bougies, peinture et matériaux" className="w-full h-[280px] sm:h-[380px] md:h-[500px] object-cover" />
-            </div>
-            <div className="absolute -bottom-6 -left-6 bg-card rounded-2xl p-4 shadow-lg border">
-              <div className="flex items-center gap-3">
-                <div className="bg-secondary/30 p-2 rounded-full">
-                  <Heart className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-display font-semibold text-foreground">+200</p>
-                  <p className="text-xs text-muted-foreground">participants heureux</p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -291,8 +281,8 @@ const Index = () => {
                 >
                   <option value="">Choisir un atelier…</option>
                   {ateliers.map((ws) => (
-                    <option key={ws.title} value={ws.title}>
-                      {ws.title} — {ws.date}
+                    <option key={ws.id} value={ws.titre}>
+                      {ws.titre} — {formatDateFr(ws.date_atelier)}
                     </option>
                   ))}
                 </select>

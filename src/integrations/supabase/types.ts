@@ -12,30 +12,260 @@ export type Database = {
   }
   public: {
     Tables: {
-      inscriptions: {
+      utilisateurs: {
         Row: {
-          atelier_id: string | null
-          created_at: string
-          email: string
           id: string
-          name: string
-          workshop: string
+          email: string
+          mot_de_passe_hash: string | null
+          prenom: string
+          nom: string
+          telephone: string | null
+          role: "administrateur" | "inscrit" | "membre_standard" | "membre_premium"
+          url_avatar: string | null
+          debut_abonnement: string | null
+          fin_abonnement: string | null
+          est_actif: boolean
+          cree_le: string
+          modifie_le: string
         }
         Insert: {
-          atelier_id?: string | null
-          created_at?: string
-          email: string
           id?: string
-          name: string
-          workshop: string
+          email: string
+          mot_de_passe_hash?: string | null
+          prenom: string
+          nom: string
+          telephone?: string | null
+          role?: "administrateur" | "inscrit" | "membre_standard" | "membre_premium"
+          url_avatar?: string | null
+          debut_abonnement?: string | null
+          fin_abonnement?: string | null
+          est_actif?: boolean
+          cree_le?: string
+          modifie_le?: string
         }
         Update: {
-          atelier_id?: string | null
-          created_at?: string
-          email?: string
           id?: string
-          name?: string
-          workshop?: string
+          email?: string
+          mot_de_passe_hash?: string | null
+          prenom?: string
+          nom?: string
+          telephone?: string | null
+          role?: "administrateur" | "inscrit" | "membre_standard" | "membre_premium"
+          url_avatar?: string | null
+          debut_abonnement?: string | null
+          fin_abonnement?: string | null
+          est_actif?: boolean
+          cree_le?: string
+          modifie_le?: string
+        }
+        Relationships: []
+      }
+      formateurs: {
+        Row: {
+          id: string
+          prenom: string
+          nom: string
+          email: string | null
+          telephone: string | null
+          bio: string | null
+          specialites: string | null
+          url_photo: string | null
+          est_externe: boolean
+          utilisateur_id: string | null
+          est_actif: boolean
+          cree_le: string
+          modifie_le: string
+        }
+        Insert: {
+          id?: string
+          prenom: string
+          nom: string
+          email?: string | null
+          telephone?: string | null
+          bio?: string | null
+          specialites?: string | null
+          url_photo?: string | null
+          est_externe?: boolean
+          utilisateur_id?: string | null
+          est_actif?: boolean
+          cree_le?: string
+          modifie_le?: string
+        }
+        Update: {
+          id?: string
+          prenom?: string
+          nom?: string
+          email?: string | null
+          telephone?: string | null
+          bio?: string | null
+          specialites?: string | null
+          url_photo?: string | null
+          est_externe?: boolean
+          utilisateur_id?: string | null
+          est_actif?: boolean
+          cree_le?: string
+          modifie_le?: string
+        }
+        Relationships: []
+      }
+      categories: {
+        Row: {
+          id: string
+          nom: string
+          description: string | null
+          slug: string
+          url_icone: string | null
+          ordre_affichage: number
+          cree_le: string
+        }
+        Insert: {
+          id?: string
+          nom: string
+          description?: string | null
+          slug: string
+          url_icone?: string | null
+          ordre_affichage?: number
+          cree_le?: string
+        }
+        Update: {
+          id?: string
+          nom?: string
+          description?: string | null
+          slug?: string
+          url_icone?: string | null
+          ordre_affichage?: number
+          cree_le?: string
+        }
+        Relationships: []
+      }
+      ateliers: {
+        Row: {
+          id: string
+          categorie_id: string
+          formateur_id: string | null
+          titre: string
+          description: string | null
+          description_courte: string | null
+          niveau: "debutant" | "intermediaire" | "avance"
+          lieu: string | null
+          url_image: string | null
+          date_atelier: string
+          heure_debut: string
+          duree: string
+          places_max: number
+          places_disponibles: number
+          tarif_standard: number
+          tarif_premium: number
+          tarif_affichage: string | null
+          lien_paypal: string | null
+          statut: "brouillon" | "publie" | "complet" | "annule" | "termine"
+          modele_id: string | null
+          recurrence: "hebdomadaire" | "bimensuel" | "mensuel" | null
+          cree_le: string
+          modifie_le: string
+        }
+        Insert: {
+          id?: string
+          categorie_id: string
+          formateur_id?: string | null
+          titre: string
+          description?: string | null
+          description_courte?: string | null
+          niveau?: "debutant" | "intermediaire" | "avance"
+          lieu?: string | null
+          url_image?: string | null
+          date_atelier: string
+          heure_debut: string
+          duree?: string
+          places_max?: number
+          places_disponibles?: number
+          tarif_standard?: number
+          tarif_premium?: number
+          tarif_affichage?: string | null
+          lien_paypal?: string | null
+          statut?: "brouillon" | "publie" | "complet" | "annule" | "termine"
+          modele_id?: string | null
+          recurrence?: "hebdomadaire" | "bimensuel" | "mensuel" | null
+          cree_le?: string
+          modifie_le?: string
+        }
+        Update: {
+          id?: string
+          categorie_id?: string
+          formateur_id?: string | null
+          titre?: string
+          description?: string | null
+          description_courte?: string | null
+          niveau?: "debutant" | "intermediaire" | "avance"
+          lieu?: string | null
+          url_image?: string | null
+          date_atelier?: string
+          heure_debut?: string
+          duree?: string
+          places_max?: number
+          places_disponibles?: number
+          tarif_standard?: number
+          tarif_premium?: number
+          tarif_affichage?: string | null
+          lien_paypal?: string | null
+          statut?: "brouillon" | "publie" | "complet" | "annule" | "termine"
+          modele_id?: string | null
+          recurrence?: "hebdomadaire" | "bimensuel" | "mensuel" | null
+          cree_le?: string
+          modifie_le?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ateliers_categorie_id_fkey"
+            columns: ["categorie_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      inscriptions: {
+        Row: {
+          id: string
+          atelier_id: string
+          utilisateur_id: string | null
+          nom_invite: string | null
+          prenom_invite: string | null
+          email_invite: string | null
+          date_naissance: string | null
+          statut: "en_attente" | "confirme" | "annule"
+          statut_paiement: "en_attente" | "paye" | "non_requis"
+          present: boolean
+          inscrit_le: string
+          annule_le: string | null
+        }
+        Insert: {
+          id?: string
+          atelier_id: string
+          utilisateur_id?: string | null
+          nom_invite?: string | null
+          prenom_invite?: string | null
+          email_invite?: string | null
+          date_naissance?: string | null
+          statut?: "en_attente" | "confirme" | "annule"
+          statut_paiement?: "en_attente" | "paye" | "non_requis"
+          present?: boolean
+          inscrit_le?: string
+          annule_le?: string | null
+        }
+        Update: {
+          id?: string
+          atelier_id?: string
+          utilisateur_id?: string | null
+          nom_invite?: string | null
+          prenom_invite?: string | null
+          email_invite?: string | null
+          date_naissance?: string | null
+          statut?: "en_attente" | "confirme" | "annule"
+          statut_paiement?: "en_attente" | "paye" | "non_requis"
+          present?: boolean
+          inscrit_le?: string
+          annule_le?: string | null
         }
         Relationships: [
           {
@@ -47,137 +277,159 @@ export type Database = {
           }
         ]
       }
-      profiles: {
+      avis: {
         Row: {
           id: string
-          first_name: string
-          last_name: string
-          email: string
-          phone: string
-          avatar_url: string | null
-          role: "membre" | "admin"
-          status: "actif" | "inactif"
-          created_at: string
+          utilisateur_id: string
+          inscription_id: string
+          note: number
+          commentaire: string | null
+          moderation: "en_attente" | "approuve" | "rejete"
+          mis_en_avant: boolean
+          cree_le: string
+          modere_le: string | null
         }
         Insert: {
-          id: string
-          first_name?: string
-          last_name?: string
-          email?: string
-          phone?: string
-          avatar_url?: string | null
-          role?: "membre" | "admin"
-          status?: "actif" | "inactif"
-          created_at?: string
+          id?: string
+          utilisateur_id: string
+          inscription_id: string
+          note: number
+          commentaire?: string | null
+          moderation?: "en_attente" | "approuve" | "rejete"
+          mis_en_avant?: boolean
+          cree_le?: string
+          modere_le?: string | null
         }
         Update: {
           id?: string
-          first_name?: string
-          last_name?: string
-          email?: string
-          phone?: string
-          avatar_url?: string | null
-          role?: "membre" | "admin"
-          status?: "actif" | "inactif"
-          created_at?: string
+          utilisateur_id?: string
+          inscription_id?: string
+          note?: number
+          commentaire?: string | null
+          moderation?: "en_attente" | "approuve" | "rejete"
+          mis_en_avant?: boolean
+          cree_le?: string
+          modere_le?: string | null
         }
         Relationships: []
       }
-      ateliers: {
+      transactions_paypal: {
         Row: {
           id: string
-          title: string
-          description: string
-          date: string
-          time: string
-          location: string
-          spots: number
-          price: string
-          price_amount: number
-          is_active: boolean
-          created_at: string
+          inscription_id: string
+          paypal_transaction_id: string
+          montant: number
+          devise: string
+          email_payeur: string | null
+          statut: "en_attente" | "complete" | "rembourse" | "echoue"
+          donnees_brutes: Record<string, unknown> | null
+          paypal_cree_le: string | null
+          enregistre_le: string
         }
         Insert: {
           id?: string
-          title: string
-          description?: string
-          date: string
-          time: string
-          location?: string
-          spots?: number
-          price?: string
-          price_amount?: number
-          is_active?: boolean
-          created_at?: string
+          inscription_id: string
+          paypal_transaction_id: string
+          montant: number
+          devise?: string
+          email_payeur?: string | null
+          statut?: "en_attente" | "complete" | "rembourse" | "echoue"
+          donnees_brutes?: Record<string, unknown> | null
+          paypal_cree_le?: string | null
+          enregistre_le?: string
         }
         Update: {
           id?: string
-          title?: string
-          description?: string
-          date?: string
-          time?: string
-          location?: string
-          spots?: number
-          price?: string
-          price_amount?: number
-          is_active?: boolean
-          created_at?: string
+          inscription_id?: string
+          paypal_transaction_id?: string
+          montant?: number
+          devise?: string
+          email_payeur?: string | null
+          statut?: "en_attente" | "complete" | "rembourse" | "echoue"
+          donnees_brutes?: Record<string, unknown> | null
+          paypal_cree_le?: string | null
+          enregistre_le?: string
         }
         Relationships: []
       }
-      reservations: {
+      logs: {
         Row: {
           id: string
-          member_id: string
-          atelier_id: string
-          status: "confirmee" | "presente" | "absente" | "annulee"
-          created_at: string
+          utilisateur_id: string | null
+          action: string
+          table_cible: string | null
+          enregistrement_cible_id: string | null
+          details: Record<string, unknown> | null
+          adresse_ip: string | null
+          user_agent: string | null
+          horodatage: string
         }
         Insert: {
           id?: string
-          member_id: string
-          atelier_id: string
-          status?: "confirmee" | "presente" | "absente" | "annulee"
-          created_at?: string
+          utilisateur_id?: string | null
+          action: string
+          table_cible?: string | null
+          enregistrement_cible_id?: string | null
+          details?: Record<string, unknown> | null
+          adresse_ip?: string | null
+          user_agent?: string | null
+          horodatage?: string
         }
         Update: {
           id?: string
-          member_id?: string
-          atelier_id?: string
-          status?: "confirmee" | "presente" | "absente" | "annulee"
-          created_at?: string
+          utilisateur_id?: string | null
+          action?: string
+          table_cible?: string | null
+          enregistrement_cible_id?: string | null
+          details?: Record<string, unknown> | null
+          adresse_ip?: string | null
+          user_agent?: string | null
+          horodatage?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "reservations_member_id_fkey"
-            columns: ["member_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reservations_atelier_id_fkey"
-            columns: ["atelier_id"]
-            isOneToOne: false
-            referencedRelation: "ateliers"
-            referencedColumns: ["id"]
-          }
-        ]
+        Relationships: []
       }
     }
     Views: {
-      inscriptions_avec_atelier: {
+      vue_prochains_ateliers: {
         Row: {
           id: string | null
-          name: string | null
+          titre: string | null
+          description_courte: string | null
+          categorie: string | null
+          lieu: string | null
+          date_atelier: string | null
+          heure_debut: string | null
+          places_disponibles: number | null
+          places_max: number | null
+          tarif_affichage: string | null
+          statut: string | null
+        }
+        Relationships: []
+      }
+      vue_avis_publies: {
+        Row: {
+          avis_id: string | null
+          note: number | null
+          commentaire: string | null
+          mis_en_avant: boolean | null
+          cree_le: string | null
+          prenom: string | null
+          atelier_titre: string | null
+          categorie: string | null
+        }
+        Relationships: []
+      }
+      vue_suivi_inscriptions: {
+        Row: {
+          prenom: string | null
+          nom: string | null
           email: string | null
-          created_at: string | null
-          atelier_id: string | null
-          atelier_title: string | null
-          atelier_date: string | null
-          atelier_time: string | null
-          atelier_location: string | null
-          atelier_price: string | null
+          atelier_titre: string | null
+          date_atelier: string | null
+          statut_inscription: string | null
+          statut_paiement: string | null
+          present: boolean | null
+          inscrit_le: string | null
         }
         Relationships: []
       }
