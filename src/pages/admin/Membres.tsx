@@ -66,10 +66,11 @@ const Membres = () => {
   const [saving, setSaving] = useState(false);
 
   const fetchMembers = async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("utilisateurs")
       .select("*")
       .order("cree_le", { ascending: false });
+    if (error) console.error("fetchMembers error:", error.message, error.code);
     setMembers((data as Utilisateur[]) ?? []);
     setLoading(false);
   };
