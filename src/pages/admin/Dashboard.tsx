@@ -47,7 +47,7 @@ const Dashboard = () => {
 
       const utilisateurs = utilisateursRes.data ?? [];
       setStats({
-        membres:            utilisateurs.filter(u => u.role === "membre").length,
+        membres:            utilisateurs.filter(u => u.role === "membre_standard").length,
         membres_premium:    utilisateurs.filter(u => u.role === "membre_premium").length,
         inscrits:           utilisateurs.filter(u => u.role === "inscrit").length,
         total_inscriptions: inscriptionsRes.count ?? 0,

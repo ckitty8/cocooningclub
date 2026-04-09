@@ -133,7 +133,7 @@ const Membres = () => {
           className="border rounded-xl px-3 py-2 text-sm bg-card focus:outline-none focus:ring-2 focus:ring-primary">
           <option value="tous">Tous les rôles</option>
           <option value="inscrit">Inscrits</option>
-          <option value="membre">Membres standard</option>
+          <option value="membre_standard">Membres standard</option>
           <option value="membre_premium">Membres premium</option>
           <option value="administrateur">Admins</option>
         </select>
@@ -263,7 +263,7 @@ const Membres = () => {
                   <select value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value as UserRole }))}
                     className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary">
                     <option value="inscrit">Inscrit</option>
-                    <option value="membre">Membre standard</option>
+                    <option value="membre_standard">Membre standard</option>
                     <option value="membre_premium">Membre Premium</option>
                     <option value="administrateur">Administrateur</option>
                   </select>
