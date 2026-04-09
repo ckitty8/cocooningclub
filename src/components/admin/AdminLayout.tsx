@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   LayoutDashboard, Users, CalendarDays, FileText,
-  FormInput, MessageSquare, LogOut, Menu, ChevronRight
+  FormInput, LogOut, Menu, ChevronRight
 } from "lucide-react";
 
 const navItems = [
@@ -12,7 +12,6 @@ const navItems = [
   { href: "/admin/ateliers",   label: "Ateliers",         icon: CalendarDays },
   { href: "/admin/documents",  label: "Documents",        icon: FileText },
   { href: "/admin/formulaire", label: "Formulaire",       icon: FormInput },
-  { href: "/admin/messages",   label: "Messages",         icon: MessageSquare },
 ];
 
 const AdminLayout = ({ children }: { children: ReactNode }) => {

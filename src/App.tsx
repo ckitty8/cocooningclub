@@ -17,7 +17,7 @@ import Membres from "./pages/admin/Membres.tsx";
 import AteliersAdmin from "./pages/admin/Ateliers.tsx";
 import Documents from "./pages/admin/Documents.tsx";
 import Formulaire from "./pages/admin/Formulaire.tsx";
-import Messages from "./pages/admin/Messages.tsx";
+
 
 const queryClient = new QueryClient();
 
@@ -52,7 +52,7 @@ const App = () => (
             <Route path="/admin/ateliers"   element={<RoleGuard allowedRoles={["administrateur"]}><AteliersAdmin /></RoleGuard>} />
             <Route path="/admin/documents"  element={<RoleGuard allowedRoles={["administrateur"]}><Documents /></RoleGuard>} />
             <Route path="/admin/formulaire" element={<RoleGuard allowedRoles={["administrateur"]}><Formulaire /></RoleGuard>} />
-            <Route path="/admin/messages"   element={<RoleGuard allowedRoles={["administrateur"]}><Messages /></RoleGuard>} />
+
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
