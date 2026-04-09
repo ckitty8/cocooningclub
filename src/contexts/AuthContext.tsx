@@ -43,7 +43,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .eq("id", userId)
       .single();
     if (error) console.error("fetchProfile error:", error.message, error.code);
-    setProfile(data as Profile | null);
+    setProfile((data as Profile) ?? null);
+    setLoading(false);
   };
 
   const refreshProfile = async () => {
@@ -51,22 +52,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id).finally(() => setLoading(false));
-      } else {
-        setLoading(false);
-      }
-    });
-
+    // onAuthStateChange est la source unique de vérité
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+
       if (session?.user) {
-        setLoading(true);
-        fetchProfile(session.user.id).finally(() => setLoading(false));
+        // Defer hors du callback pour éviter les deadlocks Supabase
+        setTimeout(() => {
+          fetchProfile(session.user.id);
+        }, 0);
       } else {
         setProfile(null);
         setLoading(false);
