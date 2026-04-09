@@ -11,7 +11,7 @@ const navItems = [
   { href: "/admin/membres",    label: "Membres",          icon: Users },
   { href: "/admin/ateliers",   label: "Ateliers",         icon: CalendarDays },
   { href: "/admin/documents",  label: "Documents",        icon: FileText },
-  { href: "/admin/formulaire", label: "Formulaire",       icon: FormInput },
+  { href: "/admin/formulaire", label: "Formulaire de contact", icon: FormInput },
 ];
 
 const AdminLayout = ({ children }: { children: ReactNode }) => {

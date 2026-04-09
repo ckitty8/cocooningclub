@@ -28,6 +28,84 @@ const inscriptionSchema = z.object({
 
 type InscriptionData = z.infer<typeof inscriptionSchema>;
 
+// ── Formulaire de contact ─────────────────────────────────
+const ContactForm = () => {
+  const [form, setForm] = useState({ nom: "", prenom: "", email: "", telephone: "", message: "" });
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.nom || !form.email || !form.message) {
+      setError("Veuillez remplir les champs obligatoires.");
+      return;
+    }
+    setSending(true);
+    setError("");
+    const { error: dbError } = await supabase.from("contact_messages").insert({
+      nom: form.nom,
+      prenom: form.prenom,
+      email: form.email,
+      telephone: form.telephone || null,
+      message: form.message,
+    });
+    if (dbError) {
+      setError("Une erreur est survenue. Veuillez réessayer.");
+    } else {
+      setSent(true);
+    }
+    setSending(false);
+  };
+
+  if (sent) return (
+    <div className="text-center py-10 space-y-3">
+      <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto">
+        <Heart className="w-7 h-7 text-green-600" />
+      </div>
+      <p className="font-semibold text-lg">Message envoyé !</p>
+      <p className="text-sm text-muted-foreground">Nous vous répondrons dans les plus brefs délais.</p>
+    </div>
+  );
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-1.5">Prénom *</label>
+          <input value={form.prenom} onChange={e => setForm(f => ({ ...f, prenom: e.target.value }))} required
+            className="w-full rounded-xl border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Marie" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-1.5">Nom *</label>
+          <input value={form.nom} onChange={e => setForm(f => ({ ...f, nom: e.target.value }))} required
+            className="w-full rounded-xl border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Dupont" />
+        </div>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-foreground mb-1.5">Email *</label>
+        <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required
+          className="w-full rounded-xl border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" placeholder="marie@email.com" />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-foreground mb-1.5">Téléphone</label>
+        <input type="tel" value={form.telephone} onChange={e => setForm(f => ({ ...f, telephone: e.target.value }))}
+          className="w-full rounded-xl border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" placeholder="06 12 34 56 78" />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-foreground mb-1.5">Message *</label>
+        <textarea value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))} required rows={4}
+          className="w-full rounded-xl border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none" placeholder="Votre message..." />
+      </div>
+      {error && <p className="text-destructive text-sm">{error}</p>}
+      <button type="submit" disabled={sending}
+        className="w-full bg-primary text-primary-foreground py-3 rounded-full font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50">
+        {sending ? "Envoi en cours..." : "Contactez-nous"}
+      </button>
+    </form>
+  );
+};
+
 const Index = () => {
   const [ateliers, setAteliers] = useState<Workshop[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
@@ -219,19 +297,16 @@ const Index = () => {
 
       {/* Contact */}
       <section className="py-24 bg-card" id="contact">
-        <div className="container mx-auto px-6 max-w-xl text-center">
-          <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-4">
-            Envie de nous rejoindre ?
-          </h2>
-          <p className="text-muted-foreground mb-8">
-            Suivez-nous sur les réseaux ou écrivez-nous pour ne rien manquer des prochains ateliers.
-          </p>
-          <a
-            href="mailto:le.cocooning.club@gmail.com"
-            className="inline-block bg-primary text-primary-foreground px-8 py-4 rounded-full font-medium text-sm hover:opacity-90 transition-opacity"
-          >
-            le.cocooning.club@gmail.com
-          </a>
+        <div className="container mx-auto px-6 max-w-xl">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-4">
+              Envie de nous rejoindre ?
+            </h2>
+            <p className="text-muted-foreground">
+              Suivez-nous sur les réseaux ou écrivez-nous pour ne rien manquer des prochains ateliers.
+            </p>
+          </div>
+          <ContactForm />
         </div>
       </section>
 
