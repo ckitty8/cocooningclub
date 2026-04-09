@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { Sparkles, Calendar, Heart, Users, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import WorkshopCarousel from "@/components/WorkshopCarousel";
@@ -35,7 +35,7 @@ const ContactForm = () => {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!form.nom || !form.email || !form.message) {
       setError("Veuillez remplir les champs obligatoires.");
@@ -43,7 +43,8 @@ const ContactForm = () => {
     }
     setSending(true);
     setError("");
-    const { error: dbError } = await supabase.from("contact_messages").insert({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: dbError } = await (supabase as any).from("contact_messages").insert({
       nom: form.nom,
       prenom: form.prenom,
       email: form.email,
