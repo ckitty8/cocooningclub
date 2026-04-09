@@ -18,7 +18,7 @@ const Login = () => {
   // Redirection si déjà connecté
   useEffect(() => {
     if (profile) {
-      if (profile.role === "admin") navigate("/admin/dashboard", { replace: true });
+      if (profile.role === "administrateur") navigate("/admin/dashboard", { replace: true });
       else navigate("/espace-membre", { replace: true });
     }
   }, [profile, navigate]);

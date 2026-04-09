@@ -135,7 +135,7 @@ const Membres = () => {
           <option value="inscrit">Inscrits</option>
           <option value="membre">Membres standard</option>
           <option value="membre_premium">Membres premium</option>
-          <option value="admin">Admins</option>
+          <option value="administrateur">Admins</option>
         </select>
         <select value={filterActif} onChange={e => setFilterActif(e.target.value)}
           className="border rounded-xl px-3 py-2 text-sm bg-card focus:outline-none focus:ring-2 focus:ring-primary">
@@ -265,7 +265,7 @@ const Membres = () => {
                     <option value="inscrit">Inscrit</option>
                     <option value="membre">Membre standard</option>
                     <option value="membre_premium">Membre Premium</option>
-                    <option value="admin">Administrateur</option>
+                    <option value="administrateur">Administrateur</option>
                   </select>
                 </div>
               )}

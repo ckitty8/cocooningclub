@@ -47,12 +47,12 @@ const App = () => (
             <Route path="/espace-membre" element={<Login />} />
 
             {/* Routes admin protégées */}
-            <Route path="/admin/dashboard"  element={<RoleGuard allowedRoles={["admin"]}><Dashboard /></RoleGuard>} />
-            <Route path="/admin/membres"    element={<RoleGuard allowedRoles={["admin"]}><Membres /></RoleGuard>} />
-            <Route path="/admin/ateliers"   element={<RoleGuard allowedRoles={["admin"]}><AteliersAdmin /></RoleGuard>} />
-            <Route path="/admin/documents"  element={<RoleGuard allowedRoles={["admin"]}><Documents /></RoleGuard>} />
-            <Route path="/admin/formulaire" element={<RoleGuard allowedRoles={["admin"]}><Formulaire /></RoleGuard>} />
-            <Route path="/admin/messages"   element={<RoleGuard allowedRoles={["admin"]}><Messages /></RoleGuard>} />
+            <Route path="/admin/dashboard"  element={<RoleGuard allowedRoles={["administrateur"]}><Dashboard /></RoleGuard>} />
+            <Route path="/admin/membres"    element={<RoleGuard allowedRoles={["administrateur"]}><Membres /></RoleGuard>} />
+            <Route path="/admin/ateliers"   element={<RoleGuard allowedRoles={["administrateur"]}><AteliersAdmin /></RoleGuard>} />
+            <Route path="/admin/documents"  element={<RoleGuard allowedRoles={["administrateur"]}><Documents /></RoleGuard>} />
+            <Route path="/admin/formulaire" element={<RoleGuard allowedRoles={["administrateur"]}><Formulaire /></RoleGuard>} />
+            <Route path="/admin/messages"   element={<RoleGuard allowedRoles={["administrateur"]}><Messages /></RoleGuard>} />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
