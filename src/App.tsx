@@ -4,12 +4,20 @@ import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/contexts/AuthContext";
+import RoleGuard from "@/components/RoleGuard";
 import Index from "./pages/Index.tsx";
 import Calendrier from "./pages/Calendrier.tsx";
-import Login from "./pages/Login.tsx";
-import ForgotPassword from "./pages/ForgotPassword.tsx";
-import ResetPassword from "./pages/ResetPassword.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import Login from "./pages/auth/Login.tsx";
+import ForgotPassword from "./pages/auth/ForgotPassword.tsx";
+import ResetPassword from "./pages/auth/ResetPassword.tsx";
+import Dashboard from "./pages/admin/Dashboard.tsx";
+import Membres from "./pages/admin/Membres.tsx";
+import AteliersAdmin from "./pages/admin/Ateliers.tsx";
+import Documents from "./pages/admin/Documents.tsx";
+import Formulaire from "./pages/admin/Formulaire.tsx";
+
 
 const queryClient = new QueryClient();
 
@@ -25,16 +33,31 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <ScrollToTop />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/calendrier" element={<Calendrier />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <ScrollToTop />
+          <Routes>
+            {/* Routes publiques */}
+            <Route path="/" element={<Index />} />
+            <Route path="/calendrier" element={<Calendrier />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+
+            {/* Espace membre (à développer plus tard) */}
+            <Route path="/espace-membre" element={<Login />} />
+
+            {/* Routes admin protégées */}
+            <Route path="/admin/dashboard"  element={<RoleGuard allowedRoles={["administrateur"]}><Dashboard /></RoleGuard>} />
+            <Route path="/admin/membres"    element={<RoleGuard allowedRoles={["administrateur"]}><Membres /></RoleGuard>} />
+            <Route path="/admin/ateliers"   element={<RoleGuard allowedRoles={["administrateur"]}><AteliersAdmin /></RoleGuard>} />
+            <Route path="/admin/documents"  element={<RoleGuard allowedRoles={["administrateur"]}><Documents /></RoleGuard>} />
+            <Route path="/admin/formulaire" element={<RoleGuard allowedRoles={["administrateur"]}><Formulaire /></RoleGuard>} />
+
+
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

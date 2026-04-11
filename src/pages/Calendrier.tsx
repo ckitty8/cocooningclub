@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { ChevronLeft, ChevronRight, MapPin, Clock, Users, Euro, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, Clock, Users, Euro, X, CalendarPlus, Download, CheckCircle2 } from "lucide-react";
 import { FRENCH_MONTHS, formatDateFr, formatTimeFr, parseDateAtelier } from "@/data/workshops";
 import type { Workshop } from "@/data/workshops";
 import { useForm } from "react-hook-form";
@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { googleCalendarUrl, downloadIcsFile } from "@/utils/calendarLinks";
 
 const FRENCH_DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
@@ -31,6 +32,7 @@ const Calendrier = () => {
   const [viewMonth, setViewMonth] = useState(new Date().getMonth());
   const [popinWorkshop, setPopinWorkshop] = useState<Workshop | null>(null);
   const [reserveOpen, setReserveOpen] = useState(false);
+  const [confirmedWorkshop, setConfirmedWorkshop] = useState<Workshop | null>(null);
 
   // Fetch workshops from Supabase
   useEffect(() => {
@@ -83,6 +85,7 @@ const Calendrier = () => {
 
   const openReserve = (ws: Workshop) => {
     reset({ name: "", email: "", workshop: ws.titre });
+    setConfirmedWorkshop(null);
     setReserveOpen(true);
   };
 
@@ -102,8 +105,12 @@ const Calendrier = () => {
       ...(data.birthdate ? { date_naissance: data.birthdate } : {}),
     });
     if (error) { toast.error("Une erreur est survenue. Veuillez réessayer."); return; }
-    toast.success(`Merci ${prenom} ! Votre inscription à "${data.workshop}" a bien été prise en compte.`);
-    setReserveOpen(false);
+    if (atelier) {
+      setConfirmedWorkshop(atelier);
+    } else {
+      toast.success(`Merci ${prenom} ! Votre inscription a bien été prise en compte.`);
+      setReserveOpen(false);
+    }
     reset();
   };
 
@@ -307,48 +314,92 @@ const Calendrier = () => {
             >
               <X className="w-4 h-4" />
             </button>
-            <h3 className="font-display text-2xl font-bold text-foreground mb-2">Réserver ma place</h3>
-            <p className="text-muted-foreground text-sm mb-6">Remplissez le formulaire pour confirmer votre inscription.</p>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Nom complet</label>
-                <input {...register("name")} className="w-full border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Votre nom" />
-                {errors.name && <p className="text-xs text-destructive mt-1">{errors.name.message}</p>}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Email</label>
-                <input {...register("email")} type="email" className="w-full border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" placeholder="votre@email.com" />
-                {errors.email && <p className="text-xs text-destructive mt-1">{errors.email.message}</p>}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Atelier</label>
-                <select {...register("workshop")} className="w-full border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary">
-                  <option value="">Choisir un atelier</option>
-                  {ateliers.map((ws) => (
-                    <option key={ws.id} value={ws.titre}>{ws.titre} — {formatDateFr(ws.date_atelier)}</option>
-                  ))}
-                </select>
-                {errors.workshop && <p className="text-xs text-destructive mt-1">{errors.workshop.message}</p>}
-              </div>
-              {selectedWorkshop === PIERRE_ORACLE && (
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">Date de naissance</label>
-                  <input
-                    {...register("birthdate")}
-                    type="date"
-                    className="w-full border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                  {errors.birthdate && <p className="text-xs text-destructive mt-1">{errors.birthdate.message}</p>}
+
+            {confirmedWorkshop ? (
+              <div className="text-center space-y-5">
+                <div className="flex justify-center">
+                  <CheckCircle2 className="w-14 h-14 text-green-500" />
                 </div>
-              )}
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full bg-primary text-primary-foreground py-3 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-60"
-              >
-                {isSubmitting ? "Envoi en cours…" : "Confirmer mon inscription"}
-              </button>
-            </form>
+                <div>
+                  <h3 className="font-display text-2xl font-bold text-foreground mb-1">Inscription confirmée !</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Votre place pour <span className="font-medium text-foreground">"{confirmedWorkshop.titre}"</span> le {formatDateFr(confirmedWorkshop.date_atelier)} à {formatTimeFr(confirmedWorkshop.heure_debut)} est réservée.
+                  </p>
+                </div>
+
+                <div className="space-y-3 pt-2">
+                  <p className="text-sm font-medium text-foreground">Ajouter à votre calendrier</p>
+                  <a
+                    href={googleCalendarUrl(confirmedWorkshop)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
+                  >
+                    <CalendarPlus className="w-4 h-4" />
+                    Google Calendar
+                  </a>
+                  <button
+                    onClick={() => downloadIcsFile(confirmedWorkshop)}
+                    className="w-full flex items-center justify-center gap-2 border border-foreground/20 text-foreground py-3 rounded-xl text-sm font-medium hover:bg-muted transition-colors"
+                  >
+                    <Download className="w-4 h-4" />
+                    Apple Calendar / Outlook (.ics)
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => setReserveOpen(false)}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors pt-2"
+                >
+                  Fermer
+                </button>
+              </div>
+            ) : (
+              <>
+                <h3 className="font-display text-2xl font-bold text-foreground mb-2">Réserver ma place</h3>
+                <p className="text-muted-foreground text-sm mb-6">Remplissez le formulaire pour confirmer votre inscription.</p>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">Nom complet</label>
+                    <input {...register("name")} className="w-full border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Votre nom" />
+                    {errors.name && <p className="text-xs text-destructive mt-1">{errors.name.message}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">Email</label>
+                    <input {...register("email")} type="email" className="w-full border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" placeholder="votre@email.com" />
+                    {errors.email && <p className="text-xs text-destructive mt-1">{errors.email.message}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">Atelier</label>
+                    <select {...register("workshop")} className="w-full border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary">
+                      <option value="">Choisir un atelier</option>
+                      {ateliers.map((ws) => (
+                        <option key={ws.id} value={ws.titre}>{ws.titre} — {formatDateFr(ws.date_atelier)}</option>
+                      ))}
+                    </select>
+                    {errors.workshop && <p className="text-xs text-destructive mt-1">{errors.workshop.message}</p>}
+                  </div>
+                  {selectedWorkshop === PIERRE_ORACLE && (
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-1">Date de naissance</label>
+                      <input
+                        {...register("birthdate")}
+                        type="date"
+                        className="w-full border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                      {errors.birthdate && <p className="text-xs text-destructive mt-1">{errors.birthdate.message}</p>}
+                    </div>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full bg-primary text-primary-foreground py-3 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-60"
+                  >
+                    {isSubmitting ? "Envoi en cours…" : "Confirmer mon inscription"}
+                  </button>
+                </form>
+              </>
+            )}
           </div>
         </div>
       )}
