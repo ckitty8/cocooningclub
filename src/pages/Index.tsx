@@ -218,6 +218,7 @@ const Index = () => {
             <a href="#ateliers" className="hover:text-primary transition-colors">Nos Ateliers</a>
             <Link to="/calendrier" className="hover:text-primary transition-colors">Calendrier</Link>
             <a href="#contact" className="hover:text-primary transition-colors">Contact</a>
+            <Link to="/login" className="md:hidden hover:text-primary transition-colors">Espace Membre</Link>
           </div>
         </div>
       </nav>
