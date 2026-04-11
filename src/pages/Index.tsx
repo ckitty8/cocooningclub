@@ -1,5 +1,5 @@
 import { useState, useEffect, FormEvent } from "react";
-import { Sparkles, Calendar, Heart, Users, X } from "lucide-react";
+import { Sparkles, Calendar, Heart, Users, X, CalendarPlus, Download, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import WorkshopCarousel from "@/components/WorkshopCarousel";
 import TestimonialsSection from "@/components/TestimonialsSection";
@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/hero-workshop.jpg";
 import type { Workshop } from "@/data/workshops";
 import { formatDateFr, formatTimeFr } from "@/data/workshops";
+import { googleCalendarUrl, downloadIcsFile } from "@/utils/calendarLinks";
 
 const PIERRE_ORACLE = "Atelier Créatif — Pierre & Oracle";
 
@@ -110,6 +111,7 @@ const ContactForm = () => {
 const Index = () => {
   const [ateliers, setAteliers] = useState<Workshop[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
+  const [confirmedWorkshop, setConfirmedWorkshop] = useState<Workshop | null>(null);
 
   useEffect(() => {
     supabase
@@ -154,6 +156,7 @@ const Index = () => {
 
   const openModal = (workshopTitle?: string) => {
     reset({ name: "", email: "", workshop: workshopTitle || "" });
+    setConfirmedWorkshop(null);
     setModalOpen(true);
   };
 
@@ -178,13 +181,15 @@ const Index = () => {
       return;
     }
 
-    toast.success(`Merci ${prenom} ! Votre inscription à "${data.workshop}" a bien été prise en compte.`);
     if (atelier) {
       setAteliers((prev) =>
         prev.map((a) => a.id === atelier.id ? { ...a, places_disponibles: Math.max(0, a.places_disponibles - 1) } : a)
       );
+      setConfirmedWorkshop(atelier);
+    } else {
+      toast.success(`Merci ${prenom} ! Votre inscription a bien été prise en compte.`);
+      setModalOpen(false);
     }
-    setModalOpen(false);
     reset();
   };
 
@@ -193,7 +198,6 @@ const Index = () => {
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b">
         <div className="container mx-auto flex flex-col items-center py-6 px-6 relative">
-          {/* Member button - absolute right */}
           <Link
             to="/login"
             className="absolute right-6 top-1/2 -translate-y-1/2 hidden md:inline-flex border border-foreground/40 px-5 py-2 text-xs tracking-[0.2em] uppercase text-foreground hover:bg-foreground hover:text-background transition-colors"
@@ -201,7 +205,6 @@ const Index = () => {
             Espace Membre
           </Link>
 
-          {/* Centered title */}
           <img src="/favicon.png" alt="Logo Cocooning Club" className="mx-auto mb-2 w-16 md:w-20" />
           <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
             <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground tracking-[0.08em] uppercase leading-tight text-center hover:opacity-80 transition-opacity">
@@ -210,7 +213,6 @@ const Index = () => {
           </Link>
           <span className="text-xs tracking-[0.35em] uppercase text-muted-foreground mt-1">Club</span>
 
-          {/* Navigation links */}
           <div className="flex flex-wrap justify-center gap-4 md:gap-8 mt-4 font-body text-xs md:text-sm tracking-[0.12em] uppercase text-foreground/80">
             <a href="#apropos" className="hover:text-primary transition-colors">À propos</a>
             <a href="#ateliers" className="hover:text-primary transition-colors">Nos Ateliers</a>
@@ -324,67 +326,109 @@ const Index = () => {
             <button onClick={() => setModalOpen(false)} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors">
               <X className="w-5 h-5" />
             </button>
-            <h3 className="font-display text-2xl font-bold text-foreground mb-1">Inscription</h3>
-            <p className="text-sm text-muted-foreground mb-6">Remplissez le formulaire pour réserver votre place.</p>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Nom complet</label>
-                <input
-                  {...register("name")}
-                  placeholder="Marie Dupont"
-                  className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-                {errors.name && <p className="text-destructive text-xs mt-1">{errors.name.message}</p>}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Email</label>
-                <input
-                  {...register("email")}
-                  type="email"
-                  placeholder="marie@email.com"
-                  className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-                {errors.email && <p className="text-destructive text-xs mt-1">{errors.email.message}</p>}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Atelier</label>
-                <select
-                  {...register("workshop")}
-                  className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                >
-                  <option value="">Choisir un atelier…</option>
-                  {ateliers.map((ws) => (
-                    <option key={ws.id} value={ws.titre}>
-                      {ws.titre} — {formatDateFr(ws.date_atelier)}
-                    </option>
-                  ))}
-                </select>
-                {errors.workshop && <p className="text-destructive text-xs mt-1">{errors.workshop.message}</p>}
-              </div>
-
-              {selectedWorkshop === PIERRE_ORACLE && (
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1.5">Date de naissance</label>
-                  <input
-                    {...register("birthdate")}
-                    type="date"
-                    className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
-                  {errors.birthdate && <p className="text-destructive text-xs mt-1">{errors.birthdate.message}</p>}
+            {confirmedWorkshop ? (
+              <div className="text-center space-y-5">
+                <div className="flex justify-center">
+                  <CheckCircle2 className="w-14 h-14 text-green-500" />
                 </div>
-              )}
+                <div>
+                  <h3 className="font-display text-2xl font-bold text-foreground mb-1">Inscription confirmée !</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Votre place pour <span className="font-medium text-foreground">"{confirmedWorkshop.titre}"</span> le {formatDateFr(confirmedWorkshop.date_atelier)} à {formatTimeFr(confirmedWorkshop.heure_debut)} est réservée.
+                  </p>
+                </div>
+                <div className="space-y-3 pt-2">
+                  <p className="text-sm font-medium text-foreground">Ajouter à votre calendrier</p>
+                  <a
+                    href={googleCalendarUrl(confirmedWorkshop)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-full font-medium text-sm hover:opacity-90 transition-opacity"
+                  >
+                    <CalendarPlus className="w-4 h-4" />
+                    Google Calendar
+                  </a>
+                  <button
+                    onClick={() => downloadIcsFile(confirmedWorkshop)}
+                    className="w-full flex items-center justify-center gap-2 border border-foreground/20 text-foreground py-3 rounded-full font-medium text-sm hover:bg-muted transition-colors"
+                  >
+                    <Download className="w-4 h-4" />
+                    Apple Calendar / Outlook (.ics)
+                  </button>
+                </div>
+                <button
+                  onClick={() => setModalOpen(false)}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors pt-2"
+                >
+                  Fermer
+                </button>
+              </div>
+            ) : (
+              <>
+                <h3 className="font-display text-2xl font-bold text-foreground mb-1">Inscription</h3>
+                <p className="text-sm text-muted-foreground mb-6">Remplissez le formulaire pour réserver votre place.</p>
 
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full bg-primary text-primary-foreground py-3 rounded-full font-medium text-sm hover:opacity-90 transition-opacity mt-2 disabled:opacity-50"
-              >
-                Confirmer l'inscription
-              </button>
-            </form>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">Nom complet</label>
+                    <input
+                      {...register("name")}
+                      placeholder="Marie Dupont"
+                      className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                    {errors.name && <p className="text-destructive text-xs mt-1">{errors.name.message}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">Email</label>
+                    <input
+                      {...register("email")}
+                      type="email"
+                      placeholder="marie@email.com"
+                      className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                    {errors.email && <p className="text-destructive text-xs mt-1">{errors.email.message}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">Atelier</label>
+                    <select
+                      {...register("workshop")}
+                      className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                      <option value="">Choisir un atelier…</option>
+                      {ateliers.map((ws) => (
+                        <option key={ws.id} value={ws.titre}>
+                          {ws.titre} — {formatDateFr(ws.date_atelier)}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.workshop && <p className="text-destructive text-xs mt-1">{errors.workshop.message}</p>}
+                  </div>
+
+                  {selectedWorkshop === PIERRE_ORACLE && (
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-1.5">Date de naissance</label>
+                      <input
+                        {...register("birthdate")}
+                        type="date"
+                        className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                      />
+                      {errors.birthdate && <p className="text-destructive text-xs mt-1">{errors.birthdate.message}</p>}
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full bg-primary text-primary-foreground py-3 rounded-full font-medium text-sm hover:opacity-90 transition-opacity mt-2 disabled:opacity-50"
+                  >
+                    Confirmer l'inscription
+                  </button>
+                </form>
+              </>
+            )}
           </div>
         </div>
       )}
