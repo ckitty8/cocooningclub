@@ -167,17 +167,6 @@ const Index = () => {
             <div className="rounded-3xl overflow-hidden shadow-2xl">
               <img src={heroImage} alt="Table d'atelier créatif avec bougies, peinture et matériaux" className="w-full h-[280px] sm:h-[380px] md:h-[500px] object-cover" />
             </div>
-            <div className="absolute -bottom-6 -left-6 bg-card rounded-2xl p-4 shadow-lg border">
-              <div className="flex items-center gap-3">
-                <div className="bg-secondary/30 p-2 rounded-full">
-                  <Heart className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-display font-semibold text-foreground">+200</p>
-                  <p className="text-xs text-muted-foreground">participants heureux</p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </section>
