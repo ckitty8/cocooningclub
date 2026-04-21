@@ -1,7 +1,18 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, X, GripVertical, Copy, ArrowLeft, Check } from "lucide-react";
+import { Plus, Pencil, Trash2, X, GripVertical, Copy, ArrowLeft, Check, Mail, MailOpen, ChevronDown, ChevronUp } from "lucide-react";
+
+interface ContactMessage {
+  id: string;
+  prenom: string;
+  nom: string;
+  email: string;
+  telephone: string | null;
+  message: string;
+  cree_le: string;
+  lu: boolean;
+}
 
 type FieldType = "text" | "email" | "tel" | "textarea" | "select";
 
@@ -109,6 +120,7 @@ const FormCard = ({
 // ─── Main component ──────────────────────────────────────────────────────────
 
 const Formulaire = () => {
+  const [tab, setTab] = useState<"formulaires" | "messages">("formulaires");
   const [view, setView] = useState<"list" | "editor">("list");
   const [formulaires, setFormulaires] = useState<FormulaireRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -133,6 +145,11 @@ const Formulaire = () => {
   const [newDesc, setNewDesc] = useState("");
   const [creating, setCreating] = useState(false);
 
+  // Messages reçus
+  const [messages, setMessages] = useState<ContactMessage[]>([]);
+  const [msgsLoading, setMsgsLoading] = useState(false);
+  const [expandedMsg, setExpandedMsg] = useState<string | null>(null);
+
   // ── Fetch ──
   const fetchFormulaires = async () => {
     const { data } = await db.from("formulaires").select("*, form_fields(id)").order("cree_le");
@@ -145,7 +162,22 @@ const Formulaire = () => {
     setFields((data as FormField[]) ?? []);
   };
 
+  const fetchMessages = async () => {
+    setMsgsLoading(true);
+    const { data } = await db.from("contact_messages").select("*").order("cree_le", { ascending: false });
+    setMessages((data as ContactMessage[]) ?? []);
+    setMsgsLoading(false);
+  };
+
   useEffect(() => { fetchFormulaires(); }, []);
+  useEffect(() => { if (tab === "messages") fetchMessages(); }, [tab]);
+
+  const toggleLu = async (msg: ContactMessage) => {
+    await db.from("contact_messages").update({ lu: !msg.lu }).eq("id", msg.id);
+    setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, lu: !m.lu } : m));
+  };
+
+  const unreadCount = messages.filter(m => !m.lu).length;
 
   // ── List actions ──
   const openEditor = async (f: FormulaireRow) => {
@@ -260,40 +292,130 @@ const Formulaire = () => {
     <AdminLayout>
       {view === "list" ? (
         <>
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-5">
             <div>
               <h1 className="text-2xl font-bold">Formulaires de contact</h1>
-              <p className="text-muted-foreground text-sm mt-1">Gérez vos formulaires et leurs champs</p>
+              <p className="text-muted-foreground text-sm mt-1">Gérez vos formulaires et les messages reçus</p>
             </div>
+            {tab === "formulaires" && (
+              <button
+                onClick={() => setNewModal(true)}
+                className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium hover:opacity-90 transition-opacity"
+              >
+                <Plus className="w-4 h-4" /> Nouveau formulaire
+              </button>
+            )}
+          </div>
+
+          {/* Onglets */}
+          <div className="flex gap-1 mb-6 bg-muted/50 p-1 rounded-xl w-fit">
             <button
-              onClick={() => setNewModal(true)}
-              className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium hover:opacity-90 transition-opacity"
+              onClick={() => setTab("formulaires")}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                tab === "formulaires" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
             >
-              <Plus className="w-4 h-4" /> Nouveau formulaire
+              Formulaires
+            </button>
+            <button
+              onClick={() => setTab("messages")}
+              className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                tab === "messages" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Messages reçus
+              {unreadCount > 0 && (
+                <span className="bg-destructive text-destructive-foreground text-xs px-1.5 py-0.5 rounded-full leading-none">
+                  {unreadCount}
+                </span>
+              )}
             </button>
           </div>
 
-          {loading ? (
-            <div className="flex items-center justify-center h-48">
-              <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            </div>
-          ) : formulaires.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-48 text-muted-foreground gap-2">
-              <p className="text-sm">Aucun formulaire. Créez-en un pour commencer.</p>
-            </div>
+          {tab === "formulaires" ? (
+            loading ? (
+              <div className="flex items-center justify-center h-48">
+                <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : formulaires.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-48 text-muted-foreground gap-2">
+                <p className="text-sm">Aucun formulaire. Créez-en un pour commencer.</p>
+              </div>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {formulaires.map(f => (
+                  <FormCard
+                    key={f.id}
+                    f={f}
+                    onEdit={() => openEditor(f)}
+                    onDuplicate={() => handleDuplicate(f)}
+                    onDelete={() => handleDelete(f)}
+                    onToggleActive={() => handleToggleActive(f)}
+                  />
+                ))}
+              </div>
+            )
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {formulaires.map(f => (
-                <FormCard
-                  key={f.id}
-                  f={f}
-                  onEdit={() => openEditor(f)}
-                  onDuplicate={() => handleDuplicate(f)}
-                  onDelete={() => handleDelete(f)}
-                  onToggleActive={() => handleToggleActive(f)}
-                />
-              ))}
-            </div>
+            /* ── Onglet Messages reçus ── */
+            msgsLoading ? (
+              <div className="flex items-center justify-center h-48">
+                <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : messages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-48 text-muted-foreground gap-2">
+                <Mail className="w-10 h-10 opacity-25" />
+                <p className="text-sm">Aucun message reçu.</p>
+              </div>
+            ) : (
+              <div className="bg-card border rounded-2xl overflow-hidden divide-y">
+                {messages.map(msg => (
+                  <div key={msg.id} className={`px-6 py-4 transition-colors ${!msg.lu ? "bg-primary/5" : ""}`}>
+                    <div
+                      className="flex items-start gap-3 cursor-pointer"
+                      onClick={() => setExpandedMsg(expandedMsg === msg.id ? null : msg.id)}
+                    >
+                      <div className="mt-0.5 shrink-0">
+                        {msg.lu
+                          ? <MailOpen className="w-4 h-4 text-muted-foreground" />
+                          : <Mail className="w-4 h-4 text-primary" />
+                        }
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-medium text-sm">{msg.prenom} {msg.nom}</span>
+                          {!msg.lu && (
+                            <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">Non lu</span>
+                          )}
+                          <span className="text-xs text-muted-foreground ml-auto">
+                            {new Date(msg.cree_le).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">{msg.email}{msg.telephone && ` · ${msg.telephone}`}</p>
+                        {expandedMsg !== msg.id && (
+                          <p className="text-sm text-foreground/70 mt-1 line-clamp-1">{msg.message}</p>
+                        )}
+                      </div>
+                      <div className="shrink-0 text-muted-foreground">
+                        {expandedMsg === msg.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      </div>
+                    </div>
+
+                    {expandedMsg === msg.id && (
+                      <div className="mt-3 ml-7 space-y-3">
+                        <p className="text-sm text-foreground whitespace-pre-wrap bg-muted/40 rounded-xl p-4">{msg.message}</p>
+                        <button
+                          onClick={() => toggleLu(msg)}
+                          className="flex items-center gap-1.5 text-xs px-3 py-1.5 border rounded-full hover:bg-muted transition-colors"
+                        >
+                          {msg.lu ? <Mail className="w-3 h-3" /> : <MailOpen className="w-3 h-3" />}
+                          {msg.lu ? "Marquer non lu" : "Marquer comme lu"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )
           )}
         </>
       ) : (
