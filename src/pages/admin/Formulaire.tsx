@@ -5,13 +5,14 @@ import { Plus, Pencil, Trash2, X, GripVertical, Copy, ArrowLeft, Check, Mail, Ma
 
 interface ContactMessage {
   id: string;
-  prenom: string;
-  nom: string;
-  email: string;
+  prenom: string | null;
+  nom: string | null;
+  email: string | null;
   telephone: string | null;
-  message: string;
+  message: string | null;
   cree_le: string;
   lu: boolean;
+  reponses: Record<string, string> | null;
 }
 
 type FieldType = "text" | "email" | "tel" | "textarea" | "select";
@@ -382,7 +383,11 @@ const Formulaire = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-medium text-sm">{msg.prenom} {msg.nom}</span>
+                          <span className="font-medium text-sm">
+                            {msg.reponses
+                              ? Object.values(msg.reponses).slice(0, 2).join(" ")
+                              : `${msg.prenom ?? ""} ${msg.nom ?? ""}`.trim() || "—"}
+                          </span>
                           {!msg.lu && (
                             <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">Non lu</span>
                           )}
@@ -390,9 +395,15 @@ const Formulaire = () => {
                             {new Date(msg.cree_le).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
                           </span>
                         </div>
-                        <p className="text-xs text-muted-foreground">{msg.email}{msg.telephone && ` · ${msg.telephone}`}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {msg.email}{msg.telephone && ` · ${msg.telephone}`}
+                        </p>
                         {expandedMsg !== msg.id && (
-                          <p className="text-sm text-foreground/70 mt-1 line-clamp-1">{msg.message}</p>
+                          <p className="text-sm text-foreground/70 mt-1 line-clamp-1">
+                            {msg.reponses
+                              ? Object.entries(msg.reponses).map(([k, v]) => `${k} : ${v}`).join(" · ")
+                              : msg.message ?? ""}
+                          </p>
                         )}
                       </div>
                       <div className="shrink-0 text-muted-foreground">
@@ -402,7 +413,17 @@ const Formulaire = () => {
 
                     {expandedMsg === msg.id && (
                       <div className="mt-3 ml-7 space-y-3">
-                        <p className="text-sm text-foreground whitespace-pre-wrap bg-muted/40 rounded-xl p-4">{msg.message}</p>
+                        <div className="bg-muted/40 rounded-xl p-4 space-y-2">
+                          {msg.reponses
+                            ? Object.entries(msg.reponses).map(([label, val]) => (
+                                <div key={label}>
+                                  <p className="text-xs font-medium text-muted-foreground">{label}</p>
+                                  <p className="text-sm text-foreground whitespace-pre-wrap">{val}</p>
+                                </div>
+                              ))
+                            : <p className="text-sm text-foreground whitespace-pre-wrap">{msg.message}</p>
+                          }
+                        </div>
                         <button
                           onClick={() => toggleLu(msg)}
                           className="flex items-center gap-1.5 text-xs px-3 py-1.5 border rounded-full hover:bg-muted transition-colors"

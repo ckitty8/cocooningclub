@@ -29,29 +29,68 @@ const inscriptionSchema = z.object({
 
 type InscriptionData = z.infer<typeof inscriptionSchema>;
 
-// ── Formulaire de contact ─────────────────────────────────
+// ── Formulaire de contact dynamique ──────────────────────
+interface FormFieldConfig {
+  id: string;
+  label: string;
+  field_type: "text" | "email" | "tel" | "textarea" | "select";
+  obligatoire: boolean;
+  position: number;
+  options: string[] | null;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const db = supabase as any;
+
 const ContactForm = () => {
-  const [form, setForm] = useState({ nom: "", prenom: "", email: "", telephone: "", message: "" });
+  const [fields, setFields] = useState<FormFieldConfig[]>([]);
+  const [values, setValues] = useState<Record<string, string>>({});
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
+  const [loadingFields, setLoadingFields] = useState(true);
+
+  useEffect(() => {
+    db.from("formulaires")
+      .select("*, form_fields(*)")
+      .eq("est_actif", true)
+      .order("cree_le")
+      .limit(1)
+      .single()
+      .then(({ data }: { data: { form_fields: FormFieldConfig[] } | null }) => {
+        if (data?.form_fields) {
+          const sorted = [...data.form_fields].sort((a, b) => a.position - b.position);
+          setFields(sorted);
+          const init: Record<string, string> = {};
+          sorted.forEach(f => { init[f.id] = ""; });
+          setValues(init);
+        }
+        setLoadingFields(false);
+      });
+  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!form.nom || !form.email || !form.message) {
-      setError("Veuillez remplir les champs obligatoires.");
+    const missing = fields.filter(f => f.obligatoire && !values[f.id]?.trim());
+    if (missing.length > 0) {
+      setError(`Veuillez remplir : ${missing.map(f => f.label).join(", ")}.`);
       return;
     }
     setSending(true);
     setError("");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error: dbError } = await (supabase as any).from("contact_messages").insert({
-      nom: form.nom,
-      prenom: form.prenom,
-      email: form.email,
-      telephone: form.telephone || null,
-      message: form.message,
+
+    const reponses: Record<string, string> = {};
+    fields.forEach(f => { if (values[f.id]) reponses[f.label] = values[f.id]; });
+
+    const emailField = fields.find(f => f.field_type === "email");
+    const telField = fields.find(f => f.field_type === "tel");
+
+    const { error: dbError } = await db.from("contact_messages").insert({
+      email: emailField ? values[emailField.id] || null : null,
+      telephone: telField ? values[telField.id] || null : null,
+      reponses,
     });
+
     if (dbError) {
       setError("Une erreur est survenue. Veuillez réessayer.");
     } else {
@@ -59,6 +98,16 @@ const ContactForm = () => {
     }
     setSending(false);
   };
+
+  const inputClass = "w-full rounded-xl border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary";
+
+  if (loadingFields) return (
+    <div className="flex justify-center py-8">
+      <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+
+  if (fields.length === 0) return null;
 
   if (sent) return (
     <div className="text-center py-10 space-y-3">
@@ -72,33 +121,37 @@ const ContactForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-1.5">Prénom *</label>
-          <input value={form.prenom} onChange={e => setForm(f => ({ ...f, prenom: e.target.value }))} required
-            className="w-full rounded-xl border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Marie" />
+      {fields.map(field => (
+        <div key={field.id}>
+          <label className="block text-sm font-medium text-foreground mb-1.5">
+            {field.label}{field.obligatoire && " *"}
+          </label>
+          {field.field_type === "textarea" ? (
+            <textarea
+              value={values[field.id] ?? ""}
+              onChange={e => setValues(v => ({ ...v, [field.id]: e.target.value }))}
+              rows={4}
+              className={`${inputClass} resize-none`}
+            />
+          ) : field.field_type === "select" ? (
+            <select
+              value={values[field.id] ?? ""}
+              onChange={e => setValues(v => ({ ...v, [field.id]: e.target.value }))}
+              className={inputClass}
+            >
+              <option value="">— Choisir —</option>
+              {field.options?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+            </select>
+          ) : (
+            <input
+              type={field.field_type}
+              value={values[field.id] ?? ""}
+              onChange={e => setValues(v => ({ ...v, [field.id]: e.target.value }))}
+              className={inputClass}
+            />
+          )}
         </div>
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-1.5">Nom *</label>
-          <input value={form.nom} onChange={e => setForm(f => ({ ...f, nom: e.target.value }))} required
-            className="w-full rounded-xl border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Dupont" />
-        </div>
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-1.5">Email *</label>
-        <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required
-          className="w-full rounded-xl border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" placeholder="marie@email.com" />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-1.5">Téléphone</label>
-        <input type="tel" value={form.telephone} onChange={e => setForm(f => ({ ...f, telephone: e.target.value }))}
-          className="w-full rounded-xl border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" placeholder="06 12 34 56 78" />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-1.5">Message *</label>
-        <textarea value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))} required rows={4}
-          className="w-full rounded-xl border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none" placeholder="Votre message..." />
-      </div>
+      ))}
       {error && <p className="text-destructive text-sm">{error}</p>}
       <button type="submit" disabled={sending}
         className="w-full bg-primary text-primary-foreground py-3 rounded-full font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50">
