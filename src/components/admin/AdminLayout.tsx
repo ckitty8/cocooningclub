@@ -3,15 +3,17 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   LayoutDashboard, Users, CalendarDays, FileText,
-  FormInput, LogOut, Menu, ChevronRight
+  FormInput, LogOut, Menu, ChevronRight, UserCheck, MessageSquare
 } from "lucide-react";
 
 const navItems = [
-  { href: "/admin/dashboard",  label: "Tableau de bord", icon: LayoutDashboard },
-  { href: "/admin/membres",    label: "Membres",          icon: Users },
-  { href: "/admin/ateliers",   label: "Ateliers",         icon: CalendarDays },
-  { href: "/admin/documents",  label: "Documents",        icon: FileText },
-  { href: "/admin/formulaire", label: "Formulaire de contact", icon: FormInput },
+  { href: "/admin/dashboard",          label: "Tableau de bord",         icon: LayoutDashboard },
+  { href: "/admin/membres",            label: "Membres",                  icon: Users },
+  { href: "/admin/ateliers",           label: "Ateliers",                 icon: CalendarDays },
+  { href: "/admin/pre-inscriptions",   label: "Pré-inscriptions",         icon: UserCheck },
+  { href: "/admin/documents",          label: "Documents",                icon: FileText },
+  { href: "/admin/formulaire",         label: "Formulaire de contact",    icon: FormInput },
+  { href: "/admin/messages-templates", label: "Modèles de messages",      icon: MessageSquare },
 ];
 
 const AdminLayout = ({ children }: { children: ReactNode }) => {
