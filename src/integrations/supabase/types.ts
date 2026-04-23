@@ -232,6 +232,7 @@ export type Database = {
           nom_invite: string | null
           prenom_invite: string | null
           email_invite: string | null
+          telephone_invite: string | null
           date_naissance: string | null
           statut: "en_attente" | "confirme" | "annule"
           statut_paiement: "en_attente" | "paye" | "non_requis"
@@ -246,6 +247,7 @@ export type Database = {
           nom_invite?: string | null
           prenom_invite?: string | null
           email_invite?: string | null
+          telephone_invite?: string | null
           date_naissance?: string | null
           statut?: "en_attente" | "confirme" | "annule"
           statut_paiement?: "en_attente" | "paye" | "non_requis"
@@ -260,6 +262,7 @@ export type Database = {
           nom_invite?: string | null
           prenom_invite?: string | null
           email_invite?: string | null
+          telephone_invite?: string | null
           date_naissance?: string | null
           statut?: "en_attente" | "confirme" | "annule"
           statut_paiement?: "en_attente" | "paye" | "non_requis"
@@ -349,6 +352,36 @@ export type Database = {
           donnees_brutes?: Record<string, unknown> | null
           paypal_cree_le?: string | null
           enregistre_le?: string
+        }
+        Relationships: []
+      }
+      parametres_messages: {
+        Row: {
+          id: string
+          cle: string
+          libelle: string
+          valeur: string
+          description: string | null
+          modifie_le: string
+          modifie_par: string | null
+        }
+        Insert: {
+          id?: string
+          cle: string
+          libelle: string
+          valeur: string
+          description?: string | null
+          modifie_le?: string
+          modifie_par?: string | null
+        }
+        Update: {
+          id?: string
+          cle?: string
+          libelle?: string
+          valeur?: string
+          description?: string | null
+          modifie_le?: string
+          modifie_par?: string | null
         }
         Relationships: []
       }
