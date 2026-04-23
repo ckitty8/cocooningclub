@@ -168,10 +168,12 @@ const Index = () => {
   const [confirmedWorkshop, setConfirmedWorkshop] = useState<Workshop | null>(null);
 
   useEffect(() => {
+    const today = new Date().toISOString().slice(0, 10);
     supabase
       .from("ateliers")
       .select("id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, tarif_affichage, tarif_standard, statut")
       .in("statut", ["publie", "complet"])
+      .gte("date_atelier", today)
       .order("date_atelier")
       .then(({ data, error }) => {
         if (!error && data) setAteliers(data as Workshop[]);
