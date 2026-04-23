@@ -20,6 +20,7 @@ const PIERRE_ORACLE = "Atelier Créatif — Pierre & Oracle";
 const inscriptionSchema = z.object({
   name: z.string().trim().min(2, "Le nom doit contenir au moins 2 caractères.").max(100),
   email: z.string().trim().email("Veuillez entrer un email valide.").max(255),
+  phone: z.string().trim().max(20).optional().or(z.literal("")),
   workshop: z.string().min(1, "Veuillez choisir un atelier."),
   birthdate: z.string().optional(),
 }).refine((d) => d.workshop !== PIERRE_ORACLE || (!!d.birthdate && d.birthdate.trim().length > 0), {
@@ -29,29 +30,68 @@ const inscriptionSchema = z.object({
 
 type InscriptionData = z.infer<typeof inscriptionSchema>;
 
-// ── Formulaire de contact ─────────────────────────────────
+// ── Formulaire de contact dynamique ──────────────────────
+interface FormFieldConfig {
+  id: string;
+  label: string;
+  field_type: "text" | "email" | "tel" | "textarea" | "select";
+  obligatoire: boolean;
+  position: number;
+  options: string[] | null;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const db = supabase as any;
+
 const ContactForm = () => {
-  const [form, setForm] = useState({ nom: "", prenom: "", email: "", telephone: "", message: "" });
+  const [fields, setFields] = useState<FormFieldConfig[]>([]);
+  const [values, setValues] = useState<Record<string, string>>({});
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
+  const [loadingFields, setLoadingFields] = useState(true);
+
+  useEffect(() => {
+    db.from("formulaires")
+      .select("*, form_fields(*)")
+      .eq("est_actif", true)
+      .order("cree_le")
+      .limit(1)
+      .single()
+      .then(({ data }: { data: { form_fields: FormFieldConfig[] } | null }) => {
+        if (data?.form_fields) {
+          const sorted = [...data.form_fields].sort((a, b) => a.position - b.position);
+          setFields(sorted);
+          const init: Record<string, string> = {};
+          sorted.forEach(f => { init[f.id] = ""; });
+          setValues(init);
+        }
+        setLoadingFields(false);
+      });
+  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!form.nom || !form.email || !form.message) {
-      setError("Veuillez remplir les champs obligatoires.");
+    const missing = fields.filter(f => f.obligatoire && !values[f.id]?.trim());
+    if (missing.length > 0) {
+      setError(`Veuillez remplir : ${missing.map(f => f.label).join(", ")}.`);
       return;
     }
     setSending(true);
     setError("");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error: dbError } = await (supabase as any).from("contact_messages").insert({
-      nom: form.nom,
-      prenom: form.prenom,
-      email: form.email,
-      telephone: form.telephone || null,
-      message: form.message,
+
+    const reponses: Record<string, string> = {};
+    fields.forEach(f => { if (values[f.id]) reponses[f.label] = values[f.id]; });
+
+    const emailField = fields.find(f => f.field_type === "email");
+    const telField = fields.find(f => f.field_type === "tel");
+
+    const { error: dbError } = await db.from("contact_messages").insert({
+      email: emailField ? values[emailField.id] || null : null,
+      telephone: telField ? values[telField.id] || null : null,
+      reponses,
     });
+
     if (dbError) {
       setError("Une erreur est survenue. Veuillez réessayer.");
     } else {
@@ -59,6 +99,16 @@ const ContactForm = () => {
     }
     setSending(false);
   };
+
+  const inputClass = "w-full rounded-xl border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary";
+
+  if (loadingFields) return (
+    <div className="flex justify-center py-8">
+      <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+
+  if (fields.length === 0) return null;
 
   if (sent) return (
     <div className="text-center py-10 space-y-3">
@@ -72,33 +122,37 @@ const ContactForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-1.5">Prénom *</label>
-          <input value={form.prenom} onChange={e => setForm(f => ({ ...f, prenom: e.target.value }))} required
-            className="w-full rounded-xl border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Marie" />
+      {fields.map(field => (
+        <div key={field.id}>
+          <label className="block text-sm font-medium text-foreground mb-1.5">
+            {field.label}{field.obligatoire && " *"}
+          </label>
+          {field.field_type === "textarea" ? (
+            <textarea
+              value={values[field.id] ?? ""}
+              onChange={e => setValues(v => ({ ...v, [field.id]: e.target.value }))}
+              rows={4}
+              className={`${inputClass} resize-none`}
+            />
+          ) : field.field_type === "select" ? (
+            <select
+              value={values[field.id] ?? ""}
+              onChange={e => setValues(v => ({ ...v, [field.id]: e.target.value }))}
+              className={inputClass}
+            >
+              <option value="">— Choisir —</option>
+              {field.options?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+            </select>
+          ) : (
+            <input
+              type={field.field_type}
+              value={values[field.id] ?? ""}
+              onChange={e => setValues(v => ({ ...v, [field.id]: e.target.value }))}
+              className={inputClass}
+            />
+          )}
         </div>
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-1.5">Nom *</label>
-          <input value={form.nom} onChange={e => setForm(f => ({ ...f, nom: e.target.value }))} required
-            className="w-full rounded-xl border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Dupont" />
-        </div>
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-1.5">Email *</label>
-        <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required
-          className="w-full rounded-xl border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" placeholder="marie@email.com" />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-1.5">Téléphone</label>
-        <input type="tel" value={form.telephone} onChange={e => setForm(f => ({ ...f, telephone: e.target.value }))}
-          className="w-full rounded-xl border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" placeholder="06 12 34 56 78" />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-1.5">Message *</label>
-        <textarea value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))} required rows={4}
-          className="w-full rounded-xl border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none" placeholder="Votre message..." />
-      </div>
+      ))}
       {error && <p className="text-destructive text-sm">{error}</p>}
       <button type="submit" disabled={sending}
         className="w-full bg-primary text-primary-foreground py-3 rounded-full font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50">
@@ -149,13 +203,13 @@ const Index = () => {
     formState: { errors, isSubmitting },
   } = useForm<InscriptionData>({
     resolver: zodResolver(inscriptionSchema),
-    defaultValues: { name: "", email: "", workshop: "", birthdate: "" },
+    defaultValues: { name: "", email: "", phone: "", workshop: "", birthdate: "" },
   });
 
   const selectedWorkshop = watch("workshop");
 
   const openModal = (workshopTitle?: string) => {
-    reset({ name: "", email: "", workshop: workshopTitle || "" });
+    reset({ name: "", email: "", phone: "", workshop: workshopTitle || "", birthdate: "" });
     setConfirmedWorkshop(null);
     setModalOpen(true);
   };
@@ -171,8 +225,9 @@ const Index = () => {
       prenom_invite: prenom,
       nom_invite: nom,
       email_invite: data.email,
-      statut: "confirme",
+      statut: "en_attente",
       statut_paiement: atelier && atelier.tarif_standard > 0 ? "en_attente" : "non_requis",
+      ...(data.phone ? { telephone_invite: data.phone } : {}),
       ...(data.birthdate ? { date_naissance: data.birthdate } : {}),
     });
 
@@ -181,13 +236,14 @@ const Index = () => {
       return;
     }
 
+    // Pré-inscription : on ne décrémente PAS les places (trigger DB le fera à la validation admin)
     if (atelier) {
-      setAteliers((prev) =>
-        prev.map((a) => a.id === atelier.id ? { ...a, places_disponibles: Math.max(0, a.places_disponibles - 1) } : a)
-      );
       setConfirmedWorkshop(atelier);
     } else {
-      toast.success(`Merci ${prenom} ! Votre inscription a bien été prise en compte.`);
+      toast.success(
+        `Merci ${prenom} ! Votre pré-inscription a bien été enregistrée. Vous recevrez une confirmation par email ou WhatsApp après validation.`,
+        { duration: 6000 }
+      );
       setModalOpen(false);
     }
     reset();
@@ -218,6 +274,7 @@ const Index = () => {
             <a href="#ateliers" className="hover:text-primary transition-colors">Nos Ateliers</a>
             <Link to="/calendrier" className="hover:text-primary transition-colors">Calendrier</Link>
             <a href="#contact" className="hover:text-primary transition-colors">Contact</a>
+            <Link to="/login" className="md:hidden hover:text-primary transition-colors">Espace Membre</Link>
           </div>
         </div>
       </nav>
@@ -333,13 +390,15 @@ const Index = () => {
                   <CheckCircle2 className="w-14 h-14 text-green-500" />
                 </div>
                 <div>
-                  <h3 className="font-display text-2xl font-bold text-foreground mb-1">Inscription confirmée !</h3>
+                  <h3 className="font-display text-2xl font-bold text-foreground mb-1">Pré-inscription enregistrée !</h3>
                   <p className="text-sm text-muted-foreground">
-                    Votre place pour <span className="font-medium text-foreground">"{confirmedWorkshop.titre}"</span> le {formatDateFr(confirmedWorkshop.date_atelier)} à {formatTimeFr(confirmedWorkshop.heure_debut)} est réservée.
+                    Votre demande pour <span className="font-medium text-foreground">"{confirmedWorkshop.titre}"</span> le {formatDateFr(confirmedWorkshop.date_atelier)} à {formatTimeFr(confirmedWorkshop.heure_debut)} a été envoyée.
+                    <br />
+                    <span className="text-xs mt-2 block">Vous recevrez une confirmation par email ou WhatsApp après validation par l'équipe.</span>
                   </p>
                 </div>
                 <div className="space-y-3 pt-2">
-                  <p className="text-sm font-medium text-foreground">Ajouter à votre calendrier</p>
+                  <p className="text-sm font-medium text-foreground">Gardez la date dans votre calendrier</p>
                   <a
                     href={googleCalendarUrl(confirmedWorkshop)}
                     target="_blank"
@@ -366,8 +425,8 @@ const Index = () => {
               </div>
             ) : (
               <>
-                <h3 className="font-display text-2xl font-bold text-foreground mb-1">Inscription</h3>
-                <p className="text-sm text-muted-foreground mb-6">Remplissez le formulaire pour réserver votre place.</p>
+                <h3 className="font-display text-2xl font-bold text-foreground mb-1">Pré-inscription</h3>
+                <p className="text-sm text-muted-foreground mb-6">Votre demande sera validée par l'équipe et vous serez notifié(e) par email ou WhatsApp.</p>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                   <div>
@@ -389,6 +448,19 @@ const Index = () => {
                       className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                     {errors.email && <p className="text-destructive text-xs mt-1">{errors.email.message}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">
+                      Téléphone <span className="text-muted-foreground font-normal">(optionnel — pour WhatsApp)</span>
+                    </label>
+                    <input
+                      {...register("phone")}
+                      type="tel"
+                      placeholder="06 12 34 56 78"
+                      className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                    {errors.phone && <p className="text-destructive text-xs mt-1">{errors.phone.message}</p>}
                   </div>
 
                   <div>
@@ -424,7 +496,7 @@ const Index = () => {
                     disabled={isSubmitting}
                     className="w-full bg-primary text-primary-foreground py-3 rounded-full font-medium text-sm hover:opacity-90 transition-opacity mt-2 disabled:opacity-50"
                   >
-                    Confirmer l'inscription
+                    Envoyer ma pré-inscription
                   </button>
                 </form>
               </>

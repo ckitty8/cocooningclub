@@ -17,6 +17,8 @@ import Membres from "./pages/admin/Membres.tsx";
 import AteliersAdmin from "./pages/admin/Ateliers.tsx";
 import Documents from "./pages/admin/Documents.tsx";
 import Formulaire from "./pages/admin/Formulaire.tsx";
+import PreInscriptions from "./pages/admin/PreInscriptions.tsx";
+import TemplatesMessages from "./pages/admin/TemplatesMessages.tsx";
 
 
 const queryClient = new QueryClient();
@@ -47,11 +49,13 @@ const App = () => (
             <Route path="/espace-membre" element={<Login />} />
 
             {/* Routes admin protégées */}
-            <Route path="/admin/dashboard"  element={<RoleGuard allowedRoles={["administrateur"]}><Dashboard /></RoleGuard>} />
-            <Route path="/admin/membres"    element={<RoleGuard allowedRoles={["administrateur"]}><Membres /></RoleGuard>} />
-            <Route path="/admin/ateliers"   element={<RoleGuard allowedRoles={["administrateur"]}><AteliersAdmin /></RoleGuard>} />
-            <Route path="/admin/documents"  element={<RoleGuard allowedRoles={["administrateur"]}><Documents /></RoleGuard>} />
-            <Route path="/admin/formulaire" element={<RoleGuard allowedRoles={["administrateur"]}><Formulaire /></RoleGuard>} />
+            <Route path="/admin/dashboard"         element={<RoleGuard allowedRoles={["administrateur"]}><Dashboard /></RoleGuard>} />
+            <Route path="/admin/membres"           element={<RoleGuard allowedRoles={["administrateur"]}><Membres /></RoleGuard>} />
+            <Route path="/admin/ateliers"          element={<RoleGuard allowedRoles={["administrateur"]}><AteliersAdmin /></RoleGuard>} />
+            <Route path="/admin/pre-inscriptions"  element={<RoleGuard allowedRoles={["administrateur"]}><PreInscriptions /></RoleGuard>} />
+            <Route path="/admin/documents"         element={<RoleGuard allowedRoles={["administrateur"]}><Documents /></RoleGuard>} />
+            <Route path="/admin/formulaire"        element={<RoleGuard allowedRoles={["administrateur"]}><Formulaire /></RoleGuard>} />
+            <Route path="/admin/messages-templates" element={<RoleGuard allowedRoles={["administrateur"]}><TemplatesMessages /></RoleGuard>} />
 
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
