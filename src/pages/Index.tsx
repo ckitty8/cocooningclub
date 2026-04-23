@@ -20,6 +20,7 @@ const PIERRE_ORACLE = "Atelier Créatif — Pierre & Oracle";
 const inscriptionSchema = z.object({
   name: z.string().trim().min(2, "Le nom doit contenir au moins 2 caractères.").max(100),
   email: z.string().trim().email("Veuillez entrer un email valide.").max(255),
+  phone: z.string().trim().max(20).optional().or(z.literal("")),
   workshop: z.string().min(1, "Veuillez choisir un atelier."),
   birthdate: z.string().optional(),
 }).refine((d) => d.workshop !== PIERRE_ORACLE || (!!d.birthdate && d.birthdate.trim().length > 0), {
@@ -202,13 +203,13 @@ const Index = () => {
     formState: { errors, isSubmitting },
   } = useForm<InscriptionData>({
     resolver: zodResolver(inscriptionSchema),
-    defaultValues: { name: "", email: "", workshop: "", birthdate: "" },
+    defaultValues: { name: "", email: "", phone: "", workshop: "", birthdate: "" },
   });
 
   const selectedWorkshop = watch("workshop");
 
   const openModal = (workshopTitle?: string) => {
-    reset({ name: "", email: "", workshop: workshopTitle || "" });
+    reset({ name: "", email: "", phone: "", workshop: workshopTitle || "", birthdate: "" });
     setConfirmedWorkshop(null);
     setModalOpen(true);
   };
@@ -224,8 +225,9 @@ const Index = () => {
       prenom_invite: prenom,
       nom_invite: nom,
       email_invite: data.email,
-      statut: "confirme",
+      statut: "en_attente",
       statut_paiement: atelier && atelier.tarif_standard > 0 ? "en_attente" : "non_requis",
+      ...(data.phone ? { telephone_invite: data.phone } : {}),
       ...(data.birthdate ? { date_naissance: data.birthdate } : {}),
     });
 
@@ -234,13 +236,14 @@ const Index = () => {
       return;
     }
 
+    // Pré-inscription : on ne décrémente PAS les places (trigger DB le fera à la validation admin)
     if (atelier) {
-      setAteliers((prev) =>
-        prev.map((a) => a.id === atelier.id ? { ...a, places_disponibles: Math.max(0, a.places_disponibles - 1) } : a)
-      );
       setConfirmedWorkshop(atelier);
     } else {
-      toast.success(`Merci ${prenom} ! Votre inscription a bien été prise en compte.`);
+      toast.success(
+        `Merci ${prenom} ! Votre pré-inscription a bien été enregistrée. Vous recevrez une confirmation par email ou WhatsApp après validation.`,
+        { duration: 6000 }
+      );
       setModalOpen(false);
     }
     reset();
@@ -387,13 +390,15 @@ const Index = () => {
                   <CheckCircle2 className="w-14 h-14 text-green-500" />
                 </div>
                 <div>
-                  <h3 className="font-display text-2xl font-bold text-foreground mb-1">Inscription confirmée !</h3>
+                  <h3 className="font-display text-2xl font-bold text-foreground mb-1">Pré-inscription enregistrée !</h3>
                   <p className="text-sm text-muted-foreground">
-                    Votre place pour <span className="font-medium text-foreground">"{confirmedWorkshop.titre}"</span> le {formatDateFr(confirmedWorkshop.date_atelier)} à {formatTimeFr(confirmedWorkshop.heure_debut)} est réservée.
+                    Votre demande pour <span className="font-medium text-foreground">"{confirmedWorkshop.titre}"</span> le {formatDateFr(confirmedWorkshop.date_atelier)} à {formatTimeFr(confirmedWorkshop.heure_debut)} a été envoyée.
+                    <br />
+                    <span className="text-xs mt-2 block">Vous recevrez une confirmation par email ou WhatsApp après validation par l'équipe.</span>
                   </p>
                 </div>
                 <div className="space-y-3 pt-2">
-                  <p className="text-sm font-medium text-foreground">Ajouter à votre calendrier</p>
+                  <p className="text-sm font-medium text-foreground">Gardez la date dans votre calendrier</p>
                   <a
                     href={googleCalendarUrl(confirmedWorkshop)}
                     target="_blank"
@@ -420,8 +425,8 @@ const Index = () => {
               </div>
             ) : (
               <>
-                <h3 className="font-display text-2xl font-bold text-foreground mb-1">Inscription</h3>
-                <p className="text-sm text-muted-foreground mb-6">Remplissez le formulaire pour réserver votre place.</p>
+                <h3 className="font-display text-2xl font-bold text-foreground mb-1">Pré-inscription</h3>
+                <p className="text-sm text-muted-foreground mb-6">Votre demande sera validée par l'équipe et vous serez notifié(e) par email ou WhatsApp.</p>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                   <div>
@@ -443,6 +448,19 @@ const Index = () => {
                       className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                     {errors.email && <p className="text-destructive text-xs mt-1">{errors.email.message}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">
+                      Téléphone <span className="text-muted-foreground font-normal">(optionnel — pour WhatsApp)</span>
+                    </label>
+                    <input
+                      {...register("phone")}
+                      type="tel"
+                      placeholder="06 12 34 56 78"
+                      className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                    {errors.phone && <p className="text-destructive text-xs mt-1">{errors.phone.message}</p>}
                   </div>
 
                   <div>
@@ -478,7 +496,7 @@ const Index = () => {
                     disabled={isSubmitting}
                     className="w-full bg-primary text-primary-foreground py-3 rounded-full font-medium text-sm hover:opacity-90 transition-opacity mt-2 disabled:opacity-50"
                   >
-                    Confirmer l'inscription
+                    Envoyer ma pré-inscription
                   </button>
                 </form>
               </>
