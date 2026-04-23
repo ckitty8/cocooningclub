@@ -41,11 +41,14 @@ const getContextLabel = (cle: string): { label: string; isMail: boolean; isWhats
   return { label: cle, isMail: false, isWhatsApp: false };
 };
 
+type Tab = "mail" | "whatsapp";
+
 const TemplatesMessages = () => {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [edited, setEdited] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<Tab>("mail");
 
   const fetchTemplates = async () => {
     const { data, error } = await supabase
@@ -151,9 +154,44 @@ const TemplatesMessages = () => {
         </div>
       </div>
 
-      {/* Liste des templates */}
+      {/* Onglets Mail / WhatsApp */}
+      <div className="flex gap-2 mb-6 border-b">
+        <button
+          onClick={() => setActiveTab("mail")}
+          className={`flex items-center gap-2 px-5 py-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
+            activeTab === "mail"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Mail className="w-4 h-4" />
+          Mail
+          <span className="ml-1 text-xs opacity-70">
+            ({templates.filter(t => t.cle.includes("mail")).length})
+          </span>
+        </button>
+        <button
+          onClick={() => setActiveTab("whatsapp")}
+          className={`flex items-center gap-2 px-5 py-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
+            activeTab === "whatsapp"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <MessageSquare className="w-4 h-4" />
+          WhatsApp
+          <span className="ml-1 text-xs opacity-70">
+            ({templates.filter(t => t.cle.includes("whatsapp")).length})
+          </span>
+        </button>
+      </div>
+
+      {/* Liste des templates filtrés par onglet */}
       <div className="space-y-4">
-        {templates.map(tpl => {
+        {templates.filter(tpl => {
+          if (activeTab === "mail") return tpl.cle.includes("mail");
+          return tpl.cle.includes("whatsapp");
+        }).map(tpl => {
           const ctx = getContextLabel(tpl.cle);
           const hasChanges = edited[tpl.id] !== tpl.valeur;
           const isSubject = tpl.cle.endsWith("_sujet");
