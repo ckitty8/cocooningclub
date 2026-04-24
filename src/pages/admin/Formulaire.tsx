@@ -200,7 +200,6 @@ const Formulaire = () => {
     if (!newForm) return;
     const { data: origFields } = await db.from("form_fields").select("*").eq("formulaire_id", f.id).order("position");
     if (origFields && origFields.length > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       await db.from("form_fields").insert(origFields.map(({ id: _id, cree_le: _c, ...rest }: FormField & { cree_le: string }) => ({ ...rest, formulaire_id: newForm.id })));
     }
     fetchFormulaires();
