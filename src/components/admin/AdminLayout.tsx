@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   LayoutDashboard, Users, CalendarDays, FileText,
-  FormInput, LogOut, Menu, ChevronRight, UserCheck, MessageSquare
+  FormInput, LogOut, Menu, ChevronRight, UserCheck, MessageSquare, CalendarClock
 } from "lucide-react";
 
 const navItems = [
@@ -11,6 +11,7 @@ const navItems = [
   { href: "/admin/membres",            label: "Membres",                  icon: Users },
   { href: "/admin/ateliers",           label: "Ateliers",                 icon: CalendarDays },
   { href: "/admin/pre-inscriptions",   label: "Pré-inscriptions",         icon: UserCheck },
+  { href: "/admin/disponibilites",     label: "Disponibilités",           icon: CalendarClock },
   { href: "/admin/documents",          label: "Documents",                icon: FileText },
   { href: "/admin/formulaire",         label: "Formulaire de contact",    icon: FormInput },
   { href: "/admin/messages-templates", label: "Modèles de messages",      icon: MessageSquare },

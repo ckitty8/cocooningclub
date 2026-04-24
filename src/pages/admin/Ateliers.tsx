@@ -141,6 +141,23 @@ const Ateliers = () => {
 
   const handleSave = async () => {
     setSaving(true);
+
+    // Vérification : au moins un admin est-il dispo à cette date ?
+    if (form.date_atelier) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: dispo } = await (supabase.rpc as any)("admin_dispo_le", { p_date: form.date_atelier });
+      if (dispo === false) {
+        const ok = confirm(
+          "⚠️ Aucun administrateur n'est disponible à cette date (jour de semaine non dispo ou congés).\n\n" +
+          "Voulez-vous quand même créer cet atelier ?"
+        );
+        if (!ok) {
+          setSaving(false);
+          return;
+        }
+      }
+    }
+
     const payload = {
       titre: form.titre,
       description: form.description || null,

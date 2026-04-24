@@ -421,6 +421,108 @@ export type Database = {
         }
         Relationships: []
       }
+      disponibilites: {
+        Row: {
+          id: string
+          utilisateur_id: string
+          jour_semaine: number
+          heure_debut: string
+          heure_fin: string
+          cree_le: string
+        }
+        Insert: {
+          id?: string
+          utilisateur_id: string
+          jour_semaine: number
+          heure_debut: string
+          heure_fin: string
+          cree_le?: string
+        }
+        Update: {
+          id?: string
+          utilisateur_id?: string
+          jour_semaine?: number
+          heure_debut?: string
+          heure_fin?: string
+          cree_le?: string
+        }
+        Relationships: []
+      }
+      indisponibilites: {
+        Row: {
+          id: string
+          utilisateur_id: string
+          date_debut: string
+          date_fin: string
+          motif: string | null
+          cree_le: string
+        }
+        Insert: {
+          id?: string
+          utilisateur_id: string
+          date_debut: string
+          date_fin: string
+          motif?: string | null
+          cree_le?: string
+        }
+        Update: {
+          id?: string
+          utilisateur_id?: string
+          date_debut?: string
+          date_fin?: string
+          motif?: string | null
+          cree_le?: string
+        }
+        Relationships: []
+      }
+      jours_feries: {
+        Row: {
+          id: string
+          date: string
+          nom: string
+          annee: number
+        }
+        Insert: {
+          id?: string
+          date: string
+          nom: string
+          annee: number
+        }
+        Update: {
+          id?: string
+          date?: string
+          nom?: string
+          annee?: number
+        }
+        Relationships: []
+      }
+      vacances_scolaires: {
+        Row: {
+          id: string
+          nom: string
+          date_debut: string
+          date_fin: string
+          annee_scolaire: string
+          zone: string
+        }
+        Insert: {
+          id?: string
+          nom: string
+          date_debut: string
+          date_fin: string
+          annee_scolaire: string
+          zone?: string
+        }
+        Update: {
+          id?: string
+          nom?: string
+          date_debut?: string
+          date_fin?: string
+          annee_scolaire?: string
+          zone?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       vue_prochains_ateliers: {
