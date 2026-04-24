@@ -167,7 +167,9 @@ const Disponibilites = () => {
       .update({ couleur_conge: couleur })
       .eq("id", profile.id);
     if (error) {
-      toast.error("Erreur lors du changement de couleur");
+      // Affiche le vrai message pour diagnostiquer
+      console.error("[handleChangeColor] error:", error);
+      toast.error(`Erreur : ${error.message || error.code || "inconnue"}`, { duration: 8000 });
     } else {
       toast.success(couleur ? "Couleur enregistrée" : "Couleur supprimée");
       fetchAll();
