@@ -47,3 +47,34 @@ ALTER TABLE utilisateurs
     couleur_conges IS NULL
     OR couleur_conges IN ('teal', 'blue', 'fuchsia', 'pink', 'violet', 'orange', 'gray', 'brown')
   );
+
+-- 4. Colonne pour stocker le code hexadécimal de la couleur
+ALTER TABLE utilisateurs
+  ADD COLUMN IF NOT EXISTS code_couleur_conges VARCHAR(7);
+
+COMMENT ON COLUMN utilisateurs.code_couleur_conges IS
+  'Code hexadécimal (#rrggbb) de la couleur de congés, synchronisé avec couleur_conges.';
+
+-- Contrainte format hexa (#rrggbb) ou NULL
+ALTER TABLE utilisateurs
+  DROP CONSTRAINT IF EXISTS chk_utilisateurs_code_couleur_conges;
+
+ALTER TABLE utilisateurs
+  ADD CONSTRAINT chk_utilisateurs_code_couleur_conges
+  CHECK (
+    code_couleur_conges IS NULL
+    OR code_couleur_conges ~ '^#[0-9a-fA-F]{6}$'
+  );
+
+-- 5. Rétro-remplissage : si couleur_conges existe déjà sans code hexa, on le calcule
+UPDATE utilisateurs SET code_couleur_conges = CASE couleur_conges
+  WHEN 'teal'    THEN '#14b8a6'
+  WHEN 'blue'    THEN '#1d4ed8'
+  WHEN 'fuchsia' THEN '#d946ef'
+  WHEN 'pink'    THEN '#f9a8d4'
+  WHEN 'violet'  THEN '#7c3aed'
+  WHEN 'orange'  THEN '#f97316'
+  WHEN 'gray'    THEN '#6b7280'
+  WHEN 'brown'   THEN '#92400e'
+END
+WHERE couleur_conges IS NOT NULL AND code_couleur_conges IS NULL;

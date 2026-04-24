@@ -63,15 +63,15 @@ type CalEvent = {
 // Palette de 8 couleurs disponibles pour les admins
 type CouleurKey = "teal" | "blue" | "fuchsia" | "pink" | "violet" | "orange" | "gray" | "brown";
 
-const PALETTE: { key: CouleurKey; label: string; bg: string; text: string; swatch: string }[] = [
-  { key: "teal",    label: "Bleu-vert océan", bg: "bg-teal-500",    text: "text-white",     swatch: "bg-teal-500" },
-  { key: "blue",    label: "Bleu roi",         bg: "bg-blue-700",    text: "text-white",     swatch: "bg-blue-700" },
-  { key: "fuchsia", label: "Rose fuchsia",     bg: "bg-fuchsia-500", text: "text-white",     swatch: "bg-fuchsia-500" },
-  { key: "pink",    label: "Rose pastel",      bg: "bg-pink-300",    text: "text-pink-900",  swatch: "bg-pink-300" },
-  { key: "violet",  label: "Violet",           bg: "bg-violet-600",  text: "text-white",     swatch: "bg-violet-600" },
-  { key: "orange",  label: "Orange",           bg: "bg-orange-500",  text: "text-white",     swatch: "bg-orange-500" },
-  { key: "gray",    label: "Gris",             bg: "bg-gray-500",    text: "text-white",     swatch: "bg-gray-500" },
-  { key: "brown",   label: "Marron",           bg: "bg-amber-800",   text: "text-white",     swatch: "bg-amber-800" },
+const PALETTE: { key: CouleurKey; label: string; hex: string; bg: string; text: string; swatch: string }[] = [
+  { key: "teal",    label: "Bleu-vert océan", hex: "#14b8a6", bg: "bg-teal-500",    text: "text-white",     swatch: "bg-teal-500" },
+  { key: "blue",    label: "Bleu roi",         hex: "#1d4ed8", bg: "bg-blue-700",    text: "text-white",     swatch: "bg-blue-700" },
+  { key: "fuchsia", label: "Rose fuchsia",     hex: "#d946ef", bg: "bg-fuchsia-500", text: "text-white",     swatch: "bg-fuchsia-500" },
+  { key: "pink",    label: "Rose pastel",      hex: "#f9a8d4", bg: "bg-pink-300",    text: "text-pink-900",  swatch: "bg-pink-300" },
+  { key: "violet",  label: "Violet",           hex: "#7c3aed", bg: "bg-violet-600",  text: "text-white",     swatch: "bg-violet-600" },
+  { key: "orange",  label: "Orange",           hex: "#f97316", bg: "bg-orange-500",  text: "text-white",     swatch: "bg-orange-500" },
+  { key: "gray",    label: "Gris",             hex: "#6b7280", bg: "bg-gray-500",    text: "text-white",     swatch: "bg-gray-500" },
+  { key: "brown",   label: "Marron",           hex: "#92400e", bg: "bg-amber-800",   text: "text-white",     swatch: "bg-amber-800" },
 ];
 
 const getColorClasses = (key: string | null | undefined): { bg: string; text: string } => {
@@ -162,12 +162,14 @@ const Disponibilites = () => {
   const handleChangeColor = async (couleur: CouleurKey | null) => {
     if (!profile?.id) return;
     setSavingColor(true);
+
+    const hex = couleur ? PALETTE.find(p => p.key === couleur)?.hex ?? null : null;
+
     const { error } = await supabase
       .from("utilisateurs")
-      .update({ couleur_conges: couleur })
+      .update({ couleur_conges: couleur, code_couleur_conges: hex })
       .eq("id", profile.id);
     if (error) {
-      // Affiche le vrai message pour diagnostiquer
       console.error("[handleChangeColor] error:", error);
       toast.error(`Erreur : ${error.message || error.code || "inconnue"}`, { duration: 8000 });
     } else {
