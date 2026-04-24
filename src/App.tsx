@@ -21,6 +21,7 @@ import PreInscriptions from "./pages/admin/PreInscriptions.tsx";
 import TemplatesMessages from "./pages/admin/TemplatesMessages.tsx";
 import Disponibilites from "./pages/admin/Disponibilites.tsx";
 import BoiteAIdees from "./pages/admin/BoiteAIdees.tsx";
+import MonCompte from "./pages/admin/MonCompte.tsx";
 
 
 const queryClient = new QueryClient();
@@ -75,6 +76,7 @@ const App = () => (
             <Route path="/admin/messages-templates" element={<RoleGuard allowedRoles={["administrateur"]}><TemplatesMessages /></RoleGuard>} />
             <Route path="/admin/disponibilites"     element={<RoleGuard allowedRoles={["administrateur"]}><Disponibilites /></RoleGuard>} />
             <Route path="/admin/boite-a-idees"      element={<RoleGuard allowedRoles={["administrateur"]}><BoiteAIdees /></RoleGuard>} />
+            <Route path="/admin/mon-compte"         element={<RoleGuard allowedRoles={["administrateur"]}><MonCompte /></RoleGuard>} />
 
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
