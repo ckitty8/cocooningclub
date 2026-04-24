@@ -60,20 +60,18 @@ type CalEvent = {
   color: string; // classes tailwind
 };
 
-// Palette de 10 couleurs disponibles pour les admins
-type CouleurKey = "teal" | "emerald" | "green" | "cyan" | "sky" | "blue" | "indigo" | "violet" | "fuchsia" | "pink";
+// Palette de 8 couleurs disponibles pour les admins
+type CouleurKey = "teal" | "blue" | "fuchsia" | "pink" | "violet" | "orange" | "gray" | "brown";
 
 const PALETTE: { key: CouleurKey; label: string; bg: string; text: string; swatch: string }[] = [
-  { key: "teal",     label: "Vert-bleu océan",   bg: "bg-teal-500",     text: "text-white", swatch: "bg-teal-500" },
-  { key: "emerald",  label: "Émeraude",          bg: "bg-emerald-500",  text: "text-white", swatch: "bg-emerald-500" },
-  { key: "green",    label: "Vert",              bg: "bg-green-600",    text: "text-white", swatch: "bg-green-600" },
-  { key: "cyan",     label: "Cyan",              bg: "bg-cyan-500",     text: "text-white", swatch: "bg-cyan-500" },
-  { key: "sky",      label: "Bleu ciel",         bg: "bg-sky-500",      text: "text-white", swatch: "bg-sky-500" },
-  { key: "blue",     label: "Bleu",              bg: "bg-blue-600",     text: "text-white", swatch: "bg-blue-600" },
-  { key: "indigo",   label: "Indigo",            bg: "bg-indigo-600",   text: "text-white", swatch: "bg-indigo-600" },
-  { key: "violet",   label: "Violet",            bg: "bg-violet-600",   text: "text-white", swatch: "bg-violet-600" },
-  { key: "fuchsia",  label: "Fuchsia",           bg: "bg-fuchsia-600",  text: "text-white", swatch: "bg-fuchsia-600" },
-  { key: "pink",     label: "Rose",              bg: "bg-pink-500",     text: "text-white", swatch: "bg-pink-500" },
+  { key: "teal",    label: "Bleu-vert océan", bg: "bg-teal-500",    text: "text-white",     swatch: "bg-teal-500" },
+  { key: "blue",    label: "Bleu roi",         bg: "bg-blue-700",    text: "text-white",     swatch: "bg-blue-700" },
+  { key: "fuchsia", label: "Rose fuchsia",     bg: "bg-fuchsia-500", text: "text-white",     swatch: "bg-fuchsia-500" },
+  { key: "pink",    label: "Rose pastel",      bg: "bg-pink-300",    text: "text-pink-900",  swatch: "bg-pink-300" },
+  { key: "violet",  label: "Violet",           bg: "bg-violet-600",  text: "text-white",     swatch: "bg-violet-600" },
+  { key: "orange",  label: "Orange",           bg: "bg-orange-500",  text: "text-white",     swatch: "bg-orange-500" },
+  { key: "gray",    label: "Gris",             bg: "bg-gray-500",    text: "text-white",     swatch: "bg-gray-500" },
+  { key: "brown",   label: "Marron",           bg: "bg-amber-800",   text: "text-white",     swatch: "bg-amber-800" },
 ];
 
 const getColorClasses = (key: string | null | undefined): { bg: string; text: string } => {
