@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Users, CalendarDays, MessageSquare, UserCheck, Lightbulb, ArrowRight,
-  Clock, MapPin, User, Mail, Sparkles, AlertCircle, Loader2
+  Clock, MapPin, User, Mail, Sparkles, AlertCircle, Loader2, Eye, TrendingUp
 } from "lucide-react";
 
 interface Atelier {
@@ -49,6 +49,15 @@ interface Stats {
   membres_premium: number;
   messages_non_lus: number;
   idees_total: number;
+}
+
+interface VisitesStats {
+  total: number;
+  aujourd_hui: number;
+  cette_semaine: number;
+  ce_mois: number;
+  uniques_30j: number;
+  top_pages: { page: string; count: number }[];
 }
 
 const formatDateFr = (iso: string) => {
@@ -123,6 +132,9 @@ const Dashboard = () => {
   const [inscriptionsAtt, setInscriptionsAtt] = useState<InscriptionEnAttente[]>([]);
   const [idees, setIdees] = useState<Idee[]>([]);
   const [admins, setAdmins] = useState<Admin[]>([]);
+  const [visites, setVisites] = useState<VisitesStats>({
+    total: 0, aujourd_hui: 0, cette_semaine: 0, ce_mois: 0, uniques_30j: 0, top_pages: [],
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -164,6 +176,47 @@ const Dashboard = () => {
       setInscriptionsAtt((recAttRes.data as unknown as InscriptionEnAttente[]) ?? []);
       setIdees((ideesRes.data as Idee[]) ?? []);
       setAdmins((adminsRes.data as Admin[]) ?? []);
+
+      // Stats visites (calcul côté client sur les 30 derniers jours pour limiter la charge)
+      const debutJour    = new Date(); debutJour.setHours(0, 0, 0, 0);
+      const debutSemaine = new Date(); debutSemaine.setDate(debutSemaine.getDate() - 7);
+      const debutMois    = new Date(); debutMois.setDate(debutMois.getDate() - 30);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const [totalRes, jourRes, semaineRes, moisRes, pagesRes, visitesBrut] = await Promise.all([
+        (supabase.from("visites_site") as any).select("id", { count: "exact", head: true }),
+        (supabase.from("visites_site") as any).select("id", { count: "exact", head: true }).gte("cree_le", debutJour.toISOString()),
+        (supabase.from("visites_site") as any).select("id", { count: "exact", head: true }).gte("cree_le", debutSemaine.toISOString()),
+        (supabase.from("visites_site") as any).select("id", { count: "exact", head: true }).gte("cree_le", debutMois.toISOString()),
+        (supabase.from("visites_site") as any).select("page").gte("cree_le", debutMois.toISOString()).limit(2000),
+        (supabase.from("visites_site") as any).select("visiteur_hash").gte("cree_le", debutMois.toISOString()).limit(5000),
+      ]);
+
+      // Top pages
+      const pageCounts: Record<string, number> = {};
+      ((pagesRes.data ?? []) as { page: string }[]).forEach(r => {
+        pageCounts[r.page] = (pageCounts[r.page] ?? 0) + 1;
+      });
+      const top_pages = Object.entries(pageCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([page, count]) => ({ page, count }));
+
+      // Visiteurs uniques sur 30j (par hash distinct)
+      const uniques = new Set<string>();
+      ((visitesBrut.data ?? []) as { visiteur_hash: string | null }[]).forEach(r => {
+        if (r.visiteur_hash) uniques.add(r.visiteur_hash);
+      });
+
+      setVisites({
+        total:         totalRes.count ?? 0,
+        aujourd_hui:   jourRes.count ?? 0,
+        cette_semaine: semaineRes.count ?? 0,
+        ce_mois:       moisRes.count ?? 0,
+        uniques_30j:   uniques.size,
+        top_pages,
+      });
+
       setLoading(false);
     };
     fetchAll();
@@ -394,6 +447,63 @@ const Dashboard = () => {
           </div>
         </div>
       )}
+
+      {/* Trafic du site */}
+      <div className="bg-card border rounded-2xl overflow-hidden mt-6">
+        <div className="px-5 py-4 border-b flex items-center justify-between">
+          <h2 className="font-semibold text-foreground flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-primary" />
+            Trafic du site
+          </h2>
+          <span className="text-xs text-muted-foreground">Sur 30 jours glissants</span>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-5 divide-y md:divide-y-0 md:divide-x">
+          <div className="p-4 text-center">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Aujourd'hui</p>
+            <p className="text-2xl font-bold text-foreground">{visites.aujourd_hui}</p>
+          </div>
+          <div className="p-4 text-center">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">7 jours</p>
+            <p className="text-2xl font-bold text-foreground">{visites.cette_semaine}</p>
+          </div>
+          <div className="p-4 text-center">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">30 jours</p>
+            <p className="text-2xl font-bold text-foreground">{visites.ce_mois}</p>
+          </div>
+          <div className="p-4 text-center">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Visiteurs uniques (30j)</p>
+            <p className="text-2xl font-bold text-primary">{visites.uniques_30j}</p>
+          </div>
+          <div className="p-4 text-center">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Total</p>
+            <p className="text-2xl font-bold text-foreground">{visites.total}</p>
+          </div>
+        </div>
+        {visites.top_pages.length > 0 && (
+          <div className="px-5 py-4 border-t bg-muted/20">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <Eye className="w-3 h-3" /> Pages les plus visitées (30j)
+            </p>
+            <div className="space-y-1.5">
+              {visites.top_pages.map(({ page, count }) => {
+                const max = visites.top_pages[0].count;
+                const pct = max > 0 ? (count / max) * 100 : 0;
+                return (
+                  <div key={page} className="flex items-center gap-3 text-sm">
+                    <span className="font-mono text-xs text-foreground truncate w-32 shrink-0">{page || "/"}</span>
+                    <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-primary rounded-full" style={{ width: `${pct}%` }} />
+                    </div>
+                    <span className="text-xs text-muted-foreground tabular-nums w-10 text-right shrink-0">
+                      {count}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Alerte si pré-inscriptions en attente nombreuses */}
       {stats.pre_inscriptions_en_attente > 5 && (

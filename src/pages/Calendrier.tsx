@@ -9,6 +9,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { googleCalendarUrl, downloadIcsFile } from "@/utils/calendarLinks";
+import { trackVisit } from "@/utils/trackVisit";
 
 const FRENCH_DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
@@ -37,6 +38,7 @@ const Calendrier = () => {
 
   // Fetch workshops from Supabase
   useEffect(() => {
+    trackVisit("/calendrier");
     const today = new Date().toISOString().slice(0, 10);
     supabase
       .from("ateliers")
