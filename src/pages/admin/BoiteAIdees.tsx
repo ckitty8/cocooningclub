@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { logAction } from "@/utils/logAction";
 import { toast } from "sonner";
 import {
   Lightbulb, Plus, X, Loader2, Check, XCircle, MessageCircle, Trash2, Pencil,
@@ -181,6 +182,7 @@ const BoiteAIdees = () => {
     const { error } = await supabase.from("idees").delete().eq("id", idee.id);
     if (error) toast.error("Erreur");
     else {
+      logAction("idee.delete", "idees", idee.id, { titre: idee.titre, categorie: idee.categorie });
       toast.success("Idée supprimée");
       setIdees(prev => prev.filter(i => i.id !== idee.id));
     }

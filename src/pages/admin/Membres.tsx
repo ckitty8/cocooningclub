@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { logAction } from "@/utils/logAction";
 import { Plus, Search, Pencil, Trash2, UserX, UserCheck2, X, Eye, EyeOff } from "lucide-react";
 import type { UserRole } from "@/contexts/AuthContext";
 
@@ -133,6 +134,10 @@ const Membres = () => {
       return;
     }
 
+    logAction("membre.create", "utilisateurs", null, {
+      email: createForm.email, prenom: createForm.prenom, nom: createForm.nom, role: createForm.role,
+    });
+
     await fetchMembers();
     setCreateModal(false);
     setCreateForm(emptyCreateForm);
@@ -161,7 +166,21 @@ const Membres = () => {
       fin_abonnement: editForm.fin_abonnement || null,
     };
     if (!isSelf) payload.role = editForm.role;
+    const before = editModal.member!;
     await supabase.from("utilisateurs").update(payload).eq("id", editModal.member!.id);
+
+    // Log spécifique si le rôle a changé (action sensible)
+    if (!isSelf && before.role !== editForm.role) {
+      logAction("membre.role_change", "utilisateurs", before.id, {
+        email: before.email, prenom: before.prenom, nom: before.nom,
+        role_avant: before.role, role_apres: editForm.role,
+      });
+    } else {
+      logAction("membre.update", "utilisateurs", before.id, {
+        email: before.email, prenom: before.prenom, nom: before.nom,
+      });
+    }
+
     await fetchMembers();
     setEditModal({ open: false, member: null });
     setSaving(false);
@@ -170,6 +189,9 @@ const Membres = () => {
   const toggleActif = async (m: Utilisateur) => {
     if (m.id === me?.id) return;
     await supabase.from("utilisateurs").update({ est_actif: !m.est_actif }).eq("id", m.id);
+    logAction(m.est_actif ? "membre.deactivate" : "membre.activate", "utilisateurs", m.id, {
+      email: m.email, prenom: m.prenom, nom: m.nom,
+    });
     fetchMembers();
   };
 
@@ -177,6 +199,9 @@ const Membres = () => {
     if (m.id === me?.id) return;
     if (!confirm(`Supprimer définitivement ${m.prenom} ${m.nom} ?`)) return;
     await supabase.from("utilisateurs").delete().eq("id", m.id);
+    logAction("membre.delete", "utilisateurs", m.id, {
+      email: m.email, prenom: m.prenom, nom: m.nom, role: m.role,
+    });
     fetchMembers();
   };
 

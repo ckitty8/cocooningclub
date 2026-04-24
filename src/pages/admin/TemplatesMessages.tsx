@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
+import { logAction } from "@/utils/logAction";
 import { toast } from "sonner";
 import { Save, RotateCcw, Info, Loader2, Mail, MessageSquare, CheckCircle2, XCircle } from "lucide-react";
 
@@ -122,6 +123,12 @@ const TemplatesMessages = () => {
           return upd ? { ...t, valeur: edited[upd.id] } : t;
         })
       );
+      // Log : un log par template modifié
+      toSave.forEach(tpl => {
+        logAction("template_message.update", "parametres_messages", tpl.id, {
+          cle: tpl.cle, libelle: tpl.libelle,
+        });
+      });
     }
     setSavingContext(null);
   };
