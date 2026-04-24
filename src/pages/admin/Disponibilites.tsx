@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import {
-  Loader2, Plus, Trash2, Calendar, CalendarX, Flag, School, Clock
+  Loader2, Plus, Trash2, CalendarX, Clock, ChevronLeft, ChevronRight, CalendarDays, X
 } from "lucide-react";
 
 interface Disponibilite {
@@ -38,11 +38,27 @@ interface VacancesScolaires {
 
 const JOURS = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
 const JOURS_ORDRE = [1, 2, 3, 4, 5, 6, 0]; // lun-dim
+const JOURS_COURT = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
+const MOIS = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
 
-type Tab = "dispo" | "conges" | "officiels";
+type Tab = "dispo" | "conges" | "calendrier";
 
 const formatDateFr = (iso: string) =>
   new Date(iso + "T00:00:00").toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+
+// Format YYYY-MM-DD pour comparer des dates
+const toIsoDate = (y: number, m: number, d: number) =>
+  `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+
+// Une date est-elle dans un range [debut, fin] inclus ?
+const isDateInRange = (dateIso: string, debutIso: string, finIso: string) =>
+  dateIso >= debutIso && dateIso <= finIso;
+
+type CalEvent = {
+  type: "conge" | "ferie" | "vacances";
+  label: string;
+  color: string; // classes tailwind
+};
 
 const Disponibilites = () => {
   const { profile } = useAuth();
@@ -53,6 +69,12 @@ const Disponibilites = () => {
   const [indisponibilites, setIndisponibilites] = useState<Indisponibilite[]>([]);
   const [joursFeries, setJoursFeries] = useState<JourFerie[]>([]);
   const [vacances, setVacances] = useState<VacancesScolaires[]>([]);
+
+  // Calendrier
+  const today = new Date();
+  const [calYear, setCalYear] = useState(today.getFullYear());
+  const [calMonth, setCalMonth] = useState(today.getMonth());
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
   // Nouveaux créneaux / congés
   const [newDispo, setNewDispo] = useState<{ jour: number; debut: string; fin: string }>({
@@ -173,10 +195,10 @@ const Disponibilites = () => {
       {/* Onglets */}
       <div className="flex gap-2 mb-6 border-b">
         {([
-          { key: "dispo",     label: "Mes disponibilités", icon: Clock },
-          { key: "conges",    label: "Mes congés",          icon: CalendarX },
-          { key: "officiels", label: "Jours fériés & vacances scolaires", icon: Flag },
-        ] as { key: Tab; label: string; icon: typeof Flag }[]).map(({ key, label, icon: Icon }) => (
+          { key: "dispo",      label: "Mes disponibilités", icon: Clock },
+          { key: "conges",     label: "Mes congés",          icon: CalendarX },
+          { key: "calendrier", label: "Calendrier récap",    icon: CalendarDays },
+        ] as { key: Tab; label: string; icon: typeof CalendarDays }[]).map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setTab(key)}
@@ -351,68 +373,206 @@ const Disponibilites = () => {
         </div>
       )}
 
-      {/* ──────── Onglet 3 : Officiels ──────── */}
-      {tab === "officiels" && (
-        <div className="space-y-6">
-          {/* Jours fériés */}
-          <div className="bg-card border rounded-2xl p-5">
-            <h2 className="font-semibold mb-4 flex items-center gap-2">
-              <Flag className="w-4 h-4 text-primary" />
-              Jours fériés (France)
-            </h2>
-            {joursFeries.length === 0 ? (
-              <p className="text-sm text-muted-foreground italic">Aucun jour férié.</p>
-            ) : (
-              <div className="grid sm:grid-cols-2 gap-2">
-                {joursFeries.map(j => (
-                  <div key={j.id} className="flex items-center justify-between bg-background border rounded-xl p-3">
-                    <div className="flex items-center gap-3">
-                      <Calendar className="w-4 h-4 text-red-500 shrink-0" />
-                      <div>
-                        <p className="text-sm font-medium">{j.nom}</p>
-                        <p className="text-xs text-muted-foreground">{formatDateFr(j.date)}</p>
-                      </div>
-                    </div>
-                    <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                      {j.annee}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+      {/* ──────── Onglet 3 : Calendrier récap ──────── */}
+      {tab === "calendrier" && (() => {
+        // Construction de la grille du mois
+        const firstDay = new Date(calYear, calMonth, 1);
+        const lastDay  = new Date(calYear, calMonth + 1, 0);
+        let startDow = firstDay.getDay();
+        startDow = startDow === 0 ? 6 : startDow - 1; // lundi-based
+        const days: (number | null)[] = [];
+        for (let i = 0; i < startDow; i++) days.push(null);
+        for (let i = 1; i <= lastDay.getDate(); i++) days.push(i);
+        while (days.length % 7 !== 0) days.push(null);
 
-          {/* Vacances scolaires */}
+        // Calcule les events pour un jour
+        const getEventsForDay = (day: number): CalEvent[] => {
+          const iso = toIsoDate(calYear, calMonth, day);
+          const events: CalEvent[] = [];
+
+          indisponibilites.forEach(i => {
+            if (isDateInRange(iso, i.date_debut, i.date_fin)) {
+              events.push({
+                type: "conge",
+                label: i.motif || "Congé",
+                color: "bg-green-500 text-white",
+              });
+            }
+          });
+
+          joursFeries.forEach(j => {
+            if (j.date === iso) {
+              events.push({
+                type: "ferie",
+                label: j.nom,
+                color: "bg-red-500 text-white",
+              });
+            }
+          });
+
+          vacances.forEach(v => {
+            if (isDateInRange(iso, v.date_debut, v.date_fin)) {
+              events.push({
+                type: "vacances",
+                label: `Vac. ${v.nom}`,
+                color: "bg-amber-400 text-amber-900",
+              });
+            }
+          });
+
+          return events;
+        };
+
+        const prevMonth = () => {
+          if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); }
+          else setCalMonth(m => m - 1);
+        };
+        const nextMonth = () => {
+          if (calMonth === 11) { setCalMonth(0); setCalYear(y => y + 1); }
+          else setCalMonth(m => m + 1);
+        };
+        const goToday = () => {
+          const now = new Date();
+          setCalMonth(now.getMonth());
+          setCalYear(now.getFullYear());
+        };
+
+        const todayIso = toIsoDate(today.getFullYear(), today.getMonth(), today.getDate());
+        const selectedEvents = selectedDay
+          ? (() => {
+              const [, m, d] = selectedDay.split("-").map(Number);
+              return getEventsForDay(d);
+            })()
+          : [];
+
+        return (
           <div className="bg-card border rounded-2xl p-5">
-            <h2 className="font-semibold mb-4 flex items-center gap-2">
-              <School className="w-4 h-4 text-primary" />
-              Vacances scolaires — Zone C (Île-de-France)
-            </h2>
-            {vacances.length === 0 ? (
-              <p className="text-sm text-muted-foreground italic">Aucune période.</p>
-            ) : (
-              <div className="space-y-2">
-                {vacances.map(v => (
-                  <div key={v.id} className="flex items-center justify-between bg-background border rounded-xl p-3">
-                    <div className="flex items-center gap-3">
-                      <School className="w-4 h-4 text-amber-500 shrink-0" />
-                      <div>
-                        <p className="text-sm font-medium">{v.nom}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Du {formatDateFr(v.date_debut)} au {formatDateFr(v.date_fin)}
-                        </p>
-                      </div>
-                    </div>
-                    <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                      {v.annee_scolaire}
+            {/* Header calendrier */}
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={prevMonth}
+                  className="w-9 h-9 rounded-full border flex items-center justify-center hover:bg-muted transition-colors"
+                  aria-label="Mois précédent"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <h2 className="font-display text-xl font-semibold capitalize min-w-[160px] text-center">
+                  {MOIS[calMonth]} {calYear}
+                </h2>
+                <button
+                  onClick={nextMonth}
+                  className="w-9 h-9 rounded-full border flex items-center justify-center hover:bg-muted transition-colors"
+                  aria-label="Mois suivant"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={goToday}
+                  className="text-xs px-3 py-1.5 border rounded-full hover:bg-muted transition-colors font-medium"
+                >
+                  Aujourd'hui
+                </button>
+              </div>
+
+              {/* Légende */}
+              <div className="flex flex-wrap gap-3 text-xs">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded bg-green-500" /> Mes congés
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded bg-red-500" /> Jours fériés
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded bg-amber-400" /> Vacances scolaires
+                </span>
+              </div>
+            </div>
+
+            {/* En-têtes des jours */}
+            <div className="grid grid-cols-7 border-b pb-2 mb-1">
+              {JOURS_COURT.map(d => (
+                <div key={d} className="text-center text-xs font-semibold tracking-[0.1em] uppercase text-muted-foreground">
+                  {d}
+                </div>
+              ))}
+            </div>
+
+            {/* Grille des jours */}
+            <div className="grid grid-cols-7 gap-1">
+              {days.map((day, i) => {
+                if (!day) return <div key={i} className="aspect-[1/1] sm:aspect-auto sm:h-24" />;
+                const iso = toIsoDate(calYear, calMonth, day);
+                const events = getEventsForDay(day);
+                const isToday = iso === todayIso;
+                const isSelected = iso === selectedDay;
+
+                return (
+                  <button
+                    key={i}
+                    onClick={() => setSelectedDay(iso)}
+                    className={`
+                      aspect-[1/1] sm:aspect-auto sm:h-24 rounded-lg p-1.5 border text-left transition-all
+                      flex flex-col gap-0.5 overflow-hidden
+                      ${isSelected ? "border-primary ring-2 ring-primary/30" : "border-transparent hover:border-border"}
+                      ${isToday ? "bg-primary/5" : ""}
+                    `}
+                  >
+                    <span className={`text-xs font-semibold ${isToday ? "text-primary" : "text-foreground"}`}>
+                      {day}
                     </span>
+                    <div className="flex flex-col gap-0.5 overflow-hidden">
+                      {events.slice(0, 3).map((ev, idx) => (
+                        <span
+                          key={idx}
+                          className={`${ev.color} text-[10px] leading-tight px-1.5 py-0.5 rounded truncate font-medium`}
+                          title={ev.label}
+                        >
+                          {ev.label}
+                        </span>
+                      ))}
+                      {events.length > 3 && (
+                        <span className="text-[10px] text-muted-foreground pl-1">
+                          +{events.length - 3}
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Détail du jour sélectionné */}
+            {selectedDay && (
+              <div className="mt-5 bg-background border rounded-xl p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Détails</p>
+                    <h3 className="font-semibold text-foreground">{formatDateFr(selectedDay)}</h3>
                   </div>
-                ))}
+                  <button
+                    onClick={() => setSelectedDay(null)}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                {selectedEvents.length === 0 ? (
+                  <p className="text-sm text-muted-foreground italic">Aucun événement ce jour.</p>
+                ) : (
+                  <div className="space-y-1.5">
+                    {selectedEvents.map((ev, idx) => (
+                      <div key={idx} className={`${ev.color} text-xs px-3 py-1.5 rounded-full inline-flex items-center gap-2 mr-2`}>
+                        {ev.label}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
-        </div>
-      )}
+        );
+      })()}
     </AdminLayout>
   );
 };
