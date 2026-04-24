@@ -25,6 +25,7 @@ export type Database = {
           debut_abonnement: string | null
           fin_abonnement: string | null
           est_actif: boolean
+          couleur_conge: string | null
           cree_le: string
           modifie_le: string
         }
@@ -40,6 +41,7 @@ export type Database = {
           debut_abonnement?: string | null
           fin_abonnement?: string | null
           est_actif?: boolean
+          couleur_conge?: string | null
           cree_le?: string
           modifie_le?: string
         }
@@ -55,6 +57,7 @@ export type Database = {
           debut_abonnement?: string | null
           fin_abonnement?: string | null
           est_actif?: boolean
+          couleur_conge?: string | null
           cree_le?: string
           modifie_le?: string
         }

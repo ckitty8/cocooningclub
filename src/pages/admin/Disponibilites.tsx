@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import {
-  Loader2, Plus, Trash2, CalendarX, Clock, ChevronLeft, ChevronRight, CalendarDays, X
+  Loader2, Plus, Trash2, CalendarX, Clock, ChevronLeft, ChevronRight, CalendarDays, X, Palette, Check
 } from "lucide-react";
 
 interface Disponibilite {
@@ -60,6 +60,39 @@ type CalEvent = {
   color: string; // classes tailwind
 };
 
+// Palette de 10 couleurs disponibles pour les admins
+type CouleurKey = "teal" | "emerald" | "green" | "cyan" | "sky" | "blue" | "indigo" | "violet" | "fuchsia" | "pink";
+
+const PALETTE: { key: CouleurKey; label: string; bg: string; text: string; swatch: string }[] = [
+  { key: "teal",     label: "Vert-bleu océan",   bg: "bg-teal-500",     text: "text-white", swatch: "bg-teal-500" },
+  { key: "emerald",  label: "Émeraude",          bg: "bg-emerald-500",  text: "text-white", swatch: "bg-emerald-500" },
+  { key: "green",    label: "Vert",              bg: "bg-green-600",    text: "text-white", swatch: "bg-green-600" },
+  { key: "cyan",     label: "Cyan",              bg: "bg-cyan-500",     text: "text-white", swatch: "bg-cyan-500" },
+  { key: "sky",      label: "Bleu ciel",         bg: "bg-sky-500",      text: "text-white", swatch: "bg-sky-500" },
+  { key: "blue",     label: "Bleu",              bg: "bg-blue-600",     text: "text-white", swatch: "bg-blue-600" },
+  { key: "indigo",   label: "Indigo",            bg: "bg-indigo-600",   text: "text-white", swatch: "bg-indigo-600" },
+  { key: "violet",   label: "Violet",            bg: "bg-violet-600",   text: "text-white", swatch: "bg-violet-600" },
+  { key: "fuchsia",  label: "Fuchsia",           bg: "bg-fuchsia-600",  text: "text-white", swatch: "bg-fuchsia-600" },
+  { key: "pink",     label: "Rose",              bg: "bg-pink-500",     text: "text-white", swatch: "bg-pink-500" },
+];
+
+const getColorClasses = (key: string | null | undefined): { bg: string; text: string } => {
+  if (!key) return { bg: "bg-gray-400", text: "text-white" };
+  const found = PALETTE.find(p => p.key === key);
+  return found ? { bg: found.bg, text: found.text } : { bg: "bg-gray-400", text: "text-white" };
+};
+
+interface Admin {
+  id: string;
+  prenom: string;
+  nom: string;
+  couleur_conge: string | null;
+}
+interface IndisponibiliteWithAdmin extends Indisponibilite {
+  couleur_conge: string | null;
+  admin_prenom: string | null;
+}
+
 const Disponibilites = () => {
   const { profile } = useAuth();
   const [tab, setTab] = useState<Tab>("dispo");
@@ -67,8 +100,19 @@ const Disponibilites = () => {
 
   const [disponibilites, setDisponibilites] = useState<Disponibilite[]>([]);
   const [indisponibilites, setIndisponibilites] = useState<Indisponibilite[]>([]);
+  const [allIndispoWithColor, setAllIndispoWithColor] = useState<IndisponibiliteWithAdmin[]>([]);
   const [joursFeries, setJoursFeries] = useState<JourFerie[]>([]);
   const [vacances, setVacances] = useState<VacancesScolaires[]>([]);
+  const [admins, setAdmins] = useState<Admin[]>([]);
+  const [savingColor, setSavingColor] = useState(false);
+
+  // Couleur courante de l'admin connecté
+  const myColor = admins.find(a => a.id === profile?.id)?.couleur_conge ?? null;
+
+  // Couleurs déjà prises par d'autres admins
+  const takenByOthers = admins
+    .filter(a => a.id !== profile?.id && a.couleur_conge)
+    .map(a => a.couleur_conge);
 
   // Calendrier
   const today = new Date();
@@ -85,17 +129,52 @@ const Disponibilites = () => {
 
   const fetchAll = async () => {
     if (!profile?.id) return;
-    const [dRes, iRes, jRes, vRes] = await Promise.all([
+    const [dRes, iRes, jRes, vRes, aRes, allIRes] = await Promise.all([
       supabase.from("disponibilites").select("*").eq("utilisateur_id", profile.id),
       supabase.from("indisponibilites").select("*").eq("utilisateur_id", profile.id).order("date_debut"),
       supabase.from("jours_feries").select("*").order("date"),
       supabase.from("vacances_scolaires").select("*").eq("zone", "C").order("date_debut"),
+      supabase.from("utilisateurs").select("id, prenom, nom, couleur_conge").eq("role", "administrateur"),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (supabase.from("indisponibilites") as any).select("*, utilisateurs(couleur_conge, prenom)").order("date_debut"),
     ]);
     setDisponibilites((dRes.data as Disponibilite[]) ?? []);
     setIndisponibilites((iRes.data as Indisponibilite[]) ?? []);
     setJoursFeries((jRes.data as JourFerie[]) ?? []);
     setVacances((vRes.data as VacancesScolaires[]) ?? []);
+    setAdmins((aRes.data as Admin[]) ?? []);
+
+    // Transform join result into flat structure
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const allI = ((allIRes.data as any[]) ?? []).map((row: any) => ({
+      id: row.id,
+      utilisateur_id: row.utilisateur_id,
+      date_debut: row.date_debut,
+      date_fin: row.date_fin,
+      motif: row.motif,
+      cree_le: row.cree_le,
+      couleur_conge: row.utilisateurs?.couleur_conge ?? null,
+      admin_prenom: row.utilisateurs?.prenom ?? null,
+    })) as IndisponibiliteWithAdmin[];
+    setAllIndispoWithColor(allI);
+
     setLoading(false);
+  };
+
+  const handleChangeColor = async (couleur: CouleurKey | null) => {
+    if (!profile?.id) return;
+    setSavingColor(true);
+    const { error } = await supabase
+      .from("utilisateurs")
+      .update({ couleur_conge: couleur })
+      .eq("id", profile.id);
+    if (error) {
+      toast.error("Erreur lors du changement de couleur");
+    } else {
+      toast.success(couleur ? "Couleur enregistrée" : "Couleur supprimée");
+      fetchAll();
+    }
+    setSavingColor(false);
   };
 
   useEffect(() => { fetchAll(); }, [profile?.id]);
@@ -190,6 +269,44 @@ const Disponibilites = () => {
         <p className="text-muted-foreground text-sm mt-1">
           Gérez vos créneaux disponibles et vos congés. Ces infos bloquent la création d'ateliers si personne n'est dispo.
         </p>
+      </div>
+
+      {/* Sélecteur de couleur de l'admin */}
+      <div className="bg-card border rounded-2xl p-5 mb-6">
+        <div className="flex items-start gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Palette className="w-4 h-4 text-primary shrink-0" />
+            <h3 className="font-semibold">Ma couleur d'affichage</h3>
+          </div>
+          <div className="flex-1 min-w-[280px]">
+            <p className="text-sm text-muted-foreground mb-3">
+              Choisis une couleur pour tes congés sur le calendrier. Les couleurs déjà prises par d'autres admins sont désactivées.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {PALETTE.map(c => {
+                const isTaken = takenByOthers.includes(c.key);
+                const isMine = myColor === c.key;
+                return (
+                  <button
+                    key={c.key}
+                    onClick={() => !isTaken && !savingColor && handleChangeColor(isMine ? null : c.key)}
+                    disabled={isTaken || savingColor}
+                    className={`
+                      flex items-center gap-2 px-3 py-2 rounded-xl border text-sm transition-all
+                      ${isMine ? "ring-2 ring-primary border-primary" : ""}
+                      ${isTaken ? "opacity-30 cursor-not-allowed" : "hover:shadow-sm cursor-pointer"}
+                    `}
+                    title={isTaken ? "Déjà prise par un autre admin" : isMine ? "Cliquer pour désélectionner" : "Choisir cette couleur"}
+                  >
+                    <span className={`w-5 h-5 rounded-full ${c.swatch} shrink-0`} />
+                    <span className="font-medium">{c.label}</span>
+                    {isMine && <Check className="w-4 h-4 text-primary" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Onglets */}
@@ -385,17 +502,19 @@ const Disponibilites = () => {
         for (let i = 1; i <= lastDay.getDate(); i++) days.push(i);
         while (days.length % 7 !== 0) days.push(null);
 
-        // Calcule les events pour un jour
+        // Calcule les events pour un jour (tous admins confondus pour les congés)
         const getEventsForDay = (day: number): CalEvent[] => {
           const iso = toIsoDate(calYear, calMonth, day);
           const events: CalEvent[] = [];
 
-          indisponibilites.forEach(i => {
+          allIndispoWithColor.forEach(i => {
             if (isDateInRange(iso, i.date_debut, i.date_fin)) {
+              const cc = getColorClasses(i.couleur_conge);
+              const prefix = i.admin_prenom ? `${i.admin_prenom} · ` : "";
               events.push({
                 type: "conge",
-                label: i.motif || "Congé",
-                color: "bg-green-500 text-white",
+                label: `${prefix}${i.motif || "Congé"}`,
+                color: `${cc.bg} ${cc.text}`,
               });
             }
           });
@@ -477,9 +596,15 @@ const Disponibilites = () => {
 
               {/* Légende */}
               <div className="flex flex-wrap gap-3 text-xs">
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded bg-green-500" /> Mes congés
-                </span>
+                {admins.filter(a => a.couleur_conge).map(a => {
+                  const c = getColorClasses(a.couleur_conge);
+                  return (
+                    <span key={a.id} className="inline-flex items-center gap-1.5">
+                      <span className={`w-3 h-3 rounded ${c.bg}`} />
+                      Congés {a.prenom}
+                    </span>
+                  );
+                })}
                 <span className="inline-flex items-center gap-1.5">
                   <span className="w-3 h-3 rounded bg-red-500" /> Jours fériés
                 </span>
