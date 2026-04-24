@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
+import { logAction } from "@/utils/logAction";
 import { Plus, Pencil, Trash2, X, MapPin, Clock, Users, Euro, Search, ChevronDown, UserCheck, UserX } from "lucide-react";
 
 type Statut = "brouillon" | "publie" | "complet" | "annule" | "termine";
@@ -176,9 +177,25 @@ const Ateliers = () => {
       statut: form.statut,
     };
     if (modal.atelier) {
+      const before = modal.atelier;
       await supabase.from("ateliers").update(payload).eq("id", modal.atelier.id);
+      logAction("atelier.update", "ateliers", modal.atelier.id, {
+        titre: payload.titre,
+        statut_avant: before.statut,
+        statut_apres: payload.statut,
+        date_atelier: payload.date_atelier,
+      });
     } else {
-      await supabase.from("ateliers").insert({ ...payload, places_disponibles: Number(form.places_max) });
+      const { data: ins } = await supabase
+        .from("ateliers")
+        .insert({ ...payload, places_disponibles: Number(form.places_max) })
+        .select("id")
+        .single();
+      logAction("atelier.create", "ateliers", ins?.id ?? null, {
+        titre: payload.titre,
+        date_atelier: payload.date_atelier,
+        statut: payload.statut,
+      });
     }
     await fetchAteliers();
     setModal({ open: false, atelier: null });
@@ -186,8 +203,10 @@ const Ateliers = () => {
   };
 
   const handleDelete = async (id: string) => {
+    const atelier = ateliers.find(a => a.id === id);
     if (!confirm("Supprimer cet atelier définitivement ?")) return;
     await supabase.from("ateliers").delete().eq("id", id);
+    logAction("atelier.delete", "ateliers", id, { titre: atelier?.titre, date_atelier: atelier?.date_atelier });
     fetchAteliers();
   };
 

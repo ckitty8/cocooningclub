@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
+import { logAction } from "@/utils/logAction";
 import { toast } from "sonner";
 import {
   Check, X, Mail, MessageSquare, Clock, Calendar, MapPin, Phone, User,
@@ -163,6 +164,10 @@ const PreInscriptions = () => {
     } else {
       toast.success(`Pré-inscription de ${insc.prenom_invite} validée`);
       setInscriptions(prev => prev.map(i => i.id === insc.id ? { ...i, statut: "confirme" as const } : i));
+      logAction("inscription.validate", "inscriptions", insc.id, {
+        prenom: insc.prenom_invite, nom: insc.nom_invite,
+        atelier: insc.ateliers?.titre, email: insc.email_invite,
+      });
     }
     setActingOn(null);
   };
@@ -180,6 +185,10 @@ const PreInscriptions = () => {
     } else {
       toast.success(`Pré-inscription refusée`);
       setInscriptions(prev => prev.map(i => i.id === insc.id ? { ...i, statut: "annule" as const } : i));
+      logAction("inscription.refuse", "inscriptions", insc.id, {
+        prenom: insc.prenom_invite, nom: insc.nom_invite,
+        atelier: insc.ateliers?.titre, email: insc.email_invite,
+      });
     }
     setActingOn(null);
   };
@@ -222,7 +231,7 @@ const PreInscriptions = () => {
     }
 
     setNewSaving(true);
-    const { error } = await supabase.from("inscriptions").insert({
+    const { data: ins, error } = await supabase.from("inscriptions").insert({
       atelier_id: newForm.atelier_id,
       prenom_invite: newForm.prenom.trim(),
       nom_invite: newForm.nom.trim(),
@@ -231,13 +240,20 @@ const PreInscriptions = () => {
       date_naissance: newForm.date_naissance || null,
       statut: newForm.statut,
       statut_paiement: "non_requis",
-    });
+    }).select("id").single();
 
     if (error) {
       console.error("[handleCreateInscription]", error);
       toast.error(`Erreur : ${error.message}`, { duration: 8000 });
     } else {
       toast.success(`Inscription de ${newForm.prenom} ajoutée`);
+      logAction("inscription.create_manual", "inscriptions", ins?.id ?? null, {
+        prenom: newForm.prenom.trim(), nom: newForm.nom.trim(),
+        email: newForm.email.trim(),
+        atelier_id: newForm.atelier_id,
+        atelier: atelier?.titre,
+        statut: newForm.statut,
+      });
       setAddModalOpen(false);
       fetchAll();
     }

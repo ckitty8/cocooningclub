@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
+import { logAction } from "@/utils/logAction";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, X, ExternalLink, FileText, BookOpen, Newspaper } from "lucide-react";
+import { Plus, Pencil, Trash2, X, ExternalLink, FileText, BookOpen, Newspaper, type LucideIcon } from "lucide-react";
 
 type DocType = "magazine" | "guide" | "lien_externe";
 type DocAcces = "membres" | "premium" | "tous";
@@ -18,7 +19,7 @@ interface Document {
   created_at: string;
 }
 
-const typeIcon: Record<DocType, any> = {
+const typeIcon: Record<DocType, LucideIcon> = {
   magazine:     Newspaper,
   guide:        BookOpen,
   lien_externe: ExternalLink,
@@ -107,6 +108,13 @@ const Documents = () => {
       return;
     }
 
+    logAction(
+      modal.doc ? "document.update" : "document.create",
+      "documents",
+      modal.doc?.id ?? null,
+      { titre: payload.titre, type: payload.type, acces: payload.acces }
+    );
+
     toast.success(modal.doc ? "Document mis à jour" : "Document ajouté");
     await fetchDocs();
     setModal({ open: false, doc: null });
@@ -114,11 +122,13 @@ const Documents = () => {
   };
 
   const handleDelete = async (id: string) => {
+    const doc = docs.find(d => d.id === id);
     if (!confirm("Supprimer ce document ?")) return;
     const { error } = await supabase.from("documents").delete().eq("id", id);
     if (error) {
       toast.error(`Erreur : ${error.message}`);
     } else {
+      logAction("document.delete", "documents", id, { titre: doc?.titre, type: doc?.type });
       toast.success("Document supprimé");
       fetchDocs();
     }

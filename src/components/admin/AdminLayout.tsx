@@ -61,17 +61,31 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
       </nav>
 
       <div className="p-4 border-t">
-        <div className="flex items-center gap-3 px-3 py-2 mb-2">
-          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold text-sm shrink-0">
-            {(profile?.prenom?.[0] ?? profile?.email?.[0] ?? "A").toUpperCase()}
-          </div>
+        <Link
+          to="/admin/mon-compte"
+          onClick={() => setSidebarOpen(false)}
+          className="flex items-center gap-3 px-3 py-2 mb-2 rounded-xl hover:bg-muted transition-colors"
+          title="Modifier mon compte"
+        >
+          {profile?.url_avatar ? (
+            <img
+              src={profile.url_avatar}
+              alt="Avatar"
+              className="w-8 h-8 rounded-full object-cover shrink-0"
+              onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold text-sm shrink-0">
+              {(profile?.prenom?.[0] ?? profile?.email?.[0] ?? "A").toUpperCase()}
+            </div>
+          )}
           <div className="min-w-0">
             <p className="text-sm font-medium truncate">
               {profile?.prenom && profile?.nom ? `${profile.prenom} ${profile.nom}` : profile?.email}
             </p>
             <p className="text-xs text-muted-foreground truncate">{profile?.email}</p>
           </div>
-        </div>
+        </Link>
         <button
           onClick={handleSignOut}
           className="flex items-center gap-2 w-full px-3 py-2 text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-colors"

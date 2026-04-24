@@ -26,11 +26,14 @@ export const trackVisit = (page: string): void => {
   if (now - last < 5000) return;
   lastVisits[page] = now;
 
+  // `visites_site` n'est pas encore dans les types générés Supabase
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (supabase.from("visites_site") as any).insert({
+  (supabase.from("visites_site" as any)).insert({
     page,
     referrer: document.referrer || null,
     user_agent: navigator.userAgent.substring(0, 500),
     visiteur_hash: getVisitorId(),
-  }).then(() => { /* ignore errors silently */ });
+  }).then(({ error }: { error: unknown }) => {
+    if (error) console.warn("[trackVisit] insert failed:", error);
+  });
 };

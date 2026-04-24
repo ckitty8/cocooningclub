@@ -138,86 +138,94 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // `visites_site` n'est pas encore dans les types générés Supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const visites = supabase.from("visites_site" as any);
+
     const fetchAll = async () => {
-      const today = new Date().toISOString().slice(0, 10);
+      try {
+        const today = new Date().toISOString().slice(0, 10);
 
-      const [
-        utRes, inscAttRes, ateliersCountRes, msgsRes,
-        proAtelRes, recAttRes, ideesRes, adminsRes
-      ] = await Promise.all([
-        supabase.from("utilisateurs").select("role"),
-        supabase.from("inscriptions").select("id", { count: "exact", head: true }).eq("statut", "en_attente"),
-        supabase.from("ateliers").select("id", { count: "exact", head: true })
-          .in("statut", ["publie", "complet"]).gte("date_atelier", today),
-        supabase.from("contact_messages").select("id", { count: "exact", head: true }).eq("lu", false),
-        supabase.from("ateliers")
-          .select("id, titre, date_atelier, heure_debut, lieu, places_max, places_disponibles, statut")
-          .in("statut", ["publie", "complet"]).gte("date_atelier", today)
-          .order("date_atelier").limit(4),
-        supabase.from("inscriptions")
-          .select("id, prenom_invite, nom_invite, email_invite, inscrit_le, ateliers(titre, date_atelier)")
-          .eq("statut", "en_attente").order("inscrit_le", { ascending: false }).limit(5),
-        supabase.from("idees").select("id, titre, categorie, cree_le, utilisateur_id")
-          .order("cree_le", { ascending: false }).limit(4),
-        supabase.from("utilisateurs").select("id, prenom, code_couleur_conges").eq("role", "administrateur"),
-      ]);
+        const [
+          utRes, inscAttRes, ateliersCountRes, msgsRes,
+          proAtelRes, recAttRes, ideesRes, ideesCountRes, adminsRes
+        ] = await Promise.all([
+          supabase.from("utilisateurs").select("role"),
+          supabase.from("inscriptions").select("id", { count: "exact", head: true }).eq("statut", "en_attente"),
+          supabase.from("ateliers").select("id", { count: "exact", head: true })
+            .in("statut", ["publie", "complet"]).gte("date_atelier", today),
+          supabase.from("contact_messages").select("id", { count: "exact", head: true }).eq("lu", false),
+          supabase.from("ateliers")
+            .select("id, titre, date_atelier, heure_debut, lieu, places_max, places_disponibles, statut")
+            .in("statut", ["publie", "complet"]).gte("date_atelier", today)
+            .order("date_atelier").limit(4),
+          supabase.from("inscriptions")
+            .select("id, prenom_invite, nom_invite, email_invite, inscrit_le, ateliers(titre, date_atelier)")
+            .eq("statut", "en_attente").order("inscrit_le", { ascending: false }).limit(5),
+          supabase.from("idees").select("id, titre, categorie, cree_le, utilisateur_id")
+            .order("cree_le", { ascending: false }).limit(4),
+          supabase.from("idees").select("id", { count: "exact", head: true }),
+          supabase.from("utilisateurs").select("id, prenom, code_couleur_conges").eq("role", "administrateur"),
+        ]);
 
-      const utilisateurs = (utRes.data ?? []) as { role: string }[];
+        const utilisateurs = (utRes.data ?? []) as { role: string }[];
 
-      setStats({
-        pre_inscriptions_en_attente: inscAttRes.count ?? 0,
-        ateliers_a_venir:  ateliersCountRes.count ?? 0,
-        membres_actifs:    utilisateurs.filter(u => u.role === "membre_standard" || u.role === "membre_premium").length,
-        membres_premium:   utilisateurs.filter(u => u.role === "membre_premium").length,
-        messages_non_lus:  msgsRes.count ?? 0,
-        idees_total:       (ideesRes.data ?? []).length > 0 ? (ideesRes.data?.length ?? 0) : 0,
-      });
-      setProchainAteliers((proAtelRes.data as Atelier[]) ?? []);
-      setInscriptionsAtt((recAttRes.data as unknown as InscriptionEnAttente[]) ?? []);
-      setIdees((ideesRes.data as Idee[]) ?? []);
-      setAdmins((adminsRes.data as Admin[]) ?? []);
+        setStats({
+          pre_inscriptions_en_attente: inscAttRes.count ?? 0,
+          ateliers_a_venir:  ateliersCountRes.count ?? 0,
+          membres_actifs:    utilisateurs.filter(u => u.role === "membre_standard" || u.role === "membre_premium").length,
+          membres_premium:   utilisateurs.filter(u => u.role === "membre_premium").length,
+          messages_non_lus:  msgsRes.count ?? 0,
+          idees_total:       ideesCountRes.count ?? 0,
+        });
+        setProchainAteliers((proAtelRes.data as Atelier[]) ?? []);
+        setInscriptionsAtt((recAttRes.data as unknown as InscriptionEnAttente[]) ?? []);
+        setIdees((ideesRes.data as Idee[]) ?? []);
+        setAdmins((adminsRes.data as Admin[]) ?? []);
 
-      // Stats visites (calcul côté client sur les 30 derniers jours pour limiter la charge)
-      const debutJour    = new Date(); debutJour.setHours(0, 0, 0, 0);
-      const debutSemaine = new Date(); debutSemaine.setDate(debutSemaine.getDate() - 7);
-      const debutMois    = new Date(); debutMois.setDate(debutMois.getDate() - 30);
+        // Stats visites (calcul côté client sur les 30 derniers jours pour limiter la charge)
+        const debutJour    = new Date(); debutJour.setHours(0, 0, 0, 0);
+        const debutSemaine = new Date(); debutSemaine.setDate(debutSemaine.getDate() - 7);
+        const debutMois    = new Date(); debutMois.setDate(debutMois.getDate() - 30);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const [totalRes, jourRes, semaineRes, moisRes, pagesRes, visitesBrut] = await Promise.all([
-        (supabase.from("visites_site") as any).select("id", { count: "exact", head: true }),
-        (supabase.from("visites_site") as any).select("id", { count: "exact", head: true }).gte("cree_le", debutJour.toISOString()),
-        (supabase.from("visites_site") as any).select("id", { count: "exact", head: true }).gte("cree_le", debutSemaine.toISOString()),
-        (supabase.from("visites_site") as any).select("id", { count: "exact", head: true }).gte("cree_le", debutMois.toISOString()),
-        (supabase.from("visites_site") as any).select("page").gte("cree_le", debutMois.toISOString()).limit(2000),
-        (supabase.from("visites_site") as any).select("visiteur_hash").gte("cree_le", debutMois.toISOString()).limit(5000),
-      ]);
+        const [totalRes, jourRes, semaineRes, moisRes, pagesRes, visitesBrut] = await Promise.all([
+          visites.select("id", { count: "exact", head: true }),
+          visites.select("id", { count: "exact", head: true }).gte("cree_le", debutJour.toISOString()),
+          visites.select("id", { count: "exact", head: true }).gte("cree_le", debutSemaine.toISOString()),
+          visites.select("id", { count: "exact", head: true }).gte("cree_le", debutMois.toISOString()),
+          visites.select("page").gte("cree_le", debutMois.toISOString()).limit(2000),
+          visites.select("visiteur_hash").gte("cree_le", debutMois.toISOString()).limit(5000),
+        ]);
 
-      // Top pages
-      const pageCounts: Record<string, number> = {};
-      ((pagesRes.data ?? []) as { page: string }[]).forEach(r => {
-        pageCounts[r.page] = (pageCounts[r.page] ?? 0) + 1;
-      });
-      const top_pages = Object.entries(pageCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([page, count]) => ({ page, count }));
+        // Top pages
+        const pageCounts: Record<string, number> = {};
+        ((pagesRes.data ?? []) as { page: string }[]).forEach(r => {
+          pageCounts[r.page] = (pageCounts[r.page] ?? 0) + 1;
+        });
+        const top_pages = Object.entries(pageCounts)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5)
+          .map(([page, count]) => ({ page, count }));
 
-      // Visiteurs uniques sur 30j (par hash distinct)
-      const uniques = new Set<string>();
-      ((visitesBrut.data ?? []) as { visiteur_hash: string | null }[]).forEach(r => {
-        if (r.visiteur_hash) uniques.add(r.visiteur_hash);
-      });
+        // Visiteurs uniques sur 30j (par hash distinct)
+        const uniques = new Set<string>();
+        ((visitesBrut.data ?? []) as { visiteur_hash: string | null }[]).forEach(r => {
+          if (r.visiteur_hash) uniques.add(r.visiteur_hash);
+        });
 
-      setVisites({
-        total:         totalRes.count ?? 0,
-        aujourd_hui:   jourRes.count ?? 0,
-        cette_semaine: semaineRes.count ?? 0,
-        ce_mois:       moisRes.count ?? 0,
-        uniques_30j:   uniques.size,
-        top_pages,
-      });
-
-      setLoading(false);
+        setVisites({
+          total:         totalRes.count ?? 0,
+          aujourd_hui:   jourRes.count ?? 0,
+          cette_semaine: semaineRes.count ?? 0,
+          ce_mois:       moisRes.count ?? 0,
+          uniques_30j:   uniques.size,
+          top_pages,
+        });
+      } catch (err) {
+        console.error("[Dashboard fetchAll] error:", err);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchAll();
   }, []);
