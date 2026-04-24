@@ -195,13 +195,19 @@ const BoiteAIdees = () => {
     if (existing && existing.reaction === reaction) {
       // Retire la réaction
       const { error } = await supabase.from("idee_reactions").delete().eq("id", existing.id);
-      if (!error) {
+      if (error) {
+        console.error(error);
+        toast.error(`Erreur : ${error.message}`);
+      } else {
         setReactions(prev => prev.filter(r => r.id !== existing.id));
       }
     } else if (existing) {
       // Change la réaction
       const { error } = await supabase.from("idee_reactions").update({ reaction }).eq("id", existing.id);
-      if (!error) {
+      if (error) {
+        console.error(error);
+        toast.error(`Erreur : ${error.message}`);
+      } else {
         setReactions(prev => prev.map(r => r.id === existing.id ? { ...r, reaction } : r));
       }
     } else {

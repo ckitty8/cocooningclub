@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, X, ExternalLink, FileText, BookOpen, Newspaper } from "lucide-react";
+import { Plus, Pencil, Trash2, X, ExternalLink, FileText, BookOpen, Newspaper, type LucideIcon } from "lucide-react";
 
 type DocType = "magazine" | "guide" | "lien_externe";
 type DocAcces = "membres" | "premium" | "tous";
@@ -18,7 +18,7 @@ interface Document {
   created_at: string;
 }
 
-const typeIcon: Record<DocType, any> = {
+const typeIcon: Record<DocType, LucideIcon> = {
   magazine:     Newspaper,
   guide:        BookOpen,
   lien_externe: ExternalLink,
