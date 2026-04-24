@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { Plus, Pencil, Trash2, X, ExternalLink, FileText, BookOpen, Newspaper } from "lucide-react";
 
 type DocType = "magazine" | "guide" | "lien_externe";
@@ -49,7 +50,11 @@ const Documents = () => {
   const [saving, setSaving] = useState(false);
 
   const fetchDocs = async () => {
-    const { data } = await supabase.from("documents").select("*").order("created_at", { ascending: false });
+    const { data, error } = await supabase.from("documents").select("*").order("created_at", { ascending: false });
+    if (error) {
+      console.error("[fetchDocs]", error);
+      toast.error(`Impossible de charger les documents : ${error.message}`, { duration: 8000 });
+    }
     setDocs((data as Document[]) ?? []);
     setLoading(false);
   };
@@ -69,7 +74,13 @@ const Documents = () => {
 
     if (file && form.type !== "lien_externe") {
       const path = `${Date.now()}-${file.name}`;
-      const { data: upload } = await supabase.storage.from("documents").upload(path, file);
+      const { data: upload, error: upErr } = await supabase.storage.from("documents").upload(path, file);
+      if (upErr) {
+        console.error("[upload]", upErr);
+        toast.error(`Erreur upload : ${upErr.message}`, { duration: 8000 });
+        setSaving(false);
+        return;
+      }
       if (upload) {
         const { data: urlData } = supabase.storage.from("documents").getPublicUrl(path);
         fichier_url = urlData.publicUrl;
@@ -85,11 +96,18 @@ const Documents = () => {
       acces: form.acces,
     };
 
-    if (modal.doc) {
-      await supabase.from("documents").update(payload).eq("id", modal.doc.id);
-    } else {
-      await supabase.from("documents").insert(payload);
+    const { error } = modal.doc
+      ? await supabase.from("documents").update(payload).eq("id", modal.doc.id)
+      : await supabase.from("documents").insert(payload);
+
+    if (error) {
+      console.error("[handleSave]", error);
+      toast.error(`Erreur : ${error.message}`, { duration: 8000 });
+      setSaving(false);
+      return;
     }
+
+    toast.success(modal.doc ? "Document mis à jour" : "Document ajouté");
     await fetchDocs();
     setModal({ open: false, doc: null });
     setSaving(false);
@@ -97,8 +115,13 @@ const Documents = () => {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Supprimer ce document ?")) return;
-    await supabase.from("documents").delete().eq("id", id);
-    fetchDocs();
+    const { error } = await supabase.from("documents").delete().eq("id", id);
+    if (error) {
+      toast.error(`Erreur : ${error.message}`);
+    } else {
+      toast.success("Document supprimé");
+      fetchDocs();
+    }
   };
 
   return (
