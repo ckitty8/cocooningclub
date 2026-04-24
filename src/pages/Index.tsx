@@ -101,6 +101,7 @@ const ContactForm = () => {
   };
 
   const inputClass = "w-full rounded-xl border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary";
+  const TEXTAREA_MAX_LENGTH = 1000;
 
   if (loadingFields) return (
     <div className="flex justify-center py-8">
@@ -128,12 +129,22 @@ const ContactForm = () => {
             {field.label}{field.obligatoire && " *"}
           </label>
           {field.field_type === "textarea" ? (
-            <textarea
-              value={values[field.id] ?? ""}
-              onChange={e => setValues(v => ({ ...v, [field.id]: e.target.value }))}
-              rows={4}
-              className={`${inputClass} resize-none`}
-            />
+            <>
+              <textarea
+                value={values[field.id] ?? ""}
+                onChange={e => setValues(v => ({ ...v, [field.id]: e.target.value.slice(0, TEXTAREA_MAX_LENGTH) }))}
+                rows={4}
+                maxLength={TEXTAREA_MAX_LENGTH}
+                className={`${inputClass} resize-none`}
+              />
+              <p className={`text-xs mt-1 text-right ${
+                (values[field.id]?.length ?? 0) >= TEXTAREA_MAX_LENGTH
+                  ? "text-destructive font-medium"
+                  : "text-muted-foreground"
+              }`}>
+                {values[field.id]?.length ?? 0} / {TEXTAREA_MAX_LENGTH} caractères
+              </p>
+            </>
           ) : field.field_type === "select" ? (
             <select
               value={values[field.id] ?? ""}
@@ -168,10 +179,12 @@ const Index = () => {
   const [confirmedWorkshop, setConfirmedWorkshop] = useState<Workshop | null>(null);
 
   useEffect(() => {
+    const today = new Date().toISOString().slice(0, 10);
     supabase
       .from("ateliers")
       .select("id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, tarif_affichage, tarif_standard, statut")
       .in("statut", ["publie", "complet"])
+      .gte("date_atelier", today)
       .order("date_atelier")
       .then(({ data, error }) => {
         if (!error && data) setAteliers(data as Workshop[]);
