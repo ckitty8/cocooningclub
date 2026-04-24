@@ -84,10 +84,10 @@ interface Admin {
   id: string;
   prenom: string;
   nom: string;
-  couleur_conge: string | null;
+  couleur_conges: string | null;
 }
 interface IndisponibiliteWithAdmin extends Indisponibilite {
-  couleur_conge: string | null;
+  couleur_conges: string | null;
   admin_prenom: string | null;
 }
 
@@ -105,12 +105,12 @@ const Disponibilites = () => {
   const [savingColor, setSavingColor] = useState(false);
 
   // Couleur courante de l'admin connecté
-  const myColor = admins.find(a => a.id === profile?.id)?.couleur_conge ?? null;
+  const myColor = admins.find(a => a.id === profile?.id)?.couleur_conges ?? null;
 
   // Couleurs déjà prises par d'autres admins
   const takenByOthers = admins
-    .filter(a => a.id !== profile?.id && a.couleur_conge)
-    .map(a => a.couleur_conge);
+    .filter(a => a.id !== profile?.id && a.couleur_conges)
+    .map(a => a.couleur_conges);
 
   // Calendrier
   const today = new Date();
@@ -132,9 +132,9 @@ const Disponibilites = () => {
       supabase.from("indisponibilites").select("*").eq("utilisateur_id", profile.id).order("date_debut"),
       supabase.from("jours_feries").select("*").order("date"),
       supabase.from("vacances_scolaires").select("*").eq("zone", "C").order("date_debut"),
-      supabase.from("utilisateurs").select("id, prenom, nom, couleur_conge").eq("role", "administrateur"),
+      supabase.from("utilisateurs").select("id, prenom, nom, couleur_conges").eq("role", "administrateur"),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (supabase.from("indisponibilites") as any).select("*, utilisateurs(couleur_conge, prenom)").order("date_debut"),
+      (supabase.from("indisponibilites") as any).select("*, utilisateurs(couleur_conges, prenom)").order("date_debut"),
     ]);
     setDisponibilites((dRes.data as Disponibilite[]) ?? []);
     setIndisponibilites((iRes.data as Indisponibilite[]) ?? []);
@@ -151,7 +151,7 @@ const Disponibilites = () => {
       date_fin: row.date_fin,
       motif: row.motif,
       cree_le: row.cree_le,
-      couleur_conge: row.utilisateurs?.couleur_conge ?? null,
+      couleur_conges: row.utilisateurs?.couleur_conges ?? null,
       admin_prenom: row.utilisateurs?.prenom ?? null,
     })) as IndisponibiliteWithAdmin[];
     setAllIndispoWithColor(allI);
@@ -164,7 +164,7 @@ const Disponibilites = () => {
     setSavingColor(true);
     const { error } = await supabase
       .from("utilisateurs")
-      .update({ couleur_conge: couleur })
+      .update({ couleur_conges: couleur })
       .eq("id", profile.id);
     if (error) {
       // Affiche le vrai message pour diagnostiquer
@@ -509,7 +509,7 @@ const Disponibilites = () => {
 
           allIndispoWithColor.forEach(i => {
             if (isDateInRange(iso, i.date_debut, i.date_fin)) {
-              const cc = getColorClasses(i.couleur_conge);
+              const cc = getColorClasses(i.couleur_conges);
               const prefix = i.admin_prenom ? `${i.admin_prenom} · ` : "";
               events.push({
                 type: "conge",
@@ -596,8 +596,8 @@ const Disponibilites = () => {
 
               {/* Légende */}
               <div className="flex flex-wrap gap-3 text-xs">
-                {admins.filter(a => a.couleur_conge).map(a => {
-                  const c = getColorClasses(a.couleur_conge);
+                {admins.filter(a => a.couleur_conges).map(a => {
+                  const c = getColorClasses(a.couleur_conges);
                   return (
                     <span key={a.id} className="inline-flex items-center gap-1.5">
                       <span className={`w-3 h-3 rounded ${c.bg}`} />
