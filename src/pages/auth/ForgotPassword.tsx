@@ -13,7 +13,9 @@ const ForgotPassword = () => {
     setError("");
     setLoading(true);
 
-    const siteUrl = import.meta.env.VITE_SITE_URL || window.location.origin;
+    // Toujours rediriger vers la prod pour éviter les soucis de previews Vercel.
+    // Override possible via VITE_SITE_URL si besoin (dev local).
+    const siteUrl = import.meta.env.VITE_SITE_URL || "https://lecocooningclub.fr";
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${siteUrl}/reset-password`,
     });

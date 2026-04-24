@@ -25,6 +25,8 @@ export type Database = {
           debut_abonnement: string | null
           fin_abonnement: string | null
           est_actif: boolean
+          couleur_conges: string | null
+          code_couleur_conges: string | null
           cree_le: string
           modifie_le: string
         }
@@ -40,6 +42,8 @@ export type Database = {
           debut_abonnement?: string | null
           fin_abonnement?: string | null
           est_actif?: boolean
+          couleur_conges?: string | null
+          code_couleur_conges?: string | null
           cree_le?: string
           modifie_le?: string
         }
@@ -55,6 +59,8 @@ export type Database = {
           debut_abonnement?: string | null
           fin_abonnement?: string | null
           est_actif?: boolean
+          couleur_conges?: string | null
+          code_couleur_conges?: string | null
           cree_le?: string
           modifie_le?: string
         }
@@ -385,6 +391,60 @@ export type Database = {
         }
         Relationships: []
       }
+      idees: {
+        Row: {
+          id: string
+          utilisateur_id: string
+          categorie: "evolution_site" | "ateliers" | "anomalie_site" | "membres" | "communication" | "evenements" | "organisation" | "autre"
+          titre: string
+          description: string | null
+          cree_le: string
+          modifie_le: string
+        }
+        Insert: {
+          id?: string
+          utilisateur_id: string
+          categorie?: "evolution_site" | "ateliers" | "anomalie_site" | "membres" | "communication" | "evenements" | "organisation" | "autre"
+          titre: string
+          description?: string | null
+          cree_le?: string
+          modifie_le?: string
+        }
+        Update: {
+          id?: string
+          utilisateur_id?: string
+          categorie?: "evolution_site" | "ateliers" | "anomalie_site" | "membres" | "communication" | "evenements" | "organisation" | "autre"
+          titre?: string
+          description?: string | null
+          cree_le?: string
+          modifie_le?: string
+        }
+        Relationships: []
+      }
+      idee_reactions: {
+        Row: {
+          id: string
+          idee_id: string
+          utilisateur_id: string
+          reaction: "valide" | "non_valide" | "a_discuter"
+          cree_le: string
+        }
+        Insert: {
+          id?: string
+          idee_id: string
+          utilisateur_id: string
+          reaction: "valide" | "non_valide" | "a_discuter"
+          cree_le?: string
+        }
+        Update: {
+          id?: string
+          idee_id?: string
+          utilisateur_id?: string
+          reaction?: "valide" | "non_valide" | "a_discuter"
+          cree_le?: string
+        }
+        Relationships: []
+      }
       logs: {
         Row: {
           id: string
@@ -418,6 +478,108 @@ export type Database = {
           adresse_ip?: string | null
           user_agent?: string | null
           horodatage?: string
+        }
+        Relationships: []
+      }
+      disponibilites: {
+        Row: {
+          id: string
+          utilisateur_id: string
+          jour_semaine: number
+          heure_debut: string
+          heure_fin: string
+          cree_le: string
+        }
+        Insert: {
+          id?: string
+          utilisateur_id: string
+          jour_semaine: number
+          heure_debut: string
+          heure_fin: string
+          cree_le?: string
+        }
+        Update: {
+          id?: string
+          utilisateur_id?: string
+          jour_semaine?: number
+          heure_debut?: string
+          heure_fin?: string
+          cree_le?: string
+        }
+        Relationships: []
+      }
+      indisponibilites: {
+        Row: {
+          id: string
+          utilisateur_id: string
+          date_debut: string
+          date_fin: string
+          motif: string | null
+          cree_le: string
+        }
+        Insert: {
+          id?: string
+          utilisateur_id: string
+          date_debut: string
+          date_fin: string
+          motif?: string | null
+          cree_le?: string
+        }
+        Update: {
+          id?: string
+          utilisateur_id?: string
+          date_debut?: string
+          date_fin?: string
+          motif?: string | null
+          cree_le?: string
+        }
+        Relationships: []
+      }
+      jours_feries: {
+        Row: {
+          id: string
+          date: string
+          nom: string
+          annee: number
+        }
+        Insert: {
+          id?: string
+          date: string
+          nom: string
+          annee: number
+        }
+        Update: {
+          id?: string
+          date?: string
+          nom?: string
+          annee?: number
+        }
+        Relationships: []
+      }
+      vacances_scolaires: {
+        Row: {
+          id: string
+          nom: string
+          date_debut: string
+          date_fin: string
+          annee_scolaire: string
+          zone: string
+        }
+        Insert: {
+          id?: string
+          nom: string
+          date_debut: string
+          date_fin: string
+          annee_scolaire: string
+          zone?: string
+        }
+        Update: {
+          id?: string
+          nom?: string
+          date_debut?: string
+          date_fin?: string
+          annee_scolaire?: string
+          zone?: string
         }
         Relationships: []
       }

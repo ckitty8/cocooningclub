@@ -14,6 +14,7 @@ import heroImage from "@/assets/hero-workshop.jpg";
 import type { Workshop } from "@/data/workshops";
 import { formatDateFr, formatTimeFr } from "@/data/workshops";
 import { googleCalendarUrl, downloadIcsFile } from "@/utils/calendarLinks";
+import { trackVisit } from "@/utils/trackVisit";
 
 const PIERRE_ORACLE = "Atelier Créatif — Pierre & Oracle";
 
@@ -179,6 +180,7 @@ const Index = () => {
   const [confirmedWorkshop, setConfirmedWorkshop] = useState<Workshop | null>(null);
 
   useEffect(() => {
+    trackVisit("/");
     const today = new Date().toISOString().slice(0, 10);
     supabase
       .from("ateliers")

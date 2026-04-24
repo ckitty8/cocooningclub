@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,6 +19,8 @@ import Documents from "./pages/admin/Documents.tsx";
 import Formulaire from "./pages/admin/Formulaire.tsx";
 import PreInscriptions from "./pages/admin/PreInscriptions.tsx";
 import TemplatesMessages from "./pages/admin/TemplatesMessages.tsx";
+import Disponibilites from "./pages/admin/Disponibilites.tsx";
+import BoiteAIdees from "./pages/admin/BoiteAIdees.tsx";
 
 
 const queryClient = new QueryClient();
@@ -26,6 +28,20 @@ const queryClient = new QueryClient();
 const ScrollToTop = () => {
   const { pathname } = useLocation();
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  return null;
+};
+
+// Si Supabase redirige vers la racine avec un fragment de recovery (#access_token=...&type=recovery),
+// on redirige vers /reset-password en conservant le fragment.
+const RecoveryRedirect = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.includes("type=recovery") && location.pathname !== "/reset-password") {
+      navigate(`/reset-password${hash}`, { replace: true });
+    }
+  }, [location.pathname, navigate]);
   return null;
 };
 
@@ -37,6 +53,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <ScrollToTop />
+          <RecoveryRedirect />
           <Routes>
             {/* Routes publiques */}
             <Route path="/" element={<Index />} />
@@ -56,6 +73,8 @@ const App = () => (
             <Route path="/admin/documents"         element={<RoleGuard allowedRoles={["administrateur"]}><Documents /></RoleGuard>} />
             <Route path="/admin/formulaire"        element={<RoleGuard allowedRoles={["administrateur"]}><Formulaire /></RoleGuard>} />
             <Route path="/admin/messages-templates" element={<RoleGuard allowedRoles={["administrateur"]}><TemplatesMessages /></RoleGuard>} />
+            <Route path="/admin/disponibilites"     element={<RoleGuard allowedRoles={["administrateur"]}><Disponibilites /></RoleGuard>} />
+            <Route path="/admin/boite-a-idees"      element={<RoleGuard allowedRoles={["administrateur"]}><BoiteAIdees /></RoleGuard>} />
 
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
