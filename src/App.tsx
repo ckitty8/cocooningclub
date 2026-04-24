@@ -20,6 +20,7 @@ import Formulaire from "./pages/admin/Formulaire.tsx";
 import PreInscriptions from "./pages/admin/PreInscriptions.tsx";
 import TemplatesMessages from "./pages/admin/TemplatesMessages.tsx";
 import Disponibilites from "./pages/admin/Disponibilites.tsx";
+import BoiteAIdees from "./pages/admin/BoiteAIdees.tsx";
 
 
 const queryClient = new QueryClient();
@@ -73,6 +74,7 @@ const App = () => (
             <Route path="/admin/formulaire"        element={<RoleGuard allowedRoles={["administrateur"]}><Formulaire /></RoleGuard>} />
             <Route path="/admin/messages-templates" element={<RoleGuard allowedRoles={["administrateur"]}><TemplatesMessages /></RoleGuard>} />
             <Route path="/admin/disponibilites"     element={<RoleGuard allowedRoles={["administrateur"]}><Disponibilites /></RoleGuard>} />
+            <Route path="/admin/boite-a-idees"      element={<RoleGuard allowedRoles={["administrateur"]}><BoiteAIdees /></RoleGuard>} />
 
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

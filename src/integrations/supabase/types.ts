@@ -391,6 +391,60 @@ export type Database = {
         }
         Relationships: []
       }
+      idees: {
+        Row: {
+          id: string
+          utilisateur_id: string
+          categorie: "evolution_site" | "ateliers" | "anomalie_site" | "membres" | "communication" | "evenements" | "organisation" | "autre"
+          titre: string
+          description: string | null
+          cree_le: string
+          modifie_le: string
+        }
+        Insert: {
+          id?: string
+          utilisateur_id: string
+          categorie?: "evolution_site" | "ateliers" | "anomalie_site" | "membres" | "communication" | "evenements" | "organisation" | "autre"
+          titre: string
+          description?: string | null
+          cree_le?: string
+          modifie_le?: string
+        }
+        Update: {
+          id?: string
+          utilisateur_id?: string
+          categorie?: "evolution_site" | "ateliers" | "anomalie_site" | "membres" | "communication" | "evenements" | "organisation" | "autre"
+          titre?: string
+          description?: string | null
+          cree_le?: string
+          modifie_le?: string
+        }
+        Relationships: []
+      }
+      idee_reactions: {
+        Row: {
+          id: string
+          idee_id: string
+          utilisateur_id: string
+          reaction: "valide" | "non_valide" | "a_discuter"
+          cree_le: string
+        }
+        Insert: {
+          id?: string
+          idee_id: string
+          utilisateur_id: string
+          reaction: "valide" | "non_valide" | "a_discuter"
+          cree_le?: string
+        }
+        Update: {
+          id?: string
+          idee_id?: string
+          utilisateur_id?: string
+          reaction?: "valide" | "non_valide" | "a_discuter"
+          cree_le?: string
+        }
+        Relationships: []
+      }
       logs: {
         Row: {
           id: string
