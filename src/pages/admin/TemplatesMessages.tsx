@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Save, RotateCcw, Info, Loader2, Mail, MessageSquare } from "lucide-react";
+import { Save, RotateCcw, Info, Loader2, Mail, MessageSquare, CheckCircle2, XCircle } from "lucide-react";
 
 interface Template {
   id: string;
@@ -13,41 +13,23 @@ interface Template {
   modifie_le: string;
 }
 
+type Tab = "mail" | "whatsapp";
+type Context = "validation" | "refus";
+
 const VARIABLES = [
   { key: "{prenom}", desc: "Prénom du participant" },
-  { key: "{nom}", desc: "Nom du participant" },
-  { key: "{titre}", desc: "Titre de l'atelier" },
-  { key: "{date}", desc: "Date de l'atelier (ex: 15 mai 2026)" },
-  { key: "{heure}", desc: "Heure de début (ex: 14:30)" },
-  { key: "{lieu}", desc: "Lieu de l'atelier" },
+  { key: "{nom}",    desc: "Nom du participant" },
+  { key: "{titre}",  desc: "Titre de l'atelier" },
+  { key: "{date}",   desc: "Date de l'atelier" },
+  { key: "{heure}",  desc: "Heure de début" },
+  { key: "{lieu}",   desc: "Lieu de l'atelier" },
 ];
-
-// Groupe les templates par contexte
-const getContextLabel = (cle: string): { label: string; isMail: boolean; isWhatsApp: boolean } => {
-  if (cle.startsWith("validation_")) {
-    return {
-      label: "Validation",
-      isMail: cle.includes("mail"),
-      isWhatsApp: cle.includes("whatsapp"),
-    };
-  }
-  if (cle.startsWith("refus_")) {
-    return {
-      label: "Refus",
-      isMail: cle.includes("mail"),
-      isWhatsApp: cle.includes("whatsapp"),
-    };
-  }
-  return { label: cle, isMail: false, isWhatsApp: false };
-};
-
-type Tab = "mail" | "whatsapp";
 
 const TemplatesMessages = () => {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [edited, setEdited] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState<string | null>(null);
+  const [savingContext, setSavingContext] = useState<string | null>(null); // e.g. "validation_mail"
   const [activeTab, setActiveTab] = useState<Tab>("mail");
 
   const fetchTemplates = async () => {
@@ -69,51 +51,219 @@ const TemplatesMessages = () => {
 
   useEffect(() => { fetchTemplates(); }, []);
 
+  // Récupère le template par sa clé (ex: "validation_mail_sujet")
+  const tplByKey = useMemo(() => {
+    const map: Record<string, Template> = {};
+    templates.forEach(t => { map[t.cle] = t; });
+    return map;
+  }, [templates]);
+
+  const getSujet = (ctx: Context) => tplByKey[`${ctx}_mail_sujet`];
+  const getCorpsMail = (ctx: Context) => tplByKey[`${ctx}_mail_corps`];
+  const getWhatsApp = (ctx: Context) => tplByKey[`${ctx}_whatsapp`];
+
+  const hasContextChanges = (ctx: Context, tab: Tab): boolean => {
+    if (tab === "mail") {
+      const s = getSujet(ctx);
+      const c = getCorpsMail(ctx);
+      return (
+        (s && edited[s.id] !== s.valeur) ||
+        (c && edited[c.id] !== c.valeur)
+      ) as boolean;
+    } else {
+      const w = getWhatsApp(ctx);
+      return !!(w && edited[w.id] !== w.valeur);
+    }
+  };
+
   const handleChange = (id: string, valeur: string) => {
     setEdited(prev => ({ ...prev, [id]: valeur }));
   };
 
-  const handleSave = async (tpl: Template) => {
-    const nouvelleValeur = edited[tpl.id];
-    if (nouvelleValeur === tpl.valeur) return;
-    if (!nouvelleValeur.trim()) {
-      toast.error("Le template ne peut pas être vide");
-      return;
+  const handleSaveContext = async (ctx: Context, tab: Tab) => {
+    const key = `${ctx}_${tab}`;
+    setSavingContext(key);
+
+    const toSave: Template[] = [];
+    if (tab === "mail") {
+      const s = getSujet(ctx);
+      const c = getCorpsMail(ctx);
+      if (s && edited[s.id] !== s.valeur) toSave.push(s);
+      if (c && edited[c.id] !== c.valeur) toSave.push(c);
+    } else {
+      const w = getWhatsApp(ctx);
+      if (w && edited[w.id] !== w.valeur) toSave.push(w);
     }
 
-    setSaving(tpl.id);
-    const { error } = await supabase
-      .from("parametres_messages")
-      .update({ valeur: nouvelleValeur })
-      .eq("id", tpl.id);
+    // Valide que rien n'est vide
+    for (const tpl of toSave) {
+      if (!edited[tpl.id].trim()) {
+        toast.error(`"${tpl.libelle}" ne peut pas être vide`);
+        setSavingContext(null);
+        return;
+      }
+    }
 
-    if (error) {
+    // Enregistre en parallèle
+    const results = await Promise.all(
+      toSave.map(tpl =>
+        supabase.from("parametres_messages").update({ valeur: edited[tpl.id] }).eq("id", tpl.id)
+      )
+    );
+
+    const errors = results.filter(r => r.error);
+    if (errors.length > 0) {
       toast.error("Erreur lors de la sauvegarde");
     } else {
-      toast.success(`"${tpl.libelle}" mis à jour`);
-      setTemplates(prev => prev.map(t => t.id === tpl.id ? { ...t, valeur: nouvelleValeur } : t));
+      toast.success(`Message de ${ctx === "validation" ? "validation" : "refus"} enregistré`);
+      setTemplates(prev =>
+        prev.map(t => {
+          const upd = toSave.find(x => x.id === t.id);
+          return upd ? { ...t, valeur: edited[upd.id] } : t;
+        })
+      );
     }
-    setSaving(null);
+    setSavingContext(null);
   };
 
-  const handleReset = (tpl: Template) => {
-    setEdited(prev => ({ ...prev, [tpl.id]: tpl.valeur }));
+  const handleResetContext = (ctx: Context, tab: Tab) => {
+    const tpls: Template[] = [];
+    if (tab === "mail") {
+      const s = getSujet(ctx); if (s) tpls.push(s);
+      const c = getCorpsMail(ctx); if (c) tpls.push(c);
+    } else {
+      const w = getWhatsApp(ctx); if (w) tpls.push(w);
+    }
+    setEdited(prev => {
+      const next = { ...prev };
+      tpls.forEach(t => { next[t.id] = t.valeur; });
+      return next;
+    });
   };
 
   const insertVariable = (tplId: string, variable: string) => {
-    const textarea = document.getElementById(`tpl-${tplId}`) as HTMLTextAreaElement | HTMLInputElement | null;
-    if (!textarea) return;
-    const start = textarea.selectionStart ?? edited[tplId].length;
-    const end = textarea.selectionEnd ?? edited[tplId].length;
-    const current = edited[tplId];
+    const el = document.getElementById(`tpl-${tplId}`) as HTMLTextAreaElement | HTMLInputElement | null;
+    if (!el) return;
+    const start = el.selectionStart ?? (edited[tplId]?.length ?? 0);
+    const end = el.selectionEnd ?? (edited[tplId]?.length ?? 0);
+    const current = edited[tplId] ?? "";
     const newValue = current.substring(0, start) + variable + current.substring(end);
     setEdited(prev => ({ ...prev, [tplId]: newValue }));
-    // Remet le focus avec le curseur après la variable insérée
     setTimeout(() => {
-      textarea.focus();
+      el.focus();
       const pos = start + variable.length;
-      textarea.setSelectionRange(pos, pos);
+      el.setSelectionRange(pos, pos);
     }, 0);
+  };
+
+  // ──────────────────────────────────────────
+  // Composant carte de contexte (validation / refus)
+  // ──────────────────────────────────────────
+  const ContextCard = ({ ctx, tab }: { ctx: Context; tab: Tab }) => {
+    const isValidation = ctx === "validation";
+    const headerBg = isValidation ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200";
+    const titleColor = isValidation ? "text-green-700" : "text-red-700";
+    const IconHead = isValidation ? CheckCircle2 : XCircle;
+    const ctxLabel = isValidation ? "Validation" : "Refus";
+    const ctxDesc = isValidation
+      ? "Envoyé quand tu valides une pré-inscription."
+      : "Envoyé quand tu refuses une pré-inscription.";
+
+    const hasChanges = hasContextChanges(ctx, tab);
+    const saveKey = `${ctx}_${tab}`;
+    const isSaving = savingContext === saveKey;
+
+    // Templates concernés
+    const sujet = tab === "mail" ? getSujet(ctx) : null;
+    const corps = tab === "mail" ? getCorpsMail(ctx) : getWhatsApp(ctx);
+
+    if (!corps) return null;
+
+    return (
+      <div className="bg-card border rounded-2xl overflow-hidden flex flex-col">
+        {/* Header coloré */}
+        <div className={`${headerBg} border-b px-5 py-4`}>
+          <div className="flex items-center gap-2">
+            <IconHead className={`w-5 h-5 ${titleColor}`} />
+            <h3 className={`font-semibold ${titleColor}`}>{ctxLabel}</h3>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">{ctxDesc}</p>
+        </div>
+
+        {/* Corps */}
+        <div className="p-5 flex-1 flex flex-col gap-4">
+          {/* Variables rapides (communes à tous les champs de cette carte) */}
+          <div className="flex flex-wrap gap-1.5">
+            {VARIABLES.map(v => (
+              <button
+                key={v.key}
+                type="button"
+                onClick={() => insertVariable(corps.id, v.key)}
+                className="text-xs font-mono px-2 py-0.5 bg-muted hover:bg-primary hover:text-primary-foreground rounded transition-colors"
+                title={`Insérer ${v.key} dans le corps`}
+              >
+                {v.key}
+              </button>
+            ))}
+          </div>
+
+          {/* Objet (mail uniquement) */}
+          {sujet && (
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5">
+                Objet
+              </label>
+              <input
+                id={`tpl-${sujet.id}`}
+                type="text"
+                value={edited[sujet.id] ?? ""}
+                onChange={e => handleChange(sujet.id, e.target.value)}
+                className="w-full rounded-xl border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+          )}
+
+          {/* Corps (mail) ou Message (whatsapp) */}
+          <div className="flex-1 flex flex-col">
+            <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5">
+              {tab === "mail" ? "Corps" : "Message"}
+            </label>
+            <textarea
+              id={`tpl-${corps.id}`}
+              value={edited[corps.id] ?? ""}
+              onChange={e => handleChange(corps.id, e.target.value)}
+              rows={tab === "mail" ? 8 : 5}
+              className="w-full rounded-xl border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-y font-mono flex-1"
+            />
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            Dernière modif : {new Date(corps.modifie_le).toLocaleString("fr-FR")}
+          </p>
+        </div>
+
+        {/* Footer actions */}
+        <div className="px-5 py-3 border-t bg-muted/30 flex items-center justify-end gap-2">
+          {hasChanges && (
+            <button
+              onClick={() => handleResetContext(ctx, tab)}
+              className="flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-xs font-medium text-muted-foreground hover:bg-background transition-colors"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              Annuler
+            </button>
+          )}
+          <button
+            onClick={() => handleSaveContext(ctx, tab)}
+            disabled={!hasChanges || isSaving}
+            className="flex items-center gap-1.5 bg-primary text-primary-foreground px-4 py-1.5 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+            Enregistrer
+          </button>
+        </div>
+      </div>
+    );
   };
 
   if (loading) return (
@@ -140,7 +290,7 @@ const TemplatesMessages = () => {
           <div className="flex-1">
             <p className="font-medium text-foreground mb-2">Variables disponibles</p>
             <p className="text-sm text-muted-foreground mb-3">
-              Utilisez ces variables dans vos messages, elles seront automatiquement remplacées :
+              Clique sur une variable pour l'insérer dans le message. Elles seront remplacées automatiquement :
             </p>
             <div className="flex flex-wrap gap-2">
               {VARIABLES.map(v => (
@@ -154,7 +304,7 @@ const TemplatesMessages = () => {
         </div>
       </div>
 
-      {/* Onglets Mail / WhatsApp */}
+      {/* Onglets */}
       <div className="flex gap-2 mb-6 border-b">
         <button
           onClick={() => setActiveTab("mail")}
@@ -166,9 +316,6 @@ const TemplatesMessages = () => {
         >
           <Mail className="w-4 h-4" />
           Mail
-          <span className="ml-1 text-xs opacity-70">
-            ({templates.filter(t => t.cle.includes("mail")).length})
-          </span>
         </button>
         <button
           onClick={() => setActiveTab("whatsapp")}
@@ -180,102 +327,13 @@ const TemplatesMessages = () => {
         >
           <MessageSquare className="w-4 h-4" />
           WhatsApp
-          <span className="ml-1 text-xs opacity-70">
-            ({templates.filter(t => t.cle.includes("whatsapp")).length})
-          </span>
         </button>
       </div>
 
-      {/* Liste des templates filtrés par onglet */}
-      <div className="space-y-4">
-        {templates.filter(tpl => {
-          if (activeTab === "mail") return tpl.cle.includes("mail");
-          return tpl.cle.includes("whatsapp");
-        }).map(tpl => {
-          const ctx = getContextLabel(tpl.cle);
-          const hasChanges = edited[tpl.id] !== tpl.valeur;
-          const isSubject = tpl.cle.endsWith("_sujet");
-
-          return (
-            <div key={tpl.id} className="bg-card border rounded-2xl p-5">
-              <div className="flex items-start justify-between gap-4 mb-3 flex-wrap">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                    ctx.isWhatsApp ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"
-                  }`}>
-                    {ctx.isWhatsApp ? <MessageSquare className="w-5 h-5" /> : <Mail className="w-5 h-5" />}
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground">{tpl.libelle}</h3>
-                    {tpl.description && (
-                      <p className="text-xs text-muted-foreground mt-0.5">{tpl.description}</p>
-                    )}
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  {hasChanges && (
-                    <button
-                      onClick={() => handleReset(tpl)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-xs font-medium text-muted-foreground hover:bg-muted transition-colors"
-                    >
-                      <RotateCcw className="w-3.5 h-3.5" />
-                      Annuler
-                    </button>
-                  )}
-                  <button
-                    onClick={() => handleSave(tpl)}
-                    disabled={!hasChanges || saving === tpl.id}
-                    className="flex items-center gap-1.5 bg-primary text-primary-foreground px-3 py-1.5 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    {saving === tpl.id
-                      ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      : <Save className="w-3.5 h-3.5" />
-                    }
-                    Enregistrer
-                  </button>
-                </div>
-              </div>
-
-              {/* Variables rapides */}
-              <div className="flex flex-wrap gap-1.5 mb-2">
-                {VARIABLES.map(v => (
-                  <button
-                    key={v.key}
-                    type="button"
-                    onClick={() => insertVariable(tpl.id, v.key)}
-                    className="text-xs font-mono px-2 py-0.5 bg-muted hover:bg-primary hover:text-primary-foreground rounded transition-colors"
-                    title={`Insérer ${v.key}`}
-                  >
-                    {v.key}
-                  </button>
-                ))}
-              </div>
-
-              {/* Input / Textarea */}
-              {isSubject ? (
-                <input
-                  id={`tpl-${tpl.id}`}
-                  type="text"
-                  value={edited[tpl.id]}
-                  onChange={e => handleChange(tpl.id, e.target.value)}
-                  className="w-full rounded-xl border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              ) : (
-                <textarea
-                  id={`tpl-${tpl.id}`}
-                  value={edited[tpl.id]}
-                  onChange={e => handleChange(tpl.id, e.target.value)}
-                  rows={ctx.isWhatsApp ? 3 : 7}
-                  className="w-full rounded-xl border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-y font-mono"
-                />
-              )}
-
-              <p className="text-xs text-muted-foreground mt-2">
-                Dernière modification : {new Date(tpl.modifie_le).toLocaleString("fr-FR")}
-              </p>
-            </div>
-          );
-        })}
+      {/* 2 cartes côte à côte : Validation + Refus */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <ContextCard ctx="validation" tab={activeTab} />
+        <ContextCard ctx="refus"      tab={activeTab} />
       </div>
     </AdminLayout>
   );
