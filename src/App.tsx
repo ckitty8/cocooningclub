@@ -22,6 +22,11 @@ import TemplatesMessages from "./pages/admin/TemplatesMessages.tsx";
 import Disponibilites from "./pages/admin/Disponibilites.tsx";
 import BoiteAIdees from "./pages/admin/BoiteAIdees.tsx";
 import MonCompte from "./pages/admin/MonCompte.tsx";
+import MembreDashboard from "./pages/membre/Dashboard.tsx";
+import MembreAteliers from "./pages/membre/Ateliers.tsx";
+import MembreInscriptions from "./pages/membre/Inscriptions.tsx";
+import MembreMagazine from "./pages/membre/Magazine.tsx";
+import MembreMonCompte from "./pages/membre/MonCompte.tsx";
 
 
 const queryClient = new QueryClient();
@@ -63,8 +68,12 @@ const App = () => (
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
 
-            {/* Espace membre (à développer plus tard) */}
-            <Route path="/espace-membre" element={<Login />} />
+            {/* Espace membre */}
+            <Route path="/espace-membre"               element={<RoleGuard allowedRoles={["inscrit", "membre", "membre_premium", "administrateur"]}><MembreDashboard /></RoleGuard>} />
+            <Route path="/espace-membre/ateliers"      element={<RoleGuard allowedRoles={["inscrit", "membre", "membre_premium", "administrateur"]}><MembreAteliers /></RoleGuard>} />
+            <Route path="/espace-membre/inscriptions"  element={<RoleGuard allowedRoles={["inscrit", "membre", "membre_premium", "administrateur"]}><MembreInscriptions /></RoleGuard>} />
+            <Route path="/espace-membre/magazine"      element={<RoleGuard allowedRoles={["inscrit", "membre", "membre_premium", "administrateur"]}><MembreMagazine /></RoleGuard>} />
+            <Route path="/espace-membre/mon-compte"    element={<RoleGuard allowedRoles={["inscrit", "membre", "membre_premium", "administrateur"]}><MembreMonCompte /></RoleGuard>} />
 
             {/* Routes admin protégées */}
             <Route path="/admin/dashboard"         element={<RoleGuard allowedRoles={["administrateur"]}><Dashboard /></RoleGuard>} />
