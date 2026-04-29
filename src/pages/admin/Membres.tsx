@@ -128,6 +128,9 @@ const Membres = () => {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: createForm.email,
         password: createForm.mot_de_passe,
+        options: {
+          emailRedirectTo: `${window.location.origin}/login`,
+        },
       });
       if (authError || !authData.user) {
         setCreateError(authError?.message ?? "Erreur lors de la création du compte.");
@@ -194,7 +197,10 @@ const Membres = () => {
     if (activating) {
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email: editForm.email,
-        options: { shouldCreateUser: true },
+        options: {
+          shouldCreateUser: true,
+          emailRedirectTo: `${window.location.origin}/login`,
+        },
       });
       if (otpError) {
         toast.error(`Erreur envoi du lien d'invitation : ${otpError.message}`, { duration: 8000 });
@@ -251,12 +257,18 @@ const Membres = () => {
     // signInWithOtp avec shouldCreateUser:true :
     //   - crée le compte Supabase Auth s'il n'existe pas (cas membre créé "inactif")
     //   - envoie un email avec un lien de connexion
+    // emailRedirectTo : on cible l'origine courante pour que le lien
+    // pointe toujours vers le déploiement actif (sinon Supabase retombe
+    // sur la Site URL configurée côté dashboard, qui peut être périmée).
     // Le trigger SQL on_auth_user_created_link_utilisateur rebranche
     // ensuite utilisateurs.id sur le nouvel auth.users.id par email.
     if (activating) {
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email: m.email,
-        options: { shouldCreateUser: true },
+        options: {
+          shouldCreateUser: true,
+          emailRedirectTo: `${window.location.origin}/login`,
+        },
       });
       if (otpError) {
         toast.error(`Erreur envoi du lien d'invitation : ${otpError.message}`, { duration: 8000 });
