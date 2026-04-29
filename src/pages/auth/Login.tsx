@@ -30,6 +30,7 @@ const Login = () => {
     if (profile) {
       clearStuckTimer();
       if (profile.role === "administrateur") navigate("/admin/dashboard", { replace: true });
+      else if (profile.role === "membre_premium") navigate("/espace-membre-premium", { replace: true });
       else navigate("/espace-membre", { replace: true });
     }
   }, [profile, navigate]);

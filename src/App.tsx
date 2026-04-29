@@ -27,6 +27,11 @@ import MembreAteliers from "./pages/membre/Ateliers.tsx";
 import MembreInscriptions from "./pages/membre/Inscriptions.tsx";
 import MembreMagazine from "./pages/membre/Magazine.tsx";
 import MembreMonCompte from "./pages/membre/MonCompte.tsx";
+import MembrePremiumDashboard from "./pages/membre-premium/Dashboard.tsx";
+import MembrePremiumAteliers from "./pages/membre-premium/Ateliers.tsx";
+import MembrePremiumInscriptions from "./pages/membre-premium/Inscriptions.tsx";
+import MembrePremiumMagazine from "./pages/membre-premium/Magazine.tsx";
+import MembrePremiumMonCompte from "./pages/membre-premium/MonCompte.tsx";
 
 
 const queryClient = new QueryClient();
@@ -68,12 +73,19 @@ const App = () => (
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
 
-            {/* Espace membre */}
-            <Route path="/espace-membre"               element={<RoleGuard allowedRoles={["inscrit", "membre", "membre_premium", "administrateur"]}><MembreDashboard /></RoleGuard>} />
-            <Route path="/espace-membre/ateliers"      element={<RoleGuard allowedRoles={["inscrit", "membre", "membre_premium", "administrateur"]}><MembreAteliers /></RoleGuard>} />
-            <Route path="/espace-membre/inscriptions"  element={<RoleGuard allowedRoles={["inscrit", "membre", "membre_premium", "administrateur"]}><MembreInscriptions /></RoleGuard>} />
-            <Route path="/espace-membre/magazine"      element={<RoleGuard allowedRoles={["inscrit", "membre", "membre_premium", "administrateur"]}><MembreMagazine /></RoleGuard>} />
-            <Route path="/espace-membre/mon-compte"    element={<RoleGuard allowedRoles={["inscrit", "membre", "membre_premium", "administrateur"]}><MembreMonCompte /></RoleGuard>} />
+            {/* Espace membre standard */}
+            <Route path="/espace-membre"               element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreDashboard /></RoleGuard>} />
+            <Route path="/espace-membre/ateliers"      element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreAteliers /></RoleGuard>} />
+            <Route path="/espace-membre/inscriptions"  element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreInscriptions /></RoleGuard>} />
+            <Route path="/espace-membre/magazine"      element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreMagazine /></RoleGuard>} />
+            <Route path="/espace-membre/mon-compte"    element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreMonCompte /></RoleGuard>} />
+
+            {/* Espace membre premium */}
+            <Route path="/espace-membre-premium"               element={<RoleGuard allowedRoles={["membre_premium", "administrateur"]}><MembrePremiumDashboard /></RoleGuard>} />
+            <Route path="/espace-membre-premium/ateliers"      element={<RoleGuard allowedRoles={["membre_premium", "administrateur"]}><MembrePremiumAteliers /></RoleGuard>} />
+            <Route path="/espace-membre-premium/inscriptions"  element={<RoleGuard allowedRoles={["membre_premium", "administrateur"]}><MembrePremiumInscriptions /></RoleGuard>} />
+            <Route path="/espace-membre-premium/magazine"      element={<RoleGuard allowedRoles={["membre_premium", "administrateur"]}><MembrePremiumMagazine /></RoleGuard>} />
+            <Route path="/espace-membre-premium/mon-compte"    element={<RoleGuard allowedRoles={["membre_premium", "administrateur"]}><MembrePremiumMonCompte /></RoleGuard>} />
 
             {/* Routes admin protégées */}
             <Route path="/admin/dashboard"         element={<RoleGuard allowedRoles={["administrateur"]}><Dashboard /></RoleGuard>} />
