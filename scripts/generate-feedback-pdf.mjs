@@ -39,10 +39,12 @@ const PAGES = [
     description:
       "Page d'atterrissage publique : présentation du club, des activités et CTA d'inscription.",
     questions: [
-      "La proposition de valeur est-elle claire dès la première vue ?",
-      "Le ton et l'identité visuelle correspondent-ils à l'esprit du club ?",
-      "Les appels à l'action (s'inscrire, découvrir, contacter) sont-ils visibles et compréhensibles ?",
-      "Manque-t-il des informations essentielles avant le scroll ?",
+      "Test des 5 secondes — qu'avez-vous compris de ce que propose le site juste après l'avoir ouvert ? À qui s'adresse-t-il selon vous ?",
+      "Quelle est la première action que vous auriez naturellement envie de faire ? L'avez-vous trouvée facilement ?",
+      "Un mot pour décrire l'ambiance émotionnelle dégagée par la page (rassurant, froid, chaleureux, fade…) ? Est-ce ce que vous attendiez d'un « club cocooning » ?",
+      "Y a-t-il un élément (mot, image, bouton) qui vous a fait hésiter, douter ou tiquer ?",
+      "Qu'est-ce qui pourrait vous freiner avant de vous inscrire ? Quelle question reste sans réponse ?",
+      "Si vous deviez recommander la page à une amie, qu'en diriez-vous en une phrase ?",
     ],
   },
   {
@@ -52,10 +54,12 @@ const PAGES = [
     description:
       "Calendrier public des ateliers et événements à venir.",
     questions: [
-      "La lecture du calendrier est-elle intuitive ?",
-      "Les filtres / catégories proposés sont-ils suffisants ?",
-      "Le passage à une vue mensuelle ou liste serait-il utile ?",
-      "Comment souhaiteriez-vous vous pré-inscrire à un événement depuis cette page ?",
+      "En arrivant sur cette page, qu'attendiez-vous y trouver ? Le contenu correspond-il à cette attente ?",
+      "Comment décririez-vous votre stratégie pour repérer un atelier qui vous intéresse (date, thème, lieu, durée) ?",
+      "Quelles informations vous manquent pour décider si un atelier est fait pour vous ?",
+      "Préféreriez-vous une vue agenda, liste, mois, ou « prochains » ? Pourquoi ?",
+      "Qu'est-ce qui vous donnerait envie de revenir consulter cette page chaque semaine ?",
+      "Si vous vouliez vous pré-inscrire, à quel endroit cliqueriez-vous instinctivement ?",
     ],
   },
   {
@@ -65,9 +69,11 @@ const PAGES = [
     description:
       "Page de connexion à l'espace membre / admin.",
     questions: [
-      "Les libellés et messages d'erreur sont-ils suffisamment explicites ?",
-      "L'accès au mot de passe oublié est-il facile à trouver ?",
-      "Faut-il prévoir une connexion via email magique ou réseaux sociaux ?",
+      "Êtes-vous certaine d'être au bon endroit (membre vs administrateur) ? Sinon, qu'est-ce qui prête à confusion ?",
+      "Si vous saisissez un mauvais mot de passe, à quoi vous attendez-vous comme retour ?",
+      "Le lien « mot de passe oublié » est-il assez visible sans être anxiogène ?",
+      "Manque-t-il une option (rester connecté, magic link, « je n'ai pas encore de compte ») ?",
+      "Sur mobile, quels champs auriez-vous peur de ne pas voir / saisir correctement ?",
     ],
   },
   {
@@ -75,10 +81,12 @@ const PAGES = [
     path: "/forgot-password",
     section: "Authentification",
     description:
-      "Demande d'envoi d'un email de réinitialisation de mot de passe.",
+      "Demande d'envoi d'un email de réinitialisation.",
     questions: [
-      "Le message rassurant après envoi est-il clair ?",
-      "Le retour vers la page de connexion est-il évident ?",
+      "Le texte vous rassure-t-il sur le fait que la procédure va aboutir ? Que faudrait-il préciser ?",
+      "Combien de temps êtes-vous prête à attendre l'email avant de douter ? La page le précise-t-elle ?",
+      "Que faites-vous si vous ne recevez rien — est-ce qu'une issue de secours est offerte ?",
+      "Le retour vers la connexion est-il assez visible sans détourner de l'action principale ?",
     ],
   },
   {
@@ -88,8 +96,10 @@ const PAGES = [
     description:
       "Saisie du nouveau mot de passe (lien reçu par email).",
     questions: [
-      "Les règles de mot de passe sont-elles affichées clairement ?",
-      "Le retour de confirmation est-il rassurant ?",
+      "Les contraintes du mot de passe sont-elles affichées AVANT que vous tapiez, et la validation est-elle progressive ?",
+      "Le bouton « voir le mot de passe » vous met-il en confiance ou vous gêne-t-il ?",
+      "Quel message d'erreur attendez-vous si les deux champs ne correspondent pas ?",
+      "Que se passe-t-il après validation — l'auriez-vous deviné ?",
     ],
   },
   {
@@ -99,8 +109,10 @@ const PAGES = [
     description:
       "Page 404 affichée pour une URL inconnue.",
     questions: [
-      "Le ton de la page 404 est-il cohérent avec le reste du site ?",
-      "Les liens de retour proposés sont-ils utiles ?",
+      "Comprenez-vous immédiatement que c'est une erreur, sans culpabiliser ?",
+      "Le ton est-il aligné avec l'identité « cocooning » ou semble-t-il sec / technique ?",
+      "Quels chemins de rattrapage manquent (recherche, accueil, calendrier, contact) ?",
+      "Si vous aviez le pouvoir d'écrire le titre de cette page, que mettriez-vous ?",
     ],
   },
   {
@@ -108,111 +120,143 @@ const PAGES = [
     path: "/admin/dashboard",
     section: "Espace administrateur (accès restreint)",
     description:
-      "Tableau de bord administrateur : indicateurs et accès rapides. Sans session admin, redirige vers la connexion.",
+      "Tableau de bord administrateur. Sans session, redirige vers /login.",
     questions: [
-      "Les indicateurs présents sont-ils les bons pour piloter l'activité ?",
-      "Quels accès rapides voudriez-vous ajouter / retirer ?",
+      "Quelles sont les 3 informations que vous voulez voir EN PREMIER chaque matin ?",
+      "Quels indicateurs visibles ici sont du bruit pour vous ?",
+      "Quelle action lancez-vous le plus souvent ? Est-elle accessible en 1 clic ?",
+      "Y a-t-il un événement qui devrait vous « alerter » (pré-inscriptions en attente, paiement, message) et comment voudriez-vous être prévenue ?",
+      "Sur quelle période lisez-vous ces chiffres (semaine, mois, depuis le début) ? Le sait-on ?",
     ],
   },
   {
     title: "Admin · Membres",
     path: "/admin/membres",
     section: "Espace administrateur (accès restreint)",
-    description:
-      "Gestion des membres : recherche, filtres, fiche membre.",
+    description: "Gestion des membres : recherche, filtres, fiche membre.",
     questions: [
-      "Les filtres et colonnes correspondent-ils à votre besoin quotidien ?",
-      "Quelles actions en masse seraient utiles ?",
+      "Décrivez la dernière fois que vous avez cherché un membre — comment l'auriez-vous trouvé ici ?",
+      "Quels filtres utilisez-vous le plus en réalité (statut, ancienneté, atelier suivi…) ?",
+      "Quelles colonnes voudriez-vous voir / cacher / ajouter ?",
+      "Quelles actions en masse vous feraient gagner du temps (export, message, relance) ?",
+      "Que doit contenir la fiche d'un membre pour être utile sans être indigeste ?",
     ],
   },
   {
     title: "Admin · Ateliers",
     path: "/admin/ateliers",
     section: "Espace administrateur (accès restreint)",
-    description:
-      "Création et gestion des ateliers et événements.",
+    description: "Création et gestion des ateliers et événements.",
     questions: [
-      "La création d'un atelier est-elle suffisamment guidée ?",
-      "Faut-il prévoir des modèles d'ateliers récurrents ?",
+      "Combien de temps mettez-vous aujourd'hui à créer un atelier ? Qu'est-ce qui vous ralentit ?",
+      "Quels champs sont indispensables, lesquels sont du superflu ?",
+      "Avez-vous des ateliers récurrents ou semblables qui mériteraient un « modèle / duplication » ?",
+      "Comment voudriez-vous gérer la jauge, la liste d'attente, l'annulation ?",
+      "Quel est le risque le plus stressant à cette étape (oubli, erreur de date, double-saisie) ?",
     ],
   },
   {
     title: "Admin · Pré-inscriptions",
     path: "/admin/pre-inscriptions",
     section: "Espace administrateur (accès restreint)",
-    description:
-      "Suivi des pré-inscriptions et confirmations.",
+    description: "Suivi des pré-inscriptions et confirmations.",
     questions: [
-      "Le statut de chaque pré-inscription est-il facile à interpréter ?",
-      "Quelles relances automatiques voudriez-vous configurer ?",
+      "Quels statuts existent vraiment dans votre tête (en attente, à relancer, confirmée, refusée, payée) ?",
+      "Quelle est la première chose que vous regardez en arrivant sur cette page ?",
+      "Quel délai déclenche une relance manuelle aujourd'hui ? Pourrait-elle être automatique ?",
+      "Que voudriez-vous voir directement sur la ligne, sans avoir à ouvrir une fiche ?",
+      "Y a-t-il un cas qui vous fait perdre du temps systématiquement ?",
     ],
   },
   {
     title: "Admin · Documents",
     path: "/admin/documents",
     section: "Espace administrateur (accès restreint)",
-    description:
-      "Bibliothèque de documents partagés avec les membres.",
+    description: "Bibliothèque de documents partagés avec les membres.",
     questions: [
-      "Les catégories actuelles vous suffisent-elles ?",
-      "Faut-il pouvoir restreindre certains documents par profil ?",
+      "Quels types de documents sont concernés (règlement, fiches ateliers, factures, photos) ?",
+      "Comment voudriez-vous les classer (catégorie, atelier, membre, date) ?",
+      "Faut-il que certains documents ne soient visibles que pour certains membres ? Lesquels ?",
+      "Comment savez-vous qu'un document est « à jour » ou obsolète ?",
+      "Une notification aux membres quand un nouveau document est ajouté — utile ou intrusive ?",
     ],
   },
   {
     title: "Admin · Formulaire",
     path: "/admin/formulaire",
     section: "Espace administrateur (accès restreint)",
-    description:
-      "Configuration du formulaire d'inscription public.",
+    description: "Configuration du formulaire d'inscription public.",
     questions: [
-      "Les champs proposés correspondent-ils à votre besoin ?",
-      "Souhaitez-vous des champs conditionnels ou obligatoires selon le type de membre ?",
+      "Quels champs sont vraiment utiles à votre prise de décision (et lesquels font fuir les candidates) ?",
+      "Y a-t-il des questions conditionnelles selon le type de membre / l'atelier visé ?",
+      "Que faites-vous d'une réponse aujourd'hui (export, copie, email, base) ? Le flux est-il fluide ?",
+      "Préférez-vous un formulaire long (filtre fort) ou court (plus de leads) ?",
+      "Comment voudriez-vous prévisualiser le formulaire avant de le publier ?",
     ],
   },
   {
     title: "Admin · Templates de messages",
     path: "/admin/messages-templates",
     section: "Espace administrateur (accès restreint)",
-    description:
-      "Modèles de messages (email / SMS) réutilisables.",
+    description: "Modèles de messages (email / SMS) réutilisables.",
     questions: [
-      "Quels variables / champs dynamiques sont indispensables ?",
-      "Faut-il prévoir un aperçu avant envoi ?",
+      "Quels sont les 3 messages que vous écrivez le plus souvent à la main aujourd'hui ?",
+      "Quelles variables voulez-vous pouvoir injecter (prénom, atelier, date, lien) ?",
+      "Voulez-vous différencier le ton selon le canal (email vs SMS) ? Le contexte (relance vs accueil) ?",
+      "Avez-vous besoin d'un aperçu fidèle avant envoi ? D'un test à votre propre adresse ?",
+      "Qui d'autre que vous doit pouvoir modifier ces modèles ?",
     ],
   },
   {
     title: "Admin · Disponibilités",
     path: "/admin/disponibilites",
     section: "Espace administrateur (accès restreint)",
-    description:
-      "Gestion des créneaux et disponibilités.",
+    description: "Gestion des créneaux et disponibilités.",
     questions: [
-      "La saisie en lot est-elle suffisamment rapide ?",
-      "Quelles règles de récurrence aimeriez-vous ?",
+      "Comment gérez-vous aujourd'hui vos disponibilités (papier, agenda externe, tête) ?",
+      "Quelle granularité utilisez-vous (créneau d'1h, demi-journée, semaine entière) ?",
+      "Quelles règles de récurrence couvrent 80 % de vos cas ?",
+      "Comment marquer rapidement une indisponibilité exceptionnelle (vacances, maladie) ?",
+      "Y a-t-il un risque de double-booking aujourd'hui — que devrait empêcher l'outil ?",
     ],
   },
   {
     title: "Admin · Boîte à idées",
     path: "/admin/boite-a-idees",
     section: "Espace administrateur (accès restreint)",
-    description:
-      "Suivi des suggestions remontées par les membres.",
+    description: "Suivi des suggestions remontées par les membres.",
     questions: [
-      "Quels statuts (à étudier / en cours / refusé / fait) souhaitez-vous ?",
-      "Les membres doivent-ils pouvoir voter sur les idées ?",
+      "Que faites-vous d'une idée aujourd'hui — l'oubliez-vous, la stockez-vous, en discutez-vous ?",
+      "Quels statuts vous parleraient (nouvelle / à étudier / retenue / refusée / réalisée) ?",
+      "Faut-il que les membres voient les idées des autres ? Puissent voter ?",
+      "Comment fermez-vous la boucle avec celle qui a proposé l'idée — un message, rien, automatique ?",
+      "Quelle idée mériterait d'être mise en avant immédiatement par l'outil ?",
     ],
   },
   {
     title: "Admin · Mon compte",
     path: "/admin/mon-compte",
     section: "Espace administrateur (accès restreint)",
-    description:
-      "Paramètres du compte administrateur.",
+    description: "Paramètres du compte administrateur.",
     questions: [
-      "Quelles informations / préférences manquent ?",
-      "La déconnexion est-elle facile à trouver ?",
+      "Quelles infos voulez-vous pouvoir modifier vous-même sans appeler un développeur ?",
+      "Lesquelles devraient être en lecture seule (sécurité, identité) ?",
+      "Comment changez-vous de mot de passe — la procédure vous paraît-elle sûre et simple ?",
+      "La déconnexion est-elle évidente, surtout sur un poste partagé ?",
+      "Y a-t-il une notion de « co-administratrices » ou multi-comptes que vous anticipez ?",
     ],
   },
+];
+
+// Questions transverses appliquées à TOUTES les pages — angle UX classique
+// (heuristiques de Nielsen, charge cognitive, accessibilité, mobile).
+const CROSS_QUESTIONS = [
+  "Hiérarchie visuelle — qu'est-ce que vos yeux voient en premier, en second ? Est-ce volontaire ?",
+  "Rythme & densité — la page est-elle trop chargée, trop vide, ou juste ? Que retireriez-vous en priorité ?",
+  "Cohérence — couleurs, typographies, ton : repérez-vous une incohérence avec le reste du site ?",
+  "Mobile — qu'est-ce qui risque de mal passer sur un écran de téléphone selon vous ?",
+  "Accessibilité — un proche malvoyant, peu à l'aise avec le numérique ou pressé saurait-il s'en sortir ?",
+  "Confiance — quelque chose ici fait-il douter de la fiabilité, de la sécurité ou du sérieux du club ?",
 ];
 
 function log(msg) {
@@ -357,11 +401,14 @@ function buildHtml(captures) {
             <div class="answer-lines">
               <div class="line"></div>
               <div class="line"></div>
-              <div class="line"></div>
             </div>
           </li>`
         )
         .join("");
+      const crossQuestions = CROSS_QUESTIONS.map(
+        (q) => `<li class="question cross"><div class="question-text">${escapeHtml(q)}</div>
+          <div class="answer-lines"><div class="line"></div></div></li>`
+      ).join("");
 
       const num = pageNumber++;
       return `
@@ -378,8 +425,10 @@ function buildHtml(captures) {
         <div class="screenshot-wrap">
           <img src="${encodeURI(c.file)}" alt="Capture de ${escapeHtml(c.title)}" />
         </div>
-        <h3>Questions</h3>
+        <h3>Questions ciblées sur cette page</h3>
         <ol class="questions">${questions}</ol>
+        <h3>Grille UX transverse</h3>
+        <ul class="questions cross-list">${crossQuestions}</ul>
         <h3>Notes libres</h3>
         <div class="notes-box">
           <div class="line"></div>
@@ -465,8 +514,10 @@ function buildHtml(captures) {
   }
   .screenshot-wrap img { width: 100%; height: auto; display: block; max-height: 120mm; object-fit: contain; }
   h3 { font-size: 11pt; margin-top: 10px; margin-bottom: 6px; color: #111827; text-transform: uppercase; letter-spacing: 1px; }
-  ol.questions { padding-left: 20px; margin: 0 0 8px; }
-  .question { margin-bottom: 8px; }
+  ol.questions, ul.questions { padding-left: 20px; margin: 0 0 8px; }
+  ul.cross-list { list-style: "▸  "; padding-left: 18px; }
+  .question { margin-bottom: 6px; }
+  .question.cross { margin-bottom: 4px; color: #374151; font-size: 10pt; }
   .question-text { font-weight: 500; }
   .answer-lines .line, .notes-box .line {
     border-bottom: 1px solid #d1d5db; height: 6mm;
