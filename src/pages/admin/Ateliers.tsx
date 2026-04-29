@@ -94,10 +94,8 @@ const Ateliers = () => {
   const [inscLoading, setInscLoading] = useState(false);
 
   const fetchAteliers = async () => {
-    // Dépublie automatiquement les ateliers passés avant d'afficher la liste
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase.rpc as any)("depublier_ateliers_passes");
-
+    // Le cron quotidien (3h UTC) dépublie les ateliers passés ; pas besoin
+    // de l'appeler côté client (la fonction n'est plus exposée via RPC).
     const { data } = await supabase.from("ateliers").select("*").order("date_atelier");
     setAteliers((data as Atelier[]) ?? []);
     setLoading(false);
