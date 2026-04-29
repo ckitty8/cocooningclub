@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { withTimeout } from "@/utils/withTimeout";
 
 export type UserRole = "administrateur" | "inscrit" | "membre" | "membre_premium";
 
@@ -39,11 +40,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchProfile = async (userId: string) => {
     try {
-      const { data, error } = await supabase
-        .from("utilisateurs")
-        .select("*")
-        .eq("id", userId)
-        .single();
+      const { data, error } = await withTimeout(
+        supabase
+          .from("utilisateurs")
+          .select("*")
+          .eq("id", userId)
+          .single()
+      );
       if (error) console.error("fetchProfile error:", error.message, error.code);
       setProfile((data as Profile) ?? null);
     } catch (err) {

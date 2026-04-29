@@ -3,6 +3,7 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { logAction } from "@/utils/logAction";
+import { withTimeout } from "@/utils/withTimeout";
 import { Plus, Search, Pencil, Trash2, UserX, UserCheck2, X, Eye, EyeOff } from "lucide-react";
 import type { UserRole } from "@/contexts/AuthContext";
 
@@ -71,10 +72,12 @@ const Membres = () => {
 
   const fetchMembers = async () => {
     try {
-      const { data, error } = await supabase
-        .from("utilisateurs")
-        .select("*")
-        .order("cree_le", { ascending: false });
+      const { data, error } = await withTimeout(
+        supabase
+          .from("utilisateurs")
+          .select("*")
+          .order("cree_le", { ascending: false })
+      );
       if (error) throw error;
       setMembers((data as Utilisateur[]) ?? []);
     } catch (err) {

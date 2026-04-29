@@ -3,6 +3,7 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { logAction } from "@/utils/logAction";
+import { withTimeout } from "@/utils/withTimeout";
 import { toast } from "sonner";
 import {
   Lightbulb, Plus, X, Loader2, Check, XCircle, MessageCircle, Trash2, Pencil,
@@ -83,11 +84,11 @@ const BoiteAIdees = () => {
   // ─── Fetch ───
   const fetchAll = async () => {
     try {
-      const [iRes, rRes, aRes] = await Promise.all([
+      const [iRes, rRes, aRes] = await withTimeout(Promise.all([
         supabase.from("idees").select("*").order("cree_le", { ascending: false }),
         supabase.from("idee_reactions").select("*"),
         supabase.from("utilisateurs").select("id, prenom, nom, couleur_conges, code_couleur_conges").eq("role", "administrateur"),
-      ]);
+      ]));
       setIdees((iRes.data as Idee[]) ?? []);
       setReactions((rRes.data as IdeeReaction[]) ?? []);
       setAdmins((aRes.data as Admin[]) ?? []);

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
+import { withTimeout } from "@/utils/withTimeout";
 import { toast } from "sonner";
 import {
   Check, X, Mail, MessageSquare, Clock, Calendar, MapPin, Phone, User,
@@ -113,7 +114,7 @@ const PreInscriptions = () => {
   const fetchAll = async () => {
     try {
       const today = new Date().toISOString().slice(0, 10);
-      const [inscRes, tplRes, atelRes] = await Promise.all([
+      const [inscRes, tplRes, atelRes] = await withTimeout(Promise.all([
         supabase
           .from("inscriptions")
           .select("*, ateliers(id, titre, date_atelier, heure_debut, lieu)")
@@ -127,7 +128,7 @@ const PreInscriptions = () => {
           .in("statut", ["publie", "complet"])
           .gte("date_atelier", today)
           .order("date_atelier"),
-      ]);
+      ]));
 
       if (inscRes.data) setInscriptions(inscRes.data as unknown as Inscription[]);
       if (tplRes.data) {

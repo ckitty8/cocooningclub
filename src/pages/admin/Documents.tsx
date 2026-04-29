@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
+import { withTimeout } from "@/utils/withTimeout";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, X, ExternalLink, FileText, BookOpen, Newspaper, type LucideIcon } from "lucide-react";
 
@@ -53,7 +54,9 @@ const Documents = () => {
 
   const fetchDocs = async () => {
     try {
-      const { data, error } = await supabase.from("documents").select("*").order("created_at", { ascending: false });
+      const { data, error } = await withTimeout(
+        supabase.from("documents").select("*").order("created_at", { ascending: false })
+      );
       if (error) {
         console.error("[fetchDocs]", error);
         toast.error(`Impossible de charger les documents : ${error.message}`, { duration: 8000 });

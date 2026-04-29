@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
+import { withTimeout } from "@/utils/withTimeout";
 import { Mail, MailOpen, ChevronDown, ChevronUp, MessageSquare } from "lucide-react";
 
 interface Message {
@@ -18,10 +19,12 @@ const Messages = () => {
 
   const fetchMessages = async () => {
     try {
-      const { data } = await supabase
-        .from("contact_messages")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const { data } = await withTimeout(
+        supabase
+          .from("contact_messages")
+          .select("*")
+          .order("created_at", { ascending: false })
+      );
       setMessages((data as Message[]) ?? []);
     } catch (err) {
       console.error("[Messages.fetchMessages] error:", err);

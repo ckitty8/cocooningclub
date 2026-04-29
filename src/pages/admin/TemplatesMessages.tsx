@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
+import { withTimeout } from "@/utils/withTimeout";
 import { toast } from "sonner";
 import { Save, RotateCcw, Info, Loader2, Mail, MessageSquare, CheckCircle2, XCircle } from "lucide-react";
 
@@ -35,10 +36,12 @@ const TemplatesMessages = () => {
 
   const fetchTemplates = async () => {
     try {
-      const { data, error } = await supabase
-        .from("parametres_messages")
-        .select("*")
-        .order("cle");
+      const { data, error } = await withTimeout(
+        supabase
+          .from("parametres_messages")
+          .select("*")
+          .order("cle")
+      );
 
       if (error) {
         toast.error("Erreur de chargement des templates");

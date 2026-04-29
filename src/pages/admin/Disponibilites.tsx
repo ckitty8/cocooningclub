@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { withTimeout } from "@/utils/withTimeout";
 import { toast } from "sonner";
 import {
   Loader2, Plus, Trash2, CalendarX, Clock, ChevronLeft, ChevronRight, CalendarDays, X, Palette, Check
@@ -131,7 +132,7 @@ const Disponibilites = () => {
       return;
     }
     try {
-      const [dRes, iRes, jRes, vRes, aRes, allIRes] = await Promise.all([
+      const [dRes, iRes, jRes, vRes, aRes, allIRes] = await withTimeout(Promise.all([
         supabase.from("disponibilites").select("*").eq("utilisateur_id", profile.id),
         supabase.from("indisponibilites").select("*").eq("utilisateur_id", profile.id).order("date_debut"),
         supabase.from("jours_feries").select("*").order("date"),
@@ -139,7 +140,7 @@ const Disponibilites = () => {
         supabase.from("utilisateurs").select("id, prenom, nom, couleur_conges").eq("role", "administrateur"),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (supabase.from("indisponibilites") as any).select("*, utilisateurs(couleur_conges, prenom)").order("date_debut"),
-      ]);
+      ]));
       setDisponibilites((dRes.data as Disponibilite[]) ?? []);
       setIndisponibilites((iRes.data as Indisponibilite[]) ?? []);
       setJoursFeries((jRes.data as JourFerie[]) ?? []);
