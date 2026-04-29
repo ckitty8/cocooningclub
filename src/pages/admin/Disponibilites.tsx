@@ -126,37 +126,45 @@ const Disponibilites = () => {
   const [saving, setSaving] = useState(false);
 
   const fetchAll = async () => {
-    if (!profile?.id) return;
-    const [dRes, iRes, jRes, vRes, aRes, allIRes] = await Promise.all([
-      supabase.from("disponibilites").select("*").eq("utilisateur_id", profile.id),
-      supabase.from("indisponibilites").select("*").eq("utilisateur_id", profile.id).order("date_debut"),
-      supabase.from("jours_feries").select("*").order("date"),
-      supabase.from("vacances_scolaires").select("*").eq("zone", "C").order("date_debut"),
-      supabase.from("utilisateurs").select("id, prenom, nom, couleur_conges").eq("role", "administrateur"),
+    if (!profile?.id) {
+      setLoading(false);
+      return;
+    }
+    try {
+      const [dRes, iRes, jRes, vRes, aRes, allIRes] = await Promise.all([
+        supabase.from("disponibilites").select("*").eq("utilisateur_id", profile.id),
+        supabase.from("indisponibilites").select("*").eq("utilisateur_id", profile.id).order("date_debut"),
+        supabase.from("jours_feries").select("*").order("date"),
+        supabase.from("vacances_scolaires").select("*").eq("zone", "C").order("date_debut"),
+        supabase.from("utilisateurs").select("id, prenom, nom, couleur_conges").eq("role", "administrateur"),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase.from("indisponibilites") as any).select("*, utilisateurs(couleur_conges, prenom)").order("date_debut"),
+      ]);
+      setDisponibilites((dRes.data as Disponibilite[]) ?? []);
+      setIndisponibilites((iRes.data as Indisponibilite[]) ?? []);
+      setJoursFeries((jRes.data as JourFerie[]) ?? []);
+      setVacances((vRes.data as VacancesScolaires[]) ?? []);
+      setAdmins((aRes.data as Admin[]) ?? []);
+
+      // Transform join result into flat structure
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (supabase.from("indisponibilites") as any).select("*, utilisateurs(couleur_conges, prenom)").order("date_debut"),
-    ]);
-    setDisponibilites((dRes.data as Disponibilite[]) ?? []);
-    setIndisponibilites((iRes.data as Indisponibilite[]) ?? []);
-    setJoursFeries((jRes.data as JourFerie[]) ?? []);
-    setVacances((vRes.data as VacancesScolaires[]) ?? []);
-    setAdmins((aRes.data as Admin[]) ?? []);
-
-    // Transform join result into flat structure
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const allI = ((allIRes.data as any[]) ?? []).map((row: any) => ({
-      id: row.id,
-      utilisateur_id: row.utilisateur_id,
-      date_debut: row.date_debut,
-      date_fin: row.date_fin,
-      motif: row.motif,
-      cree_le: row.cree_le,
-      couleur_conges: row.utilisateurs?.couleur_conges ?? null,
-      admin_prenom: row.utilisateurs?.prenom ?? null,
-    })) as IndisponibiliteWithAdmin[];
-    setAllIndispoWithColor(allI);
-
-    setLoading(false);
+      const allI = ((allIRes.data as any[]) ?? []).map((row: any) => ({
+        id: row.id,
+        utilisateur_id: row.utilisateur_id,
+        date_debut: row.date_debut,
+        date_fin: row.date_fin,
+        motif: row.motif,
+        cree_le: row.cree_le,
+        couleur_conges: row.utilisateurs?.couleur_conges ?? null,
+        admin_prenom: row.utilisateurs?.prenom ?? null,
+      })) as IndisponibiliteWithAdmin[];
+      setAllIndispoWithColor(allI);
+    } catch (err) {
+      console.error("[Disponibilites.fetchAll] error:", err);
+      toast.error("Erreur lors du chargement des disponibilités");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChangeColor = async (couleur: CouleurKey | null) => {
