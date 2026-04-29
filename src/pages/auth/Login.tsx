@@ -3,10 +3,12 @@ import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
-const SUBMIT_TIMEOUT_MS = 6000;
+// Filet de sécurité : si fetchProfile reste en attente plus longtemps
+// que ça après un signIn réussi, on débloque l'UI avec un message clair.
+const PROFILE_LOAD_TIMEOUT_MS = 10000;
 
 const Login = () => {
-  const { signIn, profile } = useAuth();
+  const { signIn, user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [email, setEmail] = useState("");
@@ -14,6 +16,9 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  // Marque qu'on a soumis le formulaire avec succès, donc qu'on attend
+  // maintenant que le profile soit chargé par AuthContext.
+  const awaitingProfileRef = useRef(false);
   const stuckTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isInactive = searchParams.get("inactive") === "true";
@@ -25,15 +30,30 @@ const Login = () => {
     }
   };
 
-  // Redirection quand profile est chargé
+  const stopAwaiting = () => {
+    awaitingProfileRef.current = false;
+    clearStuckTimer();
+    setSubmitting(false);
+  };
+
+  // Redirection quand profile est chargé. Si on attendait le profile et
+  // que AuthContext a fini de charger sans le trouver, on affiche une
+  // erreur explicite plutôt que le timeout générique : la session auth
+  // est valide mais aucune ligne `utilisateurs` ne correspond à l'id
+  // (typiquement un décalage auth.users.id ↔ utilisateurs.id).
   useEffect(() => {
     if (profile) {
-      clearStuckTimer();
+      stopAwaiting();
       if (profile.role === "administrateur") navigate("/admin/dashboard", { replace: true });
       else if (profile.role === "membre_premium") navigate("/espace-membre-premium", { replace: true });
       else navigate("/espace-membre", { replace: true });
+      return;
     }
-  }, [profile, navigate]);
+    if (awaitingProfileRef.current && user && !authLoading && !profile) {
+      stopAwaiting();
+      setError("Profil introuvable pour ce compte. Contacte l'administrateur.");
+    }
+  }, [profile, user, authLoading, navigate]);
 
   useEffect(() => () => clearStuckTimer(), []);
 
@@ -41,21 +61,21 @@ const Login = () => {
     e.preventDefault();
     setError("");
     setSubmitting(true);
+    awaitingProfileRef.current = true;
 
-    // Filet de sécurité : si rien n'aboutit dans les 6s, on débloque l'UI.
     clearStuckTimer();
     stuckTimerRef.current = setTimeout(() => {
-      setSubmitting(false);
+      if (!awaitingProfileRef.current) return;
+      stopAwaiting();
       setError("Connexion en attente trop longue. Réessaie ou contacte l'administrateur.");
-    }, SUBMIT_TIMEOUT_MS);
+    }, PROFILE_LOAD_TIMEOUT_MS);
 
     const { error } = await signIn(email, password);
     if (error) {
-      clearStuckTimer();
+      stopAwaiting();
       setError("Email ou mot de passe incorrect.");
-      setSubmitting(false);
     }
-    // En cas de succès, l'effet sur `profile` redirige et coupe le timer.
+    // En cas de succès, l'effet sur `profile` / `authLoading` prend le relais.
   };
 
   return (

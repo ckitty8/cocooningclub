@@ -40,12 +40,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchProfile = async (userId: string) => {
     try {
+      // maybeSingle() : pas d'erreur PGRST116 si aucune ligne (cas
+      // auth.users.id ≠ utilisateurs.id), on récupère juste data = null.
       const { data, error } = await withTimeout(
         supabase
           .from("utilisateurs")
           .select("*")
           .eq("id", userId)
-          .single()
+          .maybeSingle()
       );
       if (error) console.error("fetchProfile error:", error.message, error.code);
       setProfile((data as Profile) ?? null);
