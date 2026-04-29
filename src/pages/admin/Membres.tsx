@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { logAction } from "@/utils/logAction";
 import { withTimeout } from "@/utils/withTimeout";
+import { toast } from "sonner";
 import { Plus, Search, Pencil, Trash2, UserX, UserCheck2, X, Eye, EyeOff } from "lucide-react";
 import type { UserRole } from "@/contexts/AuthContext";
 
@@ -214,10 +215,43 @@ const Membres = () => {
 
   const toggleActif = async (m: Utilisateur) => {
     if (m.id === me?.id) return;
-    await supabase.from("utilisateurs").update({ est_actif: !m.est_actif }).eq("id", m.id);
-    logAction(m.est_actif ? "membre.deactivate" : "membre.activate", "utilisateurs", m.id, {
-      email: m.email, prenom: m.prenom, nom: m.nom,
+    const activating = !m.est_actif;
+
+    // Si on passe de inactif → actif, on envoie un magic link.
+    // signInWithOtp avec shouldCreateUser:true :
+    //   - crée le compte Supabase Auth s'il n'existe pas (cas membre créé "inactif")
+    //   - envoie un email avec un lien de connexion
+    // Le trigger SQL on_auth_user_created_link_utilisateur rebranche
+    // ensuite utilisateurs.id sur le nouvel auth.users.id par email.
+    if (activating) {
+      const { error: otpError } = await supabase.auth.signInWithOtp({
+        email: m.email,
+        options: { shouldCreateUser: true },
+      });
+      if (otpError) {
+        toast.error(`Erreur envoi du lien d'invitation : ${otpError.message}`, { duration: 8000 });
+        return;
+      }
+    }
+
+    const { error } = await supabase
+      .from("utilisateurs")
+      .update({ est_actif: activating })
+      .eq("id", m.id);
+
+    if (error) {
+      toast.error(`Erreur : ${error.message}`);
+      return;
+    }
+
+    logAction(activating ? "membre.activate" : "membre.deactivate", "utilisateurs", m.id, {
+      email: m.email, prenom: m.prenom, nom: m.nom, magic_link_sent: activating,
     });
+    toast.success(
+      activating
+        ? `Membre activé. Lien d'invitation envoyé à ${m.email}.`
+        : "Membre désactivé.",
+    );
     fetchMembers();
   };
 
