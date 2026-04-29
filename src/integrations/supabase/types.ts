@@ -20,7 +20,7 @@ export type Database = {
           prenom: string
           nom: string
           telephone: string | null
-          role: "administrateur" | "inscrit" | "membre_standard" | "membre_premium"
+          role: "administrateur" | "inscrit" | "membre" | "membre_premium"
           url_avatar: string | null
           debut_abonnement: string | null
           fin_abonnement: string | null
@@ -37,7 +37,7 @@ export type Database = {
           prenom: string
           nom: string
           telephone?: string | null
-          role?: "administrateur" | "inscrit" | "membre_standard" | "membre_premium"
+          role?: "administrateur" | "inscrit" | "membre" | "membre_premium"
           url_avatar?: string | null
           debut_abonnement?: string | null
           fin_abonnement?: string | null
@@ -54,7 +54,7 @@ export type Database = {
           prenom?: string
           nom?: string
           telephone?: string | null
-          role?: "administrateur" | "inscrit" | "membre_standard" | "membre_premium"
+          role?: "administrateur" | "inscrit" | "membre" | "membre_premium"
           url_avatar?: string | null
           debut_abonnement?: string | null
           fin_abonnement?: string | null

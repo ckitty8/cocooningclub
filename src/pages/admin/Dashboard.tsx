@@ -173,7 +173,7 @@ const Dashboard = () => {
         setStats({
           pre_inscriptions_en_attente: inscAttRes.count ?? 0,
           ateliers_a_venir:  ateliersCountRes.count ?? 0,
-          membres_actifs:    utilisateurs.filter(u => u.role === "membre_standard" || u.role === "membre_premium").length,
+          membres_actifs:    utilisateurs.filter(u => u.role === "membre" || u.role === "membre_premium").length,
           membres_premium:   utilisateurs.filter(u => u.role === "membre_premium").length,
           messages_non_lus:  msgsRes.count ?? 0,
           idees_total:       ideesCountRes.count ?? 0,
