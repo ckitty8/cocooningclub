@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
+const SUBMIT_TIMEOUT_MS = 6000;
+
 const Login = () => {
-  const { signIn, profile, loading: authLoading } = useAuth();
+  const { signIn, profile } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [email, setEmail] = useState("");
@@ -12,43 +14,47 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  // True entre le moment où signIn() a réussi et l'arrivée du profil.
-  // Permet de différencier "rien fait" de "on attend encore le profil".
-  const [awaitingProfile, setAwaitingProfile] = useState(false);
+  const stuckTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isInactive = searchParams.get("inactive") === "true";
+
+  const clearStuckTimer = () => {
+    if (stuckTimerRef.current) {
+      clearTimeout(stuckTimerRef.current);
+      stuckTimerRef.current = null;
+    }
+  };
 
   // Redirection quand profile est chargé
   useEffect(() => {
     if (profile) {
+      clearStuckTimer();
       if (profile.role === "administrateur") navigate("/admin/dashboard", { replace: true });
       else navigate("/espace-membre", { replace: true });
     }
   }, [profile, navigate]);
 
-  // Si on attendait le profil et que le fetch a fini sans le ramener,
-  // on débloque le bouton et on affiche un message — sinon l'utilisateur
-  // reste figé sur "Connexion en cours…".
-  useEffect(() => {
-    if (awaitingProfile && !authLoading && !profile) {
-      setAwaitingProfile(false);
-      setSubmitting(false);
-      setError("Connexion réussie mais profil introuvable. Contactez l'administrateur.");
-    }
-  }, [awaitingProfile, authLoading, profile]);
+  useEffect(() => () => clearStuckTimer(), []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setSubmitting(true);
+
+    // Filet de sécurité : si rien n'aboutit dans les 6s, on débloque l'UI.
+    clearStuckTimer();
+    stuckTimerRef.current = setTimeout(() => {
+      setSubmitting(false);
+      setError("Connexion en attente trop longue. Réessaie ou contacte l'administrateur.");
+    }, SUBMIT_TIMEOUT_MS);
+
     const { error } = await signIn(email, password);
     if (error) {
+      clearStuckTimer();
       setError("Email ou mot de passe incorrect.");
       setSubmitting(false);
-      return;
     }
-    // signIn OK → on attend que onAuthStateChange + fetchProfile aboutissent.
-    setAwaitingProfile(true);
+    // En cas de succès, l'effet sur `profile` redirige et coupe le timer.
   };
 
   return (
