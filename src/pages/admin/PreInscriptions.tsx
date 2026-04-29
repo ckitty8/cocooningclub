@@ -12,6 +12,7 @@ import {
 interface Inscription {
   id: string;
   atelier_id: string;
+  utilisateur_id: string | null;
   prenom_invite: string | null;
   nom_invite: string | null;
   email_invite: string | null;
@@ -26,7 +27,23 @@ interface Inscription {
     heure_debut: string;
     lieu: string | null;
   } | null;
+  utilisateurs?: {
+    prenom: string | null;
+    nom: string | null;
+    email: string | null;
+    telephone: string | null;
+  } | null;
 }
+
+// Récupère prénom / nom / email / téléphone effectifs d'une inscription :
+// pour une inscription faite depuis l'espace membre, les champs invite sont
+// vides ; on retombe alors sur la fiche utilisateurs liée via utilisateur_id.
+const inscIdentite = (insc: Inscription) => ({
+  prenom: insc.prenom_invite ?? insc.utilisateurs?.prenom ?? "",
+  nom: insc.nom_invite ?? insc.utilisateurs?.nom ?? "",
+  email: insc.email_invite ?? insc.utilisateurs?.email ?? null,
+  telephone: insc.telephone_invite ?? insc.utilisateurs?.telephone ?? null,
+});
 
 interface Template {
   cle: string;
@@ -61,9 +78,10 @@ const formatDateTime = (iso: string) => {
 // Remplace les variables dans un template
 const fillTemplate = (tpl: string, insc: Inscription): string => {
   const a = insc.ateliers;
+  const id = inscIdentite(insc);
   return tpl
-    .replaceAll("{prenom}", insc.prenom_invite ?? "")
-    .replaceAll("{nom}", insc.nom_invite ?? "")
+    .replaceAll("{prenom}", id.prenom)
+    .replaceAll("{nom}", id.nom)
     .replaceAll("{titre}", a?.titre ?? "")
     .replaceAll("{date}", a?.date_atelier ? formatDate(a.date_atelier) : "")
     .replaceAll("{heure}", a?.heure_debut ? formatHeure(a.heure_debut) : "")
@@ -117,7 +135,7 @@ const PreInscriptions = () => {
       const [inscRes, tplRes, atelRes] = await withTimeout(Promise.all([
         supabase
           .from("inscriptions")
-          .select("*, ateliers(id, titre, date_atelier, heure_debut, lieu)")
+          .select("*, ateliers(id, titre, date_atelier, heure_debut, lieu), utilisateurs(prenom, nom, email, telephone)")
           .order("inscrit_le", { ascending: false }),
         supabase
           .from("parametres_messages")
@@ -165,21 +183,23 @@ const PreInscriptions = () => {
       .update({ statut: "confirme" })
       .eq("id", insc.id);
 
+    const id = inscIdentite(insc);
     if (error) {
       toast.error("Erreur lors de la validation");
     } else {
-      toast.success(`Pré-inscription de ${insc.prenom_invite} validée`);
+      toast.success(`Pré-inscription de ${id.prenom} validée`);
       setInscriptions(prev => prev.map(i => i.id === insc.id ? { ...i, statut: "confirme" as const } : i));
       logAction("inscription.validate", "inscriptions", insc.id, {
-        prenom: insc.prenom_invite, nom: insc.nom_invite,
-        atelier: insc.ateliers?.titre, email: insc.email_invite,
+        prenom: id.prenom, nom: id.nom,
+        atelier: insc.ateliers?.titre, email: id.email,
       });
     }
     setActingOn(null);
   };
 
   const handleRefuse = async (insc: Inscription) => {
-    if (!confirm(`Refuser la pré-inscription de ${insc.prenom_invite} ${insc.nom_invite} ?`)) return;
+    const id = inscIdentite(insc);
+    if (!confirm(`Refuser la pré-inscription de ${id.prenom} ${id.nom} ?`)) return;
     setActingOn(insc.id);
     const { error } = await supabase
       .from("inscriptions")
@@ -192,15 +212,16 @@ const PreInscriptions = () => {
       toast.success(`Pré-inscription refusée`);
       setInscriptions(prev => prev.map(i => i.id === insc.id ? { ...i, statut: "annule" as const } : i));
       logAction("inscription.refuse", "inscriptions", insc.id, {
-        prenom: insc.prenom_invite, nom: insc.nom_invite,
-        atelier: insc.ateliers?.titre, email: insc.email_invite,
+        prenom: id.prenom, nom: id.nom,
+        atelier: insc.ateliers?.titre, email: id.email,
       });
     }
     setActingOn(null);
   };
 
   const openMail = (insc: Inscription) => {
-    if (!insc.email_invite) {
+    const email = inscIdentite(insc).email;
+    if (!email) {
       toast.error("Pas d'email renseigné");
       return;
     }
@@ -210,7 +231,7 @@ const PreInscriptions = () => {
     const sujet = fillTemplate(templates[sujetKey] ?? "", insc);
     const corps = fillTemplate(templates[corpsKey] ?? "", insc);
 
-    const url = `mailto:${encodeURIComponent(insc.email_invite)}?subject=${encodeURIComponent(sujet)}&body=${encodeURIComponent(corps)}`;
+    const url = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(sujet)}&body=${encodeURIComponent(corps)}`;
     window.location.href = url;
   };
 
@@ -267,7 +288,8 @@ const PreInscriptions = () => {
   };
 
   const openWhatsApp = (insc: Inscription) => {
-    if (!insc.telephone_invite) {
+    const tel = inscIdentite(insc).telephone;
+    if (!tel) {
       toast.error("Pas de téléphone renseigné");
       return;
     }
@@ -275,7 +297,7 @@ const PreInscriptions = () => {
     const tplKey = isValidated ? "validation_whatsapp" : "refus_whatsapp";
     const message = fillTemplate(templates[tplKey] ?? "", insc);
 
-    const phone = normalizePhoneForWhatsApp(insc.telephone_invite);
+    const phone = normalizePhoneForWhatsApp(tel);
     const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
     window.open(url, "_blank", "noopener,noreferrer");
   };
@@ -332,7 +354,10 @@ const PreInscriptions = () => {
         </div>
       ) : (
         <div className="space-y-3">
-          {filtered.map(insc => (
+          {filtered.map(insc => {
+            const identite = inscIdentite(insc);
+            const fullName = `${identite.prenom} ${identite.nom}`.trim();
+            return (
             <div key={insc.id} className="bg-card rounded-2xl border p-5">
               <div className="flex flex-col lg:flex-row lg:items-start gap-4">
                 {/* Infos */}
@@ -340,8 +365,13 @@ const PreInscriptions = () => {
                   <div className="flex items-center gap-3 mb-2 flex-wrap">
                     <h3 className="font-semibold text-foreground flex items-center gap-2">
                       <User className="w-4 h-4 text-muted-foreground" />
-                      {insc.prenom_invite} {insc.nom_invite}
+                      {fullName || <span className="text-muted-foreground italic">Sans nom</span>}
                     </h3>
+                    {insc.utilisateur_id && (
+                      <span className="text-[10px] uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
+                        Membre
+                      </span>
+                    )}
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statutBadge[insc.statut]}`}>
                       {statutLabel[insc.statut]}
                     </span>
@@ -351,16 +381,16 @@ const PreInscriptions = () => {
                   </div>
 
                   <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1 text-sm">
-                    {insc.email_invite && (
+                    {identite.email && (
                       <div className="flex items-center gap-2 text-muted-foreground truncate">
                         <Mail className="w-3.5 h-3.5 shrink-0" />
-                        <span className="truncate">{insc.email_invite}</span>
+                        <span className="truncate">{identite.email}</span>
                       </div>
                     )}
-                    {insc.telephone_invite && (
+                    {identite.telephone && (
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Phone className="w-3.5 h-3.5 shrink-0" />
-                        <span>{insc.telephone_invite}</span>
+                        <span>{identite.telephone}</span>
                       </div>
                     )}
                     {insc.ateliers && (
@@ -423,18 +453,18 @@ const PreInscriptions = () => {
                   <div className="flex gap-2 lg:flex-col w-full">
                     <button
                       onClick={() => openMail(insc)}
-                      disabled={!insc.email_invite || insc.statut === "en_attente"}
+                      disabled={!identite.email || insc.statut === "en_attente"}
                       className="flex items-center justify-center gap-2 border border-foreground/20 text-foreground px-4 py-2 rounded-xl text-sm font-medium hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-1 lg:flex-none"
-                      title={insc.statut === "en_attente" ? "Validez ou refusez d'abord" : !insc.email_invite ? "Pas d'email" : "Envoyer un mail"}
+                      title={insc.statut === "en_attente" ? "Validez ou refusez d'abord" : !identite.email ? "Pas d'email" : "Envoyer un mail"}
                     >
                       <Mail className="w-4 h-4" />
                       Mail
                     </button>
                     <button
                       onClick={() => openWhatsApp(insc)}
-                      disabled={!insc.telephone_invite || insc.statut === "en_attente"}
+                      disabled={!identite.telephone || insc.statut === "en_attente"}
                       className="flex items-center justify-center gap-2 border border-foreground/20 text-foreground px-4 py-2 rounded-xl text-sm font-medium hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-1 lg:flex-none"
-                      title={insc.statut === "en_attente" ? "Validez ou refusez d'abord" : !insc.telephone_invite ? "Pas de téléphone" : "Envoyer WhatsApp"}
+                      title={insc.statut === "en_attente" ? "Validez ou refusez d'abord" : !identite.telephone ? "Pas de téléphone" : "Envoyer WhatsApp"}
                     >
                       <MessageSquare className="w-4 h-4" />
                       WhatsApp
@@ -443,7 +473,8 @@ const PreInscriptions = () => {
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
