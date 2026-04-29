@@ -98,7 +98,7 @@ const Magazine = () => {
   return (
     <MembreLayout>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground">Magazine & ressources</h1>
+        <h1 className="text-2xl font-bold text-foreground">Documents</h1>
         <p className="text-muted-foreground text-sm mt-1">
           Retrouvez les magazines, guides et ressources partagés par l'équipe.
         </p>
@@ -116,9 +116,9 @@ const Magazine = () => {
             const isLink = d.type === "lien_externe" || (!d.fichier_chemin && !!d.lien_externe);
             return (
               <div key={d.id} className="bg-card border rounded-2xl overflow-hidden flex flex-col group">
-                <div className="relative aspect-[3/4] bg-gradient-to-br from-primary/20 via-amber-500/15 to-rose-500/20 flex items-center justify-center">
-                  <Icon className="w-16 h-16 text-primary/50 group-hover:scale-110 transition-transform" />
-                  <span className="absolute top-3 left-3 text-xs bg-background/80 text-foreground px-2 py-0.5 rounded-full">
+                <div className="relative h-20 bg-gradient-to-br from-primary/20 via-amber-500/15 to-rose-500/20 flex items-center justify-center">
+                  <Icon className="w-7 h-7 text-primary/60 group-hover:scale-110 transition-transform" />
+                  <span className="absolute top-2 left-2 text-[10px] bg-background/80 text-foreground px-1.5 py-0.5 rounded-full">
                     {typeLabel[d.type]}
                   </span>
                 </div>
