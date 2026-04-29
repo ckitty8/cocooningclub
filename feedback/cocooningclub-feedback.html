@@ -1,0 +1,840 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<title>Cocooning Club — Retour utilisateur</title>
+<style>
+  @page { size: A4; margin: 18mm 14mm; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #1f2937;
+    font-size: 11pt;
+    line-height: 1.45;
+  }
+  h1, h2, h3 { color: #111827; margin: 0 0 8px; }
+  .page {
+    page-break-after: always;
+    break-after: page;
+  }
+  .page:last-child { page-break-after: auto; break-after: auto; }
+  .pb { page-break-before: always; break-before: page; }
+
+  /* Cover */
+  .cover { padding-top: 30mm; text-align: center; }
+  .cover .brand { font-size: 14pt; letter-spacing: 4px; text-transform: uppercase; color: #9ca3af; }
+  .cover h1 { font-size: 32pt; margin: 12mm 0 4mm; }
+  .cover .subtitle { font-size: 13pt; color: #4b5563; max-width: 480px; margin: 0 auto; }
+  .cover .meta { margin-top: 18mm; color: #6b7280; font-size: 10pt; }
+  .cover .howto {
+    margin: 18mm auto 0; max-width: 520px; text-align: left;
+    background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px 18px;
+  }
+  .cover .howto h3 { font-size: 12pt; margin-bottom: 6px; }
+  .cover .howto ul { margin: 0; padding-left: 18px; }
+
+  /* TOC */
+  .toc h2 { border-bottom: 2px solid #e5e7eb; padding-bottom: 6px; margin-bottom: 12px; }
+  .toc ol, .toc ul { list-style: none; padding: 0; margin: 0; }
+  .toc-section {
+    margin-top: 12px; font-weight: 600; color: #6b7280;
+    text-transform: uppercase; letter-spacing: 1px; font-size: 9pt;
+  }
+  .toc-item {
+    display: flex; justify-content: space-between; gap: 12px;
+    padding: 4px 0; border-bottom: 1px dotted #e5e7eb;
+  }
+  .toc-path { color: #9ca3af; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9pt; }
+
+  /* Feedback page */
+  .page-feedback .page-header {
+    display: flex; gap: 14px; align-items: flex-start;
+    border-bottom: 2px solid #111827; padding-bottom: 8px; margin-bottom: 10px;
+  }
+  .page-num {
+    background: #111827; color: white; border-radius: 6px; padding: 4px 10px;
+    font-weight: 700; font-size: 12pt; min-width: 38px; text-align: center;
+  }
+  .section-tag {
+    display: inline-block; background: #eef2ff; color: #4338ca;
+    padding: 2px 8px; border-radius: 999px; font-size: 9pt; margin-bottom: 4px;
+  }
+  .page-feedback h2 { font-size: 18pt; }
+  .path { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: #6b7280; font-size: 9.5pt; }
+  .description { color: #374151; margin: 6px 0 10px; }
+  .screenshot-wrap {
+    border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden;
+    margin: 6px 0 12px; background: #f3f4f6;
+    page-break-inside: avoid;
+  }
+  .screenshot-wrap img { width: 100%; height: auto; display: block; max-height: 120mm; object-fit: contain; }
+  h3 { font-size: 11pt; margin-top: 10px; margin-bottom: 6px; color: #111827; text-transform: uppercase; letter-spacing: 1px; }
+  ol.questions { padding-left: 20px; margin: 0 0 8px; }
+  .question { margin-bottom: 8px; }
+  .question-text { font-weight: 500; }
+  .answer-lines .line, .notes-box .line {
+    border-bottom: 1px solid #d1d5db; height: 6mm;
+  }
+  .notes-box { margin-top: 4px; }
+
+  footer.print-foot {
+    position: fixed; bottom: 6mm; left: 14mm; right: 14mm;
+    color: #9ca3af; font-size: 8pt; display: flex; justify-content: space-between;
+    border-top: 1px solid #e5e7eb; padding-top: 3px;
+  }
+</style>
+</head>
+<body>
+  <section class="page cover">
+    <div class="brand">Cocooning Club</div>
+    <h1>Retour utilisateur</h1>
+    <p class="subtitle">Un parcours visuel de chaque page du site, accompagné de questions et d'espaces de notes pour recueillir vos impressions.</p>
+    <div class="meta">Document généré le 29 avril 2026</div>
+    <div class="howto">
+      <h3>Comment l'utiliser ?</h3>
+      <ul>
+        <li>Imprimez le document ou annotez-le directement dans votre lecteur PDF.</li>
+        <li>Pour chaque page : observez la capture, répondez aux questions puis utilisez l'espace « Notes libres ».</li>
+        <li>Les pages d'administration nécessitent une connexion — la capture peut donc afficher l'écran de login.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="page toc pb">
+    <h2>Sommaire</h2>
+    <ul><li class="toc-section">Site public</li>
+<li class="toc-item"><span>1. Accueil</span><span class="toc-path">/</span></li>
+<li class="toc-item"><span>2. Calendrier</span><span class="toc-path">/calendrier</span></li>
+<li class="toc-item"><span>3. Page introuvable (404)</span><span class="toc-path">/route-inexistante-test</span></li>
+<li class="toc-section">Authentification</li>
+<li class="toc-item"><span>4. Connexion</span><span class="toc-path">/login</span></li>
+<li class="toc-item"><span>5. Mot de passe oublié</span><span class="toc-path">/forgot-password</span></li>
+<li class="toc-item"><span>6. Réinitialisation du mot de passe</span><span class="toc-path">/reset-password</span></li>
+<li class="toc-section">Espace administrateur (accès restreint)</li>
+<li class="toc-item"><span>7. Admin · Dashboard</span><span class="toc-path">/admin/dashboard</span></li>
+<li class="toc-item"><span>8. Admin · Membres</span><span class="toc-path">/admin/membres</span></li>
+<li class="toc-item"><span>9. Admin · Ateliers</span><span class="toc-path">/admin/ateliers</span></li>
+<li class="toc-item"><span>10. Admin · Pré-inscriptions</span><span class="toc-path">/admin/pre-inscriptions</span></li>
+<li class="toc-item"><span>11. Admin · Documents</span><span class="toc-path">/admin/documents</span></li>
+<li class="toc-item"><span>12. Admin · Formulaire</span><span class="toc-path">/admin/formulaire</span></li>
+<li class="toc-item"><span>13. Admin · Templates de messages</span><span class="toc-path">/admin/messages-templates</span></li>
+<li class="toc-item"><span>14. Admin · Disponibilités</span><span class="toc-path">/admin/disponibilites</span></li>
+<li class="toc-item"><span>15. Admin · Boîte à idées</span><span class="toc-path">/admin/boite-a-idees</span></li>
+<li class="toc-item"><span>16. Admin · Mon compte</span><span class="toc-path">/admin/mon-compte</span></li></ul>
+  </section>
+
+  
+      <section class="page page-feedback pb">
+        <header class="page-header">
+          <div class="page-num">#1</div>
+          <div>
+            <div class="section-tag">Site public</div>
+            <h2>Accueil</h2>
+            <div class="path">/</div>
+          </div>
+        </header>
+        <p class="description">Page d'atterrissage publique : présentation du club, des activités et CTA d'inscription.</p>
+        <div class="screenshot-wrap">
+          <img src="screenshots/index.png" alt="Capture de Accueil" />
+        </div>
+        <h3>Questions</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">La proposition de valeur est-elle claire dès la première vue ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Le ton et l'identité visuelle correspondent-ils à l'esprit du club ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Les appels à l'action (s'inscrire, découvrir, contacter) sont-ils visibles et compréhensibles ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Manque-t-il des informations essentielles avant le scroll ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+        <h3>Notes libres</h3>
+        <div class="notes-box">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </section>
+
+      <section class="page page-feedback pb">
+        <header class="page-header">
+          <div class="page-num">#2</div>
+          <div>
+            <div class="section-tag">Site public</div>
+            <h2>Calendrier</h2>
+            <div class="path">/calendrier</div>
+          </div>
+        </header>
+        <p class="description">Calendrier public des ateliers et événements à venir.</p>
+        <div class="screenshot-wrap">
+          <img src="screenshots/calendrier.png" alt="Capture de Calendrier" />
+        </div>
+        <h3>Questions</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">La lecture du calendrier est-elle intuitive ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Les filtres / catégories proposés sont-ils suffisants ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Le passage à une vue mensuelle ou liste serait-il utile ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Comment souhaiteriez-vous vous pré-inscrire à un événement depuis cette page ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+        <h3>Notes libres</h3>
+        <div class="notes-box">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </section>
+
+      <section class="page page-feedback pb">
+        <header class="page-header">
+          <div class="page-num">#3</div>
+          <div>
+            <div class="section-tag">Authentification</div>
+            <h2>Connexion</h2>
+            <div class="path">/login</div>
+          </div>
+        </header>
+        <p class="description">Page de connexion à l'espace membre / admin.</p>
+        <div class="screenshot-wrap">
+          <img src="screenshots/login.png" alt="Capture de Connexion" />
+        </div>
+        <h3>Questions</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Les libellés et messages d'erreur sont-ils suffisamment explicites ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">L'accès au mot de passe oublié est-il facile à trouver ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Faut-il prévoir une connexion via email magique ou réseaux sociaux ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+        <h3>Notes libres</h3>
+        <div class="notes-box">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </section>
+
+      <section class="page page-feedback pb">
+        <header class="page-header">
+          <div class="page-num">#4</div>
+          <div>
+            <div class="section-tag">Authentification</div>
+            <h2>Mot de passe oublié</h2>
+            <div class="path">/forgot-password</div>
+          </div>
+        </header>
+        <p class="description">Demande d'envoi d'un email de réinitialisation de mot de passe.</p>
+        <div class="screenshot-wrap">
+          <img src="screenshots/forgot-password.png" alt="Capture de Mot de passe oublié" />
+        </div>
+        <h3>Questions</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Le message rassurant après envoi est-il clair ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Le retour vers la page de connexion est-il évident ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+        <h3>Notes libres</h3>
+        <div class="notes-box">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </section>
+
+      <section class="page page-feedback pb">
+        <header class="page-header">
+          <div class="page-num">#5</div>
+          <div>
+            <div class="section-tag">Authentification</div>
+            <h2>Réinitialisation du mot de passe</h2>
+            <div class="path">/reset-password</div>
+          </div>
+        </header>
+        <p class="description">Saisie du nouveau mot de passe (lien reçu par email).</p>
+        <div class="screenshot-wrap">
+          <img src="screenshots/reset-password.png" alt="Capture de Réinitialisation du mot de passe" />
+        </div>
+        <h3>Questions</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Les règles de mot de passe sont-elles affichées clairement ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Le retour de confirmation est-il rassurant ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+        <h3>Notes libres</h3>
+        <div class="notes-box">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </section>
+
+      <section class="page page-feedback pb">
+        <header class="page-header">
+          <div class="page-num">#6</div>
+          <div>
+            <div class="section-tag">Site public</div>
+            <h2>Page introuvable (404)</h2>
+            <div class="path">/route-inexistante-test</div>
+          </div>
+        </header>
+        <p class="description">Page 404 affichée pour une URL inconnue.</p>
+        <div class="screenshot-wrap">
+          <img src="screenshots/route-inexistante-test.png" alt="Capture de Page introuvable (404)" />
+        </div>
+        <h3>Questions</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Le ton de la page 404 est-il cohérent avec le reste du site ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Les liens de retour proposés sont-ils utiles ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+        <h3>Notes libres</h3>
+        <div class="notes-box">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </section>
+
+      <section class="page page-feedback pb">
+        <header class="page-header">
+          <div class="page-num">#7</div>
+          <div>
+            <div class="section-tag">Espace administrateur (accès restreint)</div>
+            <h2>Admin · Dashboard</h2>
+            <div class="path">/admin/dashboard</div>
+          </div>
+        </header>
+        <p class="description">Tableau de bord administrateur : indicateurs et accès rapides. Sans session admin, redirige vers la connexion.</p>
+        <div class="screenshot-wrap">
+          <img src="screenshots/admin_dashboard.png" alt="Capture de Admin · Dashboard" />
+        </div>
+        <h3>Questions</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Les indicateurs présents sont-ils les bons pour piloter l'activité ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Quels accès rapides voudriez-vous ajouter / retirer ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+        <h3>Notes libres</h3>
+        <div class="notes-box">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </section>
+
+      <section class="page page-feedback pb">
+        <header class="page-header">
+          <div class="page-num">#8</div>
+          <div>
+            <div class="section-tag">Espace administrateur (accès restreint)</div>
+            <h2>Admin · Membres</h2>
+            <div class="path">/admin/membres</div>
+          </div>
+        </header>
+        <p class="description">Gestion des membres : recherche, filtres, fiche membre.</p>
+        <div class="screenshot-wrap">
+          <img src="screenshots/admin_membres.png" alt="Capture de Admin · Membres" />
+        </div>
+        <h3>Questions</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Les filtres et colonnes correspondent-ils à votre besoin quotidien ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Quelles actions en masse seraient utiles ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+        <h3>Notes libres</h3>
+        <div class="notes-box">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </section>
+
+      <section class="page page-feedback pb">
+        <header class="page-header">
+          <div class="page-num">#9</div>
+          <div>
+            <div class="section-tag">Espace administrateur (accès restreint)</div>
+            <h2>Admin · Ateliers</h2>
+            <div class="path">/admin/ateliers</div>
+          </div>
+        </header>
+        <p class="description">Création et gestion des ateliers et événements.</p>
+        <div class="screenshot-wrap">
+          <img src="screenshots/admin_ateliers.png" alt="Capture de Admin · Ateliers" />
+        </div>
+        <h3>Questions</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">La création d'un atelier est-elle suffisamment guidée ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Faut-il prévoir des modèles d'ateliers récurrents ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+        <h3>Notes libres</h3>
+        <div class="notes-box">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </section>
+
+      <section class="page page-feedback pb">
+        <header class="page-header">
+          <div class="page-num">#10</div>
+          <div>
+            <div class="section-tag">Espace administrateur (accès restreint)</div>
+            <h2>Admin · Pré-inscriptions</h2>
+            <div class="path">/admin/pre-inscriptions</div>
+          </div>
+        </header>
+        <p class="description">Suivi des pré-inscriptions et confirmations.</p>
+        <div class="screenshot-wrap">
+          <img src="screenshots/admin_pre-inscriptions.png" alt="Capture de Admin · Pré-inscriptions" />
+        </div>
+        <h3>Questions</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Le statut de chaque pré-inscription est-il facile à interpréter ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Quelles relances automatiques voudriez-vous configurer ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+        <h3>Notes libres</h3>
+        <div class="notes-box">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </section>
+
+      <section class="page page-feedback pb">
+        <header class="page-header">
+          <div class="page-num">#11</div>
+          <div>
+            <div class="section-tag">Espace administrateur (accès restreint)</div>
+            <h2>Admin · Documents</h2>
+            <div class="path">/admin/documents</div>
+          </div>
+        </header>
+        <p class="description">Bibliothèque de documents partagés avec les membres.</p>
+        <div class="screenshot-wrap">
+          <img src="screenshots/admin_documents.png" alt="Capture de Admin · Documents" />
+        </div>
+        <h3>Questions</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Les catégories actuelles vous suffisent-elles ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Faut-il pouvoir restreindre certains documents par profil ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+        <h3>Notes libres</h3>
+        <div class="notes-box">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </section>
+
+      <section class="page page-feedback pb">
+        <header class="page-header">
+          <div class="page-num">#12</div>
+          <div>
+            <div class="section-tag">Espace administrateur (accès restreint)</div>
+            <h2>Admin · Formulaire</h2>
+            <div class="path">/admin/formulaire</div>
+          </div>
+        </header>
+        <p class="description">Configuration du formulaire d'inscription public.</p>
+        <div class="screenshot-wrap">
+          <img src="screenshots/admin_formulaire.png" alt="Capture de Admin · Formulaire" />
+        </div>
+        <h3>Questions</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Les champs proposés correspondent-ils à votre besoin ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Souhaitez-vous des champs conditionnels ou obligatoires selon le type de membre ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+        <h3>Notes libres</h3>
+        <div class="notes-box">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </section>
+
+      <section class="page page-feedback pb">
+        <header class="page-header">
+          <div class="page-num">#13</div>
+          <div>
+            <div class="section-tag">Espace administrateur (accès restreint)</div>
+            <h2>Admin · Templates de messages</h2>
+            <div class="path">/admin/messages-templates</div>
+          </div>
+        </header>
+        <p class="description">Modèles de messages (email / SMS) réutilisables.</p>
+        <div class="screenshot-wrap">
+          <img src="screenshots/admin_messages-templates.png" alt="Capture de Admin · Templates de messages" />
+        </div>
+        <h3>Questions</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Quels variables / champs dynamiques sont indispensables ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Faut-il prévoir un aperçu avant envoi ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+        <h3>Notes libres</h3>
+        <div class="notes-box">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </section>
+
+      <section class="page page-feedback pb">
+        <header class="page-header">
+          <div class="page-num">#14</div>
+          <div>
+            <div class="section-tag">Espace administrateur (accès restreint)</div>
+            <h2>Admin · Disponibilités</h2>
+            <div class="path">/admin/disponibilites</div>
+          </div>
+        </header>
+        <p class="description">Gestion des créneaux et disponibilités.</p>
+        <div class="screenshot-wrap">
+          <img src="screenshots/admin_disponibilites.png" alt="Capture de Admin · Disponibilités" />
+        </div>
+        <h3>Questions</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">La saisie en lot est-elle suffisamment rapide ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Quelles règles de récurrence aimeriez-vous ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+        <h3>Notes libres</h3>
+        <div class="notes-box">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </section>
+
+      <section class="page page-feedback pb">
+        <header class="page-header">
+          <div class="page-num">#15</div>
+          <div>
+            <div class="section-tag">Espace administrateur (accès restreint)</div>
+            <h2>Admin · Boîte à idées</h2>
+            <div class="path">/admin/boite-a-idees</div>
+          </div>
+        </header>
+        <p class="description">Suivi des suggestions remontées par les membres.</p>
+        <div class="screenshot-wrap">
+          <img src="screenshots/admin_boite-a-idees.png" alt="Capture de Admin · Boîte à idées" />
+        </div>
+        <h3>Questions</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Quels statuts (à étudier / en cours / refusé / fait) souhaitez-vous ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Les membres doivent-ils pouvoir voter sur les idées ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+        <h3>Notes libres</h3>
+        <div class="notes-box">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </section>
+
+      <section class="page page-feedback pb">
+        <header class="page-header">
+          <div class="page-num">#16</div>
+          <div>
+            <div class="section-tag">Espace administrateur (accès restreint)</div>
+            <h2>Admin · Mon compte</h2>
+            <div class="path">/admin/mon-compte</div>
+          </div>
+        </header>
+        <p class="description">Paramètres du compte administrateur.</p>
+        <div class="screenshot-wrap">
+          <img src="screenshots/admin_mon-compte.png" alt="Capture de Admin · Mon compte" />
+        </div>
+        <h3>Questions</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Quelles informations / préférences manquent ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">La déconnexion est-elle facile à trouver ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+        <h3>Notes libres</h3>
+        <div class="notes-box">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </section>
+</body>
+</html>
