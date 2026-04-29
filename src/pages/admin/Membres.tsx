@@ -48,6 +48,7 @@ const emptyCreateForm = {
   date_naissance: "",
   mot_de_passe: "", role: "inscrit" as UserRole,
   debut_abonnement: "", fin_abonnement: "",
+  est_actif: false, // Inactif par défaut → pas de mail Supabase envoyé
 };
 
 const Membres = () => {
@@ -100,41 +101,57 @@ const Membres = () => {
   // ── Création ──────────────────────────────────────────────
   const handleCreate = async () => {
     setCreateError("");
-    if (!createForm.email || !createForm.mot_de_passe || !createForm.prenom || !createForm.nom) {
-      setCreateError("Prénom, nom, email et mot de passe sont obligatoires.");
+    if (!createForm.email || !createForm.prenom || !createForm.nom) {
+      setCreateError("Prénom, nom et email sont obligatoires.");
       return;
     }
-    if (createForm.mot_de_passe.length < 6) {
-      setCreateError("Le mot de passe doit contenir au moins 6 caractères.");
-      return;
+    // Le mot de passe n'est requis que si on active le compte (signUp Supabase).
+    if (createForm.est_actif) {
+      if (!createForm.mot_de_passe) {
+        setCreateError("Le mot de passe est obligatoire pour activer le compte.");
+        return;
+      }
+      if (createForm.mot_de_passe.length < 6) {
+        setCreateError("Le mot de passe doit contenir au moins 6 caractères.");
+        return;
+      }
     }
     setSaving(true);
 
-    // 1. Créer le compte Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: createForm.email,
-      password: createForm.mot_de_passe,
-    });
+    let authUserId: string | null = null;
 
-    if (authError || !authData.user) {
-      setCreateError(authError?.message ?? "Erreur lors de la création du compte.");
-      setSaving(false);
-      return;
+    // 1. Si actif → créer le compte Supabase Auth (déclenche le mail de
+    //    confirmation). Si inactif → on saute cette étape, aucun mail.
+    if (createForm.est_actif) {
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: createForm.email,
+        password: createForm.mot_de_passe,
+      });
+      if (authError || !authData.user) {
+        setCreateError(authError?.message ?? "Erreur lors de la création du compte.");
+        setSaving(false);
+        return;
+      }
+      authUserId = authData.user.id;
     }
 
-    // 2. Insérer dans utilisateurs avec l'UUID Auth
-    const { error: dbError } = await supabase.from("utilisateurs").insert({
-      id: authData.user.id,
+    // 2. Insérer la ligne utilisateurs.
+    //    - Actif : on lie à l'UUID auth (pour que les RLS auth.uid() = id marchent)
+    //    - Inactif : on laisse Postgres générer un UUID (pas de compte auth associé)
+    const insertPayload: Record<string, unknown> = {
       email: createForm.email,
       nom: createForm.nom,
       prenom: createForm.prenom,
       telephone: createForm.telephone || null,
       date_naissance: createForm.date_naissance || null,
       role: createForm.role,
-      est_actif: true,
+      est_actif: createForm.est_actif,
       debut_abonnement: createForm.debut_abonnement || null,
       fin_abonnement: createForm.fin_abonnement || null,
-    });
+    };
+    if (authUserId) insertPayload.id = authUserId;
+
+    const { error: dbError } = await supabase.from("utilisateurs").insert(insertPayload);
 
     if (dbError) {
       setCreateError(dbError.message);
@@ -143,7 +160,8 @@ const Membres = () => {
     }
 
     logAction("membre.create", "utilisateurs", null, {
-      email: createForm.email, prenom: createForm.prenom, nom: createForm.nom, role: createForm.role,
+      email: createForm.email, prenom: createForm.prenom, nom: createForm.nom,
+      role: createForm.role, est_actif: createForm.est_actif,
     });
 
     await fetchMembers();
@@ -340,19 +358,51 @@ const Membres = () => {
                 <label className="block text-sm font-medium mb-1.5">Email *</label>
                 <input type="email" value={createForm.email} onChange={e => setCreateForm(f => ({ ...f, email: e.target.value }))} className={fieldClass} />
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1.5">Mot de passe temporaire *</label>
-                <div className="relative">
-                  <input type={showPassword ? "text" : "password"} value={createForm.mot_de_passe}
-                    onChange={e => setCreateForm(f => ({ ...f, mot_de_passe: e.target.value }))}
-                    className={`${fieldClass} pr-10`} placeholder="6 caractères minimum" />
-                  <button type="button" onClick={() => setShowPassword(s => !s)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
+
+              {/* Toggle Actif / Inactif — contrôle l'envoi du mail de confirmation */}
+              <div className="flex items-start gap-3 bg-muted/40 border rounded-xl p-3">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={createForm.est_actif}
+                  onClick={() => setCreateForm(f => ({ ...f, est_actif: !f.est_actif }))}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors ${
+                    createForm.est_actif ? "bg-primary" : "bg-muted-foreground/30"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                      createForm.est_actif ? "translate-x-5" : "translate-x-0.5"
+                    }`}
+                  />
+                </button>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">
+                    {createForm.est_actif ? "Compte actif" : "Compte inactif"}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {createForm.est_actif
+                      ? "Le compte Supabase est créé et un mail de confirmation est envoyé."
+                      : "Aucun compte Supabase créé, aucun mail envoyé. Tu pourras activer le compte plus tard."}
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Le membre pourra le changer via "Mot de passe oublié"</p>
               </div>
+
+              {createForm.est_actif && (
+                <div>
+                  <label className="block text-sm font-medium mb-1.5">Mot de passe temporaire *</label>
+                  <div className="relative">
+                    <input type={showPassword ? "text" : "password"} value={createForm.mot_de_passe}
+                      onChange={e => setCreateForm(f => ({ ...f, mot_de_passe: e.target.value }))}
+                      className={`${fieldClass} pr-10`} placeholder="6 caractères minimum" />
+                    <button type="button" onClick={() => setShowPassword(s => !s)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Le membre pourra le changer via "Mot de passe oublié"</p>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1.5">Téléphone</label>
