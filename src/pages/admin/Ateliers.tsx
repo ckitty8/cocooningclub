@@ -96,8 +96,22 @@ const Ateliers = () => {
   const [inscLoading, setInscLoading] = useState(false);
 
   const fetchAteliers = async () => {
-    // Le cron quotidien (3h UTC) dépublie les ateliers passés ; pas besoin
-    // de l'appeler côté client (la fonction n'est plus exposée via RPC).
+    // Marque comme "termine" les ateliers publiés/complets dont la date est passée.
+    // Filet de secours si le cron pg_cron quotidien n'a pas tourné — la policy
+    // RLS ateliers_admin_all autorise cette mise à jour pour l'admin courant.
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      await withTimeout(
+        supabase
+          .from("ateliers")
+          .update({ statut: "termine" })
+          .lt("date_atelier", today)
+          .in("statut", ["publie", "complet"])
+      );
+    } catch (err) {
+      console.warn("[Ateliers.autoTerminer] non bloquant :", err);
+    }
+
     try {
       const { data, error } = await withTimeout(
         supabase.from("ateliers").select("*").order("date_atelier")
