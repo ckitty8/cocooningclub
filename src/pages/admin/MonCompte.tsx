@@ -6,6 +6,7 @@ import { logAction } from "@/utils/logAction";
 import { toast } from "sonner";
 import {
   User, Mail, Image as ImageIcon, Save, Upload, Trash2, Loader2, Info, AlertCircle,
+  Phone, Calendar, CalendarRange,
 } from "lucide-react";
 
 const MAX_AVATAR_MB = 2;
@@ -16,6 +17,10 @@ const MonCompte = () => {
     prenom: "",
     nom: "",
     email: "",
+    telephone: "",
+    date_naissance: "",
+    debut_abonnement: "",
+    fin_abonnement: "",
   });
   const [originalEmail, setOriginalEmail] = useState("");
   const [saving, setSaving] = useState(false);
@@ -26,9 +31,13 @@ const MonCompte = () => {
   useEffect(() => {
     if (profile) {
       setForm({
-        prenom: profile.prenom ?? "",
-        nom:    profile.nom ?? "",
-        email:  profile.email ?? "",
+        prenom:           profile.prenom ?? "",
+        nom:              profile.nom ?? "",
+        email:            profile.email ?? "",
+        telephone:        profile.telephone ?? "",
+        date_naissance:   profile.date_naissance ?? "",
+        debut_abonnement: profile.debut_abonnement ?? "",
+        fin_abonnement:   profile.fin_abonnement ?? "",
       });
       setOriginalEmail(profile.email ?? "");
     }
@@ -46,7 +55,11 @@ const MonCompte = () => {
   const hasChanges =
     form.prenom !== (profile.prenom ?? "") ||
     form.nom !== (profile.nom ?? "") ||
-    form.email !== originalEmail;
+    form.email !== originalEmail ||
+    form.telephone !== (profile.telephone ?? "") ||
+    form.date_naissance !== (profile.date_naissance ?? "") ||
+    form.debut_abonnement !== (profile.debut_abonnement ?? "") ||
+    form.fin_abonnement !== (profile.fin_abonnement ?? "");
 
   const emailChanged = form.email !== originalEmail;
 
@@ -74,10 +87,14 @@ const MonCompte = () => {
       setEmailChangePending(true);
     }
 
-    // 2) Mise à jour de la table utilisateurs (prenom + nom, email si changé)
+    // 2) Mise à jour de la table utilisateurs
     const payload: Record<string, unknown> = {
-      prenom: form.prenom.trim(),
-      nom:    form.nom.trim(),
+      prenom:           form.prenom.trim(),
+      nom:              form.nom.trim(),
+      telephone:        form.telephone.trim() || null,
+      date_naissance:   form.date_naissance || null,
+      debut_abonnement: form.debut_abonnement || null,
+      fin_abonnement:   form.fin_abonnement || null,
     };
     if (emailChanged) payload.email = form.email.trim();
 
@@ -294,6 +311,61 @@ const MonCompte = () => {
                   Email de confirmation envoyé. Valide-le depuis ta boîte mail.
                 </p>
               )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1.5 flex items-center gap-1.5">
+                  <Phone className="w-3.5 h-3.5" />
+                  Téléphone
+                </label>
+                <input
+                  type="tel"
+                  value={form.telephone}
+                  onChange={e => setForm({ ...form, telephone: e.target.value })}
+                  placeholder="06 12 34 56 78"
+                  className="w-full rounded-xl border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5 flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5" />
+                  Date de naissance
+                </label>
+                <input
+                  type="date"
+                  value={form.date_naissance}
+                  onChange={e => setForm({ ...form, date_naissance: e.target.value })}
+                  className="w-full rounded-xl border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1.5 flex items-center gap-1.5">
+                  <CalendarRange className="w-3.5 h-3.5" />
+                  Début d'abonnement
+                </label>
+                <input
+                  type="date"
+                  value={form.debut_abonnement}
+                  onChange={e => setForm({ ...form, debut_abonnement: e.target.value })}
+                  className="w-full rounded-xl border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5 flex items-center gap-1.5">
+                  <CalendarRange className="w-3.5 h-3.5" />
+                  Fin d'abonnement
+                </label>
+                <input
+                  type="date"
+                  value={form.fin_abonnement}
+                  onChange={e => setForm({ ...form, fin_abonnement: e.target.value })}
+                  className="w-full rounded-xl border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
             </div>
           </div>
 

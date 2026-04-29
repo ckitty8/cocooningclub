@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { withTimeout } from "@/utils/withTimeout";
 
 export type UserRole = "administrateur" | "inscrit" | "membre" | "membre_premium";
 
@@ -10,6 +11,7 @@ export interface Profile {
   prenom: string | null;
   email: string | null;
   telephone: string | null;
+  date_naissance: string | null;
   url_avatar: string | null;
   debut_abonnement: string | null;
   fin_abonnement: string | null;
@@ -37,14 +39,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async (userId: string) => {
-    const { data, error } = await supabase
-      .from("utilisateurs")
-      .select("*")
-      .eq("id", userId)
-      .single();
-    if (error) console.error("fetchProfile error:", error.message, error.code);
-    setProfile((data as Profile) ?? null);
-    setLoading(false);
+    try {
+      const { data, error } = await withTimeout(
+        supabase
+          .from("utilisateurs")
+          .select("*")
+          .eq("id", userId)
+          .single()
+      );
+      if (error) console.error("fetchProfile error:", error.message, error.code);
+      setProfile((data as Profile) ?? null);
+    } catch (err) {
+      console.error("[AuthContext.fetchProfile] error:", err);
+      setProfile(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const refreshProfile = async () => {
