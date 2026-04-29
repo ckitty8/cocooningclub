@@ -68,6 +68,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(session?.user ?? null);
 
       if (session?.user) {
+        // Marque le profile comme en cours de chargement pour que le
+        // Login (et tout autre consumer) puisse savoir qu'on attend
+        // encore le résultat du fetchProfile.
+        setLoading(true);
         // Defer hors du callback pour éviter les deadlocks Supabase
         setTimeout(() => {
           fetchProfile(session.user.id);
