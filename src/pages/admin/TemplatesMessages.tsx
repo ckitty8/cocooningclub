@@ -34,20 +34,26 @@ const TemplatesMessages = () => {
   const [activeTab, setActiveTab] = useState<Tab>("mail");
 
   const fetchTemplates = async () => {
-    const { data, error } = await supabase
-      .from("parametres_messages")
-      .select("*")
-      .order("cle");
+    try {
+      const { data, error } = await supabase
+        .from("parametres_messages")
+        .select("*")
+        .order("cle");
 
-    if (error) {
+      if (error) {
+        toast.error("Erreur de chargement des templates");
+      } else if (data) {
+        setTemplates(data as Template[]);
+        const initial: Record<string, string> = {};
+        (data as Template[]).forEach(t => { initial[t.id] = t.valeur; });
+        setEdited(initial);
+      }
+    } catch (err) {
+      console.error("[TemplatesMessages.fetchTemplates] error:", err);
       toast.error("Erreur de chargement des templates");
-    } else if (data) {
-      setTemplates(data as Template[]);
-      const initial: Record<string, string> = {};
-      (data as Template[]).forEach(t => { initial[t.id] = t.valeur; });
-      setEdited(initial);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => { fetchTemplates(); }, []);

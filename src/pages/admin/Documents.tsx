@@ -52,13 +52,19 @@ const Documents = () => {
   const [saving, setSaving] = useState(false);
 
   const fetchDocs = async () => {
-    const { data, error } = await supabase.from("documents").select("*").order("created_at", { ascending: false });
-    if (error) {
-      console.error("[fetchDocs]", error);
-      toast.error(`Impossible de charger les documents : ${error.message}`, { duration: 8000 });
+    try {
+      const { data, error } = await supabase.from("documents").select("*").order("created_at", { ascending: false });
+      if (error) {
+        console.error("[fetchDocs]", error);
+        toast.error(`Impossible de charger les documents : ${error.message}`, { duration: 8000 });
+      }
+      setDocs((data as Document[]) ?? []);
+    } catch (err) {
+      console.error("[Documents.fetchDocs] error:", err);
+      toast.error("Erreur lors du chargement des documents");
+    } finally {
+      setLoading(false);
     }
-    setDocs((data as Document[]) ?? []);
-    setLoading(false);
   };
 
   useEffect(() => { fetchDocs(); }, []);

@@ -111,31 +111,36 @@ const PreInscriptions = () => {
   const [newSaving, setNewSaving] = useState(false);
 
   const fetchAll = async () => {
-    const today = new Date().toISOString().slice(0, 10);
-    const [inscRes, tplRes, atelRes] = await Promise.all([
-      supabase
-        .from("inscriptions")
-        .select("*, ateliers(id, titre, date_atelier, heure_debut, lieu)")
-        .order("inscrit_le", { ascending: false }),
-      supabase
-        .from("parametres_messages")
-        .select("cle, valeur"),
-      supabase
-        .from("ateliers")
-        .select("id, titre, date_atelier, heure_debut, statut")
-        .in("statut", ["publie", "complet"])
-        .gte("date_atelier", today)
-        .order("date_atelier"),
-    ]);
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const [inscRes, tplRes, atelRes] = await Promise.all([
+        supabase
+          .from("inscriptions")
+          .select("*, ateliers(id, titre, date_atelier, heure_debut, lieu)")
+          .order("inscrit_le", { ascending: false }),
+        supabase
+          .from("parametres_messages")
+          .select("cle, valeur"),
+        supabase
+          .from("ateliers")
+          .select("id, titre, date_atelier, heure_debut, statut")
+          .in("statut", ["publie", "complet"])
+          .gte("date_atelier", today)
+          .order("date_atelier"),
+      ]);
 
-    if (inscRes.data) setInscriptions(inscRes.data as unknown as Inscription[]);
-    if (tplRes.data) {
-      const map: Record<string, string> = {};
-      (tplRes.data as Template[]).forEach(t => { map[t.cle] = t.valeur; });
-      setTemplates(map);
+      if (inscRes.data) setInscriptions(inscRes.data as unknown as Inscription[]);
+      if (tplRes.data) {
+        const map: Record<string, string> = {};
+        (tplRes.data as Template[]).forEach(t => { map[t.cle] = t.valeur; });
+        setTemplates(map);
+      }
+      if (atelRes.data) setAteliersDispo(atelRes.data as AtelierMinimal[]);
+    } catch (err) {
+      console.error("[PreInscriptions.fetchAll] error:", err);
+    } finally {
+      setLoading(false);
     }
-    if (atelRes.data) setAteliersDispo(atelRes.data as AtelierMinimal[]);
-    setLoading(false);
   };
 
   useEffect(() => { fetchAll(); }, []);

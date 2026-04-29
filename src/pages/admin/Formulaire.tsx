@@ -153,9 +153,14 @@ const Formulaire = () => {
 
   // ── Fetch ──
   const fetchFormulaires = async () => {
-    const { data } = await db.from("formulaires").select("*, form_fields(id)").order("cree_le");
-    setFormulaires((data as FormulaireRow[]) ?? []);
-    setLoading(false);
+    try {
+      const { data } = await db.from("formulaires").select("*, form_fields(id)").order("cree_le");
+      setFormulaires((data as FormulaireRow[]) ?? []);
+    } catch (err) {
+      console.error("[Formulaire.fetchFormulaires] error:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchFields = async (formulaireId: string) => {

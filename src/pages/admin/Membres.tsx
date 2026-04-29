@@ -70,13 +70,18 @@ const Membres = () => {
   const [saving, setSaving] = useState(false);
 
   const fetchMembers = async () => {
-    const { data, error } = await supabase
-      .from("utilisateurs")
-      .select("*")
-      .order("cree_le", { ascending: false });
-    if (error) console.error("fetchMembers error:", error.message, error.code);
-    setMembers((data as Utilisateur[]) ?? []);
-    setLoading(false);
+    try {
+      const { data, error } = await supabase
+        .from("utilisateurs")
+        .select("*")
+        .order("cree_le", { ascending: false });
+      if (error) throw error;
+      setMembers((data as Utilisateur[]) ?? []);
+    } catch (err) {
+      console.error("[Membres.fetchMembers] error:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetchMembers(); }, []);
