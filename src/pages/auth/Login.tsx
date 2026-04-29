@@ -12,6 +12,9 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  // True entre le moment où signIn() a réussi et l'arrivée du profil.
+  // Permet de différencier "rien fait" de "on attend encore le profil".
+  const [awaitingProfile, setAwaitingProfile] = useState(false);
 
   const isInactive = searchParams.get("inactive") === "true";
 
@@ -23,6 +26,17 @@ const Login = () => {
     }
   }, [profile, navigate]);
 
+  // Si on attendait le profil et que le fetch a fini sans le ramener,
+  // on débloque le bouton et on affiche un message — sinon l'utilisateur
+  // reste figé sur "Connexion en cours…".
+  useEffect(() => {
+    if (awaitingProfile && !authLoading && !profile) {
+      setAwaitingProfile(false);
+      setSubmitting(false);
+      setError("Connexion réussie mais profil introuvable. Contactez l'administrateur.");
+    }
+  }, [awaitingProfile, authLoading, profile]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -31,7 +45,10 @@ const Login = () => {
     if (error) {
       setError("Email ou mot de passe incorrect.");
       setSubmitting(false);
+      return;
     }
+    // signIn OK → on attend que onAuthStateChange + fetchProfile aboutissent.
+    setAwaitingProfile(true);
   };
 
   return (
