@@ -19,8 +19,7 @@ export const logAction = async (
     const { data } = await supabase.auth.getUser();
     const userId = data?.user?.id ?? null;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase.from("logs") as any).insert({
+    await supabase.from("logs").insert({
       utilisateur_id: userId,
       action,
       table_cible: table_cible ?? null,

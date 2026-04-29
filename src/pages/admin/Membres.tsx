@@ -3,6 +3,7 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { logAction } from "@/utils/logAction";
+import { withTimeout } from "@/utils/withTimeout";
 import { Plus, Search, Pencil, Trash2, UserX, UserCheck2, X, Eye, EyeOff } from "lucide-react";
 import type { UserRole } from "@/contexts/AuthContext";
 
@@ -24,14 +25,14 @@ interface Utilisateur {
 const roleBadgeClass: Record<UserRole, string> = {
   administrateur: "bg-purple-100 text-purple-700",
   inscrit:        "bg-gray-100 text-gray-600",
-  membre: "bg-blue-100 text-blue-700",
+  membre:         "bg-blue-100 text-blue-700",
   membre_premium: "bg-amber-100 text-amber-700",
 };
 
 const roleLabel: Record<UserRole, string> = {
   administrateur: "Admin",
   inscrit:        "Inscrit",
-  membre: "Membre",
+  membre:         "Membre",
   membre_premium: "Premium",
 };
 
@@ -70,13 +71,20 @@ const Membres = () => {
   const [saving, setSaving] = useState(false);
 
   const fetchMembers = async () => {
-    const { data, error } = await supabase
-      .from("utilisateurs")
-      .select("*")
-      .order("cree_le", { ascending: false });
-    if (error) console.error("fetchMembers error:", error.message, error.code);
-    setMembers((data as Utilisateur[]) ?? []);
-    setLoading(false);
+    try {
+      const { data, error } = await withTimeout(
+        supabase
+          .from("utilisateurs")
+          .select("*")
+          .order("cree_le", { ascending: false })
+      );
+      if (error) throw error;
+      setMembers((data as Utilisateur[]) ?? []);
+    } catch (err) {
+      console.error("[Membres.fetchMembers] error:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetchMembers(); }, []);

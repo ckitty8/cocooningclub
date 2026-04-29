@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
+import { withTimeout } from "@/utils/withTimeout";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, X, ExternalLink, FileText, BookOpen, Newspaper, type LucideIcon } from "lucide-react";
 
@@ -14,6 +15,7 @@ interface Document {
   description: string | null;
   type: DocType;
   fichier_url: string | null;
+  fichier_chemin: string | null;
   lien_externe: string | null;
   acces: DocAcces;
   created_at: string;
@@ -51,13 +53,21 @@ const Documents = () => {
   const [saving, setSaving] = useState(false);
 
   const fetchDocs = async () => {
-    const { data, error } = await supabase.from("documents").select("*").order("created_at", { ascending: false });
-    if (error) {
-      console.error("[fetchDocs]", error);
-      toast.error(`Impossible de charger les documents : ${error.message}`, { duration: 8000 });
+    try {
+      const { data, error } = await withTimeout(
+        supabase.from("documents").select("*").order("created_at", { ascending: false })
+      );
+      if (error) {
+        console.error("[fetchDocs]", error);
+        toast.error(`Impossible de charger les documents : ${error.message}`, { duration: 8000 });
+      }
+      setDocs((data as Document[]) ?? []);
+    } catch (err) {
+      console.error("[Documents.fetchDocs] error:", err);
+      toast.error("Erreur lors du chargement des documents");
+    } finally {
+      setLoading(false);
     }
-    setDocs((data as Document[]) ?? []);
-    setLoading(false);
   };
 
   useEffect(() => { fetchDocs(); }, []);
@@ -72,6 +82,7 @@ const Documents = () => {
   const handleSave = async () => {
     setSaving(true);
     let fichier_url = modal.doc?.fichier_url ?? null;
+    let fichier_chemin = modal.doc?.fichier_chemin ?? null;
 
     if (file && form.type !== "lien_externe") {
       const path = `${Date.now()}-${file.name}`;
@@ -83,8 +94,9 @@ const Documents = () => {
         return;
       }
       if (upload) {
-        const { data: urlData } = supabase.storage.from("documents").getPublicUrl(path);
-        fichier_url = urlData.publicUrl;
+        fichier_chemin = path;
+        // fichier_url conservé pour rétro-compat (lecture via URL signée à la demande)
+        fichier_url = path;
       }
     }
 
@@ -93,6 +105,7 @@ const Documents = () => {
       description: form.description || null,
       type: form.type,
       fichier_url: form.type !== "lien_externe" ? fichier_url : null,
+      fichier_chemin: form.type !== "lien_externe" ? fichier_chemin : null,
       lien_externe: form.type === "lien_externe" ? form.lien_externe || null : null,
       acces: form.acces,
     };
@@ -119,6 +132,25 @@ const Documents = () => {
     await fetchDocs();
     setModal({ open: false, doc: null });
     setSaving(false);
+  };
+
+  const handleOpen = async (d: Document) => {
+    if (d.lien_externe) {
+      window.open(d.lien_externe, "_blank", "noopener,noreferrer");
+      return;
+    }
+    if (!d.fichier_chemin) {
+      toast.error("Fichier indisponible (chemin manquant)");
+      return;
+    }
+    const { data, error } = await supabase.storage
+      .from("documents")
+      .createSignedUrl(d.fichier_chemin, 60 * 5); // 5 min
+    if (error || !data?.signedUrl) {
+      toast.error(`Impossible d'ouvrir le fichier : ${error?.message ?? "URL non signée"}`);
+      return;
+    }
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
   };
 
   const handleDelete = async (id: string) => {
@@ -177,11 +209,11 @@ const Documents = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
-                    {(d.lien_externe || d.fichier_url) && (
-                      <a href={d.lien_externe ?? d.fichier_url ?? "#"} target="_blank" rel="noopener noreferrer"
+                    {(d.lien_externe || d.fichier_chemin) && (
+                      <button onClick={() => handleOpen(d)}
                         className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" title="Ouvrir">
                         <ExternalLink className="w-4 h-4" />
-                      </a>
+                      </button>
                     )}
                     <button onClick={() => openEdit(d)}
                       className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
@@ -251,7 +283,7 @@ const Documents = () => {
                   <label className="block text-sm font-medium mb-1.5">Fichier PDF</label>
                   <input type="file" accept=".pdf" onChange={e => setFile(e.target.files?.[0] ?? null)}
                     className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none" />
-                  {modal.doc?.fichier_url && !file && (
+                  {modal.doc?.fichier_chemin && !file && (
                     <p className="text-xs text-muted-foreground mt-1">Fichier actuel conservé si aucun nouveau fichier sélectionné</p>
                   )}
                 </div>
