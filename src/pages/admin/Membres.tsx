@@ -42,6 +42,7 @@ const emptyEditForm = {
   date_naissance: "",
   debut_abonnement: "", fin_abonnement: "",
   role: "inscrit" as UserRole,
+  est_actif: false,
 };
 
 const emptyCreateForm = {
@@ -178,6 +179,7 @@ const Membres = () => {
       telephone: m.telephone ?? "", date_naissance: m.date_naissance ?? "",
       debut_abonnement: m.debut_abonnement ?? "",
       fin_abonnement: m.fin_abonnement ?? "", role: m.role,
+      est_actif: m.est_actif,
     });
     setEditModal({ open: true, member: m });
   };
@@ -185,6 +187,22 @@ const Membres = () => {
   const handleSave = async () => {
     setSaving(true);
     const isSelf = editModal.member?.id === me?.id;
+    const before = editModal.member!;
+    const activating = !isSelf && !before.est_actif && editForm.est_actif;
+
+    // Si on passe de inactif → actif, envoyer un magic link (cf. toggleActif).
+    if (activating) {
+      const { error: otpError } = await supabase.auth.signInWithOtp({
+        email: editForm.email,
+        options: { shouldCreateUser: true },
+      });
+      if (otpError) {
+        toast.error(`Erreur envoi du lien d'invitation : ${otpError.message}`, { duration: 8000 });
+        setSaving(false);
+        return;
+      }
+    }
+
     const payload: Record<string, unknown> = {
       nom: editForm.nom, prenom: editForm.prenom, email: editForm.email,
       telephone: editForm.telephone || null,
@@ -192,9 +210,16 @@ const Membres = () => {
       debut_abonnement: editForm.debut_abonnement || null,
       fin_abonnement: editForm.fin_abonnement || null,
     };
-    if (!isSelf) payload.role = editForm.role;
-    const before = editModal.member!;
-    await supabase.from("utilisateurs").update(payload).eq("id", editModal.member!.id);
+    if (!isSelf) {
+      payload.role = editForm.role;
+      payload.est_actif = editForm.est_actif;
+    }
+    const { error } = await supabase.from("utilisateurs").update(payload).eq("id", before.id);
+    if (error) {
+      toast.error(`Erreur : ${error.message}`);
+      setSaving(false);
+      return;
+    }
 
     // Log spécifique si le rôle a changé (action sensible)
     if (!isSelf && before.role !== editForm.role) {
@@ -205,7 +230,12 @@ const Membres = () => {
     } else {
       logAction("membre.update", "utilisateurs", before.id, {
         email: before.email, prenom: before.prenom, nom: before.nom,
+        est_actif_avant: before.est_actif, est_actif_apres: editForm.est_actif,
       });
+    }
+
+    if (activating) {
+      toast.success(`Lien d'invitation envoyé à ${editForm.email}.`);
     }
 
     await fetchMembers();
@@ -523,15 +553,48 @@ const Membres = () => {
                 </div>
               </div>
               {editModal.member.id !== me?.id && (
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">Rôle</label>
-                  <select value={editForm.role} onChange={e => setEditForm(f => ({ ...f, role: e.target.value as UserRole }))} className={fieldClass}>
-                    <option value="inscrit">Inscrit</option>
-                    <option value="membre">Membre</option>
-                    <option value="membre_premium">Membre Premium</option>
-                    <option value="administrateur">Administrateur</option>
-                  </select>
-                </div>
+                <>
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">Rôle</label>
+                    <select value={editForm.role} onChange={e => setEditForm(f => ({ ...f, role: e.target.value as UserRole }))} className={fieldClass}>
+                      <option value="inscrit">Inscrit</option>
+                      <option value="membre">Membre</option>
+                      <option value="membre_premium">Membre Premium</option>
+                      <option value="administrateur">Administrateur</option>
+                    </select>
+                  </div>
+
+                  {/* Toggle Actif / Inactif — passer à actif envoie un magic link */}
+                  <div className="flex items-start gap-3 bg-muted/40 border rounded-xl p-3">
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={editForm.est_actif}
+                      onClick={() => setEditForm(f => ({ ...f, est_actif: !f.est_actif }))}
+                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors ${
+                        editForm.est_actif ? "bg-primary" : "bg-muted-foreground/30"
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                          editForm.est_actif ? "translate-x-5" : "translate-x-0.5"
+                        }`}
+                      />
+                    </button>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">
+                        {editForm.est_actif ? "Compte actif" : "Compte inactif"}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {!editModal.member.est_actif && editForm.est_actif
+                          ? "En enregistrant, un lien d'invitation magique sera envoyé par email."
+                          : editForm.est_actif
+                            ? "Le membre peut se connecter à son espace."
+                            : "Le membre ne peut pas se connecter."}
+                      </p>
+                    </div>
+                  </div>
+                </>
               )}
             </div>
             <div className="flex justify-end gap-3 p-6 border-t">
