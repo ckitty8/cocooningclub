@@ -119,7 +119,7 @@ const Magazine = () => {
               <div key={d.id} className="bg-card border rounded-2xl overflow-hidden flex flex-col group">
                 <div className="relative w-full aspect-[16/10] bg-gradient-to-br from-primary/15 to-amber-500/15 flex items-center justify-center overflow-hidden">
                   {d.url_image ? (
-                    <img src={d.url_image} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                    <img src={d.url_image} alt="" className="w-full h-full object-contain group-hover:scale-105 transition-transform" />
                   ) : (
                     <Icon className="w-10 h-10 text-primary/50 group-hover:scale-110 transition-transform" />
                   )}
