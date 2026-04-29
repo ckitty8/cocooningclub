@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
 import { withTimeout } from "@/utils/withTimeout";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, X, MapPin, Clock, Users, Euro, Search, ChevronDown, UserCheck, UserX } from "lucide-react";
+import { Plus, Pencil, Trash2, X, MapPin, Clock, Users, Euro, Search, ChevronDown, UserCheck, UserX, Image as ImageIcon } from "lucide-react";
 
 type Statut = "brouillon" | "publie" | "complet" | "annule" | "termine";
 type Niveau = "debutant" | "intermediaire" | "avance";
@@ -85,6 +85,8 @@ const Ateliers = () => {
   const [modal, setModal] = useState<{ open: boolean; atelier: Atelier | null }>({ open: false, atelier: null });
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   // Recherche + filtre
   const [search, setSearch] = useState("");
@@ -235,6 +237,32 @@ const Ateliers = () => {
 
   const f = (key: keyof typeof form, val: string | number) =>
     setForm(prev => ({ ...prev, [key]: val }));
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Seules les images sont acceptées");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("L'image doit faire moins de 5 Mo");
+      return;
+    }
+    setUploadingImage(true);
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+    const path = `ateliers/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await supabase.storage.from("images").upload(path, file, { contentType: file.type });
+    if (error) {
+      toast.error(`Erreur upload : ${error.message}`, { duration: 8000 });
+      setUploadingImage(false);
+      return;
+    }
+    const { data } = supabase.storage.from("images").getPublicUrl(path);
+    f("url_image", data.publicUrl);
+    setUploadingImage(false);
+    if (imageInputRef.current) imageInputRef.current.value = "";
+  };
 
   return (
     <AdminLayout>
@@ -435,6 +463,30 @@ const Ateliers = () => {
                 className="p-1.5 rounded-lg hover:bg-muted"><X className="w-4 h-4" /></button>
             </div>
             <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Photo de présentation</label>
+                <div className="flex items-start gap-3">
+                  {form.url_image ? (
+                    <img src={form.url_image} alt="" className="w-24 h-24 rounded-xl object-cover border" />
+                  ) : (
+                    <div className="w-24 h-24 rounded-xl border-2 border-dashed flex items-center justify-center text-muted-foreground">
+                      <ImageIcon className="w-6 h-6" />
+                    </div>
+                  )}
+                  <div className="flex flex-col gap-2">
+                    <input ref={imageInputRef} type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                    <button type="button" onClick={() => imageInputRef.current?.click()} disabled={uploadingImage}
+                      className="text-sm px-3 py-1.5 border rounded-full hover:bg-muted disabled:opacity-50">
+                      {uploadingImage ? "Envoi..." : form.url_image ? "Changer" : "Uploader"}
+                    </button>
+                    {form.url_image && (
+                      <button type="button" onClick={() => f("url_image", "")}
+                        className="text-sm text-destructive hover:underline">Retirer</button>
+                    )}
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">JPG, PNG, WebP. Max 5 Mo.</p>
+              </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Titre *</label>
                 <input value={form.titre} onChange={e => f("titre", e.target.value)}

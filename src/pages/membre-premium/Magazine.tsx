@@ -16,6 +16,7 @@ interface Doc {
   type: DocType;
   fichier_chemin: string | null;
   lien_externe: string | null;
+  url_image: string | null;
   acces: DocAcces;
   created_at: string;
 }
@@ -44,7 +45,7 @@ const Magazine = () => {
       // que l'admin a publié pour ce niveau d'accès, peu importe le type.
       const { data, error } = await supabase
         .from("documents")
-        .select("id, titre, description, type, fichier_chemin, lien_externe, acces, created_at")
+        .select("id, titre, description, type, fichier_chemin, lien_externe, url_image, acces, created_at")
         .order("created_at", { ascending: false });
 
       if (error) toast.error(`Erreur : ${error.message}`);
@@ -116,8 +117,12 @@ const Magazine = () => {
             const isLink = d.type === "lien_externe" || (!d.fichier_chemin && !!d.lien_externe);
             return (
               <div key={d.id} className="bg-card border rounded-2xl overflow-hidden flex flex-col group">
-                <div className="relative w-full aspect-[16/10] bg-gradient-to-br from-primary/15 to-amber-500/15 flex items-center justify-center">
-                  <Icon className="w-10 h-10 text-primary/50 group-hover:scale-110 transition-transform" />
+                <div className="relative w-full aspect-[16/10] bg-gradient-to-br from-primary/15 to-amber-500/15 flex items-center justify-center overflow-hidden">
+                  {d.url_image ? (
+                    <img src={d.url_image} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                  ) : (
+                    <Icon className="w-10 h-10 text-primary/50 group-hover:scale-110 transition-transform" />
+                  )}
                   <span className="absolute top-3 left-3 text-xs bg-background/80 text-foreground px-2 py-0.5 rounded-full">
                     {typeLabel[d.type]}
                   </span>
