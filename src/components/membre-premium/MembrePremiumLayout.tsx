@@ -10,7 +10,7 @@ const navItems = [
   { href: "/espace-membre-premium",              label: "Tableau de bord",   icon: LayoutDashboard, end: true },
   { href: "/espace-membre-premium/ateliers",     label: "Ateliers",          icon: CalendarDays },
   { href: "/espace-membre-premium/inscriptions", label: "Mes inscriptions",  icon: Ticket },
-  { href: "/espace-membre-premium/magazine",     label: "Magazine",          icon: BookOpen },
+  { href: "/espace-membre-premium/magazine",     label: "Documents",         icon: BookOpen },
   { href: "/espace-membre-premium/mon-compte",   label: "Mon compte",        icon: User },
 ];
 

@@ -10,7 +10,7 @@ const navItems = [
   { href: "/espace-membre",              label: "Tableau de bord",   icon: LayoutDashboard, end: true },
   { href: "/espace-membre/ateliers",     label: "Ateliers",          icon: CalendarDays },
   { href: "/espace-membre/inscriptions", label: "Mes inscriptions",  icon: Ticket },
-  { href: "/espace-membre/magazine",     label: "Magazine",          icon: BookOpen },
+  { href: "/espace-membre/magazine",     label: "Documents",         icon: BookOpen },
   { href: "/espace-membre/mon-compte",   label: "Mon compte",        icon: User },
 ];
 
