@@ -1,6 +1,7 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import {
   LayoutDashboard, Users, CalendarDays, FileText,
   FormInput, LogOut, Menu, ChevronRight, UserCheck, MessageSquare, CalendarClock, Lightbulb
@@ -12,17 +13,37 @@ const navItems = [
   { href: "/admin/ateliers",           label: "Ateliers",                 icon: CalendarDays },
   { href: "/admin/pre-inscriptions",   label: "Pré-inscriptions",         icon: UserCheck },
   { href: "/admin/disponibilites",     label: "Disponibilités",           icon: CalendarClock },
-  { href: "/admin/boite-a-idees",      label: "Boîte à idées",            icon: Lightbulb },
+  { href: "/admin/boite-a-idees",      label: "Boîte à idées",            icon: Lightbulb, badgeKey: "idees" as const },
   { href: "/admin/documents",          label: "Documents",                icon: FileText },
   { href: "/admin/formulaire",         label: "Formulaire de contact",    icon: FormInput },
   { href: "/admin/messages-templates", label: "Modèles de messages",      icon: MessageSquare },
 ];
+
+const ideesLastSeenKey = (id: string | undefined) => `admin.idees.lastSeen.${id ?? "anon"}`;
 
 const AdminLayout = ({ children }: { children: ReactNode }) => {
   const { profile, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [ideesNouvelles, setIdeesNouvelles] = useState(0);
+
+  // Compte des idées créées depuis la dernière visite de la boîte à idées.
+  // Réévalué à chaque changement de route pour prendre en compte le passage
+  // sur /admin/boite-a-idees qui met à jour la date de dernière visite.
+  useEffect(() => {
+    if (!profile?.id) return;
+    const since = localStorage.getItem(ideesLastSeenKey(profile.id)) ?? "1970-01-01T00:00:00Z";
+    let cancelled = false;
+    supabase
+      .from("idees")
+      .select("id", { count: "exact", head: true })
+      .gt("cree_le", since)
+      .then(({ count }) => {
+        if (!cancelled) setIdeesNouvelles(count ?? 0);
+      });
+    return () => { cancelled = true; };
+  }, [profile?.id, location.pathname]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -39,8 +60,9 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
       </div>
 
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        {navItems.map(({ href, label, icon: Icon }) => {
+        {navItems.map(({ href, label, icon: Icon, badgeKey }) => {
           const active = location.pathname === href;
+          const badgeCount = badgeKey === "idees" ? ideesNouvelles : 0;
           return (
             <Link
               key={href}
@@ -54,6 +76,13 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
             >
               <Icon className="w-4 h-4 shrink-0" />
               <span className="flex-1">{label}</span>
+              {badgeCount > 0 && (
+                <span className={`text-[11px] font-semibold rounded-full px-1.5 min-w-[20px] h-5 flex items-center justify-center ${
+                  active ? "bg-primary-foreground text-primary" : "bg-primary text-primary-foreground"
+                }`}>
+                  {badgeCount > 99 ? "99+" : badgeCount}
+                </span>
+              )}
               {active && <ChevronRight className="w-3 h-3 opacity-70" />}
             </Link>
           );

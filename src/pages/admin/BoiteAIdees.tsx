@@ -101,6 +101,15 @@ const BoiteAIdees = () => {
 
   useEffect(() => { fetchAll(); }, []);
 
+  // Marque la boîte à idées comme vue pour l'admin courant : la pastille
+  // de la sidebar (cf. AdminLayout) compte les idées créées depuis cette
+  // date.
+  useEffect(() => {
+    if (profile?.id) {
+      localStorage.setItem(`admin.idees.lastSeen.${profile.id}`, new Date().toISOString());
+    }
+  }, [profile?.id]);
+
   // Map id admin → admin
   const adminsById = useMemo(() => {
     const map: Record<string, Admin> = {};
