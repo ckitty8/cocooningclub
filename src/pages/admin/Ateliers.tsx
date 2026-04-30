@@ -34,6 +34,7 @@ interface Atelier {
 
 interface Inscription {
   id: string;
+  utilisateur_id: string | null;
   nom_invite: string;
   prenom_invite: string;
   email_invite: string;
@@ -42,6 +43,12 @@ interface Inscription {
   present: boolean | null;
   inscrit_le: string;
   date_naissance: string | null;
+  utilisateurs?: {
+    prenom: string | null;
+    nom: string | null;
+    email: string | null;
+    role: "administrateur" | "inscrit" | "membre" | "membre_premium" | null;
+  } | null;
 }
 
 const emptyForm = {
@@ -140,8 +147,12 @@ const Ateliers = () => {
   const openInscrits = async (a: Atelier) => {
     setInscritPanel({ open: true, atelier: a });
     setInscLoading(true);
-    const { data } = await supabase.from("inscriptions").select("*").eq("atelier_id", a.id).order("inscrit_le");
-    setInscriptions((data as Inscription[]) ?? []);
+    const { data } = await supabase
+      .from("inscriptions")
+      .select("*, utilisateurs(prenom, nom, email, role)")
+      .eq("atelier_id", a.id)
+      .order("inscrit_le");
+    setInscriptions((data as unknown as Inscription[]) ?? []);
     setInscLoading(false);
   };
 
@@ -437,18 +448,42 @@ const Ateliers = () => {
               ) : (
                 <div className="divide-y">
                   {(() => {
-                    const atelierIsPaid = (inscritPanel.atelier?.tarif_standard ?? 0) > 0;
-                    return inscriptions.map(insc => (
+                    const atelier = inscritPanel.atelier;
+                    const tarifStd = atelier?.tarif_standard ?? 0;
+                    const tarifPrem = atelier?.tarif_premium ?? tarifStd;
+                    const atelierIsPaid = tarifStd > 0 || tarifPrem > 0;
+                    const montantPour = (insc: Inscription): number => {
+                      const role = insc.utilisateurs?.role;
+                      return role === "membre_premium" ? tarifPrem : tarifStd;
+                    };
+                    return inscriptions.map(insc => {
+                      const prenom = insc.prenom_invite ?? insc.utilisateurs?.prenom ?? "";
+                      const nom = insc.nom_invite ?? insc.utilisateurs?.nom ?? "";
+                      const email = insc.email_invite ?? insc.utilisateurs?.email ?? "";
+                      const role = insc.utilisateurs?.role;
+                      const montant = montantPour(insc);
+                      return (
                     <div key={insc.id} className="px-6 py-4 flex items-center gap-4">
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm">{insc.prenom_invite} {insc.nom_invite}</p>
-                        <p className="text-xs text-muted-foreground truncate">{insc.email_invite}</p>
+                        <p className="font-medium text-sm flex items-center gap-2">
+                          {prenom} {nom}
+                          {role === "membre_premium" && (
+                            <span className="text-[10px] uppercase tracking-wider bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">Premium</span>
+                          )}
+                          {insc.utilisateur_id && role !== "membre_premium" && (
+                            <span className="text-[10px] uppercase tracking-wider bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">Membre</span>
+                          )}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">{email}</p>
                         <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                           <span className={`text-xs px-1.5 py-0.5 rounded-full ${inscriptionBadge[insc.statut]}`}>
                             {inscriptionLabel[insc.statut]}
                           </span>
                           <span className={`text-xs px-1.5 py-0.5 rounded-full ${paiementBadge[insc.statut_paiement]}`}>
                             {paiementLabel[insc.statut_paiement]}
+                          </span>
+                          <span className="text-xs px-1.5 py-0.5 rounded-full bg-foreground/5 text-foreground font-medium">
+                            {atelierIsPaid ? `${montant.toFixed(2)} €` : "Gratuit"}
                           </span>
                         </div>
                       </div>
@@ -489,14 +524,34 @@ const Ateliers = () => {
                         </button>
                       </div>
                     </div>
-                    ));
+                      );
+                    });
                   })()}
                 </div>
               )}
             </div>
 
-            <div className="p-4 border-t text-xs text-muted-foreground text-center">
-              {inscriptions.length} inscrit(s) · {inscriptions.filter(i => i.present).length} présent(s)
+            <div className="p-4 border-t text-xs text-muted-foreground text-center space-y-1">
+              <div>
+                {inscriptions.length} inscrit(s) · {inscriptions.filter(i => i.present).length} présent(s)
+              </div>
+              {(() => {
+                const tarifStd = inscritPanel.atelier?.tarif_standard ?? 0;
+                const tarifPrem = inscritPanel.atelier?.tarif_premium ?? tarifStd;
+                if (tarifStd === 0 && tarifPrem === 0) return null;
+                const totalAttendu = inscriptions
+                  .filter(i => i.statut === "confirme")
+                  .reduce((s, i) => s + (i.utilisateurs?.role === "membre_premium" ? tarifPrem : tarifStd), 0);
+                const totalEncaisse = inscriptions
+                  .filter(i => i.statut === "confirme" && i.statut_paiement === "paye")
+                  .reduce((s, i) => s + (i.utilisateurs?.role === "membre_premium" ? tarifPrem : tarifStd), 0);
+                return (
+                  <div>
+                    Total attendu : <span className="font-semibold text-foreground">{totalAttendu.toFixed(2)} €</span>
+                    {" · "}encaissé : <span className="font-semibold text-foreground">{totalEncaisse.toFixed(2)} €</span>
+                  </div>
+                );
+              })()}
             </div>
           </aside>
         </div>
