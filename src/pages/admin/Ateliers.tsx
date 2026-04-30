@@ -149,10 +149,15 @@ const Ateliers = () => {
     setInscriptions(prev => prev.map(i => i.id === insc.id ? { ...i, present: !i.present } : i));
   };
 
-  // Toggle paiement : en_attente ↔ paye. On laisse non_requis tel quel
-  // (atelier gratuit) — le bouton est désactivé dans ce cas.
+  // Toggle paiement : cycle en_attente ↔ paye.
+  // Si l'inscription est marquée non_requis mais que l'atelier a un
+  // tarif > 0 (incohérence après-coup), on bascule vers en_attente.
+  // Un atelier réellement gratuit (tarif null/0) garde non_requis et
+  // désactive le bouton dans l'UI.
   const togglePaiement = async (insc: Inscription) => {
-    if (insc.statut_paiement === "non_requis") return;
+    const atelier = inscritPanel.atelier;
+    const isPaid = (atelier?.tarif_standard ?? 0) > 0;
+    if (insc.statut_paiement === "non_requis" && !isPaid) return;
     const next: StatutPaiement = insc.statut_paiement === "paye" ? "en_attente" : "paye";
     await supabase.from("inscriptions").update({ statut_paiement: next }).eq("id", insc.id);
     setInscriptions(prev => prev.map(i => i.id === insc.id ? { ...i, statut_paiement: next } : i));
@@ -428,7 +433,9 @@ const Ateliers = () => {
                 </div>
               ) : (
                 <div className="divide-y">
-                  {inscriptions.map(insc => (
+                  {(() => {
+                    const atelierIsPaid = (inscritPanel.atelier?.tarif_standard ?? 0) > 0;
+                    return inscriptions.map(insc => (
                     <div key={insc.id} className="px-6 py-4 flex items-center gap-4">
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm">{insc.prenom_invite} {insc.nom_invite}</p>
@@ -457,15 +464,15 @@ const Ateliers = () => {
                         </button>
                         <button
                           onClick={() => togglePaiement(insc)}
-                          disabled={insc.statut_paiement === "non_requis"}
+                          disabled={insc.statut_paiement === "non_requis" && !atelierIsPaid}
                           title={
-                            insc.statut_paiement === "non_requis" ? "Atelier gratuit" :
+                            insc.statut_paiement === "non_requis" && !atelierIsPaid ? "Atelier gratuit" :
                             insc.statut_paiement === "paye" ? "Marquer non payé" : "Marquer payé"
                           }
                           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                             insc.statut_paiement === "paye"
                               ? "bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
-                              : insc.statut_paiement === "non_requis"
+                              : insc.statut_paiement === "non_requis" && !atelierIsPaid
                               ? "border-muted-foreground/20 text-muted-foreground"
                               : "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100"
                           }`}
@@ -474,12 +481,13 @@ const Ateliers = () => {
                             ? <Euro className="w-3.5 h-3.5" />
                             : <CircleDashed className="w-3.5 h-3.5" />}
                           {insc.statut_paiement === "paye" ? "Payé"
-                            : insc.statut_paiement === "non_requis" ? "Gratuit"
+                            : insc.statut_paiement === "non_requis" && !atelierIsPaid ? "Gratuit"
                             : "Non payé"}
                         </button>
                       </div>
                     </div>
-                  ))}
+                    ));
+                  })()}
                 </div>
               )}
             </div>

@@ -56,6 +56,7 @@ interface AtelierMinimal {
   date_atelier: string;
   heure_debut: string | null;
   statut: string;
+  tarif_standard: number | null;
 }
 
 type FilterStatut = "en_attente" | "confirme" | "annule" | "tous";
@@ -142,7 +143,7 @@ const PreInscriptions = () => {
           .select("cle, valeur"),
         supabase
           .from("ateliers")
-          .select("id, titre, date_atelier, heure_debut, statut")
+          .select("id, titre, date_atelier, heure_debut, statut, tarif_standard")
           .in("statut", ["publie", "complet"])
           .gte("date_atelier", today)
           .order("date_atelier"),
@@ -249,6 +250,9 @@ const PreInscriptions = () => {
     }
 
     setNewSaving(true);
+    // Statut paiement dérivé du tarif de l'atelier : si tarif_standard > 0
+    // → en_attente (à régler), sinon non_requis (atelier gratuit).
+    const isPaid = (atelier?.tarif_standard ?? 0) > 0;
     const { data: ins, error } = await supabase.from("inscriptions").insert({
       atelier_id: newForm.atelier_id,
       prenom_invite: newForm.prenom.trim(),
@@ -257,7 +261,7 @@ const PreInscriptions = () => {
       telephone_invite: newForm.telephone.trim() || null,
       date_naissance: newForm.date_naissance || null,
       statut: newForm.statut,
-      statut_paiement: "non_requis",
+      statut_paiement: isPaid ? "en_attente" : "non_requis",
     }).select("id").single();
 
     if (error) {
