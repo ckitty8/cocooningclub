@@ -229,9 +229,13 @@ const Documents = () => {
               const Icon = typeIcon[d.type];
               return (
                 <div key={d.id} className="flex items-center gap-4 px-6 py-4 hover:bg-muted/20 transition-colors">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                    <Icon className="w-5 h-5 text-primary" />
-                  </div>
+                  {d.url_image ? (
+                    <img src={d.url_image} alt="" className="w-12 h-12 rounded-xl object-contain bg-muted/30 shrink-0 border" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <Icon className="w-5 h-5 text-primary" />
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm truncate">{d.titre}</p>
                     <div className="flex items-center gap-2 mt-0.5 flex-wrap">

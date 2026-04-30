@@ -324,7 +324,11 @@ const Ateliers = () => {
           {filtered.map(a => {
             const inscrits = a.places_max - a.places_disponibles;
             return (
-              <div key={a.id} className="bg-card rounded-2xl border p-5 flex flex-col">
+              <div key={a.id} className="bg-card rounded-2xl border overflow-hidden flex flex-col">
+                {a.url_image && (
+                  <img src={a.url_image} alt={a.titre} className="w-full aspect-[16/10] object-contain bg-muted/30" />
+                )}
+                <div className="p-5 flex flex-col flex-1">
                 <div className="flex items-start justify-between mb-3">
                   <h3 className="font-semibold text-foreground leading-snug flex-1 pr-2">{a.titre}</h3>
                   <span className={`shrink-0 px-2.5 py-0.5 rounded-full text-xs font-medium ${statutColors[a.statut]}`}>
@@ -379,6 +383,7 @@ const Ateliers = () => {
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-destructive/30 text-destructive rounded-full hover:bg-destructive/10 transition-colors">
                     <Trash2 className="w-3 h-3" />
                   </button>
+                </div>
                 </div>
               </div>
             );
