@@ -11,7 +11,7 @@ const navItems = [
   { href: "/admin/dashboard",          label: "Tableau de bord",         icon: LayoutDashboard },
   { href: "/admin/membres",            label: "Membres",                  icon: Users },
   { href: "/admin/ateliers",           label: "Ateliers",                 icon: CalendarDays },
-  { href: "/admin/pre-inscriptions",   label: "Pré-inscriptions",         icon: UserCheck },
+  { href: "/admin/pre-inscriptions",   label: "Pré-inscriptions",         icon: UserCheck, badgeKey: "preinscriptions" as const },
   { href: "/admin/disponibilites",     label: "Disponibilités",           icon: CalendarClock },
   { href: "/admin/boite-a-idees",      label: "Boîte à idées",            icon: Lightbulb, badgeKey: "idees" as const },
   { href: "/admin/documents",          label: "Documents",                icon: FileText },
@@ -27,6 +27,7 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [ideesNouvelles, setIdeesNouvelles] = useState(0);
+  const [preInscEnAttente, setPreInscEnAttente] = useState(0);
 
   // Compte des idées créées depuis la dernière visite de la boîte à idées.
   // Réévalué à chaque changement de route pour prendre en compte le passage
@@ -41,6 +42,22 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
       .gt("cree_le", since)
       .then(({ count }) => {
         if (!cancelled) setIdeesNouvelles(count ?? 0);
+      });
+    return () => { cancelled = true; };
+  }, [profile?.id, location.pathname]);
+
+  // Compte des pré-inscriptions en attente de validation. Pas de
+  // localStorage : c'est un backlog, la pastille reste tant qu'il
+  // reste des inscriptions à traiter.
+  useEffect(() => {
+    if (!profile?.id) return;
+    let cancelled = false;
+    supabase
+      .from("inscriptions")
+      .select("id", { count: "exact", head: true })
+      .eq("statut", "en_attente")
+      .then(({ count }) => {
+        if (!cancelled) setPreInscEnAttente(count ?? 0);
       });
     return () => { cancelled = true; };
   }, [profile?.id, location.pathname]);
@@ -62,7 +79,10 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {navItems.map(({ href, label, icon: Icon, badgeKey }) => {
           const active = location.pathname === href;
-          const badgeCount = badgeKey === "idees" ? ideesNouvelles : 0;
+          const badgeCount =
+            badgeKey === "idees" ? ideesNouvelles :
+            badgeKey === "preinscriptions" ? preInscEnAttente :
+            0;
           return (
             <Link
               key={href}
