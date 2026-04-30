@@ -307,12 +307,28 @@ const PreInscriptions = () => {
     setNewSaving(true);
 
     if (editingInscription) {
+      // Si l'inscription n'est pas encore liée à un compte mais que
+      // l'email match désormais un utilisateur, on relie. Inversement,
+      // si l'admin a changé l'email pour un autre qui ne match plus,
+      // on conserve la liaison existante (pas de débranchement
+      // automatique pour ne pas casser un historique volontairement).
+      let utilisateurId = editingInscription.utilisateur_id;
+      if (!utilisateurId) {
+        const { data: matchedUser } = await supabase
+          .from("utilisateurs")
+          .select("id")
+          .ilike("email", newForm.email.trim())
+          .maybeSingle();
+        if (matchedUser?.id) utilisateurId = matchedUser.id;
+      }
+
       // UPDATE : on conserve la liaison utilisateur_id si elle existe
       // (édition d'une inscription membre). Les champs invite sont
       // mis à jour quoi qu'il arrive — ils prennent le pas sur
       // utilisateurs.* dans l'affichage côté admin.
       const payload: Record<string, unknown> = {
         atelier_id: newForm.atelier_id,
+        utilisateur_id: utilisateurId,
         prenom_invite: newForm.prenom.trim(),
         nom_invite: newForm.nom.trim(),
         email_invite: newForm.email.trim(),
@@ -354,8 +370,18 @@ const PreInscriptions = () => {
         ? newForm.statut_paiement
         : (isPaid ? "en_attente" : "non_requis");
 
+      // Si l'email correspond à un compte existant, on lie l'inscription
+      // au compte. L'admin a la policy utilisateurs_admin_tout, donc le
+      // SELECT par email est autorisé (privilege admin uniquement).
+      const { data: matchedUser } = await supabase
+        .from("utilisateurs")
+        .select("id")
+        .ilike("email", newForm.email.trim())
+        .maybeSingle();
+
       const { data: ins, error } = await supabase.from("inscriptions").insert({
         atelier_id: newForm.atelier_id,
+        utilisateur_id: matchedUser?.id ?? null,
         prenom_invite: newForm.prenom.trim(),
         nom_invite: newForm.nom.trim(),
         email_invite: newForm.email.trim(),
