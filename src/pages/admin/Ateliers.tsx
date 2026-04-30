@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
 import { withTimeout } from "@/utils/withTimeout";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, X, MapPin, Clock, Users, Euro, Search, ChevronDown, UserCheck, UserX, Image as ImageIcon } from "lucide-react";
+import { Plus, Pencil, Trash2, X, MapPin, Clock, Users, Euro, Search, ChevronDown, UserCheck, UserX, Image as ImageIcon, CircleDashed } from "lucide-react";
 
 type Statut = "brouillon" | "publie" | "complet" | "annule" | "termine";
 type Niveau = "debutant" | "intermediaire" | "avance";
@@ -147,6 +147,15 @@ const Ateliers = () => {
   const togglePresent = async (insc: Inscription) => {
     await supabase.from("inscriptions").update({ present: !insc.present }).eq("id", insc.id);
     setInscriptions(prev => prev.map(i => i.id === insc.id ? { ...i, present: !i.present } : i));
+  };
+
+  // Toggle paiement : en_attente ↔ paye. On laisse non_requis tel quel
+  // (atelier gratuit) — le bouton est désactivé dans ce cas.
+  const togglePaiement = async (insc: Inscription) => {
+    if (insc.statut_paiement === "non_requis") return;
+    const next: StatutPaiement = insc.statut_paiement === "paye" ? "en_attente" : "paye";
+    await supabase.from("inscriptions").update({ statut_paiement: next }).eq("id", insc.id);
+    setInscriptions(prev => prev.map(i => i.id === insc.id ? { ...i, statut_paiement: next } : i));
   };
 
   const openAdd = () => { setForm(emptyForm); setModal({ open: true, atelier: null }); };
@@ -433,18 +442,42 @@ const Ateliers = () => {
                           </span>
                         </div>
                       </div>
-                      <button
-                        onClick={() => togglePresent(insc)}
-                        title={insc.present ? "Marquer absent" : "Marquer présent"}
-                        className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                          insc.present
-                            ? "bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
-                            : "border-muted-foreground/20 text-muted-foreground hover:bg-muted"
-                        }`}
-                      >
-                        {insc.present ? <UserCheck className="w-3.5 h-3.5" /> : <UserX className="w-3.5 h-3.5" />}
-                        {insc.present ? "Présent" : "Absent"}
-                      </button>
+                      <div className="flex flex-col gap-1.5 shrink-0">
+                        <button
+                          onClick={() => togglePresent(insc)}
+                          title={insc.present ? "Marquer absent" : "Marquer présent"}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                            insc.present
+                              ? "bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                              : "border-muted-foreground/20 text-muted-foreground hover:bg-muted"
+                          }`}
+                        >
+                          {insc.present ? <UserCheck className="w-3.5 h-3.5" /> : <UserX className="w-3.5 h-3.5" />}
+                          {insc.present ? "Présent" : "Absent"}
+                        </button>
+                        <button
+                          onClick={() => togglePaiement(insc)}
+                          disabled={insc.statut_paiement === "non_requis"}
+                          title={
+                            insc.statut_paiement === "non_requis" ? "Atelier gratuit" :
+                            insc.statut_paiement === "paye" ? "Marquer non payé" : "Marquer payé"
+                          }
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                            insc.statut_paiement === "paye"
+                              ? "bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                              : insc.statut_paiement === "non_requis"
+                              ? "border-muted-foreground/20 text-muted-foreground"
+                              : "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100"
+                          }`}
+                        >
+                          {insc.statut_paiement === "paye"
+                            ? <Euro className="w-3.5 h-3.5" />
+                            : <CircleDashed className="w-3.5 h-3.5" />}
+                          {insc.statut_paiement === "paye" ? "Payé"
+                            : insc.statut_paiement === "non_requis" ? "Gratuit"
+                            : "Non payé"}
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
