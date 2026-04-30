@@ -176,48 +176,39 @@ const PreInscriptions = () => {
     tous:       inscriptions.length,
   }), [inscriptions]);
 
-  const handleValidate = async (insc: Inscription) => {
+  const handleChangeStatut = async (insc: Inscription, next: Inscription["statut"]) => {
+    if (insc.statut === next) return;
+    const id = inscIdentite(insc);
+    if (next === "annule" && !confirm(`Refuser la pré-inscription de ${id.prenom} ${id.nom} ?`)) return;
+
     setActingOn(insc.id);
+    const payload: Record<string, unknown> = { statut: next };
+    payload.annule_le = next === "annule" ? new Date().toISOString() : null;
+
     const { error } = await supabase
       .from("inscriptions")
-      .update({ statut: "confirme" })
+      .update(payload)
       .eq("id", insc.id);
 
-    const id = inscIdentite(insc);
     if (error) {
-      toast.error("Erreur lors de la validation");
+      toast.error(`Erreur : ${error.message}`);
     } else {
-      toast.success(`Pré-inscription de ${id.prenom} validée`);
-      setInscriptions(prev => prev.map(i => i.id === insc.id ? { ...i, statut: "confirme" as const } : i));
-      logAction("inscription.validate", "inscriptions", insc.id, {
+      const action = next === "confirme" ? "validate" : next === "annule" ? "refuse" : "reset";
+      toast.success(
+        next === "confirme" ? `Pré-inscription de ${id.prenom} validée`
+        : next === "annule"  ? "Pré-inscription refusée"
+                             : "Pré-inscription remise en attente"
+      );
+      setInscriptions(prev => prev.map(i => i.id === insc.id ? { ...i, statut: next } : i));
+      logAction(`inscription.${action}`, "inscriptions", insc.id, {
         prenom: id.prenom, nom: id.nom,
         atelier: insc.ateliers?.titre, email: id.email,
+        statut_avant: insc.statut, statut_apres: next,
       });
     }
     setActingOn(null);
   };
 
-  const handleRefuse = async (insc: Inscription) => {
-    const id = inscIdentite(insc);
-    if (!confirm(`Refuser la pré-inscription de ${id.prenom} ${id.nom} ?`)) return;
-    setActingOn(insc.id);
-    const { error } = await supabase
-      .from("inscriptions")
-      .update({ statut: "annule", annule_le: new Date().toISOString() })
-      .eq("id", insc.id);
-
-    if (error) {
-      toast.error("Erreur lors du refus");
-    } else {
-      toast.success(`Pré-inscription refusée`);
-      setInscriptions(prev => prev.map(i => i.id === insc.id ? { ...i, statut: "annule" as const } : i));
-      logAction("inscription.refuse", "inscriptions", insc.id, {
-        prenom: id.prenom, nom: id.nom,
-        atelier: insc.ateliers?.titre, email: id.email,
-      });
-    }
-    setActingOn(null);
-  };
 
   const openMail = (insc: Inscription) => {
     const email = inscIdentite(insc).email;
@@ -421,33 +412,45 @@ const PreInscriptions = () => {
 
                 {/* Actions */}
                 <div className="flex flex-wrap gap-2 lg:flex-col lg:w-48 shrink-0">
-                  {insc.statut === "en_attente" && (
-                    <>
-                      <button
-                        onClick={() => handleValidate(insc)}
-                        disabled={actingOn === insc.id}
-                        className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors disabled:opacity-50 flex-1 lg:flex-none"
-                      >
-                        {actingOn === insc.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                        Valider
-                      </button>
-                      <button
-                        onClick={() => handleRefuse(insc)}
-                        disabled={actingOn === insc.id}
-                        className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors disabled:opacity-50 flex-1 lg:flex-none"
-                      >
-                        <X className="w-4 h-4" />
-                        Refuser
-                      </button>
-                    </>
-                  )}
-                  {(insc.statut === "confirme" || insc.statut === "annule") && (
-                    <div className={`flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-medium ${
-                      insc.statut === "confirme" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"
-                    } lg:flex-none`}>
-                      {insc.statut === "confirme" ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
-                      {statutLabel[insc.statut]}
-                    </div>
+                  <div className="flex gap-1.5 lg:flex-col w-full">
+                    <button
+                      onClick={() => handleChangeStatut(insc, "confirme")}
+                      disabled={actingOn === insc.id || insc.statut === "confirme"}
+                      title="Valider la pré-inscription"
+                      className={`flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-colors disabled:cursor-not-allowed flex-1 lg:flex-none ${
+                        insc.statut === "confirme"
+                          ? "bg-green-50 text-green-700 border border-green-200"
+                          : "bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
+                      }`}
+                    >
+                      {actingOn === insc.id ? <Loader2 className="w-4 h-4 animate-spin" /> :
+                        insc.statut === "confirme" ? <CheckCircle2 className="w-4 h-4" /> : <Check className="w-4 h-4" />}
+                      {insc.statut === "confirme" ? "Validé" : "Valider"}
+                    </button>
+                    <button
+                      onClick={() => handleChangeStatut(insc, "annule")}
+                      disabled={actingOn === insc.id || insc.statut === "annule"}
+                      title="Refuser la pré-inscription"
+                      className={`flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-colors disabled:cursor-not-allowed flex-1 lg:flex-none ${
+                        insc.statut === "annule"
+                          ? "bg-red-50 text-red-700 border border-red-200"
+                          : "bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"
+                      }`}
+                    >
+                      {insc.statut === "annule" ? <XCircle className="w-4 h-4" /> : <X className="w-4 h-4" />}
+                      {insc.statut === "annule" ? "Refusé" : "Refuser"}
+                    </button>
+                  </div>
+                  {insc.statut !== "en_attente" && (
+                    <button
+                      onClick={() => handleChangeStatut(insc, "en_attente")}
+                      disabled={actingOn === insc.id}
+                      className="flex items-center justify-center gap-2 border border-foreground/20 text-muted-foreground hover:bg-muted px-3 py-1.5 rounded-xl text-xs font-medium transition-colors disabled:opacity-40"
+                      title="Remettre en attente"
+                    >
+                      <Clock className="w-3.5 h-3.5" />
+                      Remettre en attente
+                    </button>
                   )}
 
                   <div className="flex gap-2 lg:flex-col w-full">
