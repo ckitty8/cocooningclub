@@ -6,7 +6,7 @@ import { withTimeout } from "@/utils/withTimeout";
 import { toast } from "sonner";
 import {
   Check, X, Mail, MessageSquare, Clock, Calendar, MapPin, Phone, User,
-  CheckCircle2, XCircle, Loader2, UserPlus
+  CheckCircle2, XCircle, Loader2, UserPlus, Pencil, CreditCard
 } from "lucide-react";
 
 interface Inscription {
@@ -117,8 +117,9 @@ const PreInscriptions = () => {
   const [filter, setFilter] = useState<FilterStatut>("en_attente");
   const [actingOn, setActingOn] = useState<string | null>(null);
 
-  // Modal ajout manuel
+  // Modal ajout / édition
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [editingInscription, setEditingInscription] = useState<Inscription | null>(null);
   const [newForm, setNewForm] = useState({
     atelier_id: "",
     prenom: "",
@@ -126,7 +127,8 @@ const PreInscriptions = () => {
     email: "",
     telephone: "",
     date_naissance: "",
-    statut: "confirme" as "confirme" | "en_attente",
+    statut: "confirme" as "confirme" | "en_attente" | "annule",
+    statut_paiement: "non_requis" as "non_requis" | "en_attente" | "paye",
   });
   const [newSaving, setNewSaving] = useState(false);
 
@@ -228,57 +230,128 @@ const PreInscriptions = () => {
   };
 
   const openAddModal = () => {
+    setEditingInscription(null);
     setNewForm({
       atelier_id: ateliersDispo[0]?.id ?? "",
       prenom: "", nom: "", email: "", telephone: "", date_naissance: "",
       statut: "confirme",
+      statut_paiement: "non_requis",
     });
     setAddModalOpen(true);
   };
 
-  const handleCreateInscription = async () => {
+  const openEditModal = (insc: Inscription) => {
+    const id = inscIdentite(insc);
+    setEditingInscription(insc);
+    setNewForm({
+      atelier_id: insc.atelier_id,
+      prenom: id.prenom,
+      nom: id.nom,
+      email: id.email ?? "",
+      telephone: id.telephone ?? "",
+      date_naissance: insc.date_naissance ?? "",
+      statut: insc.statut,
+      statut_paiement: insc.statut_paiement ?? "non_requis",
+    });
+    setAddModalOpen(true);
+  };
+
+  const handleSaveInscription = async () => {
     if (!newForm.atelier_id) { toast.error("Choisis un atelier"); return; }
     if (!newForm.prenom.trim() || !newForm.nom.trim()) {
       toast.error("Prénom et nom sont obligatoires"); return;
     }
     if (!newForm.email.trim()) { toast.error("Email obligatoire"); return; }
 
-    const atelier = ateliersDispo.find(a => a.id === newForm.atelier_id);
+    const atelier = ateliersDispo.find(a => a.id === newForm.atelier_id)
+                 ?? (editingInscription?.ateliers ? {
+                      id: editingInscription.ateliers.id,
+                      titre: editingInscription.ateliers.titre,
+                      tarif_standard: null,
+                    } as AtelierMinimal : undefined);
     if (atelier?.titre === PIERRE_ORACLE_TITRE && !newForm.date_naissance) {
       toast.error("Date de naissance requise pour cet atelier");
       return;
     }
 
     setNewSaving(true);
-    // Statut paiement dérivé du tarif de l'atelier : si tarif_standard > 0
-    // → en_attente (à régler), sinon non_requis (atelier gratuit).
-    const isPaid = (atelier?.tarif_standard ?? 0) > 0;
-    const { data: ins, error } = await supabase.from("inscriptions").insert({
-      atelier_id: newForm.atelier_id,
-      prenom_invite: newForm.prenom.trim(),
-      nom_invite: newForm.nom.trim(),
-      email_invite: newForm.email.trim(),
-      telephone_invite: newForm.telephone.trim() || null,
-      date_naissance: newForm.date_naissance || null,
-      statut: newForm.statut,
-      statut_paiement: isPaid ? "en_attente" : "non_requis",
-    }).select("id").single();
 
-    if (error) {
-      console.error("[handleCreateInscription]", error);
-      toast.error(`Erreur : ${error.message}`, { duration: 8000 });
-    } else {
-      toast.success(`Inscription de ${newForm.prenom} ajoutée`);
-      logAction("inscription.create_manual", "inscriptions", ins?.id ?? null, {
-        prenom: newForm.prenom.trim(), nom: newForm.nom.trim(),
-        email: newForm.email.trim(),
+    if (editingInscription) {
+      // UPDATE : on conserve la liaison utilisateur_id si elle existe
+      // (édition d'une inscription membre). Les champs invite sont
+      // mis à jour quoi qu'il arrive — ils prennent le pas sur
+      // utilisateurs.* dans l'affichage côté admin.
+      const payload: Record<string, unknown> = {
         atelier_id: newForm.atelier_id,
-        atelier: atelier?.titre,
+        prenom_invite: newForm.prenom.trim(),
+        nom_invite: newForm.nom.trim(),
+        email_invite: newForm.email.trim(),
+        telephone_invite: newForm.telephone.trim() || null,
+        date_naissance: newForm.date_naissance || null,
         statut: newForm.statut,
-      });
-      setAddModalOpen(false);
-      fetchAll();
+        statut_paiement: newForm.statut_paiement,
+      };
+      if (newForm.statut === "annule" && editingInscription.statut !== "annule") {
+        payload.annule_le = new Date().toISOString();
+      } else if (newForm.statut !== "annule") {
+        payload.annule_le = null;
+      }
+
+      const { error } = await supabase
+        .from("inscriptions")
+        .update(payload)
+        .eq("id", editingInscription.id);
+
+      if (error) {
+        toast.error(`Erreur : ${error.message}`, { duration: 8000 });
+      } else {
+        toast.success(`Inscription de ${newForm.prenom} mise à jour`);
+        logAction("inscription.update", "inscriptions", editingInscription.id, {
+          prenom: newForm.prenom.trim(), nom: newForm.nom.trim(),
+          atelier: atelier?.titre,
+          statut_avant: editingInscription.statut, statut_apres: newForm.statut,
+          paiement_avant: editingInscription.statut_paiement, paiement_apres: newForm.statut_paiement,
+        });
+        setAddModalOpen(false);
+        setEditingInscription(null);
+        fetchAll();
+      }
+    } else {
+      // INSERT : statut_paiement initial dérivé du tarif si non explicitement
+      // forcé via la liste déroulante.
+      const isPaid = (atelier?.tarif_standard ?? 0) > 0;
+      const statutPaiement = newForm.statut_paiement !== "non_requis"
+        ? newForm.statut_paiement
+        : (isPaid ? "en_attente" : "non_requis");
+
+      const { data: ins, error } = await supabase.from("inscriptions").insert({
+        atelier_id: newForm.atelier_id,
+        prenom_invite: newForm.prenom.trim(),
+        nom_invite: newForm.nom.trim(),
+        email_invite: newForm.email.trim(),
+        telephone_invite: newForm.telephone.trim() || null,
+        date_naissance: newForm.date_naissance || null,
+        statut: newForm.statut,
+        statut_paiement: statutPaiement,
+      }).select("id").single();
+
+      if (error) {
+        console.error("[handleSaveInscription]", error);
+        toast.error(`Erreur : ${error.message}`, { duration: 8000 });
+      } else {
+        toast.success(`Inscription de ${newForm.prenom} ajoutée`);
+        logAction("inscription.create_manual", "inscriptions", ins?.id ?? null, {
+          prenom: newForm.prenom.trim(), nom: newForm.nom.trim(),
+          email: newForm.email.trim(),
+          atelier_id: newForm.atelier_id,
+          atelier: atelier?.titre,
+          statut: newForm.statut,
+        });
+        setAddModalOpen(false);
+        fetchAll();
+      }
     }
+
     setNewSaving(false);
   };
 
@@ -457,6 +530,15 @@ const PreInscriptions = () => {
                     </button>
                   )}
 
+                  <button
+                    onClick={() => openEditModal(insc)}
+                    className="flex items-center justify-center gap-2 border border-foreground/20 text-foreground px-3 py-1.5 rounded-xl text-xs font-medium hover:bg-muted transition-colors"
+                    title="Modifier l'inscription"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                    Modifier
+                  </button>
+
                   <div className="flex gap-2 lg:flex-col w-full">
                     <button
                       onClick={() => openMail(insc)}
@@ -489,25 +571,32 @@ const PreInscriptions = () => {
       {addModalOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm p-4"
-          onClick={() => setAddModalOpen(false)}
+          onClick={() => { setAddModalOpen(false); setEditingInscription(null); }}
         >
           <div
             className="bg-background border rounded-2xl shadow-2xl w-full max-w-lg p-6 relative"
             onClick={e => e.stopPropagation()}
           >
             <button
-              onClick={() => setAddModalOpen(false)}
+              onClick={() => { setAddModalOpen(false); setEditingInscription(null); }}
               className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
             >
               <X className="w-5 h-5" />
             </button>
             <h2 className="text-xl font-bold text-foreground mb-1 flex items-center gap-2">
-              <UserPlus className="w-5 h-5 text-primary" />
-              Nouvelle inscription
+              {editingInscription ? <Pencil className="w-5 h-5 text-primary" /> : <UserPlus className="w-5 h-5 text-primary" />}
+              {editingInscription ? "Modifier l'inscription" : "Nouvelle inscription"}
             </h2>
             <p className="text-sm text-muted-foreground mb-5">
-              Ajoute manuellement une personne à un atelier (par ex. inscription reçue par téléphone).
+              {editingInscription
+                ? "Mets à jour les informations de cette inscription."
+                : "Ajoute manuellement une personne à un atelier (par ex. inscription reçue par téléphone)."}
             </p>
+            {editingInscription?.utilisateur_id && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 mb-4 text-xs text-amber-800">
+                Inscription liée à un compte membre. Les modifications ici ne touchent pas la fiche du membre (à modifier dans <span className="font-medium">Membres</span>).
+              </div>
+            )}
 
             <div className="space-y-4">
               <div>
@@ -518,13 +607,19 @@ const PreInscriptions = () => {
                   className="w-full rounded-xl border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   <option value="">— Choisir un atelier —</option>
+                  {/* En édition, l'atelier d'origine peut être passé/annulé et donc absent de ateliersDispo : on l'ajoute en première ligne. */}
+                  {editingInscription?.ateliers && !ateliersDispo.some(a => a.id === editingInscription.atelier_id) && (
+                    <option value={editingInscription.atelier_id}>
+                      {editingInscription.ateliers.titre} — {formatDate(editingInscription.ateliers.date_atelier)} (atelier passé)
+                    </option>
+                  )}
                   {ateliersDispo.map(a => (
                     <option key={a.id} value={a.id}>
                       {a.titre} — {formatDate(a.date_atelier)}
                     </option>
                   ))}
                 </select>
-                {ateliersDispo.length === 0 && (
+                {ateliersDispo.length === 0 && !editingInscription && (
                   <p className="text-xs text-amber-600 mt-1">
                     Aucun atelier publié à venir. Crée d'abord un atelier dans "Ateliers".
                   </p>
@@ -600,7 +695,7 @@ const PreInscriptions = () => {
 
               <div>
                 <label className="block text-sm font-medium mb-1.5">Statut</label>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <button
                     type="button"
                     onClick={() => setNewForm({ ...newForm, statut: "confirme" })}
@@ -610,7 +705,7 @@ const PreInscriptions = () => {
                         : "bg-background border-border text-muted-foreground hover:bg-muted"
                     }`}
                   >
-                    ✓ Validé directement
+                    ✓ Validé
                   </button>
                   <button
                     type="button"
@@ -623,27 +718,84 @@ const PreInscriptions = () => {
                   >
                     ⏳ En attente
                   </button>
+                  {editingInscription && (
+                    <button
+                      type="button"
+                      onClick={() => setNewForm({ ...newForm, statut: "annule" })}
+                      className={`flex-1 px-3 py-2.5 rounded-xl border text-sm font-medium transition-colors ${
+                        newForm.statut === "annule"
+                          ? "bg-red-50 border-red-500 text-red-700"
+                          : "bg-background border-border text-muted-foreground hover:bg-muted"
+                      }`}
+                    >
+                      ✗ Refusé
+                    </button>
+                  )}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  "Validé" = décompte de place immédiat. "En attente" = devra être validé plus tard.
-                </p>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-1.5 flex items-center gap-1.5">
+                  <CreditCard className="w-3.5 h-3.5" /> Paiement
+                </label>
+                <div className="flex gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => setNewForm({ ...newForm, statut_paiement: "non_requis" })}
+                    className={`flex-1 px-3 py-2.5 rounded-xl border text-sm font-medium transition-colors ${
+                      newForm.statut_paiement === "non_requis"
+                        ? "bg-muted border-foreground/30 text-foreground"
+                        : "bg-background border-border text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    Gratuit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewForm({ ...newForm, statut_paiement: "en_attente" })}
+                    className={`flex-1 px-3 py-2.5 rounded-xl border text-sm font-medium transition-colors ${
+                      newForm.statut_paiement === "en_attente"
+                        ? "bg-amber-50 border-amber-500 text-amber-700"
+                        : "bg-background border-border text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    Non payé
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewForm({ ...newForm, statut_paiement: "paye" })}
+                    className={`flex-1 px-3 py-2.5 rounded-xl border text-sm font-medium transition-colors ${
+                      newForm.statut_paiement === "paye"
+                        ? "bg-green-50 border-green-500 text-green-700"
+                        : "bg-background border-border text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    Payé
+                  </button>
+                </div>
+                {!editingInscription && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Pour un nouvel ajout, "Gratuit" se transforme automatiquement en "Non payé" si l'atelier a un tarif.
+                  </p>
+                )}
               </div>
             </div>
 
             <div className="flex justify-end gap-2 mt-6">
               <button
-                onClick={() => setAddModalOpen(false)}
+                onClick={() => { setAddModalOpen(false); setEditingInscription(null); }}
                 className="px-4 py-2 border rounded-xl text-sm font-medium hover:bg-muted transition-colors"
               >
                 Annuler
               </button>
               <button
-                onClick={handleCreateInscription}
+                onClick={handleSaveInscription}
                 disabled={newSaving || !newForm.atelier_id || !newForm.prenom.trim() || !newForm.nom.trim() || !newForm.email.trim()}
                 className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40"
               >
-                {newSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
-                Ajouter
+                {newSaving ? <Loader2 className="w-4 h-4 animate-spin" />
+                  : editingInscription ? <Pencil className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
+                {editingInscription ? "Enregistrer" : "Ajouter"}
               </button>
             </div>
           </div>
