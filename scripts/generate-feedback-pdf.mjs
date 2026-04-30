@@ -321,10 +321,38 @@ async function buildSite() {
   log("Build terminé.");
 }
 
+async function loginAsAdmin(page) {
+  const email = process.env.ADMIN_EMAIL;
+  const password = process.env.ADMIN_PASSWORD;
+  if (!email || !password) {
+    log("⚠️ ADMIN_EMAIL/ADMIN_PASSWORD non définis : pages /admin capturées non authentifiées.");
+    return false;
+  }
+  log(`Connexion administrateur (${email})…`);
+  await page.goto(`${BASE_URL}/login`, { waitUntil: "domcontentloaded", timeout: 30_000 });
+  await page.waitForSelector('input[type="email"]', { timeout: 15_000 });
+  await page.fill('input[type="email"]', email);
+  await page.fill('input[type="password"]', password);
+  await Promise.all([
+    page.waitForURL((url) => !url.pathname.startsWith("/login"), { timeout: 30_000 }).catch(() => {}),
+    page.click('button[type="submit"]'),
+  ]);
+  await page.waitForLoadState("networkidle", { timeout: 15_000 }).catch(() => {});
+  const currentUrl = page.url();
+  if (currentUrl.includes("/login")) {
+    log(`  ⚠️ Connexion échouée, URL actuelle : ${currentUrl}`);
+    return false;
+  }
+  log(`  ✓ Connecté, redirigé vers ${currentUrl}`);
+  return true;
+}
+
 async function captureScreenshots(browser) {
   const context = await browser.newContext({ viewport: VIEWPORT });
   const page = await context.newPage();
   const results = [];
+
+  await loginAsAdmin(page);
 
   for (const def of PAGES) {
     const url = `${BASE_URL}${def.path}`;
