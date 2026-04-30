@@ -152,7 +152,33 @@ const Ateliers = () => {
       .select("*, utilisateurs(prenom, nom, email, role)")
       .eq("atelier_id", a.id)
       .order("inscrit_le");
-    setInscriptions((data as unknown as Inscription[]) ?? []);
+    const insc = (data as unknown as Inscription[]) ?? [];
+
+    // Si l'inscription a été faite en mode "invité" (utilisateur_id null)
+    // mais que l'email correspond à un compte existant, on rapatrie la
+    // fiche pour appliquer le bon tarif (premium) et le bon badge.
+    const guestEmails = Array.from(new Set(
+      insc
+        .filter(i => !i.utilisateur_id && i.email_invite)
+        .map(i => i.email_invite!.toLowerCase())
+    ));
+    if (guestEmails.length) {
+      const { data: matched } = await supabase
+        .from("utilisateurs")
+        .select("prenom, nom, email, role")
+        .in("email", guestEmails);
+      const byEmail = new Map<string, NonNullable<Inscription["utilisateurs"]>>(
+        (matched ?? []).map(u => [String(u.email).toLowerCase(), u as NonNullable<Inscription["utilisateurs"]>])
+      );
+      for (const i of insc) {
+        if (!i.utilisateur_id && i.email_invite && !i.utilisateurs) {
+          const u = byEmail.get(i.email_invite.toLowerCase());
+          if (u) i.utilisateurs = u;
+        }
+      }
+    }
+
+    setInscriptions(insc);
     setInscLoading(false);
   };
 

@@ -32,6 +32,7 @@ interface Inscription {
     nom: string | null;
     email: string | null;
     telephone: string | null;
+    role: "administrateur" | "inscrit" | "membre" | "membre_premium" | null;
   } | null;
 }
 
@@ -138,7 +139,7 @@ const PreInscriptions = () => {
       const [inscRes, tplRes, atelRes] = await withTimeout(Promise.all([
         supabase
           .from("inscriptions")
-          .select("*, ateliers(id, titre, date_atelier, heure_debut, lieu), utilisateurs(prenom, nom, email, telephone)")
+          .select("*, ateliers(id, titre, date_atelier, heure_debut, lieu), utilisateurs(prenom, nom, email, telephone, role)")
           .order("inscrit_le", { ascending: false }),
         supabase
           .from("parametres_messages")
@@ -151,7 +152,36 @@ const PreInscriptions = () => {
           .order("date_atelier"),
       ]));
 
-      if (inscRes.data) setInscriptions(inscRes.data as unknown as Inscription[]);
+      if (inscRes.data) {
+        const insc = inscRes.data as unknown as Inscription[];
+
+        // Pour les inscriptions invité (utilisateur_id null) dont l'email
+        // correspond pourtant à un compte existant, on rapatrie la fiche
+        // utilisateurs côté client pour afficher le bon badge (Admin /
+        // Premium / Membre) et le bon nom dans inscIdentite().
+        const guestEmails = Array.from(new Set(
+          insc
+            .filter(i => !i.utilisateur_id && i.email_invite)
+            .map(i => (i.email_invite as string).toLowerCase())
+        ));
+        if (guestEmails.length) {
+          const { data: matched } = await supabase
+            .from("utilisateurs")
+            .select("prenom, nom, email, telephone, role")
+            .in("email", guestEmails);
+          const byEmail = new Map<string, NonNullable<Inscription["utilisateurs"]>>(
+            (matched ?? []).map(u => [String(u.email).toLowerCase(), u as NonNullable<Inscription["utilisateurs"]>])
+          );
+          for (const i of insc) {
+            if (!i.utilisateur_id && i.email_invite && !i.utilisateurs) {
+              const u = byEmail.get(i.email_invite.toLowerCase());
+              if (u) i.utilisateurs = u;
+            }
+          }
+        }
+
+        setInscriptions(insc);
+      }
       if (tplRes.data) {
         const map: Record<string, string> = {};
         (tplRes.data as Template[]).forEach(t => { map[t.cle] = t.valeur; });
@@ -435,11 +465,22 @@ const PreInscriptions = () => {
                       <User className="w-4 h-4 text-muted-foreground" />
                       {fullName || <span className="text-muted-foreground italic">Sans nom</span>}
                     </h3>
-                    {insc.utilisateur_id && (
-                      <span className="text-[10px] uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
-                        Membre
-                      </span>
-                    )}
+                    {(() => {
+                      const role = insc.utilisateurs?.role;
+                      if (!role) return null;
+                      const map: Record<string, { label: string; cls: string }> = {
+                        administrateur: { label: "Admin",   cls: "bg-purple-100 text-purple-700" },
+                        membre_premium: { label: "Premium", cls: "bg-amber-100 text-amber-700" },
+                        membre:         { label: "Membre",  cls: "bg-primary/10 text-primary" },
+                        inscrit:        { label: "Inscrit", cls: "bg-gray-100 text-gray-600" },
+                      };
+                      const r = map[role];
+                      return r ? (
+                        <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-medium ${r.cls}`}>
+                          {r.label}
+                        </span>
+                      ) : null;
+                    })()}
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statutBadge[insc.statut]}`}>
                       {statutLabel[insc.statut]}
                     </span>
