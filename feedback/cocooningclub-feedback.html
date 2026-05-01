@@ -88,6 +88,62 @@
     margin: 6px 0 0; text-align: center;
   }
 
+  /* Spec page (parcours utilisateur en format spécification fonctionnelle) */
+  .page-spec .spec-header {
+    display: flex; gap: 12px; align-items: flex-start;
+    border-bottom: 2px solid #111827; padding-bottom: 6px; margin-bottom: 10px;
+  }
+  .page-spec h2 { font-size: 16pt; margin: 0; }
+  .page-spec h3 {
+    font-size: 9.5pt; margin-top: 9px; margin-bottom: 4px;
+    color: #111827; text-transform: uppercase; letter-spacing: 1px;
+    border-left: 3px solid #4338ca; padding-left: 8px;
+  }
+  .spec-tag { background: #e0e7ff; color: #3730a3; }
+  .spec-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    margin-bottom: 4px;
+  }
+  .spec-cell {
+    background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px;
+    padding: 8px 10px;
+  }
+  .spec-cell h3 {
+    border-left: none; padding-left: 0;
+    font-size: 8.5pt; margin-top: 0; margin-bottom: 3px;
+    color: #6b7280;
+  }
+  .spec-cell p { margin: 0; font-size: 10pt; }
+  .spec-list {
+    margin: 0 0 4px; padding-left: 20px; font-size: 10pt;
+  }
+  .spec-list li { margin-bottom: 3px; }
+  .spec-flow {
+    counter-reset: step; list-style: none; padding-left: 0;
+  }
+  .spec-flow li {
+    counter-increment: step; position: relative; padding-left: 28px;
+    margin-bottom: 4px;
+  }
+  .spec-flow li::before {
+    content: counter(step);
+    position: absolute; left: 0; top: 0;
+    background: #4338ca; color: white;
+    width: 20px; height: 20px;
+    border-radius: 50%; font-size: 9pt; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .spec-rules li {
+    background: #fefce8; border-left: 2px solid #eab308;
+    padding: 2px 8px; list-style-position: inside;
+    margin-bottom: 3px; border-radius: 0 3px 3px 0;
+  }
+  .spec-postconditions {
+    background: #ecfdf5; border-left: 3px solid #10b981;
+    padding: 6px 10px; border-radius: 0 4px 4px 0;
+    margin: 0; font-size: 10pt;
+  }
+
   /* Audit page (questions + notes) */
   .page-audit .audit-header {
     display: flex; gap: 12px; align-items: flex-start;
@@ -135,8 +191,9 @@
     <div class="howto">
       <h3>Comment l'utiliser ?</h3>
       <ul>
-        <li><strong>Pages paires</strong> : capture pleine page de l'écran tel qu'affiché.</li>
-        <li><strong>Pages impaires</strong> : 4 questions UX, 4 questions UI, et notes libres.</li>
+        <li><strong>1ère planche</strong> : capture pleine page de l'écran tel qu'affiché.</li>
+        <li><strong>2ème planche</strong> : spécification fonctionnelle (acteur, parcours nominal, alternatifs, règles métier, post-conditions).</li>
+        <li><strong>3ème planche</strong> : 4 questions UX, 4 questions UI, et notes libres.</li>
         <li><strong>UX</strong> = ce que ressent et fait l'utilisatrice (heuristiques de Nielsen, JTBD, friction).</li>
         <li><strong>UI</strong> = ce que voit l'utilisatrice (typographie, contraste WCAG, composants, microinteractions).</li>
         <li><strong>Audit transverse</strong> : grille finale couvrant heuristiques, design system, accessibilité et performance.</li>
@@ -182,6 +239,42 @@
           <img src="screenshots/index.png" alt="Capture de Accueil" />
         </div>
         <p class="caption">Page d'atterrissage publique : promesse, parcours et CTA d'inscription.</p>
+      </section>
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#1</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · Site public</div>
+            <h2>Accueil</h2>
+            <div class="path">/</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>Visiteuse non authentifiée (curieuse, prospect, ancienne membre revenue).</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>Comprendre l'offre du Cocooning Club et déclencher une première action (réserver un atelier, se renseigner, créer un compte).</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list"><li>Aucune session active dans le navigateur.</li><li>Arrivée depuis un canal externe (réseaux sociaux, bouche-à-oreille, recherche Google).</li></ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow"><li>Consulte le hero (titre, sous-titre, visuel) pour saisir la promesse en moins de 5 secondes.</li><li>Scrolle pour découvrir présentation, ateliers à venir, témoignages, FAQ.</li><li>Identifie un atelier intéressant ou le CTA principal (« Voir les ateliers » / « S'inscrire »).</li><li>Clique sur le CTA → redirection vers /calendrier ou /login selon le contexte.</li></ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list"><li>Membre déjà inscrite → clique « Connexion » dans le header → /login.</li><li>Souhaite contact direct → clique « Contact » → page formulaire.</li><li>Pas convaincue → ferme l'onglet (objectif manqué, à instrumenter).</li><li>Visite mobile → menu hamburger, layout 1 colonne, hero recadré.</li></ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules"><li>Page 100 % publique : aucune authentification requise.</li><li>Section « Prochains ateliers » : `statut ∈ {publié, complet}` ET `date_atelier ≥ aujourd'hui`.</li><li>Visite tracée en arrière-plan dans `visites_site` pour les statistiques du dashboard.</li></ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">Visite enregistrée (`visites_site`) et/ou navigation vers /calendrier, /login ou page contact.</p>
       </section>
       <section class="page page-audit pb">
         <header class="audit-header">
@@ -277,6 +370,42 @@
         </div>
         <p class="caption">Calendrier public des ateliers et événements à venir.</p>
       </section>
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#2</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · Site public</div>
+            <h2>Calendrier</h2>
+            <div class="path">/calendrier</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>Visiteuse ou membre cherchant un atelier compatible avec ses contraintes.</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>Trouver un atelier (date, thème, lieu, prix) et déclencher une pré-inscription en moins de 60 secondes.</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list"><li>Au moins un atelier publié à venir dans la base.</li><li>Connexion réseau active (sinon page de chargement).</li></ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow"><li>Arrive sur /calendrier (depuis / ou la nav).</li><li>Scanne la liste des ateliers, triée par date croissante.</li><li>Sélectionne un atelier qui correspond à ses contraintes.</li><li>Clique « Réserver » → ouverture du formulaire de pré-inscription.</li><li>Renseigne nom, prénom, email, téléphone, soumet.</li><li>Toast de confirmation + email d'accusé de réception envoyé.</li></ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list"><li>Atelier complet → bouton désactivé ou option « Liste d'attente ».</li><li>Aucun atelier publié → empty state guidant vers une autre action.</li><li>Email déjà inscrit pour le même atelier → message de doublon.</li><li>Erreur réseau au submit → toast d'erreur + retry.</li></ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules"><li>Pré-inscription = ligne dans `inscriptions`, statut initial `en_attente`.</li><li>`places_disponibles` décrémenté seulement à la confirmation par l'admin.</li><li>Email automatique envoyé via le template `email_confirmation_inscription`.</li><li>Couple (email_invite, atelier_id) : unique pour éviter les doublons.</li></ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">Inscription `en_attente` créée, badge mis à jour côté admin, accusé de réception envoyé.</p>
+      </section>
       <section class="page page-audit pb">
         <header class="audit-header">
           <div class="page-num">#2</div>
@@ -370,6 +499,42 @@
           <img src="screenshots/login.png" alt="Capture de Connexion" />
         </div>
         <p class="caption">Page de connexion à l'espace membre / admin.</p>
+      </section>
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#3</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · Authentification</div>
+            <h2>Connexion</h2>
+            <div class="path">/login</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>Membre, candidate validée, ou administratrice possédant un compte.</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>Accéder à son espace personnel ou à l'espace admin.</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list"><li>Compte existant et actif dans `utilisateurs` (`est_actif = true`).</li><li>Aucune session valide actuellement (sinon redirection auto).</li></ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow"><li>Arrive sur /login (depuis le header, un email, ou une page protégée).</li><li>Saisit email + mot de passe.</li><li>Soumet → appel `supabase.auth.signInWithPassword`.</li><li>Récupération du profil métier dans `utilisateurs` via l'id de session.</li><li>Redirection conditionnelle : si `role = administrateur` → /admin/dashboard, sinon → /espace-membre.</li></ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list"><li>Mauvais identifiants → toast « Email ou mot de passe incorrect » (générique, anti-énumération).</li><li>Compte désactivé (`est_actif = false`) → redirection /login?inactive=true avec bannière.</li><li>Mot de passe oublié → clic « Mot de passe oublié ? » → /forgot-password.</li><li>Session déjà active → redirection automatique vers le bon espace au mount.</li></ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules"><li>Authentification : Supabase Auth (email + mot de passe).</li><li>Le rôle est lu depuis la table `utilisateurs`, pas depuis le JWT (source unique de vérité).</li><li>Un compte inactif ne peut pas se connecter (bannière dédiée).</li><li>Le bouton de soumission est désactivé pendant la requête pour éviter les double-soumissions.</li></ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">Session active, profil chargé en contexte React, navigation vers le bon espace selon le rôle.</p>
       </section>
       <section class="page page-audit pb">
         <header class="audit-header">
@@ -465,6 +630,42 @@
         </div>
         <p class="caption">Demande d'envoi d'un email de réinitialisation.</p>
       </section>
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#4</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · Authentification</div>
+            <h2>Mot de passe oublié</h2>
+            <div class="path">/forgot-password</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>Utilisatrice ne se souvenant plus de son mot de passe.</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>Recevoir un lien de réinitialisation par email pour reprendre la main sur son compte.</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list"><li>Email correspondant à un compte existant (mais l'utilisatrice ne le sait pas forcément).</li></ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow"><li>Clique sur « Mot de passe oublié ? » depuis /login.</li><li>Saisit son email.</li><li>Soumet → appel `supabase.auth.resetPasswordForEmail`.</li><li>Voit un message générique de confirmation (sans révéler si l'email existe).</li><li>Reçoit un email avec un lien magique vers /reset-password?token=...</li></ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list"><li>Email inconnu → même message générique (anti-énumération).</li><li>Email arrive dans les spams → consigne explicite « vérifiez vos spams ».</li><li>Erreur SMTP côté Supabase → toast d'erreur générique.</li><li>Renvoi du lien → bouton réactivable au bout de 60 secondes (anti-spam).</li></ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules"><li>Lien de réinitialisation valable 1 heure (config Supabase Auth).</li><li>Aucun retour explicite sur l'existence du compte (RGPD + sécurité).</li><li>Anti-bruteforce : limitation par IP / email côté Supabase.</li></ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">Email envoyé via Supabase Auth, ligne d'audit côté Supabase, retour au /login si l'utilisatrice clique « Retour ».</p>
+      </section>
       <section class="page page-audit pb">
         <header class="audit-header">
           <div class="page-num">#4</div>
@@ -558,6 +759,42 @@
           <img src="screenshots/reset-password.png" alt="Capture de Réinitialisation du mot de passe" />
         </div>
         <p class="caption">Saisie du nouveau mot de passe (lien reçu par email).</p>
+      </section>
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#5</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · Authentification</div>
+            <h2>Réinitialisation du mot de passe</h2>
+            <div class="path">/reset-password</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>Utilisatrice ayant cliqué sur le lien magique reçu par email.</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>Définir un nouveau mot de passe et reprendre l'usage normal du compte.</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list"><li>Lien magique valide et non expiré (token Supabase Auth, validité 1h).</li><li>Session temporaire en cours (gérée par Supabase Auth via le lien).</li></ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow"><li>Clique sur le lien dans l'email reçu.</li><li>Atterrit sur /reset-password avec une session temporaire.</li><li>Saisit le nouveau mot de passe + confirmation.</li><li>Soumet → appel `supabase.auth.updateUser({ password })`.</li><li>Redirection automatique vers /login avec toast « Mot de passe mis à jour ».</li></ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list"><li>Mot de passe ne respecte pas les contraintes → erreur en ligne sous le champ.</li><li>Confirmation différente → message d'erreur immédiat.</li><li>Token expiré → page d'erreur + CTA pour redemander un lien (/forgot-password).</li><li>Connexion interrompue au submit → conservation des champs + retry possible.</li></ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules"><li>Mot de passe : longueur minimale 8 caractères (config Supabase).</li><li>Le lien est utilisable une seule fois (consommé au premier submit).</li><li>L'ancienne session (sur d'autres appareils) n'est PAS invalidée par défaut — à confirmer.</li></ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">Mot de passe mis à jour dans Supabase Auth, redirection /login, l'utilisatrice peut se reconnecter avec les nouveaux identifiants.</p>
       </section>
       <section class="page page-audit pb">
         <header class="audit-header">
@@ -653,6 +890,42 @@
         </div>
         <p class="caption">Page 404 affichée pour une URL inconnue.</p>
       </section>
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#6</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · Site public</div>
+            <h2>Page introuvable (404)</h2>
+            <div class="path">/route-inexistante-test</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>Toute personne arrivant sur une URL inexistante (lien cassé, faute de frappe, ancienne URL).</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>Comprendre l'erreur sans frustration et reprendre un parcours utile.</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list"><li>URL ne correspondant à aucune route déclarée dans le routeur React.</li></ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow"><li>Arrive sur une URL inexistante (ex. /atelier-supprime).</li><li>Voit un message empathique aligné avec l'identité « cocooning ».</li><li>Choisit une voie de rattrapage : Accueil, Calendrier, Contact.</li><li>Clique → reprise du parcours sur une page valide.</li></ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list"><li>Souhaite chercher → aucun champ recherche disponible (limite actuelle).</li><li>Reload → reste sur 404 (URL identique).</li><li>Vient via un partage de lien obsolète → idéalement le 404 indique « cette ressource n'existe plus ».</li></ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules"><li>SPA : statut HTTP 200 mais affichage 404 côté client (à mitiger via meta noindex).</li><li>Header et footer du site doivent rester présents pour conserver les chemins de retour.</li><li>L'URL incorrecte est rappelée pour aider au diagnostic (`window.location.pathname`).</li></ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">L'utilisatrice repart vers une page valide OU quitte (objectif manqué, à instrumenter via analytics).</p>
+      </section>
       <section class="page page-audit pb">
         <header class="audit-header">
           <div class="page-num">#6</div>
@@ -746,6 +1019,42 @@
           <img src="screenshots/admin_dashboard.png" alt="Capture de Admin · Dashboard" />
         </div>
         <p class="caption">Vue d'ensemble : indicateurs clés et raccourcis administrateur.</p>
+      </section>
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#7</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · Espace administrateur (accès restreint)</div>
+            <h2>Admin · Dashboard</h2>
+            <div class="path">/admin/dashboard</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>Administratrice du club (rôle = `administrateur`, compte actif).</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>Vue d'ensemble de l'état du club et accès rapide aux actions prioritaires de la journée.</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list"><li>Session admin active (`profile.role = administrateur` et `est_actif = true`).</li><li>Connexion réseau active.</li></ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow"><li>Se connecte (/login) ou arrive depuis le menu latéral.</li><li>RoleGuard valide les permissions → spinner pendant le chargement du profil.</li><li>Charge en parallèle 9 requêtes : KPI, prochains ateliers, pré-inscriptions, idées récentes, admins, stats visites.</li><li>Identifie l'action à traiter en priorité (badge sur « À valider », message non lu, atelier à publier).</li><li>Clique sur la carte KPI ou la ligne → navigation vers la sous-page correspondante.</li></ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list"><li>KPI à 0 → empty state explicite (« tout est à jour »).</li><li>Erreur de chargement → message + bouton retry.</li><li>Profil non admin → redirection vers / (RoleGuard).</li><li>Compte inactif → redirection vers /login?inactive=true.</li></ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules"><li>Compteurs filtrés côté DB (ex. `inscriptions.statut = en_attente`, `contact_messages.lu = false`).</li><li>Stats visites calculées côté client sur les 30 derniers jours pour limiter la charge.</li><li>Liste « Prochains ateliers » : 4 lignes max, tri par date croissante.</li><li>Liste « Pré-inscriptions à valider » : 5 lignes max, tri par date d'inscription décroissante.</li><li>Salutation contextuelle (matin/après-midi/soir) + prénom de l'admin connectée.</li></ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">État du club consulté ; navigation vers /admin/membres, /admin/ateliers, /admin/pre-inscriptions, etc. selon la priorité.</p>
       </section>
       <section class="page page-audit pb">
         <header class="audit-header">
@@ -841,6 +1150,42 @@
         </div>
         <p class="caption">Liste des membres : recherche, filtres, fiche.</p>
       </section>
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#8</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · Espace administrateur (accès restreint)</div>
+            <h2>Admin · Membres</h2>
+            <div class="path">/admin/membres</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>Administratrice gérant la base des membres et les comptes utilisateurs.</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>Consulter, créer, modifier, désactiver ou supprimer un compte membre, et accéder à sa fiche détaillée.</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list"><li>Session admin active.</li><li>Au moins une ligne dans `utilisateurs`.</li></ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow"><li>Arrive sur /admin/membres depuis le menu.</li><li>Voit la liste paginée triée par date d'inscription décroissante.</li><li>Filtre par rôle ou statut, recherche par nom/email.</li><li>Clique sur un membre → modal d'édition avec ses informations.</li><li>Modifie un champ et sauvegarde → `update` sur `utilisateurs` + log d'action.</li><li>Toast de confirmation + rafraîchissement de la liste.</li></ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list"><li>Création d'un nouveau membre → bouton « Créer un membre » → modal vierge → insert dans `auth.users` + `utilisateurs`.</li><li>Désactivation d'un compte → confirmation modale → `est_actif = false` (le membre ne pourra plus se connecter).</li><li>Suppression définitive → modale de confirmation → suppression `utilisateurs` ET `auth.users`.</li><li>Recherche sans résultat → empty state.</li></ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules"><li>4 rôles possibles : `administrateur`, `inscrit`, `membre`, `membre_premium`.</li><li>Création d'un compte = ligne dans Supabase Auth (`auth.users`) + ligne dans `utilisateurs` (profil métier).</li><li>Désactivation = `est_actif = false` (réversible, pas de perte de données).</li><li>Toutes les actions sensibles (création, suppression, modification de rôle) sont loguées via `logAction`.</li></ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">Modification persistée dans `utilisateurs`, log dans `audit_log`, liste rafraîchie en mémoire.</p>
+      </section>
       <section class="page page-audit pb">
         <header class="audit-header">
           <div class="page-num">#8</div>
@@ -934,6 +1279,42 @@
           <img src="screenshots/admin_ateliers.png" alt="Capture de Admin · Ateliers" />
         </div>
         <p class="caption">Création et gestion des ateliers et événements.</p>
+      </section>
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#9</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · Espace administrateur (accès restreint)</div>
+            <h2>Admin · Ateliers</h2>
+            <div class="path">/admin/ateliers</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>Administratrice planifiant les ateliers et événements du club.</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>Créer, modifier, dupliquer ou supprimer des ateliers, et suivre la liste des inscrits + leurs présences.</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list"><li>Session admin active.</li></ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow"><li>Arrive sur /admin/ateliers, voit la liste des ateliers (tri par date croissante).</li><li>Clique « Ajouter » ou « Modifier » sur un atelier existant → modal de formulaire.</li><li>Renseigne titre, description, date, heures, lieu, places_max, statut, prix.</li><li>Sauvegarde → `insert` ou `update` sur `ateliers` + log d'action.</li><li>Pour suivre les inscrits : clic « Inscrits (N) » sur la carte → modal liste.</li><li>Marque les présences le jour J (toggle `present` sur chaque inscription).</li></ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list"><li>Conflit de date avec un autre atelier → avertissement (validation manuelle aujourd'hui).</li><li>Annulation d'un atelier → statut `annule`, notification automatique aux inscrits.</li><li>Atelier passé → statut `passe` (calculé), visible mais non éditable.</li><li>Suppression d'un atelier → confirmation + suppression cascade des inscriptions liées.</li></ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules"><li>5 statuts : `brouillon`, `publie`, `complet`, `annule`, `passe` (le dernier calculé selon la date).</li><li>À la création : `places_disponibles = places_max`.</li><li>À chaque confirmation d'inscription : `places_disponibles -= 1` ; à 0 → bascule auto en `complet`.</li><li>Annulation d'une inscription confirmée : `places_disponibles += 1`.</li></ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">Atelier créé ou modifié dans `ateliers`, visible côté public si statut `publie` ou `complet`, log d'action enregistré.</p>
       </section>
       <section class="page page-audit pb">
         <header class="audit-header">
@@ -1029,6 +1410,42 @@
         </div>
         <p class="caption">Suivi des pré-inscriptions et confirmations.</p>
       </section>
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#10</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · Espace administrateur (accès restreint)</div>
+            <h2>Admin · Pré-inscriptions</h2>
+            <div class="path">/admin/pre-inscriptions</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>Administratrice traitant les pré-inscriptions reçues via le formulaire public.</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>Valider, refuser ou annuler les pré-inscriptions, et les transformer en inscriptions confirmées avec notification automatique.</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list"><li>Au moins une pré-inscription reçue (ligne `inscriptions` avec `statut = en_attente`).</li><li>Templates de messages configurés dans /admin/messages-templates.</li></ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow"><li>Arrive sur /admin/pre-inscriptions (souvent depuis le badge sur le menu).</li><li>Voit la liste triée par date d'inscription décroissante avec atelier joint.</li><li>Filtre par statut (`en_attente`, `confirme`, `annule`).</li><li>Clique « Confirmer » sur une ligne → `statut = confirme`, `places_disponibles -= 1`.</li><li>Email automatique envoyé via le template `email_confirmation_inscription` (variables interpolées).</li><li>Boucle pour chaque pré-inscription en attente.</li></ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list"><li>Plus de places disponibles → la candidate est mise en file d'attente manuelle ou refusée.</li><li>Annulation par la candidate → `statut = annule`, `annule_le` renseigné, place restituée.</li><li>Inscription manuelle (l'admin inscrit quelqu'un) → bouton « Ajouter » → formulaire vierge.</li><li>Membre déjà connue → pré-remplissage depuis la base `utilisateurs` si `email_invite` matche.</li></ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules"><li>Confirmation : `inscriptions.statut = confirme` + `ateliers.places_disponibles -= 1`.</li><li>Annulation après confirmation : `places_disponibles += 1`.</li><li>Email envoyé selon le template correspondant à la transition (confirmation, refus, relance).</li><li>Toutes les transitions sont loguées dans `audit_log` via `logAction`.</li></ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">Statut de l'inscription mis à jour, jauge atelier ajustée, email envoyé à la candidate.</p>
+      </section>
       <section class="page page-audit pb">
         <header class="audit-header">
           <div class="page-num">#10</div>
@@ -1122,6 +1539,42 @@
           <img src="screenshots/admin_documents.png" alt="Capture de Admin · Documents" />
         </div>
         <p class="caption">Bibliothèque de documents partagés avec les membres.</p>
+      </section>
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#11</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · Espace administrateur (accès restreint)</div>
+            <h2>Admin · Documents</h2>
+            <div class="path">/admin/documents</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>Administratrice gérant la bibliothèque de documents partagée avec les membres.</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>Publier, modifier ou supprimer des documents (magazines, guides, liens externes) avec un contrôle granulaire des droits d'accès.</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list"><li>Session admin active.</li><li>Bucket Supabase Storage `documents` configuré (privé, accès via signed URL).</li></ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow"><li>Arrive sur /admin/documents, voit la liste triée par date d'ajout décroissante.</li><li>Clique « Ajouter » → modal d'upload.</li><li>Choisit le type (`magazine`, `guide`, `lien_externe`), titre, description.</li><li>Si type fichier : upload dans le bucket `documents` ; si type lien : saisit l'URL.</li><li>Définit l'accès (`membres`, `premium`, `tous`).</li><li>Sauvegarde → ligne dans `documents`, fichier accessible via signed URL.</li></ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list"><li>Modification d'un document existant → modal en édition, ré-upload possible.</li><li>Suppression → confirmation modale + suppression du fichier dans Storage + ligne DB.</li><li>Prévisualisation → génération d'une signed URL valable 5 minutes.</li><li>Erreur d'upload (taille, format) → toast d'erreur explicite.</li></ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules"><li>Stockage des fichiers : bucket Supabase `documents` privé, accès via signed URL temporaire (5 min).</li><li>3 types autorisés : `magazine`, `guide`, `lien_externe` (pas de fichier pour ce dernier).</li><li>3 niveaux d'accès : `membres`, `premium` (sous-ensemble), `tous` (membres + premium).</li><li>Suppression d'un document : on supprime la ligne DB ET le fichier dans Storage.</li></ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">Document disponible côté membre dans son espace selon son rôle, log d'action enregistré.</p>
       </section>
       <section class="page page-audit pb">
         <header class="audit-header">
@@ -1217,6 +1670,42 @@
         </div>
         <p class="caption">Configuration du formulaire d'inscription public.</p>
       </section>
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#12</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · Espace administrateur (accès restreint)</div>
+            <h2>Admin · Formulaire</h2>
+            <div class="path">/admin/formulaire</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>Administratrice configurant le formulaire de contact public.</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>Définir les champs visibles, leur libellé, leur ordre et leur caractère obligatoire pour le formulaire affiché côté visiteur.</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list"><li>Session admin active.</li></ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow"><li>Arrive sur /admin/formulaire, voit la configuration actuelle (champs visibles, libellés, ordre).</li><li>Active / désactive un champ ou modifie son libellé.</li><li>Réordonne les champs par drag &amp; drop.</li><li>Sauvegarde → `update` sur la table `formulaires` + champs.</li><li>Toast de confirmation, modification immédiatement visible côté public.</li></ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list"><li>Aperçu en mode visiteur (prévisualisation du rendu public sans publier).</li><li>Réinitialisation à la configuration par défaut.</li><li>Désactivation totale du formulaire (mode maintenance) → message remplaçant le formulaire côté public.</li><li>Export des messages reçus en CSV.</li></ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules"><li>Les champs `nom` et `email` sont obligatoires et non désactivables (validation côté DB).</li><li>Modifications appliquées immédiatement (pas de versionning, pas de brouillon).</li><li>Les soumissions atterrissent dans la table `contact_messages` quel que soit le format du formulaire.</li></ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">Configuration du formulaire mise à jour, visiteurs voient la nouvelle version dès le prochain refresh.</p>
+      </section>
       <section class="page page-audit pb">
         <header class="audit-header">
           <div class="page-num">#12</div>
@@ -1310,6 +1799,42 @@
           <img src="screenshots/admin_messages-templates.png" alt="Capture de Admin · Templates de messages" />
         </div>
         <p class="caption">Modèles de messages (email / SMS) réutilisables.</p>
+      </section>
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#13</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · Espace administrateur (accès restreint)</div>
+            <h2>Admin · Templates de messages</h2>
+            <div class="path">/admin/messages-templates</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>Administratrice modifiant le contenu des emails / SMS automatiques envoyés par le système.</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>Personnaliser les messages transactionnels (confirmation, relance, rappel) sans intervention développeur.</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list"><li>Session admin active.</li><li>Au moins un template prédéfini dans `parametres_messages`.</li></ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow"><li>Arrive sur /admin/messages-templates, voit la liste des templates triés par clé.</li><li>Clique sur un template → édition inline du contenu.</li><li>Modifie le texte avec variables (`{{prenom}}`, `{{titre_atelier}}`, `{{date_atelier}}`).</li><li>Sauvegarde → `update` sur `parametres_messages`.</li><li>Toast de confirmation, le template est utilisé pour tous les envois ultérieurs.</li></ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list"><li>Aperçu avec données réelles avant sauvegarde.</li><li>Test d'envoi à sa propre adresse pour vérifier le rendu.</li><li>Restauration de la version par défaut (pour ne pas casser les automatismes).</li><li>Modification accidentelle → confirmation modale si le template est critique.</li></ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules"><li>Variables interpolées au moment de l'envoi par les triggers métier (confirmation, annulation, rappel).</li><li>Modification immédiatement effective : tous les emails ultérieurs utilisent la nouvelle version.</li><li>Un template ne peut PAS être supprimé (clé prédéfinie) — uniquement vidé / restauré.</li><li>Distinction par canal : `email` (HTML, mise en forme riche) vs `sms` (texte court, ≤ 160 caractères).</li></ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">Contenu du template mis à jour ; tous les envois automatiques ultérieurs utilisent la nouvelle version.</p>
       </section>
       <section class="page page-audit pb">
         <header class="audit-header">
@@ -1405,6 +1930,42 @@
         </div>
         <p class="caption">Gestion des créneaux et disponibilités.</p>
       </section>
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#14</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · Espace administrateur (accès restreint)</div>
+            <h2>Admin · Disponibilités</h2>
+            <div class="path">/admin/disponibilites</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>Administratrice (animatrice ou co-animatrice) gérant son planning d'animation.</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>Déclarer ses créneaux récurrents et ses indisponibilités exceptionnelles pour que la création d'ateliers en tienne compte.</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list"><li>Session admin active.</li><li>Profil de l'admin avec `role = administrateur` et un `couleur_conges` configuré.</li></ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow"><li>Arrive sur /admin/disponibilites, voit la grille hebdomadaire de ses dispos habituelles.</li><li>Ajoute un créneau récurrent → modal (jour de la semaine, heure_debut, heure_fin) → `insert` dans `disponibilites`.</li><li>Bascule en vue calendrier pour saisir une indisponibilité ponctuelle (vacances, congé).</li><li>Saisit motif, date_debut, date_fin → `insert` dans `indisponibilites`.</li><li>Toast de confirmation, planning mis à jour.</li></ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list"><li>Conflit avec un atelier déjà planifié → avertissement (pas de blocage).</li><li>Suppression d'une indisponibilité → confirmation modale.</li><li>Pré-remplissage des vacances scolaires (zone C) depuis `vacances_scolaires` → 1 clic.</li><li>Vue jours fériés en lecture seule (depuis `jours_feries`).</li></ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules"><li>Disponibilités : récurrence hebdomadaire (`jour` 0=dimanche → 6=samedi, `heure_debut`/`heure_fin`).</li><li>Indisponibilités : plage `date_debut` → `date_fin` (peut s'étendre sur plusieurs jours).</li><li>Affichage avec `code_couleur_conges` du profil pour distinguer plusieurs admins.</li><li>Une indisponibilité bloque la création d'ateliers sur la période (à confirmer côté Ateliers).</li></ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">Disponibilités et indisponibilités mises à jour, visibles lors de la création d'ateliers et dans la vue planning.</p>
+      </section>
       <section class="page page-audit pb">
         <header class="audit-header">
           <div class="page-num">#14</div>
@@ -1499,6 +2060,42 @@
         </div>
         <p class="caption">Suivi des suggestions remontées par les membres.</p>
       </section>
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#15</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · Espace administrateur (accès restreint)</div>
+            <h2>Admin · Boîte à idées</h2>
+            <div class="path">/admin/boite-a-idees</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>Administratrice centralisant les idées remontées par les membres.</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>Recueillir, classer et prioriser les idées d'ateliers / d'évolutions du site / d'améliorations communautaires.</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list"><li>Session admin active.</li><li>Au moins une idée déposée dans `idees` (par l'admin ou par une membre).</li></ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow"><li>Arrive sur /admin/boite-a-idees, voit la liste des idées (tri par date de création décroissante).</li><li>Filtre par catégorie (`evolution_site`, `ateliers`, `anomalie_site`, `communication`, `evenements`, `organisation`, `membres`, `autre`).</li><li>Clique sur une idée → détails complets, auteur, réactions existantes.</li><li>Réagit avec « Validé / À discuter / Non validé » → `insert` ou `update` dans `idee_reactions`.</li><li>Boucle pour traiter les idées en attente.</li></ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list"><li>Création d'une idée par l'admin elle-même → modal de création.</li><li>Modification d'une idée existante : titre, description, catégorie.</li><li>Suppression d'une idée → confirmation modale (irréversible, supprime aussi les réactions liées).</li><li>Plusieurs admins co-réagissent → chaque admin voit ses propres réactions distinguées par couleur.</li></ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules"><li>8 catégories prédéfinies (`evolution_site`, `ateliers`, `anomalie_site`, `membres`, `communication`, `evenements`, `organisation`, `autre`).</li><li>3 réactions admin possibles : `valide`, `non_valide`, `a_discuter`.</li><li>Une admin = 1 seule réaction par idée (update si elle change d'avis).</li><li>Suppression d'une idée → cascade sur `idee_reactions` (FK avec `on delete cascade`).</li></ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">Réaction enregistrée, statut visuel mis à jour pour les autres admins, auteur de l'idée éventuellement notifié (selon config).</p>
+      </section>
       <section class="page page-audit pb">
         <header class="audit-header">
           <div class="page-num">#15</div>
@@ -1592,6 +2189,42 @@
           <img src="screenshots/admin_mon-compte.png" alt="Capture de Admin · Mon compte" />
         </div>
         <p class="caption">Paramètres du compte administrateur.</p>
+      </section>
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#16</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · Espace administrateur (accès restreint)</div>
+            <h2>Admin · Mon compte</h2>
+            <div class="path">/admin/mon-compte</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>Administratrice gérant son propre profil et ses paramètres de compte.</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>Mettre à jour ses informations personnelles, changer son mot de passe / email, gérer son avatar et se déconnecter.</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list"><li>Session admin active (l'admin gère son propre compte).</li></ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow"><li>Arrive sur /admin/mon-compte (depuis le menu utilisateur en bas du sidebar).</li><li>Voit ses informations actuelles : nom, prénom, email, téléphone, date de naissance, photo, couleur congés.</li><li>Modifie un ou plusieurs champs.</li><li>Sauvegarde → `update` sur `utilisateurs` (champs métier) + `supabase.auth.updateUser` (email/password).</li><li>Toast de confirmation, profil rafraîchi en contexte React.</li></ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list"><li>Upload d'avatar → bucket Supabase Storage `avatars` (5 Mo max, JPG/PNG/WebP).</li><li>Changement d'email → email de confirmation envoyé à la nouvelle adresse, double opt-in.</li><li>Changement de mot de passe → double saisie + confirmation immédiate.</li><li>Déconnexion → bouton « Se déconnecter » → `supabase.auth.signOut` + redirection /login.</li></ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules"><li>Email modifiable mais nécessite confirmation par lien email (pour éviter la prise de contrôle).</li><li>Avatar : 5 Mo max, formats JPG/PNG/WebP, stocké dans bucket public `avatars`.</li><li>Mot de passe : longueur minimale 8 caractères (config Supabase).</li><li>Le rôle (`administrateur`) n'est PAS modifiable depuis cette page (lecture seule).</li></ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">Profil mis à jour dans `utilisateurs`, éventuel email de confirmation envoyé pour le changement d'email, ancienne session invalidée si mot de passe changé.</p>
       </section>
       <section class="page page-audit pb">
         <header class="audit-header">

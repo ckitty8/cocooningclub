@@ -57,6 +57,34 @@ const PAGES = [
       "Boutons & CTA — primaire vs secondaire vs lien clairement différenciés ? États hover / focus / active / disabled visibles ? Cible tactile ≥ 44 px ? Libellé orienté résultat (« Réserver ma place » > « En savoir plus ») ?",
       "Imagerie & rythme — photos cohérentes en style, ratio, traitement ? Grille d'espacement (8 / 16 / 24 / 32 / 64) reconnaissable ? Sujets qui dirigent le regard vers les CTA ou qui le détournent ?",
     ],
+    spec: {
+      acteur: "Visiteuse non authentifiée (curieuse, prospect, ancienne membre revenue).",
+      objectif:
+        "Comprendre l'offre du Cocooning Club et déclencher une première action (réserver un atelier, se renseigner, créer un compte).",
+      preconditions: [
+        "Aucune session active dans le navigateur.",
+        "Arrivée depuis un canal externe (réseaux sociaux, bouche-à-oreille, recherche Google).",
+      ],
+      parcoursNominal: [
+        "Consulte le hero (titre, sous-titre, visuel) pour saisir la promesse en moins de 5 secondes.",
+        "Scrolle pour découvrir présentation, ateliers à venir, témoignages, FAQ.",
+        "Identifie un atelier intéressant ou le CTA principal (« Voir les ateliers » / « S'inscrire »).",
+        "Clique sur le CTA → redirection vers /calendrier ou /login selon le contexte.",
+      ],
+      parcoursAlternatifs: [
+        "Membre déjà inscrite → clique « Connexion » dans le header → /login.",
+        "Souhaite contact direct → clique « Contact » → page formulaire.",
+        "Pas convaincue → ferme l'onglet (objectif manqué, à instrumenter).",
+        "Visite mobile → menu hamburger, layout 1 colonne, hero recadré.",
+      ],
+      regles: [
+        "Page 100 % publique : aucune authentification requise.",
+        "Section « Prochains ateliers » : `statut ∈ {publié, complet}` ET `date_atelier ≥ aujourd'hui`.",
+        "Visite tracée en arrière-plan dans `visites_site` pour les statistiques du dashboard.",
+      ],
+      postconditions:
+        "Visite enregistrée (`visites_site`) et/ou navigation vers /calendrier, /login ou page contact.",
+    },
   },
   {
     title: "Calendrier",
@@ -76,6 +104,37 @@ const PAGES = [
       "Affordance — sait-on au regard si une carte entière est cliquable ou seulement un bouton ? Le hover/focus le confirme-t-il ?",
       "Mobile — sur 360 px de large, les filtres restent-ils accessibles (sticky, drawer) ou disparaissent-ils ? Les cartes deviennent-elles illisibles ?",
     ],
+    spec: {
+      acteur: "Visiteuse ou membre cherchant un atelier compatible avec ses contraintes.",
+      objectif:
+        "Trouver un atelier (date, thème, lieu, prix) et déclencher une pré-inscription en moins de 60 secondes.",
+      preconditions: [
+        "Au moins un atelier publié à venir dans la base.",
+        "Connexion réseau active (sinon page de chargement).",
+      ],
+      parcoursNominal: [
+        "Arrive sur /calendrier (depuis / ou la nav).",
+        "Scanne la liste des ateliers, triée par date croissante.",
+        "Sélectionne un atelier qui correspond à ses contraintes.",
+        "Clique « Réserver » → ouverture du formulaire de pré-inscription.",
+        "Renseigne nom, prénom, email, téléphone, soumet.",
+        "Toast de confirmation + email d'accusé de réception envoyé.",
+      ],
+      parcoursAlternatifs: [
+        "Atelier complet → bouton désactivé ou option « Liste d'attente ».",
+        "Aucun atelier publié → empty state guidant vers une autre action.",
+        "Email déjà inscrit pour le même atelier → message de doublon.",
+        "Erreur réseau au submit → toast d'erreur + retry.",
+      ],
+      regles: [
+        "Pré-inscription = ligne dans `inscriptions`, statut initial `en_attente`.",
+        "`places_disponibles` décrémenté seulement à la confirmation par l'admin.",
+        "Email automatique envoyé via le template `email_confirmation_inscription`.",
+        "Couple (email_invite, atelier_id) : unique pour éviter les doublons.",
+      ],
+      postconditions:
+        "Inscription `en_attente` créée, badge mis à jour côté admin, accusé de réception envoyé.",
+    },
   },
   {
     title: "Connexion",
@@ -95,6 +154,35 @@ const PAGES = [
       "Etat « connexion en cours » — bouton désactivé + spinner + libellé qui change ? Évite-t-on les double-soumissions ?",
       "Hiérarchie — entre « Se connecter » (primaire) et « Mot de passe oublié » (lien) le poids visuel est-il bien équilibré, ou la récupération attire-t-elle plus que la connexion ?",
     ],
+    spec: {
+      acteur: "Membre, candidate validée, ou administratrice possédant un compte.",
+      objectif: "Accéder à son espace personnel ou à l'espace admin.",
+      preconditions: [
+        "Compte existant et actif dans `utilisateurs` (`est_actif = true`).",
+        "Aucune session valide actuellement (sinon redirection auto).",
+      ],
+      parcoursNominal: [
+        "Arrive sur /login (depuis le header, un email, ou une page protégée).",
+        "Saisit email + mot de passe.",
+        "Soumet → appel `supabase.auth.signInWithPassword`.",
+        "Récupération du profil métier dans `utilisateurs` via l'id de session.",
+        "Redirection conditionnelle : si `role = administrateur` → /admin/dashboard, sinon → /espace-membre.",
+      ],
+      parcoursAlternatifs: [
+        "Mauvais identifiants → toast « Email ou mot de passe incorrect » (générique, anti-énumération).",
+        "Compte désactivé (`est_actif = false`) → redirection /login?inactive=true avec bannière.",
+        "Mot de passe oublié → clic « Mot de passe oublié ? » → /forgot-password.",
+        "Session déjà active → redirection automatique vers le bon espace au mount.",
+      ],
+      regles: [
+        "Authentification : Supabase Auth (email + mot de passe).",
+        "Le rôle est lu depuis la table `utilisateurs`, pas depuis le JWT (source unique de vérité).",
+        "Un compte inactif ne peut pas se connecter (bannière dédiée).",
+        "Le bouton de soumission est désactivé pendant la requête pour éviter les double-soumissions.",
+      ],
+      postconditions:
+        "Session active, profil chargé en contexte React, navigation vers le bon espace selon le rôle.",
+    },
   },
   {
     title: "Mot de passe oublié",
@@ -114,6 +202,33 @@ const PAGES = [
       "Rythme typographique — le titre, la consigne, le champ et le bouton respectent-ils la même grille verticale que /login ?",
       "Mobile — la page reste-t-elle lisible avec clavier ouvert (le bouton ne passe pas sous le clavier sur iOS) ?",
     ],
+    spec: {
+      acteur: "Utilisatrice ne se souvenant plus de son mot de passe.",
+      objectif: "Recevoir un lien de réinitialisation par email pour reprendre la main sur son compte.",
+      preconditions: [
+        "Email correspondant à un compte existant (mais l'utilisatrice ne le sait pas forcément).",
+      ],
+      parcoursNominal: [
+        "Clique sur « Mot de passe oublié ? » depuis /login.",
+        "Saisit son email.",
+        "Soumet → appel `supabase.auth.resetPasswordForEmail`.",
+        "Voit un message générique de confirmation (sans révéler si l'email existe).",
+        "Reçoit un email avec un lien magique vers /reset-password?token=...",
+      ],
+      parcoursAlternatifs: [
+        "Email inconnu → même message générique (anti-énumération).",
+        "Email arrive dans les spams → consigne explicite « vérifiez vos spams ».",
+        "Erreur SMTP côté Supabase → toast d'erreur générique.",
+        "Renvoi du lien → bouton réactivable au bout de 60 secondes (anti-spam).",
+      ],
+      regles: [
+        "Lien de réinitialisation valable 1 heure (config Supabase Auth).",
+        "Aucun retour explicite sur l'existence du compte (RGPD + sécurité).",
+        "Anti-bruteforce : limitation par IP / email côté Supabase.",
+      ],
+      postconditions:
+        "Email envoyé via Supabase Auth, ligne d'audit côté Supabase, retour au /login si l'utilisatrice clique « Retour ».",
+    },
   },
   {
     title: "Réinitialisation du mot de passe",
@@ -133,6 +248,34 @@ const PAGES = [
       "Bouton primaire — désactivé tant que les contraintes ne sont pas satisfaites, ou actif avec validation au submit ? Quel pattern frustre le moins ?",
       "Mobile — autocomplete=new-password pour permettre au gestionnaire de mots de passe de proposer une génération forte ?",
     ],
+    spec: {
+      acteur: "Utilisatrice ayant cliqué sur le lien magique reçu par email.",
+      objectif: "Définir un nouveau mot de passe et reprendre l'usage normal du compte.",
+      preconditions: [
+        "Lien magique valide et non expiré (token Supabase Auth, validité 1h).",
+        "Session temporaire en cours (gérée par Supabase Auth via le lien).",
+      ],
+      parcoursNominal: [
+        "Clique sur le lien dans l'email reçu.",
+        "Atterrit sur /reset-password avec une session temporaire.",
+        "Saisit le nouveau mot de passe + confirmation.",
+        "Soumet → appel `supabase.auth.updateUser({ password })`.",
+        "Redirection automatique vers /login avec toast « Mot de passe mis à jour ».",
+      ],
+      parcoursAlternatifs: [
+        "Mot de passe ne respecte pas les contraintes → erreur en ligne sous le champ.",
+        "Confirmation différente → message d'erreur immédiat.",
+        "Token expiré → page d'erreur + CTA pour redemander un lien (/forgot-password).",
+        "Connexion interrompue au submit → conservation des champs + retry possible.",
+      ],
+      regles: [
+        "Mot de passe : longueur minimale 8 caractères (config Supabase).",
+        "Le lien est utilisable une seule fois (consommé au premier submit).",
+        "L'ancienne session (sur d'autres appareils) n'est PAS invalidée par défaut — à confirmer.",
+      ],
+      postconditions:
+        "Mot de passe mis à jour dans Supabase Auth, redirection /login, l'utilisatrice peut se reconnecter avec les nouveaux identifiants.",
+    },
   },
   {
     title: "Page introuvable (404)",
@@ -152,6 +295,31 @@ const PAGES = [
       "Hiérarchie — le titre « 404 » est-il subordonné au message humain, ou l'inverse ? Quel est l'élément qui domine ?",
       "Accessibilité — le titre <h1> reflète-t-il le contenu (« Page introuvable »), pas juste « 404 » ? L'attribut <title> et la balise <main> sont-ils corrects ?",
     ],
+    spec: {
+      acteur: "Toute personne arrivant sur une URL inexistante (lien cassé, faute de frappe, ancienne URL).",
+      objectif: "Comprendre l'erreur sans frustration et reprendre un parcours utile.",
+      preconditions: [
+        "URL ne correspondant à aucune route déclarée dans le routeur React.",
+      ],
+      parcoursNominal: [
+        "Arrive sur une URL inexistante (ex. /atelier-supprime).",
+        "Voit un message empathique aligné avec l'identité « cocooning ».",
+        "Choisit une voie de rattrapage : Accueil, Calendrier, Contact.",
+        "Clique → reprise du parcours sur une page valide.",
+      ],
+      parcoursAlternatifs: [
+        "Souhaite chercher → aucun champ recherche disponible (limite actuelle).",
+        "Reload → reste sur 404 (URL identique).",
+        "Vient via un partage de lien obsolète → idéalement le 404 indique « cette ressource n'existe plus ».",
+      ],
+      regles: [
+        "SPA : statut HTTP 200 mais affichage 404 côté client (à mitiger via meta noindex).",
+        "Header et footer du site doivent rester présents pour conserver les chemins de retour.",
+        "L'URL incorrecte est rappelée pour aider au diagnostic (`window.location.pathname`).",
+      ],
+      postconditions:
+        "L'utilisatrice repart vers une page valide OU quitte (objectif manqué, à instrumenter via analytics).",
+    },
   },
   {
     title: "Admin · Dashboard",
@@ -171,6 +339,37 @@ const PAGES = [
       "Densité — combien de blocs d'information sur l'écran initial ? Loi de Hick : trop de choix ralentit. Y a-t-il une organisation par groupe (revenus / activités / membres) ?",
       "Navigation latérale — items lisibles, état actif évident, icônes + labels (pas icônes seules), ordre = fréquence d'usage et non ordre alphabétique ?",
     ],
+    spec: {
+      acteur: "Administratrice du club (rôle = `administrateur`, compte actif).",
+      objectif:
+        "Vue d'ensemble de l'état du club et accès rapide aux actions prioritaires de la journée.",
+      preconditions: [
+        "Session admin active (`profile.role = administrateur` et `est_actif = true`).",
+        "Connexion réseau active.",
+      ],
+      parcoursNominal: [
+        "Se connecte (/login) ou arrive depuis le menu latéral.",
+        "RoleGuard valide les permissions → spinner pendant le chargement du profil.",
+        "Charge en parallèle 9 requêtes : KPI, prochains ateliers, pré-inscriptions, idées récentes, admins, stats visites.",
+        "Identifie l'action à traiter en priorité (badge sur « À valider », message non lu, atelier à publier).",
+        "Clique sur la carte KPI ou la ligne → navigation vers la sous-page correspondante.",
+      ],
+      parcoursAlternatifs: [
+        "KPI à 0 → empty state explicite (« tout est à jour »).",
+        "Erreur de chargement → message + bouton retry.",
+        "Profil non admin → redirection vers / (RoleGuard).",
+        "Compte inactif → redirection vers /login?inactive=true.",
+      ],
+      regles: [
+        "Compteurs filtrés côté DB (ex. `inscriptions.statut = en_attente`, `contact_messages.lu = false`).",
+        "Stats visites calculées côté client sur les 30 derniers jours pour limiter la charge.",
+        "Liste « Prochains ateliers » : 4 lignes max, tri par date croissante.",
+        "Liste « Pré-inscriptions à valider » : 5 lignes max, tri par date d'inscription décroissante.",
+        "Salutation contextuelle (matin/après-midi/soir) + prénom de l'admin connectée.",
+      ],
+      postconditions:
+        "État du club consulté ; navigation vers /admin/membres, /admin/ateliers, /admin/pre-inscriptions, etc. selon la priorité.",
+    },
   },
   {
     title: "Admin · Membres",
@@ -189,6 +388,37 @@ const PAGES = [
       "Avatar / initiales — placeholder cohérent quand pas de photo, contraste suffisant, taille uniforme ?",
       "Statuts — pastilles colorées avec texte (jamais couleur seule), bord arrondi, taille suffisante pour le scan ?",
     ],
+    spec: {
+      acteur: "Administratrice gérant la base des membres et les comptes utilisateurs.",
+      objectif:
+        "Consulter, créer, modifier, désactiver ou supprimer un compte membre, et accéder à sa fiche détaillée.",
+      preconditions: [
+        "Session admin active.",
+        "Au moins une ligne dans `utilisateurs`.",
+      ],
+      parcoursNominal: [
+        "Arrive sur /admin/membres depuis le menu.",
+        "Voit la liste paginée triée par date d'inscription décroissante.",
+        "Filtre par rôle ou statut, recherche par nom/email.",
+        "Clique sur un membre → modal d'édition avec ses informations.",
+        "Modifie un champ et sauvegarde → `update` sur `utilisateurs` + log d'action.",
+        "Toast de confirmation + rafraîchissement de la liste.",
+      ],
+      parcoursAlternatifs: [
+        "Création d'un nouveau membre → bouton « Créer un membre » → modal vierge → insert dans `auth.users` + `utilisateurs`.",
+        "Désactivation d'un compte → confirmation modale → `est_actif = false` (le membre ne pourra plus se connecter).",
+        "Suppression définitive → modale de confirmation → suppression `utilisateurs` ET `auth.users`.",
+        "Recherche sans résultat → empty state.",
+      ],
+      regles: [
+        "4 rôles possibles : `administrateur`, `inscrit`, `membre`, `membre_premium`.",
+        "Création d'un compte = ligne dans Supabase Auth (`auth.users`) + ligne dans `utilisateurs` (profil métier).",
+        "Désactivation = `est_actif = false` (réversible, pas de perte de données).",
+        "Toutes les actions sensibles (création, suppression, modification de rôle) sont loguées via `logAction`.",
+      ],
+      postconditions:
+        "Modification persistée dans `utilisateurs`, log dans `audit_log`, liste rafraîchie en mémoire.",
+    },
   },
   {
     title: "Admin · Ateliers",
@@ -207,6 +437,36 @@ const PAGES = [
       "Boutons d'enregistrement — « Enregistrer brouillon » vs « Publier » bien différenciés visuellement ? Position fixe en bas pour les longs formulaires ?",
       "Validation — erreurs ancrées au champ ET résumé en haut, focus auto sur le premier champ en erreur (accessibilité) ?",
     ],
+    spec: {
+      acteur: "Administratrice planifiant les ateliers et événements du club.",
+      objectif:
+        "Créer, modifier, dupliquer ou supprimer des ateliers, et suivre la liste des inscrits + leurs présences.",
+      preconditions: [
+        "Session admin active.",
+      ],
+      parcoursNominal: [
+        "Arrive sur /admin/ateliers, voit la liste des ateliers (tri par date croissante).",
+        "Clique « Ajouter » ou « Modifier » sur un atelier existant → modal de formulaire.",
+        "Renseigne titre, description, date, heures, lieu, places_max, statut, prix.",
+        "Sauvegarde → `insert` ou `update` sur `ateliers` + log d'action.",
+        "Pour suivre les inscrits : clic « Inscrits (N) » sur la carte → modal liste.",
+        "Marque les présences le jour J (toggle `present` sur chaque inscription).",
+      ],
+      parcoursAlternatifs: [
+        "Conflit de date avec un autre atelier → avertissement (validation manuelle aujourd'hui).",
+        "Annulation d'un atelier → statut `annule`, notification automatique aux inscrits.",
+        "Atelier passé → statut `passe` (calculé), visible mais non éditable.",
+        "Suppression d'un atelier → confirmation + suppression cascade des inscriptions liées.",
+      ],
+      regles: [
+        "5 statuts : `brouillon`, `publie`, `complet`, `annule`, `passe` (le dernier calculé selon la date).",
+        "À la création : `places_disponibles = places_max`.",
+        "À chaque confirmation d'inscription : `places_disponibles -= 1` ; à 0 → bascule auto en `complet`.",
+        "Annulation d'une inscription confirmée : `places_disponibles += 1`.",
+      ],
+      postconditions:
+        "Atelier créé ou modifié dans `ateliers`, visible côté public si statut `publie` ou `complet`, log d'action enregistré.",
+    },
   },
   {
     title: "Admin · Pré-inscriptions",
@@ -225,6 +485,38 @@ const PAGES = [
       "Empty state — quand aucune pré-inscription, message qui guide (« Aucune pré-inscription en attente — partagez le lien d'inscription ») ou écran vide anxiogène ?",
       "Notification visuelle — un badge sur l'item de menu indique le nombre en attente ? Evite-t-il d'avoir à venir vérifier ?",
     ],
+    spec: {
+      acteur:
+        "Administratrice traitant les pré-inscriptions reçues via le formulaire public.",
+      objectif:
+        "Valider, refuser ou annuler les pré-inscriptions, et les transformer en inscriptions confirmées avec notification automatique.",
+      preconditions: [
+        "Au moins une pré-inscription reçue (ligne `inscriptions` avec `statut = en_attente`).",
+        "Templates de messages configurés dans /admin/messages-templates.",
+      ],
+      parcoursNominal: [
+        "Arrive sur /admin/pre-inscriptions (souvent depuis le badge sur le menu).",
+        "Voit la liste triée par date d'inscription décroissante avec atelier joint.",
+        "Filtre par statut (`en_attente`, `confirme`, `annule`).",
+        "Clique « Confirmer » sur une ligne → `statut = confirme`, `places_disponibles -= 1`.",
+        "Email automatique envoyé via le template `email_confirmation_inscription` (variables interpolées).",
+        "Boucle pour chaque pré-inscription en attente.",
+      ],
+      parcoursAlternatifs: [
+        "Plus de places disponibles → la candidate est mise en file d'attente manuelle ou refusée.",
+        "Annulation par la candidate → `statut = annule`, `annule_le` renseigné, place restituée.",
+        "Inscription manuelle (l'admin inscrit quelqu'un) → bouton « Ajouter » → formulaire vierge.",
+        "Membre déjà connue → pré-remplissage depuis la base `utilisateurs` si `email_invite` matche.",
+      ],
+      regles: [
+        "Confirmation : `inscriptions.statut = confirme` + `ateliers.places_disponibles -= 1`.",
+        "Annulation après confirmation : `places_disponibles += 1`.",
+        "Email envoyé selon le template correspondant à la transition (confirmation, refus, relance).",
+        "Toutes les transitions sont loguées dans `audit_log` via `logAction`.",
+      ],
+      postconditions:
+        "Statut de l'inscription mis à jour, jauge atelier ajustée, email envoyé à la candidate.",
+    },
   },
   {
     title: "Admin · Documents",
@@ -243,6 +535,37 @@ const PAGES = [
       "Métadonnées — taille, type, date d'ajout, nombre de téléchargements lisibles d'un coup d'œil sans alourdir la ligne ?",
       "Actions — télécharger / partager / supprimer accessibles via menu kebab ou hover, jamais cachés ; confirmation pour la suppression ?",
     ],
+    spec: {
+      acteur: "Administratrice gérant la bibliothèque de documents partagée avec les membres.",
+      objectif:
+        "Publier, modifier ou supprimer des documents (magazines, guides, liens externes) avec un contrôle granulaire des droits d'accès.",
+      preconditions: [
+        "Session admin active.",
+        "Bucket Supabase Storage `documents` configuré (privé, accès via signed URL).",
+      ],
+      parcoursNominal: [
+        "Arrive sur /admin/documents, voit la liste triée par date d'ajout décroissante.",
+        "Clique « Ajouter » → modal d'upload.",
+        "Choisit le type (`magazine`, `guide`, `lien_externe`), titre, description.",
+        "Si type fichier : upload dans le bucket `documents` ; si type lien : saisit l'URL.",
+        "Définit l'accès (`membres`, `premium`, `tous`).",
+        "Sauvegarde → ligne dans `documents`, fichier accessible via signed URL.",
+      ],
+      parcoursAlternatifs: [
+        "Modification d'un document existant → modal en édition, ré-upload possible.",
+        "Suppression → confirmation modale + suppression du fichier dans Storage + ligne DB.",
+        "Prévisualisation → génération d'une signed URL valable 5 minutes.",
+        "Erreur d'upload (taille, format) → toast d'erreur explicite.",
+      ],
+      regles: [
+        "Stockage des fichiers : bucket Supabase `documents` privé, accès via signed URL temporaire (5 min).",
+        "3 types autorisés : `magazine`, `guide`, `lien_externe` (pas de fichier pour ce dernier).",
+        "3 niveaux d'accès : `membres`, `premium` (sous-ensemble), `tous` (membres + premium).",
+        "Suppression d'un document : on supprime la ligne DB ET le fichier dans Storage.",
+      ],
+      postconditions:
+        "Document disponible côté membre dans son espace selon son rôle, log d'action enregistré.",
+    },
   },
   {
     title: "Admin · Formulaire",
@@ -261,6 +584,34 @@ const PAGES = [
       "Obligatoire vs facultatif — convention visuelle (* pour requis) cohérente avec le reste de l'app ?",
       "Etat de publication — différenciation visuelle entre brouillon, publié, archivé ; date de dernière publication visible ?",
     ],
+    spec: {
+      acteur: "Administratrice configurant le formulaire de contact public.",
+      objectif:
+        "Définir les champs visibles, leur libellé, leur ordre et leur caractère obligatoire pour le formulaire affiché côté visiteur.",
+      preconditions: [
+        "Session admin active.",
+      ],
+      parcoursNominal: [
+        "Arrive sur /admin/formulaire, voit la configuration actuelle (champs visibles, libellés, ordre).",
+        "Active / désactive un champ ou modifie son libellé.",
+        "Réordonne les champs par drag & drop.",
+        "Sauvegarde → `update` sur la table `formulaires` + champs.",
+        "Toast de confirmation, modification immédiatement visible côté public.",
+      ],
+      parcoursAlternatifs: [
+        "Aperçu en mode visiteur (prévisualisation du rendu public sans publier).",
+        "Réinitialisation à la configuration par défaut.",
+        "Désactivation totale du formulaire (mode maintenance) → message remplaçant le formulaire côté public.",
+        "Export des messages reçus en CSV.",
+      ],
+      regles: [
+        "Les champs `nom` et `email` sont obligatoires et non désactivables (validation côté DB).",
+        "Modifications appliquées immédiatement (pas de versionning, pas de brouillon).",
+        "Les soumissions atterrissent dans la table `contact_messages` quel que soit le format du formulaire.",
+      ],
+      postconditions:
+        "Configuration du formulaire mise à jour, visiteurs voient la nouvelle version dès le prochain refresh.",
+    },
   },
   {
     title: "Admin · Templates de messages",
@@ -279,6 +630,36 @@ const PAGES = [
       "Bibliothèque de templates — tri par usage récent / nom / canal ? Recherche utile dès qu'on dépasse 5-6 modèles ?",
       "Versioning — historique des modifications visible ? Possibilité de revenir à une version antérieure ?",
     ],
+    spec: {
+      acteur: "Administratrice modifiant le contenu des emails / SMS automatiques envoyés par le système.",
+      objectif:
+        "Personnaliser les messages transactionnels (confirmation, relance, rappel) sans intervention développeur.",
+      preconditions: [
+        "Session admin active.",
+        "Au moins un template prédéfini dans `parametres_messages`.",
+      ],
+      parcoursNominal: [
+        "Arrive sur /admin/messages-templates, voit la liste des templates triés par clé.",
+        "Clique sur un template → édition inline du contenu.",
+        "Modifie le texte avec variables (`{{prenom}}`, `{{titre_atelier}}`, `{{date_atelier}}`).",
+        "Sauvegarde → `update` sur `parametres_messages`.",
+        "Toast de confirmation, le template est utilisé pour tous les envois ultérieurs.",
+      ],
+      parcoursAlternatifs: [
+        "Aperçu avec données réelles avant sauvegarde.",
+        "Test d'envoi à sa propre adresse pour vérifier le rendu.",
+        "Restauration de la version par défaut (pour ne pas casser les automatismes).",
+        "Modification accidentelle → confirmation modale si le template est critique.",
+      ],
+      regles: [
+        "Variables interpolées au moment de l'envoi par les triggers métier (confirmation, annulation, rappel).",
+        "Modification immédiatement effective : tous les emails ultérieurs utilisent la nouvelle version.",
+        "Un template ne peut PAS être supprimé (clé prédéfinie) — uniquement vidé / restauré.",
+        "Distinction par canal : `email` (HTML, mise en forme riche) vs `sms` (texte court, ≤ 160 caractères).",
+      ],
+      postconditions:
+        "Contenu du template mis à jour ; tous les envois automatiques ultérieurs utilisent la nouvelle version.",
+    },
   },
   {
     title: "Admin · Disponibilités",
@@ -297,6 +678,36 @@ const PAGES = [
       "Création — drag pour étendre un créneau, click pour ajouter, double-click pour modifier : interactions cohérentes avec Google Calendar / Cal.com ?",
       "Mobile — la grille reste-t-elle utilisable sur téléphone, ou bascule-t-elle automatiquement vers une liste ?",
     ],
+    spec: {
+      acteur: "Administratrice (animatrice ou co-animatrice) gérant son planning d'animation.",
+      objectif:
+        "Déclarer ses créneaux récurrents et ses indisponibilités exceptionnelles pour que la création d'ateliers en tienne compte.",
+      preconditions: [
+        "Session admin active.",
+        "Profil de l'admin avec `role = administrateur` et un `couleur_conges` configuré.",
+      ],
+      parcoursNominal: [
+        "Arrive sur /admin/disponibilites, voit la grille hebdomadaire de ses dispos habituelles.",
+        "Ajoute un créneau récurrent → modal (jour de la semaine, heure_debut, heure_fin) → `insert` dans `disponibilites`.",
+        "Bascule en vue calendrier pour saisir une indisponibilité ponctuelle (vacances, congé).",
+        "Saisit motif, date_debut, date_fin → `insert` dans `indisponibilites`.",
+        "Toast de confirmation, planning mis à jour.",
+      ],
+      parcoursAlternatifs: [
+        "Conflit avec un atelier déjà planifié → avertissement (pas de blocage).",
+        "Suppression d'une indisponibilité → confirmation modale.",
+        "Pré-remplissage des vacances scolaires (zone C) depuis `vacances_scolaires` → 1 clic.",
+        "Vue jours fériés en lecture seule (depuis `jours_feries`).",
+      ],
+      regles: [
+        "Disponibilités : récurrence hebdomadaire (`jour` 0=dimanche → 6=samedi, `heure_debut`/`heure_fin`).",
+        "Indisponibilités : plage `date_debut` → `date_fin` (peut s'étendre sur plusieurs jours).",
+        "Affichage avec `code_couleur_conges` du profil pour distinguer plusieurs admins.",
+        "Une indisponibilité bloque la création d'ateliers sur la période (à confirmer côté Ateliers).",
+      ],
+      postconditions:
+        "Disponibilités et indisponibilités mises à jour, visibles lors de la création d'ateliers et dans la vue planning.",
+    },
   },
   {
     title: "Admin · Boîte à idées",
@@ -315,6 +726,36 @@ const PAGES = [
       "Statuts colorés — palette cohérente avec le reste de l'app, pas trop de couleurs (5 statuts max recommandés) ?",
       "Empty state — encourage à inviter les membres à proposer (lien à partager, QR code) ?",
     ],
+    spec: {
+      acteur: "Administratrice centralisant les idées remontées par les membres.",
+      objectif:
+        "Recueillir, classer et prioriser les idées d'ateliers / d'évolutions du site / d'améliorations communautaires.",
+      preconditions: [
+        "Session admin active.",
+        "Au moins une idée déposée dans `idees` (par l'admin ou par une membre).",
+      ],
+      parcoursNominal: [
+        "Arrive sur /admin/boite-a-idees, voit la liste des idées (tri par date de création décroissante).",
+        "Filtre par catégorie (`evolution_site`, `ateliers`, `anomalie_site`, `communication`, `evenements`, `organisation`, `membres`, `autre`).",
+        "Clique sur une idée → détails complets, auteur, réactions existantes.",
+        "Réagit avec « Validé / À discuter / Non validé » → `insert` ou `update` dans `idee_reactions`.",
+        "Boucle pour traiter les idées en attente.",
+      ],
+      parcoursAlternatifs: [
+        "Création d'une idée par l'admin elle-même → modal de création.",
+        "Modification d'une idée existante : titre, description, catégorie.",
+        "Suppression d'une idée → confirmation modale (irréversible, supprime aussi les réactions liées).",
+        "Plusieurs admins co-réagissent → chaque admin voit ses propres réactions distinguées par couleur.",
+      ],
+      regles: [
+        "8 catégories prédéfinies (`evolution_site`, `ateliers`, `anomalie_site`, `membres`, `communication`, `evenements`, `organisation`, `autre`).",
+        "3 réactions admin possibles : `valide`, `non_valide`, `a_discuter`.",
+        "Une admin = 1 seule réaction par idée (update si elle change d'avis).",
+        "Suppression d'une idée → cascade sur `idee_reactions` (FK avec `on delete cascade`).",
+      ],
+      postconditions:
+        "Réaction enregistrée, statut visuel mis à jour pour les autres admins, auteur de l'idée éventuellement notifié (selon config).",
+    },
   },
   {
     title: "Admin · Mon compte",
@@ -333,6 +774,35 @@ const PAGES = [
       "Boutons d'action destructive — « Supprimer le compte » en bas, en couleur tertiaire, jamais collé à « Enregistrer » (Nielsen #5 : prévenir les erreurs) ?",
       "Confirmation — toast de succès après sauvegarde, qui confirme QUOI a été enregistré (pas juste « OK ») ?",
     ],
+    spec: {
+      acteur: "Administratrice gérant son propre profil et ses paramètres de compte.",
+      objectif:
+        "Mettre à jour ses informations personnelles, changer son mot de passe / email, gérer son avatar et se déconnecter.",
+      preconditions: [
+        "Session admin active (l'admin gère son propre compte).",
+      ],
+      parcoursNominal: [
+        "Arrive sur /admin/mon-compte (depuis le menu utilisateur en bas du sidebar).",
+        "Voit ses informations actuelles : nom, prénom, email, téléphone, date de naissance, photo, couleur congés.",
+        "Modifie un ou plusieurs champs.",
+        "Sauvegarde → `update` sur `utilisateurs` (champs métier) + `supabase.auth.updateUser` (email/password).",
+        "Toast de confirmation, profil rafraîchi en contexte React.",
+      ],
+      parcoursAlternatifs: [
+        "Upload d'avatar → bucket Supabase Storage `avatars` (5 Mo max, JPG/PNG/WebP).",
+        "Changement d'email → email de confirmation envoyé à la nouvelle adresse, double opt-in.",
+        "Changement de mot de passe → double saisie + confirmation immédiate.",
+        "Déconnexion → bouton « Se déconnecter » → `supabase.auth.signOut` + redirection /login.",
+      ],
+      regles: [
+        "Email modifiable mais nécessite confirmation par lien email (pour éviter la prise de contrôle).",
+        "Avatar : 5 Mo max, formats JPG/PNG/WebP, stocké dans bucket public `avatars`.",
+        "Mot de passe : longueur minimale 8 caractères (config Supabase).",
+        "Le rôle (`administrateur`) n'est PAS modifiable depuis cette page (lecture seule).",
+      ],
+      postconditions:
+        "Profil mis à jour dans `utilisateurs`, éventuel email de confirmation envoyé pour le changement d'email, ancienne session invalidée si mot de passe changé.",
+    },
   },
 ];
 
@@ -578,7 +1048,49 @@ function buildHtml(captures) {
         <p class="caption">${escapeHtml(c.description)}</p>
       </section>`;
 
-      // Page B : audit UX/UI
+      // Page B : spécification fonctionnelle
+      const s = c.spec;
+      const specPage = s
+        ? `
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#${num}</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · ${escapeHtml(c.section)}</div>
+            <h2>${escapeHtml(c.title)}</h2>
+            <div class="path">${escapeHtml(c.path)}</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>${escapeHtml(s.acteur)}</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>${escapeHtml(s.objectif)}</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list">${s.preconditions.map((x) => `<li>${escapeHtml(x)}</li>`).join("")}</ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow">${s.parcoursNominal.map((x) => `<li>${escapeHtml(x)}</li>`).join("")}</ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list">${s.parcoursAlternatifs.map((x) => `<li>${escapeHtml(x)}</li>`).join("")}</ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules">${s.regles.map((x) => `<li>${escapeHtml(x)}</li>`).join("")}</ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">${escapeHtml(s.postconditions)}</p>
+      </section>`
+        : "";
+
+      // Page C : audit UX/UI
       const auditPage = `
       <section class="page page-audit pb">
         <header class="audit-header">
@@ -604,7 +1116,7 @@ function buildHtml(captures) {
         </div>
       </section>`;
 
-      return screenshotPage + auditPage;
+      return screenshotPage + specPage + auditPage;
     })
     .join("\n");
 
@@ -718,6 +1230,62 @@ function buildHtml(captures) {
     margin: 6px 0 0; text-align: center;
   }
 
+  /* Spec page (parcours utilisateur en format spécification fonctionnelle) */
+  .page-spec .spec-header {
+    display: flex; gap: 12px; align-items: flex-start;
+    border-bottom: 2px solid #111827; padding-bottom: 6px; margin-bottom: 10px;
+  }
+  .page-spec h2 { font-size: 16pt; margin: 0; }
+  .page-spec h3 {
+    font-size: 9.5pt; margin-top: 9px; margin-bottom: 4px;
+    color: #111827; text-transform: uppercase; letter-spacing: 1px;
+    border-left: 3px solid #4338ca; padding-left: 8px;
+  }
+  .spec-tag { background: #e0e7ff; color: #3730a3; }
+  .spec-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    margin-bottom: 4px;
+  }
+  .spec-cell {
+    background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px;
+    padding: 8px 10px;
+  }
+  .spec-cell h3 {
+    border-left: none; padding-left: 0;
+    font-size: 8.5pt; margin-top: 0; margin-bottom: 3px;
+    color: #6b7280;
+  }
+  .spec-cell p { margin: 0; font-size: 10pt; }
+  .spec-list {
+    margin: 0 0 4px; padding-left: 20px; font-size: 10pt;
+  }
+  .spec-list li { margin-bottom: 3px; }
+  .spec-flow {
+    counter-reset: step; list-style: none; padding-left: 0;
+  }
+  .spec-flow li {
+    counter-increment: step; position: relative; padding-left: 28px;
+    margin-bottom: 4px;
+  }
+  .spec-flow li::before {
+    content: counter(step);
+    position: absolute; left: 0; top: 0;
+    background: #4338ca; color: white;
+    width: 20px; height: 20px;
+    border-radius: 50%; font-size: 9pt; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .spec-rules li {
+    background: #fefce8; border-left: 2px solid #eab308;
+    padding: 2px 8px; list-style-position: inside;
+    margin-bottom: 3px; border-radius: 0 3px 3px 0;
+  }
+  .spec-postconditions {
+    background: #ecfdf5; border-left: 3px solid #10b981;
+    padding: 6px 10px; border-radius: 0 4px 4px 0;
+    margin: 0; font-size: 10pt;
+  }
+
   /* Audit page (questions + notes) */
   .page-audit .audit-header {
     display: flex; gap: 12px; align-items: flex-start;
@@ -765,8 +1333,9 @@ function buildHtml(captures) {
     <div class="howto">
       <h3>Comment l'utiliser ?</h3>
       <ul>
-        <li><strong>Pages paires</strong> : capture pleine page de l'écran tel qu'affiché.</li>
-        <li><strong>Pages impaires</strong> : 4 questions UX, 4 questions UI, et notes libres.</li>
+        <li><strong>1ère planche</strong> : capture pleine page de l'écran tel qu'affiché.</li>
+        <li><strong>2ème planche</strong> : spécification fonctionnelle (acteur, parcours nominal, alternatifs, règles métier, post-conditions).</li>
+        <li><strong>3ème planche</strong> : 4 questions UX, 4 questions UI, et notes libres.</li>
         <li><strong>UX</strong> = ce que ressent et fait l'utilisatrice (heuristiques de Nielsen, JTBD, friction).</li>
         <li><strong>UI</strong> = ce que voit l'utilisatrice (typographie, contraste WCAG, composants, microinteractions).</li>
         <li><strong>Audit transverse</strong> : grille finale couvrant heuristiques, design system, accessibilité et performance.</li>
