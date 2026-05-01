@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import {
   LayoutDashboard, Users, CalendarDays, FileText,
-  FormInput, LogOut, Menu, ChevronRight, UserCheck, MessageSquare, CalendarClock, Lightbulb
+  FormInput, LogOut, Menu, ChevronRight, UserCheck, MessageSquare, CalendarClock, Lightbulb, Star
 } from "lucide-react";
 
 const navItems = [
@@ -14,6 +14,7 @@ const navItems = [
   { href: "/admin/pre-inscriptions",   label: "Pré-inscriptions",         icon: UserCheck, badgeKey: "preinscriptions" as const },
   { href: "/admin/disponibilites",     label: "Disponibilités",           icon: CalendarClock },
   { href: "/admin/boite-a-idees",      label: "Boîte à idées",            icon: Lightbulb, badgeKey: "idees" as const },
+  { href: "/admin/avis",               label: "Témoignages",              icon: Star, badgeKey: "avis" as const },
   { href: "/admin/documents",          label: "Documents",                icon: FileText },
   { href: "/admin/formulaire",         label: "Formulaire de contact",    icon: FormInput },
   { href: "/admin/messages-templates", label: "Modèles de messages",      icon: MessageSquare },
@@ -28,6 +29,7 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [ideesNouvelles, setIdeesNouvelles] = useState(0);
   const [preInscEnAttente, setPreInscEnAttente] = useState(0);
+  const [avisEnAttente, setAvisEnAttente] = useState(0);
 
   // Compte des idées créées depuis la dernière visite de la boîte à idées.
   // Réévalué à chaque changement de route pour prendre en compte le passage
@@ -62,6 +64,20 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
     return () => { cancelled = true; };
   }, [profile?.id, location.pathname]);
 
+  // Compte des avis en attente de modération.
+  useEffect(() => {
+    if (!profile?.id) return;
+    let cancelled = false;
+    supabase
+      .from("avis")
+      .select("id", { count: "exact", head: true })
+      .eq("moderation", "en_attente")
+      .then(({ count }) => {
+        if (!cancelled) setAvisEnAttente(count ?? 0);
+      });
+    return () => { cancelled = true; };
+  }, [profile?.id, location.pathname]);
+
   const handleSignOut = async () => {
     await signOut();
     navigate("/login");
@@ -82,6 +98,7 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
           const badgeCount =
             badgeKey === "idees" ? ideesNouvelles :
             badgeKey === "preinscriptions" ? preInscEnAttente :
+            badgeKey === "avis" ? avisEnAttente :
             0;
           return (
             <Link
