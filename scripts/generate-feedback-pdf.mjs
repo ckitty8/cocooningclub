@@ -3,11 +3,13 @@
 // rédigées du point de vue d'un·e UX researcher + d'un·e UI designer, avec
 // une zone de notes libres.
 //
+// Pour pouvoir capturer les pages /admin sans dépendre d'un vrai backend
+// Supabase (sandbox sans réseau sortant), on intercepte les appels Supabase
+// au niveau Playwright et on retourne des données factices peuplées
+// (cf. scripts/feedback-mock-supabase.mjs). Aucune modification du code de
+// production n'est nécessaire.
+//
 // Utilisation : npm run feedback:pdf
-//   ADMIN_EMAIL / ADMIN_PASSWORD : facultatifs ; permettent de capturer les
-//   pages /admin/* en étant connecté.
-//   VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY : nécessaires pour que
-//   le client Supabase initialise (sans cela, l'app reste blanche).
 
 import { spawn } from "node:child_process";
 import { mkdir, writeFile } from "node:fs/promises";
@@ -15,6 +17,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
+import { attachSupabaseMock, buildAuthLocalStorage } from "./feedback-mock-supabase.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -439,38 +442,31 @@ async function buildSite() {
   log("Build terminé.");
 }
 
-async function loginAsAdmin(page) {
-  const email = process.env.ADMIN_EMAIL;
-  const password = process.env.ADMIN_PASSWORD;
-  if (!email || !password) {
-    log("⚠️ ADMIN_EMAIL/ADMIN_PASSWORD non définis : pages /admin capturées non authentifiées.");
-    return false;
-  }
-  log(`Connexion administrateur (${email})…`);
-  await page.goto(`${BASE_URL}/login`, { waitUntil: "domcontentloaded", timeout: 30_000 });
-  await page.waitForSelector('input[type="email"]', { timeout: 15_000 });
-  await page.fill('input[type="email"]', email);
-  await page.fill('input[type="password"]', password);
-  await Promise.all([
-    page.waitForURL((url) => !url.pathname.startsWith("/login"), { timeout: 30_000 }).catch(() => {}),
-    page.click('button[type="submit"]'),
-  ]);
-  await page.waitForLoadState("networkidle", { timeout: 15_000 }).catch(() => {});
-  const currentUrl = page.url();
-  if (currentUrl.includes("/login")) {
-    log(`  ⚠️ Connexion échouée, URL actuelle : ${currentUrl}`);
-    return false;
-  }
-  log(`  ✓ Connecté, redirigé vers ${currentUrl}`);
-  return true;
-}
-
 async function captureScreenshots(browser) {
   const context = await browser.newContext({ viewport: VIEWPORT });
+
+  // Mock complet de Supabase (auth + REST + RPC) au niveau réseau Playwright,
+  // pour que les pages /admin se peuplent de données factices réalistes.
+  await attachSupabaseMock(context, log);
+
+  // Pré-charge la session admin dans localStorage pour les routes /admin,
+  // mais l'efface pour les pages publiques (sinon /login, /forgot-password
+  // redirigent immédiatement vers /admin/dashboard).
+  const supabaseUrl = STUB_ENV.VITE_SUPABASE_URL;
+  const seed = buildAuthLocalStorage(supabaseUrl);
+  await context.addInitScript(({ key, value }) => {
+    try {
+      const path = window.location.pathname;
+      if (path.startsWith("/admin")) {
+        window.localStorage.setItem(key, value);
+      } else {
+        window.localStorage.removeItem(key);
+      }
+    } catch {}
+  }, seed);
+
   const page = await context.newPage();
   const results = [];
-
-  await loginAsAdmin(page);
 
   for (const def of PAGES) {
     const url = `${BASE_URL}${def.path}`;
@@ -774,6 +770,7 @@ function buildHtml(captures) {
         <li><strong>UX</strong> = ce que ressent et fait l'utilisatrice (heuristiques de Nielsen, JTBD, friction).</li>
         <li><strong>UI</strong> = ce que voit l'utilisatrice (typographie, contraste WCAG, composants, microinteractions).</li>
         <li><strong>Audit transverse</strong> : grille finale couvrant heuristiques, design system, accessibilité et performance.</li>
+        <li><em>Note : les captures de l'espace administrateur sont peuplées avec des données factices à des fins de démonstration UI ; les noms et chiffres ne correspondent pas à votre vraie base.</em></li>
       </ul>
     </div>
   </section>
