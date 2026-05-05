@@ -22,6 +22,17 @@ import TemplatesMessages from "./pages/admin/TemplatesMessages.tsx";
 import Disponibilites from "./pages/admin/Disponibilites.tsx";
 import BoiteAIdees from "./pages/admin/BoiteAIdees.tsx";
 import MonCompte from "./pages/admin/MonCompte.tsx";
+import AvisAdmin from "./pages/admin/Avis.tsx";
+import MembreDashboard from "./pages/membre/Dashboard.tsx";
+import MembreAteliers from "./pages/membre/Ateliers.tsx";
+import MembreInscriptions from "./pages/membre/Inscriptions.tsx";
+import MembreMagazine from "./pages/membre/Magazine.tsx";
+import MembreMonCompte from "./pages/membre/MonCompte.tsx";
+import MembrePremiumDashboard from "./pages/membre-premium/Dashboard.tsx";
+import MembrePremiumAteliers from "./pages/membre-premium/Ateliers.tsx";
+import MembrePremiumInscriptions from "./pages/membre-premium/Inscriptions.tsx";
+import MembrePremiumMagazine from "./pages/membre-premium/Magazine.tsx";
+import MembrePremiumMonCompte from "./pages/membre-premium/MonCompte.tsx";
 
 
 const queryClient = new QueryClient();
@@ -63,8 +74,19 @@ const App = () => (
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
 
-            {/* Espace membre (à développer plus tard) */}
-            <Route path="/espace-membre" element={<Login />} />
+            {/* Espace membre standard */}
+            <Route path="/espace-membre"               element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreDashboard /></RoleGuard>} />
+            <Route path="/espace-membre/ateliers"      element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreAteliers /></RoleGuard>} />
+            <Route path="/espace-membre/inscriptions"  element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreInscriptions /></RoleGuard>} />
+            <Route path="/espace-membre/magazine"      element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreMagazine /></RoleGuard>} />
+            <Route path="/espace-membre/mon-compte"    element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreMonCompte /></RoleGuard>} />
+
+            {/* Espace membre premium */}
+            <Route path="/espace-membre-premium"               element={<RoleGuard allowedRoles={["membre_premium", "administrateur"]}><MembrePremiumDashboard /></RoleGuard>} />
+            <Route path="/espace-membre-premium/ateliers"      element={<RoleGuard allowedRoles={["membre_premium", "administrateur"]}><MembrePremiumAteliers /></RoleGuard>} />
+            <Route path="/espace-membre-premium/inscriptions"  element={<RoleGuard allowedRoles={["membre_premium", "administrateur"]}><MembrePremiumInscriptions /></RoleGuard>} />
+            <Route path="/espace-membre-premium/magazine"      element={<RoleGuard allowedRoles={["membre_premium", "administrateur"]}><MembrePremiumMagazine /></RoleGuard>} />
+            <Route path="/espace-membre-premium/mon-compte"    element={<RoleGuard allowedRoles={["membre_premium", "administrateur"]}><MembrePremiumMonCompte /></RoleGuard>} />
 
             {/* Routes admin protégées */}
             <Route path="/admin/dashboard"         element={<RoleGuard allowedRoles={["administrateur"]}><Dashboard /></RoleGuard>} />
@@ -76,6 +98,7 @@ const App = () => (
             <Route path="/admin/messages-templates" element={<RoleGuard allowedRoles={["administrateur"]}><TemplatesMessages /></RoleGuard>} />
             <Route path="/admin/disponibilites"     element={<RoleGuard allowedRoles={["administrateur"]}><Disponibilites /></RoleGuard>} />
             <Route path="/admin/boite-a-idees"      element={<RoleGuard allowedRoles={["administrateur"]}><BoiteAIdees /></RoleGuard>} />
+            <Route path="/admin/avis"               element={<RoleGuard allowedRoles={["administrateur"]}><AvisAdmin /></RoleGuard>} />
             <Route path="/admin/mon-compte"         element={<RoleGuard allowedRoles={["administrateur"]}><MonCompte /></RoleGuard>} />
 
 

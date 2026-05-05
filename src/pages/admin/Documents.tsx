@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
 import { withTimeout } from "@/utils/withTimeout";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, X, ExternalLink, FileText, BookOpen, Newspaper, type LucideIcon } from "lucide-react";
+import { Plus, Pencil, Trash2, X, ExternalLink, FileText, BookOpen, Newspaper, Image as ImageIcon, type LucideIcon } from "lucide-react";
 
 type DocType = "magazine" | "guide" | "lien_externe";
 type DocAcces = "membres" | "premium" | "tous";
@@ -17,6 +17,7 @@ interface Document {
   fichier_url: string | null;
   fichier_chemin: string | null;
   lien_externe: string | null;
+  url_image: string | null;
   acces: DocAcces;
   created_at: string;
 }
@@ -41,7 +42,7 @@ const accesLabel: Record<DocAcces, string> = {
 
 const emptyForm = {
   titre: "", description: "", type: "guide" as DocType,
-  lien_externe: "", acces: "membres" as DocAcces,
+  lien_externe: "", acces: "membres" as DocAcces, url_image: "",
 };
 
 const Documents = () => {
@@ -51,6 +52,8 @@ const Documents = () => {
   const [form, setForm] = useState(emptyForm);
   const [file, setFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   const fetchDocs = async () => {
     try {
@@ -74,9 +77,39 @@ const Documents = () => {
 
   const openAdd = () => { setForm(emptyForm); setFile(null); setModal({ open: true, doc: null }); };
   const openEdit = (d: Document) => {
-    setForm({ titre: d.titre, description: d.description ?? "", type: d.type, lien_externe: d.lien_externe ?? "", acces: d.acces });
+    setForm({
+      titre: d.titre, description: d.description ?? "", type: d.type,
+      lien_externe: d.lien_externe ?? "", acces: d.acces,
+      url_image: d.url_image ?? "",
+    });
     setFile(null);
     setModal({ open: true, doc: d });
+  };
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    if (!f.type.startsWith("image/")) {
+      toast.error("Seules les images sont acceptées");
+      return;
+    }
+    if (f.size > 5 * 1024 * 1024) {
+      toast.error("L'image doit faire moins de 5 Mo");
+      return;
+    }
+    setUploadingImage(true);
+    const ext = f.name.split(".").pop()?.toLowerCase() ?? "jpg";
+    const path = `documents/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await supabase.storage.from("images").upload(path, f, { contentType: f.type });
+    if (error) {
+      toast.error(`Erreur upload : ${error.message}`, { duration: 8000 });
+      setUploadingImage(false);
+      return;
+    }
+    const { data } = supabase.storage.from("images").getPublicUrl(path);
+    setForm(prev => ({ ...prev, url_image: data.publicUrl }));
+    setUploadingImage(false);
+    if (imageInputRef.current) imageInputRef.current.value = "";
   };
 
   const handleSave = async () => {
@@ -108,6 +141,7 @@ const Documents = () => {
       fichier_chemin: form.type !== "lien_externe" ? fichier_chemin : null,
       lien_externe: form.type === "lien_externe" ? form.lien_externe || null : null,
       acces: form.acces,
+      url_image: form.url_image || null,
     };
 
     const { error } = modal.doc
@@ -195,9 +229,13 @@ const Documents = () => {
               const Icon = typeIcon[d.type];
               return (
                 <div key={d.id} className="flex items-center gap-4 px-6 py-4 hover:bg-muted/20 transition-colors">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                    <Icon className="w-5 h-5 text-primary" />
-                  </div>
+                  {d.url_image ? (
+                    <img src={d.url_image} alt="" className="w-12 h-12 rounded-xl object-contain bg-muted/30 shrink-0 border" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <Icon className="w-5 h-5 text-primary" />
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm truncate">{d.titre}</p>
                     <div className="flex items-center gap-2 mt-0.5 flex-wrap">
@@ -241,6 +279,30 @@ const Documents = () => {
                 className="p-1.5 rounded-lg hover:bg-muted"><X className="w-4 h-4" /></button>
             </div>
             <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Photo de présentation</label>
+                <div className="flex items-start gap-3">
+                  {form.url_image ? (
+                    <img src={form.url_image} alt="" className="w-24 h-24 rounded-xl object-cover border" />
+                  ) : (
+                    <div className="w-24 h-24 rounded-xl border-2 border-dashed flex items-center justify-center text-muted-foreground">
+                      <ImageIcon className="w-6 h-6" />
+                    </div>
+                  )}
+                  <div className="flex flex-col gap-2">
+                    <input ref={imageInputRef} type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                    <button type="button" onClick={() => imageInputRef.current?.click()} disabled={uploadingImage}
+                      className="text-sm px-3 py-1.5 border rounded-full hover:bg-muted disabled:opacity-50">
+                      {uploadingImage ? "Envoi..." : form.url_image ? "Changer" : "Uploader"}
+                    </button>
+                    {form.url_image && (
+                      <button type="button" onClick={() => setForm(f => ({ ...f, url_image: "" }))}
+                        className="text-sm text-destructive hover:underline">Retirer</button>
+                    )}
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">JPG, PNG, WebP. Max 5 Mo.</p>
+              </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Titre *</label>
                 <input value={form.titre} onChange={e => setForm(f => ({ ...f, titre: e.target.value }))}

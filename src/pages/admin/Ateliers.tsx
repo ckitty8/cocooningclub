@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
 import { withTimeout } from "@/utils/withTimeout";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, X, MapPin, Clock, Users, Euro, Search, ChevronDown, UserCheck, UserX } from "lucide-react";
+import { Plus, Pencil, Trash2, X, MapPin, Clock, Users, Euro, Search, ChevronDown, UserCheck, UserX, Image as ImageIcon, CircleDashed } from "lucide-react";
 
 type Statut = "brouillon" | "publie" | "complet" | "annule" | "termine";
 type Niveau = "debutant" | "intermediaire" | "avance";
@@ -25,6 +25,7 @@ interface Atelier {
   places_disponibles: number;
   tarif_standard: number | null;
   tarif_premium: number | null;
+  tarif_admin: number | null;
   tarif_affichage: string | null;
   lien_paypal: string | null;
   niveau: Niveau | null;
@@ -33,6 +34,7 @@ interface Atelier {
 
 interface Inscription {
   id: string;
+  utilisateur_id: string | null;
   nom_invite: string;
   prenom_invite: string;
   email_invite: string;
@@ -41,12 +43,18 @@ interface Inscription {
   present: boolean | null;
   inscrit_le: string;
   date_naissance: string | null;
+  utilisateurs?: {
+    prenom: string | null;
+    nom: string | null;
+    email: string | null;
+    role: "administrateur" | "inscrit" | "membre" | "membre_premium" | null;
+  } | null;
 }
 
 const emptyForm = {
   titre: "", description: "", description_courte: "",
   date_atelier: "", heure_debut: "", duree: "", lieu: "", url_image: "",
-  places_max: 10, tarif_standard: "", tarif_premium: "", tarif_affichage: "",
+  places_max: 10, tarif_standard: "", tarif_premium: "", tarif_admin: "", tarif_affichage: "",
   lien_paypal: "", niveau: "" as Niveau | "", statut: "brouillon" as Statut,
 };
 
@@ -85,6 +93,8 @@ const Ateliers = () => {
   const [modal, setModal] = useState<{ open: boolean; atelier: Atelier | null }>({ open: false, atelier: null });
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   // Recherche + filtre
   const [search, setSearch] = useState("");
@@ -96,8 +106,22 @@ const Ateliers = () => {
   const [inscLoading, setInscLoading] = useState(false);
 
   const fetchAteliers = async () => {
-    // Le cron quotidien (3h UTC) dépublie les ateliers passés ; pas besoin
-    // de l'appeler côté client (la fonction n'est plus exposée via RPC).
+    // Marque comme "termine" les ateliers publiés/complets dont la date est passée.
+    // Filet de secours si le cron pg_cron quotidien n'a pas tourné — la policy
+    // RLS ateliers_admin_all autorise cette mise à jour pour l'admin courant.
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      await withTimeout(
+        supabase
+          .from("ateliers")
+          .update({ statut: "termine" })
+          .lt("date_atelier", today)
+          .in("statut", ["publie", "complet"])
+      );
+    } catch (err) {
+      console.warn("[Ateliers.autoTerminer] non bloquant :", err);
+    }
+
     try {
       const { data, error } = await withTimeout(
         supabase.from("ateliers").select("*").order("date_atelier")
@@ -123,14 +147,58 @@ const Ateliers = () => {
   const openInscrits = async (a: Atelier) => {
     setInscritPanel({ open: true, atelier: a });
     setInscLoading(true);
-    const { data } = await supabase.from("inscriptions").select("*").eq("atelier_id", a.id).order("inscrit_le");
-    setInscriptions((data as Inscription[]) ?? []);
+    const { data } = await supabase
+      .from("inscriptions")
+      .select("*, utilisateurs(prenom, nom, email, role)")
+      .eq("atelier_id", a.id)
+      .order("inscrit_le");
+    const insc = (data as unknown as Inscription[]) ?? [];
+
+    // Si l'inscription a été faite en mode "invité" (utilisateur_id null)
+    // mais que l'email correspond à un compte existant, on rapatrie la
+    // fiche pour appliquer le bon tarif (premium) et le bon badge.
+    const guestEmails = Array.from(new Set(
+      insc
+        .filter(i => !i.utilisateur_id && i.email_invite)
+        .map(i => i.email_invite!.toLowerCase())
+    ));
+    if (guestEmails.length) {
+      const { data: matched } = await supabase
+        .from("utilisateurs")
+        .select("prenom, nom, email, role")
+        .in("email", guestEmails);
+      const byEmail = new Map<string, NonNullable<Inscription["utilisateurs"]>>(
+        (matched ?? []).map(u => [String(u.email).toLowerCase(), u as NonNullable<Inscription["utilisateurs"]>])
+      );
+      for (const i of insc) {
+        if (!i.utilisateur_id && i.email_invite && !i.utilisateurs) {
+          const u = byEmail.get(i.email_invite.toLowerCase());
+          if (u) i.utilisateurs = u;
+        }
+      }
+    }
+
+    setInscriptions(insc);
     setInscLoading(false);
   };
 
   const togglePresent = async (insc: Inscription) => {
     await supabase.from("inscriptions").update({ present: !insc.present }).eq("id", insc.id);
     setInscriptions(prev => prev.map(i => i.id === insc.id ? { ...i, present: !i.present } : i));
+  };
+
+  // Toggle paiement : cycle en_attente ↔ paye.
+  // Si l'inscription est marquée non_requis mais que l'atelier a un
+  // tarif > 0 (incohérence après-coup), on bascule vers en_attente.
+  // Un atelier réellement gratuit (tarif null/0) garde non_requis et
+  // désactive le bouton dans l'UI.
+  const togglePaiement = async (insc: Inscription) => {
+    const atelier = inscritPanel.atelier;
+    const isPaid = (atelier?.tarif_standard ?? 0) > 0;
+    if (insc.statut_paiement === "non_requis" && !isPaid) return;
+    const next: StatutPaiement = insc.statut_paiement === "paye" ? "en_attente" : "paye";
+    await supabase.from("inscriptions").update({ statut_paiement: next }).eq("id", insc.id);
+    setInscriptions(prev => prev.map(i => i.id === insc.id ? { ...i, statut_paiement: next } : i));
   };
 
   const openAdd = () => { setForm(emptyForm); setModal({ open: true, atelier: null }); };
@@ -142,6 +210,7 @@ const Ateliers = () => {
       places_max: a.places_max,
       tarif_standard: a.tarif_standard?.toString() ?? "",
       tarif_premium: a.tarif_premium?.toString() ?? "",
+      tarif_admin: a.tarif_admin?.toString() ?? "",
       tarif_affichage: a.tarif_affichage ?? "",
       lien_paypal: a.lien_paypal ?? "",
       niveau: a.niveau ?? "", statut: a.statut,
@@ -180,6 +249,7 @@ const Ateliers = () => {
       places_max: Number(form.places_max),
       tarif_standard: form.tarif_standard ? Number(form.tarif_standard) : null,
       tarif_premium: form.tarif_premium ? Number(form.tarif_premium) : null,
+      tarif_admin: form.tarif_admin ? Number(form.tarif_admin) : null,
       tarif_affichage: form.tarif_affichage || null,
       lien_paypal: form.lien_paypal || null,
       niveau: (form.niveau as Niveau) || null,
@@ -221,6 +291,32 @@ const Ateliers = () => {
 
   const f = (key: keyof typeof form, val: string | number) =>
     setForm(prev => ({ ...prev, [key]: val }));
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Seules les images sont acceptées");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("L'image doit faire moins de 5 Mo");
+      return;
+    }
+    setUploadingImage(true);
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+    const path = `ateliers/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await supabase.storage.from("images").upload(path, file, { contentType: file.type });
+    if (error) {
+      toast.error(`Erreur upload : ${error.message}`, { duration: 8000 });
+      setUploadingImage(false);
+      return;
+    }
+    const { data } = supabase.storage.from("images").getPublicUrl(path);
+    f("url_image", data.publicUrl);
+    setUploadingImage(false);
+    if (imageInputRef.current) imageInputRef.current.value = "";
+  };
 
   return (
     <AdminLayout>
@@ -282,7 +378,11 @@ const Ateliers = () => {
           {filtered.map(a => {
             const inscrits = a.places_max - a.places_disponibles;
             return (
-              <div key={a.id} className="bg-card rounded-2xl border p-5 flex flex-col">
+              <div key={a.id} className="bg-card rounded-2xl border overflow-hidden flex flex-col">
+                {a.url_image && (
+                  <img src={a.url_image} alt={a.titre} className="w-full aspect-[16/10] object-contain bg-muted/30" />
+                )}
+                <div className="p-5 flex flex-col flex-1">
                 <div className="flex items-start justify-between mb-3">
                   <h3 className="font-semibold text-foreground leading-snug flex-1 pr-2">{a.titre}</h3>
                   <span className={`shrink-0 px-2.5 py-0.5 rounded-full text-xs font-medium ${statutColors[a.statut]}`}>
@@ -338,6 +438,7 @@ const Ateliers = () => {
                     <Trash2 className="w-3 h-3" />
                   </button>
                 </div>
+                </div>
               </div>
             );
           })}
@@ -372,11 +473,34 @@ const Ateliers = () => {
                 </div>
               ) : (
                 <div className="divide-y">
-                  {inscriptions.map(insc => (
+                  {(() => {
+                    const atelier = inscritPanel.atelier;
+                    const tarifStd = atelier?.tarif_standard ?? 0;
+                    const tarifPrem = atelier?.tarif_premium ?? tarifStd;
+                    const atelierIsPaid = tarifStd > 0 || tarifPrem > 0;
+                    const montantPour = (insc: Inscription): number => {
+                      const role = insc.utilisateurs?.role;
+                      return role === "membre_premium" ? tarifPrem : tarifStd;
+                    };
+                    return inscriptions.map(insc => {
+                      const prenom = insc.prenom_invite ?? insc.utilisateurs?.prenom ?? "";
+                      const nom = insc.nom_invite ?? insc.utilisateurs?.nom ?? "";
+                      const email = insc.email_invite ?? insc.utilisateurs?.email ?? "";
+                      const role = insc.utilisateurs?.role;
+                      const montant = montantPour(insc);
+                      return (
                     <div key={insc.id} className="px-6 py-4 flex items-center gap-4">
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm">{insc.prenom_invite} {insc.nom_invite}</p>
-                        <p className="text-xs text-muted-foreground truncate">{insc.email_invite}</p>
+                        <p className="font-medium text-sm flex items-center gap-2">
+                          {prenom} {nom}
+                          {role === "membre_premium" && (
+                            <span className="text-[10px] uppercase tracking-wider bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">Premium</span>
+                          )}
+                          {insc.utilisateur_id && role !== "membre_premium" && (
+                            <span className="text-[10px] uppercase tracking-wider bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">Membre</span>
+                          )}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">{email}</p>
                         <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                           <span className={`text-xs px-1.5 py-0.5 rounded-full ${inscriptionBadge[insc.statut]}`}>
                             {inscriptionLabel[insc.statut]}
@@ -384,28 +508,76 @@ const Ateliers = () => {
                           <span className={`text-xs px-1.5 py-0.5 rounded-full ${paiementBadge[insc.statut_paiement]}`}>
                             {paiementLabel[insc.statut_paiement]}
                           </span>
+                          <span className="text-xs px-1.5 py-0.5 rounded-full bg-foreground/5 text-foreground font-medium">
+                            {atelierIsPaid ? `${montant.toFixed(2)} €` : "Gratuit"}
+                          </span>
                         </div>
                       </div>
-                      <button
-                        onClick={() => togglePresent(insc)}
-                        title={insc.present ? "Marquer absent" : "Marquer présent"}
-                        className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                          insc.present
-                            ? "bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
-                            : "border-muted-foreground/20 text-muted-foreground hover:bg-muted"
-                        }`}
-                      >
-                        {insc.present ? <UserCheck className="w-3.5 h-3.5" /> : <UserX className="w-3.5 h-3.5" />}
-                        {insc.present ? "Présent" : "Absent"}
-                      </button>
+                      <div className="flex flex-col gap-1.5 shrink-0">
+                        <button
+                          onClick={() => togglePresent(insc)}
+                          title={insc.present ? "Marquer absent" : "Marquer présent"}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                            insc.present
+                              ? "bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                              : "border-muted-foreground/20 text-muted-foreground hover:bg-muted"
+                          }`}
+                        >
+                          {insc.present ? <UserCheck className="w-3.5 h-3.5" /> : <UserX className="w-3.5 h-3.5" />}
+                          {insc.present ? "Présent" : "Absent"}
+                        </button>
+                        <button
+                          onClick={() => togglePaiement(insc)}
+                          disabled={insc.statut_paiement === "non_requis" && !atelierIsPaid}
+                          title={
+                            insc.statut_paiement === "non_requis" && !atelierIsPaid ? "Atelier gratuit" :
+                            insc.statut_paiement === "paye" ? "Marquer non payé" : "Marquer payé"
+                          }
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                            insc.statut_paiement === "paye"
+                              ? "bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                              : insc.statut_paiement === "non_requis" && !atelierIsPaid
+                              ? "border-muted-foreground/20 text-muted-foreground"
+                              : "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100"
+                          }`}
+                        >
+                          {insc.statut_paiement === "paye"
+                            ? <Euro className="w-3.5 h-3.5" />
+                            : <CircleDashed className="w-3.5 h-3.5" />}
+                          {insc.statut_paiement === "paye" ? "Payé"
+                            : insc.statut_paiement === "non_requis" && !atelierIsPaid ? "Gratuit"
+                            : "Non payé"}
+                        </button>
+                      </div>
                     </div>
-                  ))}
+                      );
+                    });
+                  })()}
                 </div>
               )}
             </div>
 
-            <div className="p-4 border-t text-xs text-muted-foreground text-center">
-              {inscriptions.length} inscrit(s) · {inscriptions.filter(i => i.present).length} présent(s)
+            <div className="p-4 border-t text-xs text-muted-foreground text-center space-y-1">
+              <div>
+                {inscriptions.length} inscrit(s) · {inscriptions.filter(i => i.present).length} présent(s)
+              </div>
+              {(() => {
+                const tarifStd = inscritPanel.atelier?.tarif_standard ?? 0;
+                const tarifPrem = inscritPanel.atelier?.tarif_premium ?? tarifStd;
+                if (tarifStd === 0 && tarifPrem === 0) return null;
+                const totalAttendu = inscriptions
+                  .filter(i => i.statut === "confirme")
+                  .reduce((s, i) => s + (i.utilisateurs?.role === "membre_premium" ? tarifPrem : tarifStd), 0);
+                const totalEncaisse = inscriptions
+                  .filter(i => i.statut === "confirme" && i.statut_paiement === "paye")
+                  .reduce((s, i) => s + (i.utilisateurs?.role === "membre_premium" ? tarifPrem : tarifStd), 0);
+                return (
+                  <div>
+                    Total attendu : <span className="font-semibold text-foreground">{totalAttendu.toFixed(2)} €</span>
+                    {" · "}encaissé : <span className="font-semibold text-foreground">{totalEncaisse.toFixed(2)} €</span>
+                  </div>
+                );
+              })()}
             </div>
           </aside>
         </div>
@@ -421,6 +593,30 @@ const Ateliers = () => {
                 className="p-1.5 rounded-lg hover:bg-muted"><X className="w-4 h-4" /></button>
             </div>
             <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Photo de présentation</label>
+                <div className="flex items-start gap-3">
+                  {form.url_image ? (
+                    <img src={form.url_image} alt="" className="w-24 h-24 rounded-xl object-cover border" />
+                  ) : (
+                    <div className="w-24 h-24 rounded-xl border-2 border-dashed flex items-center justify-center text-muted-foreground">
+                      <ImageIcon className="w-6 h-6" />
+                    </div>
+                  )}
+                  <div className="flex flex-col gap-2">
+                    <input ref={imageInputRef} type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                    <button type="button" onClick={() => imageInputRef.current?.click()} disabled={uploadingImage}
+                      className="text-sm px-3 py-1.5 border rounded-full hover:bg-muted disabled:opacity-50">
+                      {uploadingImage ? "Envoi..." : form.url_image ? "Changer" : "Uploader"}
+                    </button>
+                    {form.url_image && (
+                      <button type="button" onClick={() => f("url_image", "")}
+                        className="text-sm text-destructive hover:underline">Retirer</button>
+                    )}
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">JPG, PNG, WebP. Max 5 Mo.</p>
+              </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Titre *</label>
                 <input value={form.titre} onChange={e => f("titre", e.target.value)}
@@ -493,6 +689,12 @@ const Ateliers = () => {
                 <label className="block text-sm font-medium mb-1.5">Tarif affiché</label>
                 <input value={form.tarif_affichage} onChange={e => f("tarif_affichage", e.target.value)}
                   placeholder="ex: À partir de 20€" className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Tarif interne admin (€)</label>
+                <input type="number" min={0} step={0.01} value={form.tarif_admin} onChange={e => f("tarif_admin", e.target.value)}
+                  placeholder="ex: 12" className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
+                <p className="text-xs text-muted-foreground mt-1">Visible uniquement par les admins (coût réel, marge, etc.). Jamais affiché aux membres.</p>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Lien PayPal</label>

@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { withTimeout } from "@/utils/withTimeout";
 import {
-  Users, CalendarDays, MessageSquare, UserCheck, Lightbulb, ArrowRight,
+  Users, CalendarDays, MessageSquare, UserCheck, ArrowRight,
   Clock, MapPin, User, Mail, Sparkles, AlertCircle, Loader2, Eye, TrendingUp
 } from "lucide-react";
 
@@ -29,14 +29,6 @@ interface InscriptionEnAttente {
   ateliers?: { titre: string; date_atelier: string } | null;
 }
 
-interface Idee {
-  id: string;
-  titre: string;
-  categorie: string;
-  cree_le: string;
-  utilisateur_id: string;
-}
-
 interface Admin {
   id: string;
   prenom: string;
@@ -49,7 +41,6 @@ interface Stats {
   membres_actifs: number;
   membres_premium: number;
   messages_non_lus: number;
-  idees_total: number;
 }
 
 interface VisitesStats {
@@ -67,17 +58,6 @@ const formatDateFr = (iso: string) => {
 };
 
 const formatHeure = (h: string | null) => h ? h.substring(0, 5) : "";
-
-const CAT_LABELS: Record<string, string> = {
-  evolution_site: "🚀 Évolutions Site",
-  ateliers: "🎨 Ateliers",
-  anomalie_site: "🐛 Anomalie",
-  membres: "👥 Membres",
-  communication: "📣 Communication",
-  evenements: "✨ Événements",
-  organisation: "📋 Organisation",
-  autre: "💡 Autre",
-};
 
 const KpiCard = ({
   icon: Icon, label, value, sub, href, accent, pulse,
@@ -127,11 +107,9 @@ const Dashboard = () => {
     membres_actifs: 0,
     membres_premium: 0,
     messages_non_lus: 0,
-    idees_total: 0,
   });
   const [prochainAteliers, setProchainAteliers] = useState<Atelier[]>([]);
   const [inscriptionsAtt, setInscriptionsAtt] = useState<InscriptionEnAttente[]>([]);
-  const [idees, setIdees] = useState<Idee[]>([]);
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [visites, setVisites] = useState<VisitesStats>({
     total: 0, aujourd_hui: 0, cette_semaine: 0, ce_mois: 0, uniques_30j: 0, top_pages: [],
@@ -149,7 +127,7 @@ const Dashboard = () => {
 
         const [
           utRes, inscAttRes, ateliersCountRes, msgsRes,
-          proAtelRes, recAttRes, ideesRes, ideesCountRes, adminsRes
+          proAtelRes, recAttRes, adminsRes
         ] = await withTimeout(Promise.all([
           supabase.from("utilisateurs").select("role"),
           supabase.from("inscriptions").select("id", { count: "exact", head: true }).eq("statut", "en_attente"),
@@ -163,9 +141,6 @@ const Dashboard = () => {
           supabase.from("inscriptions")
             .select("id, prenom_invite, nom_invite, email_invite, inscrit_le, ateliers(titre, date_atelier)")
             .eq("statut", "en_attente").order("inscrit_le", { ascending: false }).limit(5),
-          supabase.from("idees").select("id, titre, categorie, cree_le, utilisateur_id")
-            .order("cree_le", { ascending: false }).limit(4),
-          supabase.from("idees").select("id", { count: "exact", head: true }),
           supabase.from("utilisateurs").select("id, prenom, code_couleur_conges").eq("role", "administrateur"),
         ]));
 
@@ -177,11 +152,9 @@ const Dashboard = () => {
           membres_actifs:    utilisateurs.filter(u => u.role === "membre" || u.role === "membre_premium").length,
           membres_premium:   utilisateurs.filter(u => u.role === "membre_premium").length,
           messages_non_lus:  msgsRes.count ?? 0,
-          idees_total:       ideesCountRes.count ?? 0,
         });
         setProchainAteliers((proAtelRes.data as Atelier[]) ?? []);
         setInscriptionsAtt((recAttRes.data as unknown as InscriptionEnAttente[]) ?? []);
-        setIdees((ideesRes.data as Idee[]) ?? []);
         setAdmins((adminsRes.data as Admin[]) ?? []);
 
         // Stats visites (calcul côté client sur les 30 derniers jours pour limiter la charge)
@@ -416,47 +389,6 @@ const Dashboard = () => {
       </div>
 
       {/* Boîte à idées récentes */}
-      {idees.length > 0 && (
-        <div className="bg-card border rounded-2xl overflow-hidden">
-          <div className="px-5 py-4 border-b flex items-center justify-between">
-            <h2 className="font-semibold text-foreground flex items-center gap-2">
-              <Lightbulb className="w-4 h-4 text-primary" />
-              Dernières idées de l'équipe
-            </h2>
-            <Link to="/admin/boite-a-idees" className="text-xs text-primary font-medium hover:underline flex items-center gap-1">
-              Toutes <ArrowRight className="w-3 h-3" />
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x">
-            {idees.map(idee => {
-              const author = admins.find(a => a.id === idee.utilisateur_id);
-              const color = author?.code_couleur_conges ?? "#9ca3af";
-              return (
-                <Link
-                  key={idee.id}
-                  to="/admin/boite-a-idees"
-                  className="p-4 hover:bg-muted/20 transition-colors flex items-start gap-3"
-                >
-                  <div
-                    className="w-1 self-stretch rounded-full shrink-0"
-                    style={{ backgroundColor: color }}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide mb-1">
-                      {CAT_LABELS[idee.categorie] ?? idee.categorie}
-                    </p>
-                    <p className="font-medium text-sm text-foreground line-clamp-2">{idee.titre}</p>
-                    <p className="text-[11px] text-muted-foreground mt-1">
-                      {author?.prenom ?? "?"} · {formatDateFr(idee.cree_le.slice(0, 10))}
-                    </p>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       {/* Trafic du site */}
       <div className="bg-card border rounded-2xl overflow-hidden mt-6">
         <div className="px-5 py-4 border-b flex items-center justify-between">

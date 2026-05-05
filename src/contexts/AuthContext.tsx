@@ -40,12 +40,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchProfile = async (userId: string) => {
     try {
+      // maybeSingle() : pas d'erreur PGRST116 si aucune ligne (cas
+      // auth.users.id ≠ utilisateurs.id), on récupère juste data = null.
       const { data, error } = await withTimeout(
         supabase
           .from("utilisateurs")
           .select("*")
           .eq("id", userId)
-          .single()
+          .maybeSingle()
       );
       if (error) console.error("fetchProfile error:", error.message, error.code);
       setProfile((data as Profile) ?? null);
@@ -68,6 +70,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(session?.user ?? null);
 
       if (session?.user) {
+        // Marque le profile comme en cours de chargement pour que le
+        // Login (et tout autre consumer) puisse savoir qu'on attend
+        // encore le résultat du fetchProfile.
+        setLoading(true);
         // Defer hors du callback pour éviter les deadlocks Supabase
         setTimeout(() => {
           fetchProfile(session.user.id);

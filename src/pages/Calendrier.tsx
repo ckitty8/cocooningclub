@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { googleCalendarUrl, downloadIcsFile } from "@/utils/calendarLinks";
 import { trackVisit } from "@/utils/trackVisit";
 
@@ -29,6 +30,7 @@ type InscriptionData = z.infer<typeof inscriptionSchema>;
 
 const Calendrier = () => {
   const [searchParams] = useSearchParams();
+  const { profile } = useAuth();
   const [ateliers, setAteliers] = useState<Workshop[]>([]);
   const [viewYear, setViewYear] = useState(new Date().getFullYear());
   const [viewMonth, setViewMonth] = useState(new Date().getMonth());
@@ -100,8 +102,13 @@ const Calendrier = () => {
     const prenom = nameParts[0] || "";
     const nom = nameParts.slice(1).join(" ") || prenom;
 
+    // Si l'utilisateur est connecté on lie l'inscription à son compte
+    // (utilisateur_id) pour qu'elle apparaisse correctement dans son
+    // espace membre et avec le bon rôle côté admin. On garde quand même
+    // les champs invité au cas où le formulaire a été modifié.
     const { error } = await supabase.from("inscriptions").insert({
       atelier_id: atelier?.id ?? null,
+      utilisateur_id: profile?.id ?? null,
       prenom_invite: prenom,
       nom_invite: nom,
       email_invite: data.email,
