@@ -187,7 +187,7 @@
     <div class="brand">Cocooning Club</div>
     <h1>Audit UX / UI</h1>
     <p class="subtitle">Pour chaque page : la capture sur une planche A4, puis sur la planche suivante un set de questions UX (parcours, perception, friction) et UI (composition, composants, accessibilité), avec un espace de notes libres.</p>
-    <div class="meta">Document généré le 01 mai 2026</div>
+    <div class="meta">Document généré le 05 mai 2026</div>
     <div class="howto">
       <h3>Comment l'utiliser ?</h3>
       <ul>
@@ -222,7 +222,20 @@
 <li class="toc-item"><span>13. Admin · Templates de messages</span><span class="toc-path">/admin/messages-templates</span></li>
 <li class="toc-item"><span>14. Admin · Disponibilités</span><span class="toc-path">/admin/disponibilites</span></li>
 <li class="toc-item"><span>15. Admin · Boîte à idées</span><span class="toc-path">/admin/boite-a-idees</span></li>
-<li class="toc-item"><span>16. Admin · Mon compte</span><span class="toc-path">/admin/mon-compte</span></li></ul>
+<li class="toc-item"><span>16. Admin · Avis &amp; témoignages</span><span class="toc-path">/admin/avis</span></li>
+<li class="toc-item"><span>17. Admin · Mon compte</span><span class="toc-path">/admin/mon-compte</span></li>
+<li class="toc-section">Espace membre (rôles inscrit / membre)</li>
+<li class="toc-item"><span>18. Membre · Tableau de bord</span><span class="toc-path">/espace-membre</span></li>
+<li class="toc-item"><span>19. Membre · Ateliers</span><span class="toc-path">/espace-membre/ateliers</span></li>
+<li class="toc-item"><span>20. Membre · Mes inscriptions</span><span class="toc-path">/espace-membre/inscriptions</span></li>
+<li class="toc-item"><span>21. Membre · Magazine</span><span class="toc-path">/espace-membre/magazine</span></li>
+<li class="toc-item"><span>22. Membre · Mon compte</span><span class="toc-path">/espace-membre/mon-compte</span></li>
+<li class="toc-section">Espace membre premium (rôle membre_premium)</li>
+<li class="toc-item"><span>23. Premium · Tableau de bord</span><span class="toc-path">/espace-membre-premium</span></li>
+<li class="toc-item"><span>24. Premium · Ateliers</span><span class="toc-path">/espace-membre-premium/ateliers</span></li>
+<li class="toc-item"><span>25. Premium · Mes inscriptions</span><span class="toc-path">/espace-membre-premium/inscriptions</span></li>
+<li class="toc-item"><span>26. Premium · Magazine</span><span class="toc-path">/espace-membre-premium/magazine</span></li>
+<li class="toc-item"><span>27. Premium · Mon compte</span><span class="toc-path">/espace-membre-premium/mon-compte</span></li></ul>
   </section>
 
   
@@ -2181,6 +2194,136 @@
           <div class="page-num">#16</div>
           <div class="screenshot-title">
             <div class="section-tag">Espace administrateur (accès restreint)</div>
+            <h2>Admin · Avis &amp; témoignages</h2>
+            <div class="path">/admin/avis</div>
+          </div>
+        </header>
+        <div class="screenshot-fullbleed">
+          <img src="screenshots/admin_avis.png" alt="Capture de Admin · Avis &amp; témoignages" />
+        </div>
+        <p class="caption">Modération des avis laissés par les membres après un atelier : approuver, rejeter, mettre en avant.</p>
+      </section>
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#16</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · Espace administrateur (accès restreint)</div>
+            <h2>Admin · Avis &amp; témoignages</h2>
+            <div class="path">/admin/avis</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>Administratrice modérant les avis publiés par les membres après un atelier.</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>Approuver, rejeter ou mettre en avant les avis pour alimenter la page d'accueil et garantir la qualité éditoriale.</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list"><li>Session admin active.</li><li>Au moins un avis publié par une membre dans `avis`.</li><li>L'avis est lié à une inscription confirmée pour authentifier l'auteur·rice.</li></ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow"><li>Arrive sur /admin/avis, voit la liste filtrée par défaut sur `en_attente`.</li><li>Lit le commentaire et la note (1-5 étoiles).</li><li>Décide : « Approuver » → `moderation = approuve` + `modere_le = now()`.</li><li>Optionnel : « Mettre en avant » → `mis_en_avant = true` (visible sur la home).</li><li>Boucle pour traiter les avis suivants.</li></ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list"><li>Avis irrespectueux ou hors-sujet → « Rejeter » → `moderation = rejete`, l'avis n'apparaît jamais publiquement.</li><li>Avis approuvé puis problématique → repasser en `rejete` (réversible).</li><li>Avis mis en avant déjà existant → maximum 3 simultanés (à confirmer côté front).</li><li>Filtre par note (≥ 4) pour repérer les meilleurs candidats à la mise en avant.</li></ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules"><li>3 statuts de modération : `en_attente`, `approuve`, `rejete`.</li><li>Seuls les avis `approuve` sont visibles côté public ; `mis_en_avant` les remonte sur la home.</li><li>L'auteur·rice doit avoir une inscription `confirme` au même atelier pour pouvoir laisser un avis.</li><li>Toute transition met à jour `modere_le` (audit) et est loguée via `logAction`.</li></ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">Avis modéré ; visibilité publique ajustée ; auteur·rice notifié·e (selon config), home mise à jour si avis mis en avant.</p>
+      </section>
+      <section class="page page-audit pb">
+        <header class="audit-header">
+          <div class="page-num">#16</div>
+          <div>
+            <div class="section-tag">Audit UX/UI · Espace administrateur (accès restreint)</div>
+            <h2>Admin · Avis &amp; témoignages</h2>
+          </div>
+        </header>
+
+        <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Décision rapide — pour modérer 20 avis, quel format vous fait gagner le plus de temps : liste dense, kanban (en attente / approuvé / rejeté), cartes ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Critères implicites — sur quoi vous appuyez-vous pour approuver / rejeter (note, vocabulaire, longueur, identité de l'auteur) ? L'outil rend-il ces critères visibles ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Boucle membre — l'auteur de l'avis est-il informé de l'approbation / du rejet ? Délai vécu acceptable ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Mise en avant — comment décidez-vous quel avis devient « témoignage vedette » sur la home ? Le critère est-il purement éditorial ou y a-t-il des règles (note ≥ 4, plus de X mots) ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+
+        <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Affichage de la note — étoiles colorées + chiffre, pas étoiles seules. Différenciation visuelle 1-2 / 3 / 4-5 (rouge / ambre / vert) ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Badges de statut — `en_attente`, `approuve`, `rejete` distincts par couleur ET icône ; cohérence avec les autres tables admin ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Actions inline — boutons « Approuver / Rejeter / Mettre en avant » accessibles sans ouvrir une fiche ; confirmation modale uniquement pour les actions destructrices ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Densité — chaque avis sur 2-3 lignes max (auteur, note, atelier, date, début du commentaire). Expansion au clic pour le commentaire complet ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+
+        <h3>Notes libres</h3>
+        <div class="notes-box">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </section>
+
+      <section class="page page-screenshot pb">
+        <header class="screenshot-header">
+          <div class="page-num">#17</div>
+          <div class="screenshot-title">
+            <div class="section-tag">Espace administrateur (accès restreint)</div>
             <h2>Admin · Mon compte</h2>
             <div class="path">/admin/mon-compte</div>
           </div>
@@ -2192,7 +2335,7 @@
       </section>
       <section class="page page-spec pb">
         <header class="spec-header">
-          <div class="page-num">#16</div>
+          <div class="page-num">#17</div>
           <div>
             <div class="section-tag spec-tag">Spécification fonctionnelle · Espace administrateur (accès restreint)</div>
             <h2>Admin · Mon compte</h2>
@@ -2228,7 +2371,7 @@
       </section>
       <section class="page page-audit pb">
         <header class="audit-header">
-          <div class="page-num">#16</div>
+          <div class="page-num">#17</div>
           <div>
             <div class="section-tag">Audit UX/UI · Espace administrateur (accès restreint)</div>
             <h2>Admin · Mon compte</h2>
@@ -2291,6 +2434,1306 @@
           </li>
           <li class="question">
             <div class="question-text">Confirmation — toast de succès après sauvegarde, qui confirme QUOI a été enregistré (pas juste « OK ») ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+
+        <h3>Notes libres</h3>
+        <div class="notes-box">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </section>
+
+      <section class="page page-screenshot pb">
+        <header class="screenshot-header">
+          <div class="page-num">#18</div>
+          <div class="screenshot-title">
+            <div class="section-tag">Espace membre (rôles inscrit / membre)</div>
+            <h2>Membre · Tableau de bord</h2>
+            <div class="path">/espace-membre</div>
+          </div>
+        </header>
+        <div class="screenshot-fullbleed">
+          <img src="screenshots/espace-membre.png" alt="Capture de Membre · Tableau de bord" />
+        </div>
+        <p class="caption">Page d'accueil de l'espace membre : prochaines inscriptions, raccourcis, magazine.</p>
+      </section>
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#18</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · Espace membre (rôles inscrit / membre)</div>
+            <h2>Membre · Tableau de bord</h2>
+            <div class="path">/espace-membre</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>Membre du club (rôle `inscrit`, `membre`, ou `administrateur` en vue test).</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>Avoir une vue synthétique de son activité au club et accéder rapidement à ses prochains rendez-vous.</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list"><li>Session active avec rôle `inscrit`, `membre` ou `administrateur` (RoleGuard).</li></ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow"><li>Se connecte → redirection automatique vers /espace-membre selon le rôle.</li><li>Voit prochain atelier inscrit, dernier numéro du magazine, raccourcis principaux.</li><li>Clique sur un raccourci → navigue vers /espace-membre/ateliers, /inscriptions ou /magazine.</li></ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list"><li>Aucune inscription en cours → CTA vers /espace-membre/ateliers.</li><li>Magazine non encore publié → message d'attente.</li><li>Rôle `membre_premium` → redirection vers /espace-membre-premium.</li></ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules"><li>Visibilité réservée aux rôles `inscrit`, `membre`, `administrateur` (RoleGuard).</li><li>Données filtrées par RLS (Row Level Security) côté Supabase : la membre ne voit que ses propres inscriptions.</li><li>L'admin connectée voit la version de test sans avoir besoin de se créer un faux compte.</li></ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">Membre orientée vers la sous-page utile, ou rassurée sur l'état de ses inscriptions.</p>
+      </section>
+      <section class="page page-audit pb">
+        <header class="audit-header">
+          <div class="page-num">#18</div>
+          <div>
+            <div class="section-tag">Audit UX/UI · Espace membre (rôles inscrit / membre)</div>
+            <h2>Membre · Tableau de bord</h2>
+          </div>
+        </header>
+
+        <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Personnalisation — la salutation et les contenus reflètent-ils la membre (prénom, prochain atelier, dernière action) ou est-ce générique pour tout le monde ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Top-tasks membre — les 3 actions principales (consulter mes inscriptions, m'inscrire à un atelier, lire le magazine) sont-elles à 1 clic depuis ici ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Empty state — si la membre n'a aucune inscription, l'écran l'invite-t-il chaleureusement à découvrir le calendrier ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Engagement — qu'est-ce qui donne envie de revenir chaque semaine sur cet espace (nouveauté, magazine, témoignage, prochain atelier) ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+
+        <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Hiérarchie — le bloc « prochaine inscription » domine-t-il visuellement, ou est-il noyé dans la grille ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Cohérence avec /admin — sidebar similaire (icônes, navigation), même langage visuel pour rassurer ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Mobile — la page reste-t-elle utile sur 360px (la majorité des consultations membre sont mobiles) ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Microinteractions — hover sur les cartes, transitions douces alignées avec l'identité « cocooning » ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+
+        <h3>Notes libres</h3>
+        <div class="notes-box">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </section>
+
+      <section class="page page-screenshot pb">
+        <header class="screenshot-header">
+          <div class="page-num">#19</div>
+          <div class="screenshot-title">
+            <div class="section-tag">Espace membre (rôles inscrit / membre)</div>
+            <h2>Membre · Ateliers</h2>
+            <div class="path">/espace-membre/ateliers</div>
+          </div>
+        </header>
+        <div class="screenshot-fullbleed">
+          <img src="screenshots/espace-membre_ateliers.png" alt="Capture de Membre · Ateliers" />
+        </div>
+        <p class="caption">Catalogue des ateliers à venir avec inscription en 1 clic depuis l'espace membre.</p>
+      </section>
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#19</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · Espace membre (rôles inscrit / membre)</div>
+            <h2>Membre · Ateliers</h2>
+            <div class="path">/espace-membre/ateliers</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>Membre cherchant à s'inscrire à un nouvel atelier.</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>Découvrir les ateliers disponibles et s'inscrire en 1 clic grâce à sa session membre.</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list"><li>Session membre active.</li><li>Au moins un atelier publié à venir.</li></ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow"><li>Arrive sur /espace-membre/ateliers depuis le menu.</li><li>Voit la liste filtrable des ateliers à venir avec statut d'inscription par carte.</li><li>Clique « M'inscrire » → insertion d'une `inscription` au statut `en_attente` (aucun formulaire, données déjà connues).</li><li>Toast de confirmation, badge « Inscrite » apparaît instantanément.</li></ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list"><li>Atelier complet → bouton « Liste d'attente » au lieu de « M'inscrire ».</li><li>Déjà inscrite → bouton « Se désinscrire » (jusqu'à 24h avant) ou « Voir les détails ».</li><li>Erreur réseau → toast d'erreur + retry.</li></ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules"><li>L'identité (`utilisateur_id`) est dérivée de la session, pas saisie.</li><li>Pas de double inscription possible (`unique(utilisateur_id, atelier_id)`).</li><li>Tarif affiché : `tarif_standard` (les tarifs admin internes ne sont pas visibles).</li></ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">Inscription créée en `en_attente`, l'admin reçoit la notification ; le statut « Inscrite » est immédiatement visible sur la carte.</p>
+      </section>
+      <section class="page page-audit pb">
+        <header class="audit-header">
+          <div class="page-num">#19</div>
+          <div>
+            <div class="section-tag">Audit UX/UI · Espace membre (rôles inscrit / membre)</div>
+            <h2>Membre · Ateliers</h2>
+          </div>
+        </header>
+
+        <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Différence avec /calendrier public — qu'apporte cette page de plus (tarif membre, badge déjà inscrite, recommandations) ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Friction d'inscription — depuis l'espace membre, l'inscription doit être fluide (pas de re-saisie nom/email puisque connectée). Est-ce le cas ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Filtres — par thème, par jour de la semaine, par animatrice ; lesquels sont vraiment utiles vs gadget ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Indicateur « déjà inscrite » — visible immédiatement sur la carte, ou faut-il cliquer pour le découvrir ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+
+        <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Densité — combien de cartes visibles sur 1 écran (idéal 4-6) ? Photo / titre / date / places / CTA, hiérarchie respectée ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">État « inscrite » — pastille verte + texte explicite (« Inscrite ») plutôt que simple changement de couleur du bouton ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Empty state — si la membre est déjà inscrite à tous les ateliers à venir, le message est-il chaleureux (« Vous êtes à jour ! ») ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Mobile — disposition en 1 colonne, photo recadrée, CTA en pleine largeur ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+
+        <h3>Notes libres</h3>
+        <div class="notes-box">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </section>
+
+      <section class="page page-screenshot pb">
+        <header class="screenshot-header">
+          <div class="page-num">#20</div>
+          <div class="screenshot-title">
+            <div class="section-tag">Espace membre (rôles inscrit / membre)</div>
+            <h2>Membre · Mes inscriptions</h2>
+            <div class="path">/espace-membre/inscriptions</div>
+          </div>
+        </header>
+        <div class="screenshot-fullbleed">
+          <img src="screenshots/espace-membre_inscriptions.png" alt="Capture de Membre · Mes inscriptions" />
+        </div>
+        <p class="caption">Historique et état des inscriptions de la membre.</p>
+      </section>
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#20</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · Espace membre (rôles inscrit / membre)</div>
+            <h2>Membre · Mes inscriptions</h2>
+            <div class="path">/espace-membre/inscriptions</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>Membre suivant l'historique de ses inscriptions.</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>Consulter son agenda personnel des ateliers et gérer ses inscriptions (annulation, avis, factures).</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list"><li>Session membre active.</li><li>Au moins une inscription dans `inscriptions` filtrée par `utilisateur_id` de la session.</li></ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow"><li>Arrive sur /espace-membre/inscriptions, voit ses inscriptions à venir en haut, passées en bas.</li><li>Pour une inscription à venir : peut consulter les détails ou annuler (jusqu'à 24h avant).</li><li>Pour une inscription passée : peut laisser un avis, télécharger sa facture (si applicable).</li></ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list"><li>Aucune inscription → empty state avec CTA « Voir les ateliers ».</li><li>Annulation hors délai → bouton désactivé + tooltip explicatif (« Délai dépassé, contactez-nous »).</li><li>Avis déjà laissé → badge « Avis envoyé », plus de relance.</li></ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules"><li>Annulation : `statut = annule`, `annule_le = now()`, `places_disponibles += 1` côté atelier.</li><li>Délai d'annulation : 24h avant la date_atelier (paramétrable).</li><li>Avis : possible uniquement après la date_atelier ET si `statut = confirme` ET si `present = true`.</li><li>RLS : `inscriptions.utilisateur_id = auth.uid()` (pas d'accès aux inscriptions des autres).</li></ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">Inscription annulée et place restituée OU avis créé en `en_attente` de modération.</p>
+      </section>
+      <section class="page page-audit pb">
+        <header class="audit-header">
+          <div class="page-num">#20</div>
+          <div>
+            <div class="section-tag">Audit UX/UI · Espace membre (rôles inscrit / membre)</div>
+            <h2>Membre · Mes inscriptions</h2>
+          </div>
+        </header>
+
+        <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Granularité — la membre voit-elle 3 sections (à venir, passées, annulées) ou tout en mélange ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Action principale — qu'est-ce qui domine : « Annuler une inscription », « Télécharger ma facture », « Laisser un avis » ? L'outil priorise-t-il le bon ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Réassurance — chaque inscription porte-t-elle ses informations clés (date, lieu, statut, paiement) sans devoir cliquer ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Avis post-atelier — la membre est-elle invitée à laisser un avis seulement APRÈS l'atelier (et pas avant) ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+
+        <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Pastilles statut — `en_attente`, `confirme`, `annule`, `passe` distinctes visuellement ; même palette que côté admin ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Statut paiement — `non_requis`, `en_attente`, `paye` portés par couleur + texte ; jamais couleur seule ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Actions destructrices — « Annuler » en couleur tertiaire (gris bordé), pas rouge agressif sauf confirmation.</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Densité — passé sur 1 ligne, à venir sur 2 lignes (plus d'infos), annulé en grisé.</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+
+        <h3>Notes libres</h3>
+        <div class="notes-box">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </section>
+
+      <section class="page page-screenshot pb">
+        <header class="screenshot-header">
+          <div class="page-num">#21</div>
+          <div class="screenshot-title">
+            <div class="section-tag">Espace membre (rôles inscrit / membre)</div>
+            <h2>Membre · Magazine</h2>
+            <div class="path">/espace-membre/magazine</div>
+          </div>
+        </header>
+        <div class="screenshot-fullbleed">
+          <img src="screenshots/espace-membre_magazine.png" alt="Capture de Membre · Magazine" />
+        </div>
+        <p class="caption">Lecture du magazine du club : numéros et articles.</p>
+      </section>
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#21</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · Espace membre (rôles inscrit / membre)</div>
+            <h2>Membre · Magazine</h2>
+            <div class="path">/espace-membre/magazine</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>Membre souhaitant accéder au magazine du club (contenu éditorial).</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>Lire le numéro courant ou consulter les archives, en ligne ou en téléchargement.</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list"><li>Session membre active.</li><li>Au moins un fichier magazine déposé dans le bucket Storage `magazines` (ou `documents`).</li></ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow"><li>Arrive sur /espace-membre/magazine, voit la couverture du numéro courant.</li><li>Clique « Lire en ligne » → ouverture d'un viewer PDF intégré OU page dédiée.</li><li>Optionnel : clique « Télécharger » → PDF téléchargé localement.</li></ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list"><li>Aucun magazine disponible → message « Le prochain numéro arrive bientôt ! ».</li><li>Erreur de chargement (signed URL expirée) → retry automatique.</li><li>Membre premium → version enrichie (articles supplémentaires) — à vérifier côté /espace-membre-premium/magazine.</li></ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules"><li>Stockage : bucket Supabase Storage privé, accès via signed URL.</li><li>Visibilité fonction du rôle : `membre` voit la version standard, `membre_premium` voit la version premium.</li><li>Aucune analytique de lecture stockée par défaut (à confirmer RGPD).</li></ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">Magazine consulté ou téléchargé, signed URL générée et expirée après 1h.</p>
+      </section>
+      <section class="page page-audit pb">
+        <header class="audit-header">
+          <div class="page-num">#21</div>
+          <div>
+            <div class="section-tag">Audit UX/UI · Espace membre (rôles inscrit / membre)</div>
+            <h2>Membre · Magazine</h2>
+          </div>
+        </header>
+
+        <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Découverte — un seul numéro courant ou archive complète ? La membre comprend-elle ce qui est nouveau depuis sa dernière visite ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Confort de lecture — lecture en ligne fluide ? Téléchargement PDF possible ? Les deux options coexistent-elles harmonieusement ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Sommaire — l'œil voit-il rapidement les articles disponibles, ou faut-il scroller longtemps ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Engagement — l'envie de revenir chaque mois passe par quoi (couverture séduisante, teasing du prochain numéro, sommaire alléchant) ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+
+        <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Couverture — image de couverture nette, ratio cohérent (4:3 ou 3:4), texte minimal (titre + numéro) ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Sommaire — typographie de magazine (sérif élégante pour les titres d'articles), espacement aéré ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Bouton de téléchargement — secondaire, jamais en concurrence avec « Lire en ligne » ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Mobile — le PDF s'affiche-t-il dans un viewer intégré ou une nouvelle page ? Performance acceptable ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+
+        <h3>Notes libres</h3>
+        <div class="notes-box">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </section>
+
+      <section class="page page-screenshot pb">
+        <header class="screenshot-header">
+          <div class="page-num">#22</div>
+          <div class="screenshot-title">
+            <div class="section-tag">Espace membre (rôles inscrit / membre)</div>
+            <h2>Membre · Mon compte</h2>
+            <div class="path">/espace-membre/mon-compte</div>
+          </div>
+        </header>
+        <div class="screenshot-fullbleed">
+          <img src="screenshots/espace-membre_mon-compte.png" alt="Capture de Membre · Mon compte" />
+        </div>
+        <p class="caption">Paramètres personnels de la membre : profil, préférences, sécurité.</p>
+      </section>
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#22</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · Espace membre (rôles inscrit / membre)</div>
+            <h2>Membre · Mon compte</h2>
+            <div class="path">/espace-membre/mon-compte</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>Membre gérant son propre profil et ses paramètres de compte.</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>Mettre à jour ses informations, gérer son mot de passe, ses préférences et éventuellement supprimer son compte.</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list"><li>Session membre active.</li></ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow"><li>Arrive sur /espace-membre/mon-compte (depuis le menu utilisateur).</li><li>Modifie ses informations personnelles (téléphone, photo, date de naissance).</li><li>Sauvegarde → `update` sur `utilisateurs` filtré par `id = auth.uid()`.</li><li>Change son mot de passe via `supabase.auth.updateUser({password})`.</li></ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list"><li>Changement d'email → email de confirmation envoyé à la nouvelle adresse.</li><li>Suppression du compte → confirmation modale, anonymisation des inscriptions.</li><li>Upload d'avatar → bucket `avatars` (5 Mo max, JPG/PNG/WebP).</li></ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules"><li>Le rôle (`role`) et le statut (`est_actif`) sont en lecture seule (gérés par l'admin).</li><li>RLS : `id = auth.uid()` (la membre ne peut modifier que son propre profil).</li><li>Suppression du compte : ligne anonymisée dans `utilisateurs` mais inscriptions historiques préservées.</li></ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">Profil membre mis à jour, éventuelle session invalidée si mot de passe changé.</p>
+      </section>
+      <section class="page page-audit pb">
+        <header class="audit-header">
+          <div class="page-num">#22</div>
+          <div>
+            <div class="section-tag">Audit UX/UI · Espace membre (rôles inscrit / membre)</div>
+            <h2>Membre · Mon compte</h2>
+          </div>
+        </header>
+
+        <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Champs modifiables — quels champs la membre peut-elle modifier seule (téléphone, photo, mot de passe) vs lesquels nécessitent un contact admin (email, identité) ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Sécurité — la procédure de changement de mot de passe demande-t-elle l'ancien (bonne pratique) ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Désinscription — peut-elle supprimer son compte ? Si oui, le parcours est-il clair, irréversible, expliqué (que devient son historique) ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Préférences de communication — opt-in/opt-out clair pour newsletters, rappels SMS, etc. ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+
+        <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Sections — informations personnelles / sécurité / préférences / abonnement clairement séparées.</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Champs read-only — fond grisé, icône cadenas, mention explicite « non modifiable, contactez-nous ».</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Action destructrice — « Supprimer mon compte » en bas de page, en couleur tertiaire, jamais collée à « Enregistrer ».</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Toast de confirmation — qui résume QUOI a été enregistré (« Téléphone mis à jour » et non juste « OK »).</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+
+        <h3>Notes libres</h3>
+        <div class="notes-box">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </section>
+
+      <section class="page page-screenshot pb">
+        <header class="screenshot-header">
+          <div class="page-num">#23</div>
+          <div class="screenshot-title">
+            <div class="section-tag">Espace membre premium (rôle membre_premium)</div>
+            <h2>Premium · Tableau de bord</h2>
+            <div class="path">/espace-membre-premium</div>
+          </div>
+        </header>
+        <div class="screenshot-fullbleed">
+          <img src="screenshots/espace-membre-premium.png" alt="Capture de Premium · Tableau de bord" />
+        </div>
+        <p class="caption">Page d'accueil de l'espace premium, avec contenus exclusifs et avantages.</p>
+      </section>
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#23</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · Espace membre premium (rôle membre_premium)</div>
+            <h2>Premium · Tableau de bord</h2>
+            <div class="path">/espace-membre-premium</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>Membre premium (rôle `membre_premium`).</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>Accéder à un espace personnalisé avec contenus et avantages exclusifs, sans rupture d'expérience avec l'espace standard.</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list"><li>Session active avec rôle `membre_premium` ou `administrateur` (RoleGuard).</li><li>Abonnement premium en cours de validité (`fin_abonnement &gt;= today`).</li></ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow"><li>Se connecte → redirection vers /espace-membre-premium si rôle premium.</li><li>Voit son tableau de bord enrichi : prochain atelier, magazine premium, contenu exclusif.</li><li>Clique sur un raccourci → navigation vers les sous-pages premium.</li></ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list"><li>Abonnement expiré → redirection vers une page de renouvellement (à concevoir).</li><li>Rôle non premium → redirection vers /espace-membre standard.</li><li>Aucun atelier ni contenu → empty state contextualisé premium.</li></ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules"><li>Visibilité réservée aux rôles `membre_premium` et `administrateur`.</li><li>Vérification de validité d'abonnement à chaque chargement (à coupler avec un trigger DB).</li><li>RLS : strictement la même que pour le membre standard, sauf accès à des bucket Storage spécifiques (`magazine_premium`).</li></ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">Membre premium orientée vers ses contenus exclusifs ou ses prochaines actions.</p>
+      </section>
+      <section class="page page-audit pb">
+        <header class="audit-header">
+          <div class="page-num">#23</div>
+          <div>
+            <div class="section-tag">Audit UX/UI · Espace membre premium (rôle membre_premium)</div>
+            <h2>Premium · Tableau de bord</h2>
+          </div>
+        </header>
+
+        <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Différence vs espace membre standard — qu'est-ce qui justifie visuellement le statut premium (couleur, badge, contenu exclusif) sans tomber dans l'ostentatoire ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Contenus exclusifs — sont-ils mis en avant immédiatement, ou la membre doit-elle les chercher ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Sentiment d'appartenance — le ton est-il chaleureux et personnalisé, ou indifférencié de l'espace standard ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Renouvellement — à quelle fréquence les contenus exclusifs changent-ils ? La membre le perçoit-elle ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+
+        <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Marqueur premium — un badge ou liseré discret dans le header indique le statut sans crier.</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Couleur d'accent — différente du standard (par exemple plus chaude, plus dorée) pour signifier la valeur sans changer la marque.</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Hiérarchie — bloc « avantages premium » accessible mais pas dominant ; les actions courantes restent prioritaires.</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Cohérence — sidebar et navigation strictement identiques au standard pour ne pas perdre la membre qui upgrade.</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+
+        <h3>Notes libres</h3>
+        <div class="notes-box">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </section>
+
+      <section class="page page-screenshot pb">
+        <header class="screenshot-header">
+          <div class="page-num">#24</div>
+          <div class="screenshot-title">
+            <div class="section-tag">Espace membre premium (rôle membre_premium)</div>
+            <h2>Premium · Ateliers</h2>
+            <div class="path">/espace-membre-premium/ateliers</div>
+          </div>
+        </header>
+        <div class="screenshot-fullbleed">
+          <img src="screenshots/espace-membre-premium_ateliers.png" alt="Capture de Premium · Ateliers" />
+        </div>
+        <p class="caption">Catalogue des ateliers, version premium (priorité d'accès, tarif réduit, ateliers exclusifs).</p>
+      </section>
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#24</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · Espace membre premium (rôle membre_premium)</div>
+            <h2>Premium · Ateliers</h2>
+            <div class="path">/espace-membre-premium/ateliers</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>Membre premium s'inscrivant à un atelier.</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>Bénéficier d'un accès prioritaire et / ou d'un tarif réduit aux ateliers du club.</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list"><li>Session premium active.</li><li>Au moins un atelier publié à venir.</li></ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow"><li>Arrive sur /espace-membre-premium/ateliers.</li><li>Voit la liste avec mise en avant des ateliers exclusifs et tarifs premium.</li><li>Clique « M'inscrire » → inscription en 1 clic au tarif premium.</li><li>Toast de confirmation et badge « Inscrite » immédiat.</li></ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list"><li>Atelier exclusif premium → invisible pour les non-premium (filtre côté DB).</li><li>Atelier complet → liste d'attente avec priorité premium.</li><li>Erreur de paiement → retry possible sans perdre la pré-réservation pendant 15 minutes.</li></ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules"><li>Tarif appliqué : `tarif_premium` (champ à ajouter ?) ou règle de remise globale (-X% sur `tarif_standard`).</li><li>Accès anticipé : ateliers ouverts aux premium 48h avant les standards (à confirmer côté trigger).</li><li>Ateliers `exclusif_premium = true` invisibles au rôle `membre`.</li></ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">Inscription créée au tarif premium, place réservée prioritairement.</p>
+      </section>
+      <section class="page page-audit pb">
+        <header class="audit-header">
+          <div class="page-num">#24</div>
+          <div>
+            <div class="section-tag">Audit UX/UI · Espace membre premium (rôle membre_premium)</div>
+            <h2>Premium · Ateliers</h2>
+          </div>
+        </header>
+
+        <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Avantage perceptible — la membre premium voit-elle un avantage immédiat (tarif réduit, accès anticipé, ateliers exclusifs étiquetés) ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Ateliers exclusifs — sont-ils mis en avant ou noyés dans la liste générale ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Tarif — affichage du prix premium (vs standard barré) pour rendre l'avantage tangible ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">FOMO — y a-t-il des places limitées « réservées premium » avec délai d'expiration avant ouverture au standard ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+
+        <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Étiquette « Exclusif premium » — pastille dorée discrète sur les cartes concernées, jamais agressive.</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Prix barré — `&lt;s&gt;32 €&lt;/s&gt; 24 €` ou équivalent visuel pour montrer la remise.</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Cohérence avec /espace-membre/ateliers — même grille, même flux d'inscription, juste les avantages premium superposés.</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Mobile — l'étiquette premium ne doit pas masquer le titre ou le CTA.</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+
+        <h3>Notes libres</h3>
+        <div class="notes-box">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </section>
+
+      <section class="page page-screenshot pb">
+        <header class="screenshot-header">
+          <div class="page-num">#25</div>
+          <div class="screenshot-title">
+            <div class="section-tag">Espace membre premium (rôle membre_premium)</div>
+            <h2>Premium · Mes inscriptions</h2>
+            <div class="path">/espace-membre-premium/inscriptions</div>
+          </div>
+        </header>
+        <div class="screenshot-fullbleed">
+          <img src="screenshots/espace-membre-premium_inscriptions.png" alt="Capture de Premium · Mes inscriptions" />
+        </div>
+        <p class="caption">Suivi des inscriptions de la membre premium (équivalent membre standard avec services additionnels).</p>
+      </section>
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#25</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · Espace membre premium (rôle membre_premium)</div>
+            <h2>Premium · Mes inscriptions</h2>
+            <div class="path">/espace-membre-premium/inscriptions</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>Membre premium gérant ses inscriptions avec services enrichis.</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>Suivre, annuler, reporter ou échanger ses inscriptions avec les avantages liés au statut premium.</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list"><li>Session premium active.</li><li>Au moins une inscription liée.</li></ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow"><li>Arrive sur /espace-membre-premium/inscriptions.</li><li>Voit ses inscriptions avec actions étendues (reporter, échanger).</li><li>Pour reporter : sélectionne un autre atelier compatible → mise à jour de l'inscription existante (pas de double annulation/inscription).</li></ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list"><li>Annulation jusqu'à 2h avant l'atelier (vs 24h pour standard).</li><li>Échange entre ateliers du même mois sans frais.</li><li>Téléchargement de toutes les factures de l'année en 1 clic (consolidé).</li></ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules"><li>Service premium : annulation tardive (jusqu'à 2h avant), échange sans frais, factures consolidées.</li><li>Limite : 3 reports par mois, au-delà retour aux conditions standard.</li><li>Toutes les transitions sont loguées pour audit.</li></ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">Inscription mise à jour ; éventuel email de confirmation au nouvel atelier.</p>
+      </section>
+      <section class="page page-audit pb">
+        <header class="audit-header">
+          <div class="page-num">#25</div>
+          <div>
+            <div class="section-tag">Audit UX/UI · Espace membre premium (rôle membre_premium)</div>
+            <h2>Premium · Mes inscriptions</h2>
+          </div>
+        </header>
+
+        <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Différence vs standard — quels services premium sont offerts ici (annulation jusqu'au dernier moment, échange entre ateliers, factures consolidées) ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Visibilité du statut paiement — le tarif premium est-il visible sur chaque ligne pour rappeler l'avantage ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Historique — combien de temps la membre voit-elle ses inscriptions passées (toujours, 1 an, 3 ans) ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Actions premium — « Reporter à un autre atelier sans frais » est-elle proposée comme avantage spécifique ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+
+        <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Cohérence avec /espace-membre/inscriptions — grille identique, juste enrichie d'actions premium en plus.</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Badge « Premium » discret sur l'en-tête de page pour rappeler le statut sans intruser.</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Boutons d'actions premium — couleur dorée subtile pour les distinguer des actions standard (annulation classique).</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Densité — inchangée par rapport au standard, pas de surcharge décorative.</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+
+        <h3>Notes libres</h3>
+        <div class="notes-box">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </section>
+
+      <section class="page page-screenshot pb">
+        <header class="screenshot-header">
+          <div class="page-num">#26</div>
+          <div class="screenshot-title">
+            <div class="section-tag">Espace membre premium (rôle membre_premium)</div>
+            <h2>Premium · Magazine</h2>
+            <div class="path">/espace-membre-premium/magazine</div>
+          </div>
+        </header>
+        <div class="screenshot-fullbleed">
+          <img src="screenshots/espace-membre-premium_magazine.png" alt="Capture de Premium · Magazine" />
+        </div>
+        <p class="caption">Magazine premium : articles bonus, archives complètes, formats enrichis.</p>
+      </section>
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#26</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · Espace membre premium (rôle membre_premium)</div>
+            <h2>Premium · Magazine</h2>
+            <div class="path">/espace-membre-premium/magazine</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>Membre premium accédant aux contenus éditoriaux enrichis.</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>Profiter de contenus exclusifs (articles, vidéos, podcasts) en complément du magazine standard.</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list"><li>Session premium active.</li><li>Magazine en ligne et bonus premium disponibles dans Storage.</li></ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow"><li>Arrive sur /espace-membre-premium/magazine.</li><li>Voit le numéro courant + section bonus premium dédiée.</li><li>Lit en ligne ou télécharge selon le format.</li></ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list"><li>Membre standard tente d'accéder à l'URL → redirection vers /espace-membre/magazine.</li><li>Bonus pas encore publié → message d'attente.</li><li>Archive demandée → accès illimité aux anciens numéros depuis le début de l'abonnement.</li></ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules"><li>Bucket Storage `magazine_premium` accessible uniquement aux rôles `membre_premium` (RLS).</li><li>Signed URL valable 1h pour chaque ressource.</li><li>Format autorisé : PDF, MP4 (vidéo), MP3 (podcast).</li></ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">Contenu premium consulté ou téléchargé ; signed URL expirée après 1h.</p>
+      </section>
+      <section class="page page-audit pb">
+        <header class="audit-header">
+          <div class="page-num">#26</div>
+          <div>
+            <div class="section-tag">Audit UX/UI · Espace membre premium (rôle membre_premium)</div>
+            <h2>Premium · Magazine</h2>
+          </div>
+        </header>
+
+        <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Valeur ajoutée — qu'est-ce qui distingue le magazine premium du standard (articles bonus, vidéo, podcast, archives complètes) ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Découverte — la membre voit-elle d'un coup d'œil ce qu'elle gagne en plus du standard ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Archives — accessibles depuis combien de temps en arrière (depuis le début de l'abonnement, illimité) ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Téléchargement — possible pour tous les contenus, ou DRM/streaming uniquement ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+
+        <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Marqueur « Bonus premium » — pastille dorée sur les sections exclusives.</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Couverture du numéro courant — plus grande que sur le standard, traitement éditorial soigné.</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Sommaire — distinction visuelle entre articles standard et bonus.</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Mobile — viewer PDF intégré, navigation claire entre sections.</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+
+        <h3>Notes libres</h3>
+        <div class="notes-box">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </section>
+
+      <section class="page page-screenshot pb">
+        <header class="screenshot-header">
+          <div class="page-num">#27</div>
+          <div class="screenshot-title">
+            <div class="section-tag">Espace membre premium (rôle membre_premium)</div>
+            <h2>Premium · Mon compte</h2>
+            <div class="path">/espace-membre-premium/mon-compte</div>
+          </div>
+        </header>
+        <div class="screenshot-fullbleed">
+          <img src="screenshots/espace-membre-premium_mon-compte.png" alt="Capture de Premium · Mon compte" />
+        </div>
+        <p class="caption">Paramètres personnels de la membre premium, avec gestion d'abonnement.</p>
+      </section>
+      <section class="page page-spec pb">
+        <header class="spec-header">
+          <div class="page-num">#27</div>
+          <div>
+            <div class="section-tag spec-tag">Spécification fonctionnelle · Espace membre premium (rôle membre_premium)</div>
+            <h2>Premium · Mon compte</h2>
+            <div class="path">/espace-membre-premium/mon-compte</div>
+          </div>
+        </header>
+
+        <div class="spec-grid">
+          <div class="spec-cell">
+            <h3>Acteur</h3>
+            <p>Membre premium gérant son profil et son abonnement.</p>
+          </div>
+          <div class="spec-cell">
+            <h3>Objectif</h3>
+            <p>Mettre à jour son profil, gérer son abonnement (renouvellement, résiliation), consulter et télécharger ses factures.</p>
+          </div>
+        </div>
+
+        <h3>Préconditions</h3>
+        <ul class="spec-list"><li>Session premium active.</li><li>Au moins un cycle d'abonnement enregistré.</li></ul>
+
+        <h3>Parcours nominal</h3>
+        <ol class="spec-list spec-flow"><li>Arrive sur /espace-membre-premium/mon-compte.</li><li>Voit son profil + bloc abonnement (date de fin, montant, prochain prélèvement).</li><li>Modifie son profil ou télécharge ses factures.</li></ol>
+
+        <h3>Parcours alternatifs &amp; cas limites</h3>
+        <ul class="spec-list"><li>Résiliation → modale de confirmation détaillée (date d'effet, conséquences sur les inscriptions futures).</li><li>Renouvellement automatique en panne (paiement refusé) → toast d'alerte + redirection vers /paiement.</li><li>Bascule en standard → confirmation, prise d'effet à la fin de la période payée.</li></ul>
+
+        <h3>Règles métier</h3>
+        <ul class="spec-list spec-rules"><li>Le rôle `membre_premium` est lié à un abonnement actif (table `abonnements` ou champs `debut_abonnement`/`fin_abonnement`).</li><li>À l'expiration sans renouvellement, le rôle bascule automatiquement en `membre`.</li><li>Les factures sont stockées dans Storage privé `factures` (RLS strict).</li></ul>
+
+        <h3>Post-conditions</h3>
+        <p class="spec-postconditions">Profil ou abonnement mis à jour ; éventuelle confirmation par email pour les changements critiques.</p>
+      </section>
+      <section class="page page-audit pb">
+        <header class="audit-header">
+          <div class="page-num">#27</div>
+          <div>
+            <div class="section-tag">Audit UX/UI · Espace membre premium (rôle membre_premium)</div>
+            <h2>Premium · Mon compte</h2>
+          </div>
+        </header>
+
+        <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Gestion d'abonnement — la membre voit-elle clairement la date de fin, le mode de renouvellement, les factures passées ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Changement d'abonnement — bascule premium ↔ standard simple à comprendre, sans piège type « renouvellement caché » ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Avantages rappelés — la page rappelle-t-elle subtilement ce que la membre paye (« Vous bénéficiez de X, Y, Z grâce à votre statut premium ») ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Résiliation — parcours clair, irréversible, expliqué (que devient son compte, ses inscriptions futures) ?</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li></ol>
+
+        <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
+        <ol class="questions">
+          <li class="question">
+            <div class="question-text">Bloc « Mon abonnement » — encart distinct avec date, statut, montant, prochain prélèvement.</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Bouton « Résilier » — couleur tertiaire, jamais rouge agressif sauf confirmation.</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Liste des factures — tableau scrollable, téléchargement individuel + export global.</div>
+            <div class="answer-lines">
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </li>
+          <li class="question">
+            <div class="question-text">Cohérence avec /espace-membre/mon-compte — sections identiques, juste enrichies du bloc abonnement.</div>
             <div class="answer-lines">
               <div class="line"></div>
               <div class="line"></div>

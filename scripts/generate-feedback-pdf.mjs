@@ -758,6 +758,56 @@ const PAGES = [
     },
   },
   {
+    title: "Admin · Avis & témoignages",
+    path: "/admin/avis",
+    section: "Espace administrateur (accès restreint)",
+    description:
+      "Modération des avis laissés par les membres après un atelier : approuver, rejeter, mettre en avant.",
+    ux: [
+      "Décision rapide — pour modérer 20 avis, quel format vous fait gagner le plus de temps : liste dense, kanban (en attente / approuvé / rejeté), cartes ?",
+      "Critères implicites — sur quoi vous appuyez-vous pour approuver / rejeter (note, vocabulaire, longueur, identité de l'auteur) ? L'outil rend-il ces critères visibles ?",
+      "Boucle membre — l'auteur de l'avis est-il informé de l'approbation / du rejet ? Délai vécu acceptable ?",
+      "Mise en avant — comment décidez-vous quel avis devient « témoignage vedette » sur la home ? Le critère est-il purement éditorial ou y a-t-il des règles (note ≥ 4, plus de X mots) ?",
+    ],
+    ui: [
+      "Affichage de la note — étoiles colorées + chiffre, pas étoiles seules. Différenciation visuelle 1-2 / 3 / 4-5 (rouge / ambre / vert) ?",
+      "Badges de statut — `en_attente`, `approuve`, `rejete` distincts par couleur ET icône ; cohérence avec les autres tables admin ?",
+      "Actions inline — boutons « Approuver / Rejeter / Mettre en avant » accessibles sans ouvrir une fiche ; confirmation modale uniquement pour les actions destructrices ?",
+      "Densité — chaque avis sur 2-3 lignes max (auteur, note, atelier, date, début du commentaire). Expansion au clic pour le commentaire complet ?",
+    ],
+    spec: {
+      acteur: "Administratrice modérant les avis publiés par les membres après un atelier.",
+      objectif:
+        "Approuver, rejeter ou mettre en avant les avis pour alimenter la page d'accueil et garantir la qualité éditoriale.",
+      preconditions: [
+        "Session admin active.",
+        "Au moins un avis publié par une membre dans `avis`.",
+        "L'avis est lié à une inscription confirmée pour authentifier l'auteur·rice.",
+      ],
+      parcoursNominal: [
+        "Arrive sur /admin/avis, voit la liste filtrée par défaut sur `en_attente`.",
+        "Lit le commentaire et la note (1-5 étoiles).",
+        "Décide : « Approuver » → `moderation = approuve` + `modere_le = now()`.",
+        "Optionnel : « Mettre en avant » → `mis_en_avant = true` (visible sur la home).",
+        "Boucle pour traiter les avis suivants.",
+      ],
+      parcoursAlternatifs: [
+        "Avis irrespectueux ou hors-sujet → « Rejeter » → `moderation = rejete`, l'avis n'apparaît jamais publiquement.",
+        "Avis approuvé puis problématique → repasser en `rejete` (réversible).",
+        "Avis mis en avant déjà existant → maximum 3 simultanés (à confirmer côté front).",
+        "Filtre par note (≥ 4) pour repérer les meilleurs candidats à la mise en avant.",
+      ],
+      regles: [
+        "3 statuts de modération : `en_attente`, `approuve`, `rejete`.",
+        "Seuls les avis `approuve` sont visibles côté public ; `mis_en_avant` les remonte sur la home.",
+        "L'auteur·rice doit avoir une inscription `confirme` au même atelier pour pouvoir laisser un avis.",
+        "Toute transition met à jour `modere_le` (audit) et est loguée via `logAction`.",
+      ],
+      postconditions:
+        "Avis modéré ; visibilité publique ajustée ; auteur·rice notifié·e (selon config), home mise à jour si avis mis en avant.",
+    },
+  },
+  {
     title: "Admin · Mon compte",
     path: "/admin/mon-compte",
     section: "Espace administrateur (accès restreint)",
@@ -802,6 +852,439 @@ const PAGES = [
       ],
       postconditions:
         "Profil mis à jour dans `utilisateurs`, éventuel email de confirmation envoyé pour le changement d'email, ancienne session invalidée si mot de passe changé.",
+    },
+  },
+  {
+    title: "Membre · Tableau de bord",
+    path: "/espace-membre",
+    section: "Espace membre (rôles inscrit / membre)",
+    description: "Page d'accueil de l'espace membre : prochaines inscriptions, raccourcis, magazine.",
+    ux: [
+      "Personnalisation — la salutation et les contenus reflètent-ils la membre (prénom, prochain atelier, dernière action) ou est-ce générique pour tout le monde ?",
+      "Top-tasks membre — les 3 actions principales (consulter mes inscriptions, m'inscrire à un atelier, lire le magazine) sont-elles à 1 clic depuis ici ?",
+      "Empty state — si la membre n'a aucune inscription, l'écran l'invite-t-il chaleureusement à découvrir le calendrier ?",
+      "Engagement — qu'est-ce qui donne envie de revenir chaque semaine sur cet espace (nouveauté, magazine, témoignage, prochain atelier) ?",
+    ],
+    ui: [
+      "Hiérarchie — le bloc « prochaine inscription » domine-t-il visuellement, ou est-il noyé dans la grille ?",
+      "Cohérence avec /admin — sidebar similaire (icônes, navigation), même langage visuel pour rassurer ?",
+      "Mobile — la page reste-t-elle utile sur 360px (la majorité des consultations membre sont mobiles) ?",
+      "Microinteractions — hover sur les cartes, transitions douces alignées avec l'identité « cocooning » ?",
+    ],
+    spec: {
+      acteur: "Membre du club (rôle `inscrit`, `membre`, ou `administrateur` en vue test).",
+      objectif:
+        "Avoir une vue synthétique de son activité au club et accéder rapidement à ses prochains rendez-vous.",
+      preconditions: [
+        "Session active avec rôle `inscrit`, `membre` ou `administrateur` (RoleGuard).",
+      ],
+      parcoursNominal: [
+        "Se connecte → redirection automatique vers /espace-membre selon le rôle.",
+        "Voit prochain atelier inscrit, dernier numéro du magazine, raccourcis principaux.",
+        "Clique sur un raccourci → navigue vers /espace-membre/ateliers, /inscriptions ou /magazine.",
+      ],
+      parcoursAlternatifs: [
+        "Aucune inscription en cours → CTA vers /espace-membre/ateliers.",
+        "Magazine non encore publié → message d'attente.",
+        "Rôle `membre_premium` → redirection vers /espace-membre-premium.",
+      ],
+      regles: [
+        "Visibilité réservée aux rôles `inscrit`, `membre`, `administrateur` (RoleGuard).",
+        "Données filtrées par RLS (Row Level Security) côté Supabase : la membre ne voit que ses propres inscriptions.",
+        "L'admin connectée voit la version de test sans avoir besoin de se créer un faux compte.",
+      ],
+      postconditions:
+        "Membre orientée vers la sous-page utile, ou rassurée sur l'état de ses inscriptions.",
+    },
+  },
+  {
+    title: "Membre · Ateliers",
+    path: "/espace-membre/ateliers",
+    section: "Espace membre (rôles inscrit / membre)",
+    description: "Catalogue des ateliers à venir avec inscription en 1 clic depuis l'espace membre.",
+    ux: [
+      "Différence avec /calendrier public — qu'apporte cette page de plus (tarif membre, badge déjà inscrite, recommandations) ?",
+      "Friction d'inscription — depuis l'espace membre, l'inscription doit être fluide (pas de re-saisie nom/email puisque connectée). Est-ce le cas ?",
+      "Filtres — par thème, par jour de la semaine, par animatrice ; lesquels sont vraiment utiles vs gadget ?",
+      "Indicateur « déjà inscrite » — visible immédiatement sur la carte, ou faut-il cliquer pour le découvrir ?",
+    ],
+    ui: [
+      "Densité — combien de cartes visibles sur 1 écran (idéal 4-6) ? Photo / titre / date / places / CTA, hiérarchie respectée ?",
+      "État « inscrite » — pastille verte + texte explicite (« Inscrite ») plutôt que simple changement de couleur du bouton ?",
+      "Empty state — si la membre est déjà inscrite à tous les ateliers à venir, le message est-il chaleureux (« Vous êtes à jour ! ») ?",
+      "Mobile — disposition en 1 colonne, photo recadrée, CTA en pleine largeur ?",
+    ],
+    spec: {
+      acteur: "Membre cherchant à s'inscrire à un nouvel atelier.",
+      objectif:
+        "Découvrir les ateliers disponibles et s'inscrire en 1 clic grâce à sa session membre.",
+      preconditions: [
+        "Session membre active.",
+        "Au moins un atelier publié à venir.",
+      ],
+      parcoursNominal: [
+        "Arrive sur /espace-membre/ateliers depuis le menu.",
+        "Voit la liste filtrable des ateliers à venir avec statut d'inscription par carte.",
+        "Clique « M'inscrire » → insertion d'une `inscription` au statut `en_attente` (aucun formulaire, données déjà connues).",
+        "Toast de confirmation, badge « Inscrite » apparaît instantanément.",
+      ],
+      parcoursAlternatifs: [
+        "Atelier complet → bouton « Liste d'attente » au lieu de « M'inscrire ».",
+        "Déjà inscrite → bouton « Se désinscrire » (jusqu'à 24h avant) ou « Voir les détails ».",
+        "Erreur réseau → toast d'erreur + retry.",
+      ],
+      regles: [
+        "L'identité (`utilisateur_id`) est dérivée de la session, pas saisie.",
+        "Pas de double inscription possible (`unique(utilisateur_id, atelier_id)`).",
+        "Tarif affiché : `tarif_standard` (les tarifs admin internes ne sont pas visibles).",
+      ],
+      postconditions:
+        "Inscription créée en `en_attente`, l'admin reçoit la notification ; le statut « Inscrite » est immédiatement visible sur la carte.",
+    },
+  },
+  {
+    title: "Membre · Mes inscriptions",
+    path: "/espace-membre/inscriptions",
+    section: "Espace membre (rôles inscrit / membre)",
+    description: "Historique et état des inscriptions de la membre.",
+    ux: [
+      "Granularité — la membre voit-elle 3 sections (à venir, passées, annulées) ou tout en mélange ?",
+      "Action principale — qu'est-ce qui domine : « Annuler une inscription », « Télécharger ma facture », « Laisser un avis » ? L'outil priorise-t-il le bon ?",
+      "Réassurance — chaque inscription porte-t-elle ses informations clés (date, lieu, statut, paiement) sans devoir cliquer ?",
+      "Avis post-atelier — la membre est-elle invitée à laisser un avis seulement APRÈS l'atelier (et pas avant) ?",
+    ],
+    ui: [
+      "Pastilles statut — `en_attente`, `confirme`, `annule`, `passe` distinctes visuellement ; même palette que côté admin ?",
+      "Statut paiement — `non_requis`, `en_attente`, `paye` portés par couleur + texte ; jamais couleur seule ?",
+      "Actions destructrices — « Annuler » en couleur tertiaire (gris bordé), pas rouge agressif sauf confirmation.",
+      "Densité — passé sur 1 ligne, à venir sur 2 lignes (plus d'infos), annulé en grisé.",
+    ],
+    spec: {
+      acteur: "Membre suivant l'historique de ses inscriptions.",
+      objectif:
+        "Consulter son agenda personnel des ateliers et gérer ses inscriptions (annulation, avis, factures).",
+      preconditions: [
+        "Session membre active.",
+        "Au moins une inscription dans `inscriptions` filtrée par `utilisateur_id` de la session.",
+      ],
+      parcoursNominal: [
+        "Arrive sur /espace-membre/inscriptions, voit ses inscriptions à venir en haut, passées en bas.",
+        "Pour une inscription à venir : peut consulter les détails ou annuler (jusqu'à 24h avant).",
+        "Pour une inscription passée : peut laisser un avis, télécharger sa facture (si applicable).",
+      ],
+      parcoursAlternatifs: [
+        "Aucune inscription → empty state avec CTA « Voir les ateliers ».",
+        "Annulation hors délai → bouton désactivé + tooltip explicatif (« Délai dépassé, contactez-nous »).",
+        "Avis déjà laissé → badge « Avis envoyé », plus de relance.",
+      ],
+      regles: [
+        "Annulation : `statut = annule`, `annule_le = now()`, `places_disponibles += 1` côté atelier.",
+        "Délai d'annulation : 24h avant la date_atelier (paramétrable).",
+        "Avis : possible uniquement après la date_atelier ET si `statut = confirme` ET si `present = true`.",
+        "RLS : `inscriptions.utilisateur_id = auth.uid()` (pas d'accès aux inscriptions des autres).",
+      ],
+      postconditions:
+        "Inscription annulée et place restituée OU avis créé en `en_attente` de modération.",
+    },
+  },
+  {
+    title: "Membre · Magazine",
+    path: "/espace-membre/magazine",
+    section: "Espace membre (rôles inscrit / membre)",
+    description: "Lecture du magazine du club : numéros et articles.",
+    ux: [
+      "Découverte — un seul numéro courant ou archive complète ? La membre comprend-elle ce qui est nouveau depuis sa dernière visite ?",
+      "Confort de lecture — lecture en ligne fluide ? Téléchargement PDF possible ? Les deux options coexistent-elles harmonieusement ?",
+      "Sommaire — l'œil voit-il rapidement les articles disponibles, ou faut-il scroller longtemps ?",
+      "Engagement — l'envie de revenir chaque mois passe par quoi (couverture séduisante, teasing du prochain numéro, sommaire alléchant) ?",
+    ],
+    ui: [
+      "Couverture — image de couverture nette, ratio cohérent (4:3 ou 3:4), texte minimal (titre + numéro) ?",
+      "Sommaire — typographie de magazine (sérif élégante pour les titres d'articles), espacement aéré ?",
+      "Bouton de téléchargement — secondaire, jamais en concurrence avec « Lire en ligne » ?",
+      "Mobile — le PDF s'affiche-t-il dans un viewer intégré ou une nouvelle page ? Performance acceptable ?",
+    ],
+    spec: {
+      acteur: "Membre souhaitant accéder au magazine du club (contenu éditorial).",
+      objectif:
+        "Lire le numéro courant ou consulter les archives, en ligne ou en téléchargement.",
+      preconditions: [
+        "Session membre active.",
+        "Au moins un fichier magazine déposé dans le bucket Storage `magazines` (ou `documents`).",
+      ],
+      parcoursNominal: [
+        "Arrive sur /espace-membre/magazine, voit la couverture du numéro courant.",
+        "Clique « Lire en ligne » → ouverture d'un viewer PDF intégré OU page dédiée.",
+        "Optionnel : clique « Télécharger » → PDF téléchargé localement.",
+      ],
+      parcoursAlternatifs: [
+        "Aucun magazine disponible → message « Le prochain numéro arrive bientôt ! ».",
+        "Erreur de chargement (signed URL expirée) → retry automatique.",
+        "Membre premium → version enrichie (articles supplémentaires) — à vérifier côté /espace-membre-premium/magazine.",
+      ],
+      regles: [
+        "Stockage : bucket Supabase Storage privé, accès via signed URL.",
+        "Visibilité fonction du rôle : `membre` voit la version standard, `membre_premium` voit la version premium.",
+        "Aucune analytique de lecture stockée par défaut (à confirmer RGPD).",
+      ],
+      postconditions:
+        "Magazine consulté ou téléchargé, signed URL générée et expirée après 1h.",
+    },
+  },
+  {
+    title: "Membre · Mon compte",
+    path: "/espace-membre/mon-compte",
+    section: "Espace membre (rôles inscrit / membre)",
+    description: "Paramètres personnels de la membre : profil, préférences, sécurité.",
+    ux: [
+      "Champs modifiables — quels champs la membre peut-elle modifier seule (téléphone, photo, mot de passe) vs lesquels nécessitent un contact admin (email, identité) ?",
+      "Sécurité — la procédure de changement de mot de passe demande-t-elle l'ancien (bonne pratique) ?",
+      "Désinscription — peut-elle supprimer son compte ? Si oui, le parcours est-il clair, irréversible, expliqué (que devient son historique) ?",
+      "Préférences de communication — opt-in/opt-out clair pour newsletters, rappels SMS, etc. ?",
+    ],
+    ui: [
+      "Sections — informations personnelles / sécurité / préférences / abonnement clairement séparées.",
+      "Champs read-only — fond grisé, icône cadenas, mention explicite « non modifiable, contactez-nous ».",
+      "Action destructrice — « Supprimer mon compte » en bas de page, en couleur tertiaire, jamais collée à « Enregistrer ».",
+      "Toast de confirmation — qui résume QUOI a été enregistré (« Téléphone mis à jour » et non juste « OK »).",
+    ],
+    spec: {
+      acteur: "Membre gérant son propre profil et ses paramètres de compte.",
+      objectif: "Mettre à jour ses informations, gérer son mot de passe, ses préférences et éventuellement supprimer son compte.",
+      preconditions: ["Session membre active."],
+      parcoursNominal: [
+        "Arrive sur /espace-membre/mon-compte (depuis le menu utilisateur).",
+        "Modifie ses informations personnelles (téléphone, photo, date de naissance).",
+        "Sauvegarde → `update` sur `utilisateurs` filtré par `id = auth.uid()`.",
+        "Change son mot de passe via `supabase.auth.updateUser({password})`.",
+      ],
+      parcoursAlternatifs: [
+        "Changement d'email → email de confirmation envoyé à la nouvelle adresse.",
+        "Suppression du compte → confirmation modale, anonymisation des inscriptions.",
+        "Upload d'avatar → bucket `avatars` (5 Mo max, JPG/PNG/WebP).",
+      ],
+      regles: [
+        "Le rôle (`role`) et le statut (`est_actif`) sont en lecture seule (gérés par l'admin).",
+        "RLS : `id = auth.uid()` (la membre ne peut modifier que son propre profil).",
+        "Suppression du compte : ligne anonymisée dans `utilisateurs` mais inscriptions historiques préservées.",
+      ],
+      postconditions:
+        "Profil membre mis à jour, éventuelle session invalidée si mot de passe changé.",
+    },
+  },
+  {
+    title: "Premium · Tableau de bord",
+    path: "/espace-membre-premium",
+    section: "Espace membre premium (rôle membre_premium)",
+    description: "Page d'accueil de l'espace premium, avec contenus exclusifs et avantages.",
+    ux: [
+      "Différence vs espace membre standard — qu'est-ce qui justifie visuellement le statut premium (couleur, badge, contenu exclusif) sans tomber dans l'ostentatoire ?",
+      "Contenus exclusifs — sont-ils mis en avant immédiatement, ou la membre doit-elle les chercher ?",
+      "Sentiment d'appartenance — le ton est-il chaleureux et personnalisé, ou indifférencié de l'espace standard ?",
+      "Renouvellement — à quelle fréquence les contenus exclusifs changent-ils ? La membre le perçoit-elle ?",
+    ],
+    ui: [
+      "Marqueur premium — un badge ou liseré discret dans le header indique le statut sans crier.",
+      "Couleur d'accent — différente du standard (par exemple plus chaude, plus dorée) pour signifier la valeur sans changer la marque.",
+      "Hiérarchie — bloc « avantages premium » accessible mais pas dominant ; les actions courantes restent prioritaires.",
+      "Cohérence — sidebar et navigation strictement identiques au standard pour ne pas perdre la membre qui upgrade.",
+    ],
+    spec: {
+      acteur: "Membre premium (rôle `membre_premium`).",
+      objectif:
+        "Accéder à un espace personnalisé avec contenus et avantages exclusifs, sans rupture d'expérience avec l'espace standard.",
+      preconditions: [
+        "Session active avec rôle `membre_premium` ou `administrateur` (RoleGuard).",
+        "Abonnement premium en cours de validité (`fin_abonnement >= today`).",
+      ],
+      parcoursNominal: [
+        "Se connecte → redirection vers /espace-membre-premium si rôle premium.",
+        "Voit son tableau de bord enrichi : prochain atelier, magazine premium, contenu exclusif.",
+        "Clique sur un raccourci → navigation vers les sous-pages premium.",
+      ],
+      parcoursAlternatifs: [
+        "Abonnement expiré → redirection vers une page de renouvellement (à concevoir).",
+        "Rôle non premium → redirection vers /espace-membre standard.",
+        "Aucun atelier ni contenu → empty state contextualisé premium.",
+      ],
+      regles: [
+        "Visibilité réservée aux rôles `membre_premium` et `administrateur`.",
+        "Vérification de validité d'abonnement à chaque chargement (à coupler avec un trigger DB).",
+        "RLS : strictement la même que pour le membre standard, sauf accès à des bucket Storage spécifiques (`magazine_premium`).",
+      ],
+      postconditions:
+        "Membre premium orientée vers ses contenus exclusifs ou ses prochaines actions.",
+    },
+  },
+  {
+    title: "Premium · Ateliers",
+    path: "/espace-membre-premium/ateliers",
+    section: "Espace membre premium (rôle membre_premium)",
+    description: "Catalogue des ateliers, version premium (priorité d'accès, tarif réduit, ateliers exclusifs).",
+    ux: [
+      "Avantage perceptible — la membre premium voit-elle un avantage immédiat (tarif réduit, accès anticipé, ateliers exclusifs étiquetés) ?",
+      "Ateliers exclusifs — sont-ils mis en avant ou noyés dans la liste générale ?",
+      "Tarif — affichage du prix premium (vs standard barré) pour rendre l'avantage tangible ?",
+      "FOMO — y a-t-il des places limitées « réservées premium » avec délai d'expiration avant ouverture au standard ?",
+    ],
+    ui: [
+      "Étiquette « Exclusif premium » — pastille dorée discrète sur les cartes concernées, jamais agressive.",
+      "Prix barré — `<s>32 €</s> 24 €` ou équivalent visuel pour montrer la remise.",
+      "Cohérence avec /espace-membre/ateliers — même grille, même flux d'inscription, juste les avantages premium superposés.",
+      "Mobile — l'étiquette premium ne doit pas masquer le titre ou le CTA.",
+    ],
+    spec: {
+      acteur: "Membre premium s'inscrivant à un atelier.",
+      objectif:
+        "Bénéficier d'un accès prioritaire et / ou d'un tarif réduit aux ateliers du club.",
+      preconditions: [
+        "Session premium active.",
+        "Au moins un atelier publié à venir.",
+      ],
+      parcoursNominal: [
+        "Arrive sur /espace-membre-premium/ateliers.",
+        "Voit la liste avec mise en avant des ateliers exclusifs et tarifs premium.",
+        "Clique « M'inscrire » → inscription en 1 clic au tarif premium.",
+        "Toast de confirmation et badge « Inscrite » immédiat.",
+      ],
+      parcoursAlternatifs: [
+        "Atelier exclusif premium → invisible pour les non-premium (filtre côté DB).",
+        "Atelier complet → liste d'attente avec priorité premium.",
+        "Erreur de paiement → retry possible sans perdre la pré-réservation pendant 15 minutes.",
+      ],
+      regles: [
+        "Tarif appliqué : `tarif_premium` (champ à ajouter ?) ou règle de remise globale (-X% sur `tarif_standard`).",
+        "Accès anticipé : ateliers ouverts aux premium 48h avant les standards (à confirmer côté trigger).",
+        "Ateliers `exclusif_premium = true` invisibles au rôle `membre`.",
+      ],
+      postconditions:
+        "Inscription créée au tarif premium, place réservée prioritairement.",
+    },
+  },
+  {
+    title: "Premium · Mes inscriptions",
+    path: "/espace-membre-premium/inscriptions",
+    section: "Espace membre premium (rôle membre_premium)",
+    description: "Suivi des inscriptions de la membre premium (équivalent membre standard avec services additionnels).",
+    ux: [
+      "Différence vs standard — quels services premium sont offerts ici (annulation jusqu'au dernier moment, échange entre ateliers, factures consolidées) ?",
+      "Visibilité du statut paiement — le tarif premium est-il visible sur chaque ligne pour rappeler l'avantage ?",
+      "Historique — combien de temps la membre voit-elle ses inscriptions passées (toujours, 1 an, 3 ans) ?",
+      "Actions premium — « Reporter à un autre atelier sans frais » est-elle proposée comme avantage spécifique ?",
+    ],
+    ui: [
+      "Cohérence avec /espace-membre/inscriptions — grille identique, juste enrichie d'actions premium en plus.",
+      "Badge « Premium » discret sur l'en-tête de page pour rappeler le statut sans intruser.",
+      "Boutons d'actions premium — couleur dorée subtile pour les distinguer des actions standard (annulation classique).",
+      "Densité — inchangée par rapport au standard, pas de surcharge décorative.",
+    ],
+    spec: {
+      acteur: "Membre premium gérant ses inscriptions avec services enrichis.",
+      objectif:
+        "Suivre, annuler, reporter ou échanger ses inscriptions avec les avantages liés au statut premium.",
+      preconditions: ["Session premium active.", "Au moins une inscription liée."],
+      parcoursNominal: [
+        "Arrive sur /espace-membre-premium/inscriptions.",
+        "Voit ses inscriptions avec actions étendues (reporter, échanger).",
+        "Pour reporter : sélectionne un autre atelier compatible → mise à jour de l'inscription existante (pas de double annulation/inscription).",
+      ],
+      parcoursAlternatifs: [
+        "Annulation jusqu'à 2h avant l'atelier (vs 24h pour standard).",
+        "Échange entre ateliers du même mois sans frais.",
+        "Téléchargement de toutes les factures de l'année en 1 clic (consolidé).",
+      ],
+      regles: [
+        "Service premium : annulation tardive (jusqu'à 2h avant), échange sans frais, factures consolidées.",
+        "Limite : 3 reports par mois, au-delà retour aux conditions standard.",
+        "Toutes les transitions sont loguées pour audit.",
+      ],
+      postconditions:
+        "Inscription mise à jour ; éventuel email de confirmation au nouvel atelier.",
+    },
+  },
+  {
+    title: "Premium · Magazine",
+    path: "/espace-membre-premium/magazine",
+    section: "Espace membre premium (rôle membre_premium)",
+    description: "Magazine premium : articles bonus, archives complètes, formats enrichis.",
+    ux: [
+      "Valeur ajoutée — qu'est-ce qui distingue le magazine premium du standard (articles bonus, vidéo, podcast, archives complètes) ?",
+      "Découverte — la membre voit-elle d'un coup d'œil ce qu'elle gagne en plus du standard ?",
+      "Archives — accessibles depuis combien de temps en arrière (depuis le début de l'abonnement, illimité) ?",
+      "Téléchargement — possible pour tous les contenus, ou DRM/streaming uniquement ?",
+    ],
+    ui: [
+      "Marqueur « Bonus premium » — pastille dorée sur les sections exclusives.",
+      "Couverture du numéro courant — plus grande que sur le standard, traitement éditorial soigné.",
+      "Sommaire — distinction visuelle entre articles standard et bonus.",
+      "Mobile — viewer PDF intégré, navigation claire entre sections.",
+    ],
+    spec: {
+      acteur: "Membre premium accédant aux contenus éditoriaux enrichis.",
+      objectif:
+        "Profiter de contenus exclusifs (articles, vidéos, podcasts) en complément du magazine standard.",
+      preconditions: [
+        "Session premium active.",
+        "Magazine en ligne et bonus premium disponibles dans Storage.",
+      ],
+      parcoursNominal: [
+        "Arrive sur /espace-membre-premium/magazine.",
+        "Voit le numéro courant + section bonus premium dédiée.",
+        "Lit en ligne ou télécharge selon le format.",
+      ],
+      parcoursAlternatifs: [
+        "Membre standard tente d'accéder à l'URL → redirection vers /espace-membre/magazine.",
+        "Bonus pas encore publié → message d'attente.",
+        "Archive demandée → accès illimité aux anciens numéros depuis le début de l'abonnement.",
+      ],
+      regles: [
+        "Bucket Storage `magazine_premium` accessible uniquement aux rôles `membre_premium` (RLS).",
+        "Signed URL valable 1h pour chaque ressource.",
+        "Format autorisé : PDF, MP4 (vidéo), MP3 (podcast).",
+      ],
+      postconditions:
+        "Contenu premium consulté ou téléchargé ; signed URL expirée après 1h.",
+    },
+  },
+  {
+    title: "Premium · Mon compte",
+    path: "/espace-membre-premium/mon-compte",
+    section: "Espace membre premium (rôle membre_premium)",
+    description: "Paramètres personnels de la membre premium, avec gestion d'abonnement.",
+    ux: [
+      "Gestion d'abonnement — la membre voit-elle clairement la date de fin, le mode de renouvellement, les factures passées ?",
+      "Changement d'abonnement — bascule premium ↔ standard simple à comprendre, sans piège type « renouvellement caché » ?",
+      "Avantages rappelés — la page rappelle-t-elle subtilement ce que la membre paye (« Vous bénéficiez de X, Y, Z grâce à votre statut premium ») ?",
+      "Résiliation — parcours clair, irréversible, expliqué (que devient son compte, ses inscriptions futures) ?",
+    ],
+    ui: [
+      "Bloc « Mon abonnement » — encart distinct avec date, statut, montant, prochain prélèvement.",
+      "Bouton « Résilier » — couleur tertiaire, jamais rouge agressif sauf confirmation.",
+      "Liste des factures — tableau scrollable, téléchargement individuel + export global.",
+      "Cohérence avec /espace-membre/mon-compte — sections identiques, juste enrichies du bloc abonnement.",
+    ],
+    spec: {
+      acteur: "Membre premium gérant son profil et son abonnement.",
+      objectif:
+        "Mettre à jour son profil, gérer son abonnement (renouvellement, résiliation), consulter et télécharger ses factures.",
+      preconditions: ["Session premium active.", "Au moins un cycle d'abonnement enregistré."],
+      parcoursNominal: [
+        "Arrive sur /espace-membre-premium/mon-compte.",
+        "Voit son profil + bloc abonnement (date de fin, montant, prochain prélèvement).",
+        "Modifie son profil ou télécharge ses factures.",
+      ],
+      parcoursAlternatifs: [
+        "Résiliation → modale de confirmation détaillée (date d'effet, conséquences sur les inscriptions futures).",
+        "Renouvellement automatique en panne (paiement refusé) → toast d'alerte + redirection vers /paiement.",
+        "Bascule en standard → confirmation, prise d'effet à la fin de la période payée.",
+      ],
+      regles: [
+        "Le rôle `membre_premium` est lié à un abonnement actif (table `abonnements` ou champs `debut_abonnement`/`fin_abonnement`).",
+        "À l'expiration sans renouvellement, le rôle bascule automatiquement en `membre`.",
+        "Les factures sont stockées dans Storage privé `factures` (RLS strict).",
+      ],
+      postconditions:
+        "Profil ou abonnement mis à jour ; éventuelle confirmation par email pour les changements critiques.",
     },
   },
 ];
@@ -919,15 +1402,19 @@ async function captureScreenshots(browser) {
   // pour que les pages /admin se peuplent de données factices réalistes.
   await attachSupabaseMock(context, log);
 
-  // Pré-charge la session admin dans localStorage pour les routes /admin,
-  // mais l'efface pour les pages publiques (sinon /login, /forgot-password
+  // Pré-charge la session admin dans localStorage pour les routes
+  // authentifiées (/admin, /espace-membre, /espace-membre-premium), et
+  // l'efface pour les pages publiques (sinon /login, /forgot-password
   // redirigent immédiatement vers /admin/dashboard).
   const supabaseUrl = STUB_ENV.VITE_SUPABASE_URL;
   const seed = buildAuthLocalStorage(supabaseUrl);
   await context.addInitScript(({ key, value }) => {
     try {
       const path = window.location.pathname;
-      if (path.startsWith("/admin")) {
+      const needsAuth =
+        path.startsWith("/admin") ||
+        path.startsWith("/espace-membre");
+      if (needsAuth) {
         window.localStorage.setItem(key, value);
       } else {
         window.localStorage.removeItem(key);
