@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { ChevronLeft, ChevronRight, MapPin, Clock, Users, Euro, X, CalendarPlus, Download, CheckCircle2 } from "lucide-react";
+import { ChevronRight, MapPin, Clock, Users, Euro, X, Calendar, CalendarPlus, Download, CheckCircle2 } from "lucide-react";
 import { FRENCH_MONTHS, formatDateFr, formatTimeFr, parseDateAtelier } from "@/data/workshops";
 import type { Workshop } from "@/data/workshops";
 import { useForm } from "react-hook-form";
@@ -32,8 +32,6 @@ const Calendrier = () => {
   const [searchParams] = useSearchParams();
   const { profile } = useAuth();
   const [ateliers, setAteliers] = useState<Workshop[]>([]);
-  const [viewYear, setViewYear] = useState(new Date().getFullYear());
-  const [viewMonth, setViewMonth] = useState(new Date().getMonth());
   const [popinWorkshop, setPopinWorkshop] = useState<Workshop | null>(null);
   const [reserveOpen, setReserveOpen] = useState(false);
   const [confirmedWorkshop, setConfirmedWorkshop] = useState<Workshop | null>(null);
@@ -60,13 +58,6 @@ const Calendrier = () => {
         }
       });
   }, []);
-
-  // Build lookup: "year-month-day" -> workshop index
-  const workshopsByDate: Record<string, number> = {};
-  ateliers.forEach((ws, i) => {
-    const d = parseDateAtelier(ws.date_atelier);
-    workshopsByDate[`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`] = i;
-  });
 
   // Open pop-in from URL param (e.g. ?workshop=2 from a card click on home page)
   useEffect(() => {
@@ -130,26 +121,19 @@ const Calendrier = () => {
     reset();
   };
 
-  const prevMonth = () => {
-    if (viewMonth === 0) { setViewMonth(11); setViewYear((y) => y - 1); }
-    else setViewMonth((m) => m - 1);
-  };
-  const nextMonth = () => {
-    if (viewMonth === 11) { setViewMonth(0); setViewYear((y) => y + 1); }
-    else setViewMonth((m) => m + 1);
-  };
-
-  // Build calendar grid
-  const firstDay = new Date(viewYear, viewMonth, 1);
-  const lastDay = new Date(viewYear, viewMonth + 1, 0);
-  let startDow = firstDay.getDay();
-  startDow = startDow === 0 ? 6 : startDow - 1;
-  const days: (number | null)[] = [];
-  for (let i = 0; i < startDow; i++) days.push(null);
-  for (let i = 1; i <= lastDay.getDate(); i++) days.push(i);
-  while (days.length % 7 !== 0) days.push(null);
 
   const selectedDate = popinWorkshop ? parseDateAtelier(popinWorkshop.date_atelier) : null;
+
+  // Regroupe les ateliers par mois (clé "YYYY-MM") en gardant l'ordre
+  // chronologique. Plus facile à scanner qu'une grille mensuelle classique.
+  const ateliersParMois = ateliers.reduce<Record<string, Workshop[]>>((acc, ws) => {
+    const d = parseDateAtelier(ws.date_atelier);
+    const key = `${d.getFullYear()}-${String(d.getMonth()).padStart(2, "0")}`;
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(ws);
+    return acc;
+  }, {});
+  const moisOrdonnes = Object.keys(ateliersParMois).sort();
 
   return (
     <div className="min-h-screen bg-background">
@@ -185,77 +169,108 @@ const Calendrier = () => {
               Calendrier des ateliers
             </h1>
             <p className="text-muted-foreground">
-              Cliquez sur une date pour voir le détail de l'atelier.
+              Tous les rendez-vous à venir, regroupés par mois. Cliquez sur un atelier pour le détail.
             </p>
           </div>
 
-          {/* Month nav */}
-          <div className="flex items-center justify-between mb-8">
-            <button
-              onClick={prevMonth}
-              className="w-10 h-10 rounded-full border flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <h2 className="font-display text-xl font-semibold text-foreground capitalize">
-              {FRENCH_MONTHS[viewMonth]} {viewYear}
-            </h2>
-            <button
-              onClick={nextMonth}
-              className="w-10 h-10 rounded-full border flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
+          {/* Liste chronologique des ateliers groupés par mois */}
+          {ateliers.length === 0 ? (
+            <div className="text-center py-16 border rounded-2xl bg-card">
+              <Calendar className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
+              <p className="text-muted-foreground">Aucun atelier programmé pour le moment.</p>
+            </div>
+          ) : (
+            <div className="space-y-12">
+              {moisOrdonnes.map(moisKey => {
+                const [year, monthIdx] = moisKey.split("-").map(Number);
+                const ateliersMois = ateliersParMois[moisKey];
+                return (
+                  <section key={moisKey}>
+                    {/* Bandeau mois */}
+                    <div className="flex items-baseline gap-3 mb-5 border-b pb-3">
+                      <h2 className="font-display text-2xl font-semibold text-foreground capitalize">
+                        {FRENCH_MONTHS[monthIdx]}
+                      </h2>
+                      <span className="text-sm tracking-[0.15em] uppercase text-muted-foreground">
+                        {year}
+                      </span>
+                      <span className="ml-auto text-xs text-muted-foreground">
+                        {ateliersMois.length} atelier{ateliersMois.length > 1 ? "s" : ""}
+                      </span>
+                    </div>
 
-          {/* Day headers */}
-          <div className="grid grid-cols-7 border-b pb-3 mb-2">
-            {FRENCH_DAYS.map((d) => (
-              <div key={d} className="text-center text-xs font-semibold tracking-[0.1em] uppercase text-muted-foreground">
-                {d}
-              </div>
-            ))}
-          </div>
+                    {/* Cartes ateliers */}
+                    <div className="space-y-3">
+                      {ateliersMois.map(ws => {
+                        const d = parseDateAtelier(ws.date_atelier);
+                        const isSelected = selectedDate &&
+                          selectedDate.getTime() === d.getTime() &&
+                          popinWorkshop?.id === ws.id;
+                        const full = ws.statut === "complet" || ws.places_disponibles <= 0;
+                        return (
+                          <button
+                            key={ws.id}
+                            onClick={() => setPopinWorkshop(ws)}
+                            className={`w-full text-left flex items-stretch gap-4 rounded-2xl border bg-card p-4 hover:shadow-md transition-all ${
+                              isSelected ? "ring-2 ring-primary" : "hover:ring-1 hover:ring-primary/30"
+                            }`}
+                          >
+                            {/* Bloc date à gauche */}
+                            <div className="shrink-0 w-16 md:w-20 rounded-xl bg-primary/10 text-primary flex flex-col items-center justify-center py-2">
+                              <span className="text-xs font-semibold tracking-[0.1em] uppercase">
+                                {FRENCH_DAYS[(d.getDay() + 6) % 7]}
+                              </span>
+                              <span className="text-2xl md:text-3xl font-display font-bold leading-none mt-1">
+                                {d.getDate()}
+                              </span>
+                              <span className="text-[10px] tracking-[0.1em] uppercase mt-0.5">
+                                {FRENCH_MONTHS[d.getMonth()].slice(0, 3)}
+                              </span>
+                            </div>
 
-          {/* Days grid */}
-          <div className="grid grid-cols-7">
-            {days.map((day, i) => {
-              if (!day) return <div key={i} className="h-16 md:h-20" />;
+                            {/* Contenu */}
+                            <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h3 className="font-display text-lg font-semibold text-foreground">
+                                  {ws.titre}
+                                </h3>
+                                {full && (
+                                  <span className="text-[10px] tracking-[0.1em] uppercase bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-semibold">
+                                    Complet
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
+                                <span className="inline-flex items-center gap-1.5">
+                                  <Clock className="w-3.5 h-3.5" /> {formatTimeFr(ws.heure_debut)} · {ws.duree}
+                                </span>
+                                {ws.lieu && (
+                                  <span className="inline-flex items-center gap-1.5">
+                                    <MapPin className="w-3.5 h-3.5" /> {ws.lieu}
+                                  </span>
+                                )}
+                                <span className="inline-flex items-center gap-1.5">
+                                  <Users className="w-3.5 h-3.5" /> {ws.places_disponibles}/{ws.places_max}
+                                </span>
+                                {ws.tarif_affichage && (
+                                  <span className="inline-flex items-center gap-1.5">
+                                    <Euro className="w-3.5 h-3.5" /> {ws.tarif_affichage}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
 
-              const key = `${viewYear}-${viewMonth}-${day}`;
-              const wsIndex = workshopsByDate[key];
-              const ws = wsIndex !== undefined ? ateliers[wsIndex] : null;
-              const isSelected =
-                selectedDate &&
-                selectedDate.getFullYear() === viewYear &&
-                selectedDate.getMonth() === viewMonth &&
-                selectedDate.getDate() === day;
-
-              return (
-                <button
-                  key={i}
-                  onClick={() => ws && setPopinWorkshop(ws)}
-                  disabled={!ws}
-                  className={`
-                    h-16 md:h-20 flex flex-col items-center justify-center gap-1 rounded-xl transition-all
-                    ${ws
-                      ? isSelected
-                        ? "bg-primary text-primary-foreground"
-                        : "hover:bg-primary/8 cursor-pointer"
-                      : "cursor-default"
-                    }
-                  `}
-                >
-                  <span className={`text-sm font-medium ${!ws && !isSelected ? "text-muted-foreground" : ""}`}>
-                    {day}
-                  </span>
-                  {ws && (
-                    <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? "bg-primary-foreground" : "bg-primary"}`} />
-                  )}
-                </button>
-              );
-            })}
-          </div>
+                            {/* Flèche */}
+                            <ChevronRight className="w-4 h-4 self-center text-muted-foreground shrink-0" />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </section>
+                );
+              })}
+            </div>
+          )}
         </div>
       </main>
 

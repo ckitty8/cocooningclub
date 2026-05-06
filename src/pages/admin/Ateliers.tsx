@@ -29,6 +29,12 @@ interface Atelier {
   lien_paypal: string | null;
   niveau: Niveau | null;
   statut: Statut;
+  categorie_id: string;
+}
+
+interface Categorie {
+  id: string;
+  nom: string;
 }
 
 interface Inscription {
@@ -55,6 +61,7 @@ const emptyForm = {
   date_atelier: "", heure_debut: "", duree: "", lieu: "", url_image: "",
   places_max: 10, tarif_standard: "", tarif_premium: "", tarif_affichage: "",
   lien_paypal: "", niveau: "" as Niveau | "", statut: "brouillon" as Statut,
+  categorie_id: "",
 };
 
 const statutLabels: Record<Statut, string> = {
@@ -88,6 +95,7 @@ const paiementLabel: Record<StatutPaiement, string> = {
 
 const Ateliers = () => {
   const [ateliers, setAteliers] = useState<Atelier[]>([]);
+  const [categories, setCategories] = useState<Categorie[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<{ open: boolean; atelier: Atelier | null }>({ open: false, atelier: null });
   const [form, setForm] = useState(emptyForm);
@@ -136,6 +144,12 @@ const Ateliers = () => {
   };
 
   useEffect(() => { fetchAteliers(); }, []);
+
+  useEffect(() => {
+    supabase.from("categories").select("id, nom").order("nom").then(({ data }) => {
+      setCategories((data as Categorie[]) ?? []);
+    });
+  }, []);
 
   const filtered = ateliers.filter(a => {
     const matchSearch = a.titre.toLowerCase().includes(search.toLowerCase());
@@ -213,6 +227,7 @@ const Ateliers = () => {
       tarif_affichage: a.tarif_affichage ?? "",
       lien_paypal: a.lien_paypal ?? "",
       niveau: a.niveau ?? "", statut: a.statut,
+      categorie_id: a.categorie_id,
     });
     setModal({ open: true, atelier: a });
   };
@@ -236,6 +251,12 @@ const Ateliers = () => {
       }
     }
 
+    if (!form.categorie_id) {
+      toast.error("Choisis une catégorie");
+      setSaving(false);
+      return;
+    }
+
     const payload = {
       titre: form.titre,
       description: form.description || null,
@@ -252,6 +273,7 @@ const Ateliers = () => {
       lien_paypal: form.lien_paypal || null,
       niveau: (form.niveau as Niveau) || null,
       statut: form.statut,
+      categorie_id: form.categorie_id,
     };
     if (modal.atelier) {
       const before = modal.atelier;
@@ -632,6 +654,19 @@ const Ateliers = () => {
                 <label className="block text-sm font-medium mb-1.5">Titre *</label>
                 <input value={form.titre} onChange={e => f("titre", e.target.value)}
                   className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Catégorie *</label>
+                <select value={form.categorie_id} onChange={e => f("categorie_id", e.target.value)}
+                  className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary">
+                  <option value="">— Choisir une catégorie —</option>
+                  {categories.map(c => (
+                    <option key={c.id} value={c.id}>{c.nom}</option>
+                  ))}
+                </select>
+                {categories.length === 0 && (
+                  <p className="text-xs text-amber-600 mt-1">Aucune catégorie en base. Crée-en une côté Supabase (table categories) avant de continuer.</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Description courte</label>
