@@ -260,7 +260,13 @@ const Ateliers = () => {
     };
     if (modal.atelier) {
       const before = modal.atelier;
-      await supabase.from("ateliers").update(payload).eq("id", modal.atelier.id);
+      const { error } = await supabase.from("ateliers").update(payload).eq("id", modal.atelier.id);
+      if (error) {
+        console.error("[Ateliers.handleSave update]", error);
+        toast.error(`Erreur : ${error.message}`, { duration: 8000 });
+        setSaving(false);
+        return;
+      }
       logAction("atelier.update", "ateliers", modal.atelier.id, {
         titre: payload.titre,
         statut_avant: before.statut,
@@ -268,17 +274,24 @@ const Ateliers = () => {
         date_atelier: payload.date_atelier,
       });
     } else {
-      const { data: ins } = await supabase
+      const { data: ins, error } = await supabase
         .from("ateliers")
         .insert({ ...payload, places_disponibles: Number(form.places_max) })
         .select("id")
         .single();
+      if (error) {
+        console.error("[Ateliers.handleSave insert]", error);
+        toast.error(`Erreur : ${error.message}`, { duration: 8000 });
+        setSaving(false);
+        return;
+      }
       logAction("atelier.create", "ateliers", ins?.id ?? null, {
         titre: payload.titre,
         date_atelier: payload.date_atelier,
         statut: payload.statut,
       });
     }
+    toast.success(modal.atelier ? "Atelier mis à jour" : "Atelier créé");
     await fetchAteliers();
     setModal({ open: false, atelier: null });
     setSaving(false);
