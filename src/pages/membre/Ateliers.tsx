@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import {
   CalendarDays, Clock, MapPin, Users, Euro, Loader2, CheckCircle2,
-  ExternalLink, X,
+  ExternalLink, X, AlarmClock,
 } from "lucide-react";
 
 interface Atelier {
@@ -51,7 +51,7 @@ const Ateliers = () => {
     const [aRes, iRes] = await Promise.all([
       supabase
         .from("ateliers")
-        .select("id, titre, description, description_courte, date_atelier, heure_debut, duree, lieu, url_image, places_max, places_disponibles, tarif_standard, tarif_premium, tarif_affichage, lien_paypal, statut")
+        .select("id, titre, description, description_courte, date_atelier, heure_debut, duree, lieu, url_image, places_max, places_disponibles, tarif_standard, tarif_premium, tarif_affichage, lien_paypal, date_fin_inscription, statut")
         .in("statut", ["publie", "complet"])
         .gte("date_atelier", today)
         .order("date_atelier"),
@@ -149,6 +149,9 @@ const Ateliers = () => {
                     {a.lieu && <div className="flex items-center gap-2"><MapPin className="w-3.5 h-3.5" />{a.lieu}</div>}
                     <div className="flex items-center gap-2"><Users className="w-3.5 h-3.5" />{a.places_disponibles} / {a.places_max} places</div>
                     {a.tarif_affichage && <div className="flex items-center gap-2"><Euro className="w-3.5 h-3.5" />{a.tarif_affichage}</div>}
+                    {a.date_fin_inscription && (
+                      <div className="flex items-center gap-2"><AlarmClock className="w-3.5 h-3.5" />Inscriptions jusqu'au {formatDate(a.date_fin_inscription)}</div>
+                    )}
                   </div>
 
                   <div className="mt-auto pt-4 flex items-center gap-2">

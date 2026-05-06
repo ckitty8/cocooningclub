@@ -17,6 +17,7 @@ interface Atelier {
   description: string | null;
   description_courte: string | null;
   date_atelier: string;
+  date_fin_inscription: string | null;
   heure_debut: string | null;
   duree: string | null;
   lieu: string | null;
@@ -58,7 +59,7 @@ interface Inscription {
 
 const emptyForm = {
   titre: "", description: "", description_courte: "",
-  date_atelier: "", heure_debut: "", duree: "", lieu: "", url_image: "",
+  date_atelier: "", date_fin_inscription: "", heure_debut: "", duree: "", lieu: "", url_image: "",
   places_max: 10, tarif_standard: "", tarif_premium: "", tarif_affichage: "",
   lien_paypal: "", niveau: "" as Niveau | "", statut: "brouillon" as Statut,
   categorie_id: "",
@@ -218,7 +219,7 @@ const Ateliers = () => {
   const openEdit = (a: Atelier) => {
     setForm({
       titre: a.titre, description: a.description ?? "", description_courte: a.description_courte ?? "",
-      date_atelier: a.date_atelier,
+      date_atelier: a.date_atelier, date_fin_inscription: a.date_fin_inscription ?? "",
       heure_debut: a.heure_debut ?? "", duree: a.duree ?? "",
       lieu: a.lieu ?? "", url_image: a.url_image ?? "",
       places_max: a.places_max,
@@ -268,6 +269,7 @@ const Ateliers = () => {
       description: form.description || null,
       description_courte: form.description_courte || null,
       date_atelier: form.date_atelier,
+      date_fin_inscription: form.date_fin_inscription || null,
       heure_debut: form.heure_debut,
       duree: form.duree || "2 hours",
       lieu: form.lieu || null,
@@ -695,6 +697,12 @@ const Ateliers = () => {
                   <input type="time" value={form.heure_debut} onChange={e => f("heure_debut", e.target.value)}
                     className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Date limite d'inscription</label>
+                <input type="date" value={form.date_fin_inscription} onChange={e => f("date_fin_inscription", e.target.value)}
+                  className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
+                <p className="text-xs text-muted-foreground mt-1">Optionnel. Affiché côté membre et bloque les inscriptions après cette date.</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
