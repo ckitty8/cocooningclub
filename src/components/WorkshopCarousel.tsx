@@ -32,6 +32,8 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
         {visible.map((ws, visibleIdx) => {
           const actualIndex = page * ITEMS_PER_PAGE + visibleIdx;
           const isSelected = selectedIndex === actualIndex;
+          const closed = !!ws.date_fin_inscription
+            && new Date(ws.date_fin_inscription + "T23:59:59") < new Date();
 
           return (
             <div
@@ -73,13 +75,22 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
                 )}
 
                 <div className="pt-2 mt-auto">
-                  <button
-                    onClick={(e) => { e.stopPropagation(); onReserve(ws.titre); }}
-
-                    className="w-full bg-primary text-primary-foreground py-3 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
-                  >
-                    Réserver
-                  </button>
+                  {closed ? (
+                    <button
+                      disabled
+                      className="w-full bg-muted text-muted-foreground py-3 rounded-xl text-sm font-medium cursor-not-allowed"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Inscriptions closes
+                    </button>
+                  ) : (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onReserve(ws.titre); }}
+                      className="w-full bg-primary text-primary-foreground py-3 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
+                    >
+                      Réserver
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

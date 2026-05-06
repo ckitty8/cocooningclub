@@ -24,8 +24,12 @@ interface Atelier {
   tarif_premium: number;
   tarif_affichage: string | null;
   lien_paypal: string | null;
+  date_fin_inscription: string | null;
   statut: "publie" | "complet" | "brouillon" | "annule" | "termine";
 }
+
+const isInscriptionsCloses = (a: { date_fin_inscription: string | null }) =>
+  !!a.date_fin_inscription && new Date(a.date_fin_inscription + "T23:59:59") < new Date();
 
 const formatDate = (iso: string) =>
   new Date(iso + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
@@ -47,7 +51,7 @@ const Ateliers = () => {
     const [aRes, iRes] = await Promise.all([
       supabase
         .from("ateliers")
-        .select("id, titre, description, description_courte, date_atelier, heure_debut, duree, lieu, url_image, places_max, places_disponibles, tarif_standard, tarif_premium, tarif_affichage, lien_paypal, statut")
+        .select("id, titre, description, description_courte, date_atelier, heure_debut, duree, lieu, url_image, places_max, places_disponibles, tarif_standard, tarif_premium, tarif_affichage, lien_paypal, date_fin_inscription, statut")
         .in("statut", ["publie", "complet"])
         .gte("date_atelier", today)
         .order("date_atelier"),
@@ -123,6 +127,7 @@ const Ateliers = () => {
           {ateliers.map(a => {
             const inscribed = myInscriptions.has(a.id);
             const full = a.statut === "complet" || a.places_disponibles <= 0;
+            const closed = isInscriptionsCloses(a);
             return (
               <div key={a.id} className="bg-card border rounded-2xl overflow-hidden flex flex-col hover:shadow-md transition-shadow">
                 {a.url_image ? (
@@ -154,6 +159,10 @@ const Ateliers = () => {
                     ) : full ? (
                       <button disabled className="flex-1 bg-muted text-muted-foreground px-4 py-2 rounded-full text-sm font-medium cursor-not-allowed">
                         Complet
+                      </button>
+                    ) : closed ? (
+                      <button disabled className="flex-1 bg-muted text-muted-foreground px-4 py-2 rounded-full text-sm font-medium cursor-not-allowed">
+                        Inscriptions closes
                       </button>
                     ) : (
                       <button

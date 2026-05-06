@@ -44,7 +44,7 @@ const Calendrier = () => {
     const today = new Date().toISOString().slice(0, 10);
     supabase
       .from("ateliers")
-      .select("id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, tarif_affichage, tarif_standard, statut")
+      .select("id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, tarif_affichage, tarif_standard, date_fin_inscription, statut")
       .in("statut", ["publie", "complet"])
       .gte("date_atelier", today)
       .order("date_atelier")
@@ -307,13 +307,28 @@ const Calendrier = () => {
                   <Euro className="w-4 h-4 text-primary flex-shrink-0" />
                   <span>{popinWorkshop.tarif_affichage}</span>
                 </div>
+                {popinWorkshop.date_fin_inscription && (
+                  <div className="flex items-center gap-2 text-sm text-foreground">
+                    <CalendarPlus className="w-4 h-4 text-primary flex-shrink-0" />
+                    <span>Inscriptions jusqu'au {formatDateFr(popinWorkshop.date_fin_inscription)}</span>
+                  </div>
+                )}
               </div>
-              <button
-                onClick={() => openReserve(popinWorkshop)}
-                className="w-full bg-primary text-primary-foreground py-3 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
-              >
-                Réserver ma place
-              </button>
+              {popinWorkshop.date_fin_inscription && new Date(popinWorkshop.date_fin_inscription + "T23:59:59") < new Date() ? (
+                <button
+                  disabled
+                  className="w-full bg-muted text-muted-foreground py-3 rounded-xl text-sm font-medium cursor-not-allowed"
+                >
+                  Inscriptions closes
+                </button>
+              ) : (
+                <button
+                  onClick={() => openReserve(popinWorkshop)}
+                  className="w-full bg-primary text-primary-foreground py-3 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
+                >
+                  Réserver ma place
+                </button>
+              )}
             </div>
           </div>
         </div>
