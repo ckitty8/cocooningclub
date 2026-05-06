@@ -189,7 +189,12 @@ const Index = () => {
       .gte("date_atelier", today)
       .order("date_atelier")
       .then(({ data, error }) => {
-        if (!error && data) setAteliers(data as Workshop[]);
+        if (error) {
+          console.error("[Index.fetchAteliers] error:", error);
+          toast.error(`Impossible de charger les ateliers : ${error.message}`, { duration: 8000 });
+          return;
+        }
+        setAteliers((data ?? []) as Workshop[]);
       });
 
     const channel = supabase
@@ -360,7 +365,16 @@ const Index = () => {
           <p className="text-center text-muted-foreground max-w-lg mx-auto mb-16">
             Réservez votre place pour un moment créatif inoubliable.
           </p>
-          <WorkshopCarousel workshops={ateliers} onReserve={openModal} />
+          {ateliers.length === 0 ? (
+            <div className="text-center py-12 border rounded-2xl bg-card max-w-2xl mx-auto">
+              <p className="text-muted-foreground">
+                Aucun atelier programmé pour le moment.<br />
+                Inscris-toi à la newsletter pour être prévenu des prochains.
+              </p>
+            </div>
+          ) : (
+            <WorkshopCarousel workshops={ateliers} onReserve={openModal} />
+          )}
         </div>
       </section>
 
