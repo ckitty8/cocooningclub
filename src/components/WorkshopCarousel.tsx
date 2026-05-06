@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, ChevronLeft, ChevronRight, MapPin, Users, Euro } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, MapPin, Users, Euro, AlarmClock } from "lucide-react";
 import type { Workshop } from "@/data/workshops";
 import { formatDateFr, formatTimeFr } from "@/data/workshops";
 
@@ -64,6 +64,13 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
                   <Euro className="w-4 h-4 text-primary flex-shrink-0" />
                   <span>{ws.tarif_affichage}</span>
                 </div>
+
+                {ws.date_fin_inscription && (
+                  <div className="flex items-center gap-2 text-sm text-foreground">
+                    <AlarmClock className="w-4 h-4 text-primary flex-shrink-0" />
+                    <span>Inscriptions jusqu'au {formatDateFr(ws.date_fin_inscription)}</span>
+                  </div>
+                )}
 
                 <div className="pt-2 mt-auto">
                   <button
