@@ -257,21 +257,27 @@ const Ateliers = () => {
       return;
     }
 
+    if (!form.heure_debut) {
+      toast.error("L'heure de début est obligatoire");
+      setSaving(false);
+      return;
+    }
+
     const payload = {
       titre: form.titre,
       description: form.description || null,
       description_courte: form.description_courte || null,
       date_atelier: form.date_atelier,
-      heure_debut: form.heure_debut || null,
-      duree: form.duree || null,
+      heure_debut: form.heure_debut,
+      duree: form.duree || "2 hours",
       lieu: form.lieu || null,
       url_image: form.url_image || null,
       places_max: Number(form.places_max),
-      tarif_standard: form.tarif_standard ? Number(form.tarif_standard) : null,
-      tarif_premium: form.tarif_premium ? Number(form.tarif_premium) : null,
+      tarif_standard: form.tarif_standard ? Number(form.tarif_standard) : 0,
+      tarif_premium: form.tarif_premium ? Number(form.tarif_premium) : 0,
       tarif_affichage: form.tarif_affichage || null,
       lien_paypal: form.lien_paypal || null,
-      niveau: (form.niveau as Niveau) || null,
+      niveau: (form.niveau as Niveau) || "debutant",
       statut: form.statut,
       categorie_id: form.categorie_id,
     };
@@ -685,7 +691,7 @@ const Ateliers = () => {
                     className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Heure début</label>
+                  <label className="block text-sm font-medium mb-1.5">Heure début *</label>
                   <input type="time" value={form.heure_debut} onChange={e => f("heure_debut", e.target.value)}
                     className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>
@@ -757,7 +763,7 @@ const Ateliers = () => {
             <div className="flex justify-end gap-3 p-6 border-t">
               <button onClick={() => setModal({ open: false, atelier: null })}
                 className="px-4 py-2 text-sm border rounded-full hover:bg-muted transition-colors">Annuler</button>
-              <button onClick={handleSave} disabled={saving || !form.titre || !form.date_atelier || !form.categorie_id}
+              <button onClick={handleSave} disabled={saving || !form.titre || !form.date_atelier || !form.heure_debut || !form.categorie_id}
                 className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-full hover:opacity-90 transition-opacity disabled:opacity-50">
                 {saving ? "Enregistrement..." : "Enregistrer"}
               </button>
