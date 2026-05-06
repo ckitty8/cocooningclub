@@ -246,10 +246,12 @@ const Avis = () => {
       ) : (
         <div className="space-y-3">
           {filtered.map(a => {
-            const auteur =
-              `${a.utilisateurs?.prenom ?? ""} ${a.utilisateurs?.nom ?? ""}`.trim() ||
-              a.nom_auteur ||
-              "—";
+            // Affichage : si avis posté par un membre → "Prénom L."
+            // (anonymisation de la home). Sinon → nom_auteur (admin-créé).
+            const u = a.utilisateurs;
+            const auteur = u?.prenom
+              ? `${u.prenom} ${u.nom?.[0] ?? ""}.`.trim()
+              : a.nom_auteur || "—";
             const atelier = a.inscriptions?.ateliers;
             return (
               <div key={a.id} className="bg-card rounded-2xl border p-5">

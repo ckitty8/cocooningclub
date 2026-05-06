@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import {
   CalendarDays, Clock, MapPin, Loader2, Ticket, X,
-  CheckCircle2, AlertCircle, ExternalLink,
+  CheckCircle2, AlertCircle, ExternalLink, Star, MessageSquare,
 } from "lucide-react";
 
 type Onglet = "a-venir" | "passees";
@@ -47,14 +47,27 @@ const Inscriptions = () => {
   const [items, setItems] = useState<Inscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState<string | null>(null);
+  const [avisDeposes, setAvisDeposes] = useState<Set<string>>(new Set());
+  const [avisModal, setAvisModal] = useState<Inscription | null>(null);
+  const [avisForm, setAvisForm] = useState({ note: 5, commentaire: "" });
+  const [avisSaving, setAvisSaving] = useState(false);
 
   const fetchInscriptions = async () => {
     if (!profile) return;
-    const { data, error } = await supabase
-      .from("inscriptions")
-      .select("id, statut, statut_paiement, present, inscrit_le, annule_le, atelier:ateliers(id, titre, date_atelier, heure_debut, duree, lieu, url_image, tarif_standard, tarif_affichage, lien_paypal)")
-      .eq("utilisateur_id", profile.id)
-      .order("inscrit_le", { ascending: false });
+    const [inscRes, avisRes] = await Promise.all([
+      supabase
+        .from("inscriptions")
+        .select("id, statut, statut_paiement, present, inscrit_le, annule_le, atelier:ateliers(id, titre, date_atelier, heure_debut, duree, lieu, url_image, tarif_standard, tarif_affichage, lien_paypal)")
+        .eq("utilisateur_id", profile.id)
+        .order("inscrit_le", { ascending: false }),
+      supabase
+        .from("avis")
+        .select("inscription_id")
+        .eq("utilisateur_id", profile.id),
+    ]);
+    setAvisDeposes(new Set(((avisRes.data ?? []) as { inscription_id: string | null }[])
+      .map(a => a.inscription_id).filter((x): x is string => !!x)));
+    const { data, error } = inscRes;
 
     if (error) {
       toast.error(`Erreur : ${error.message}`);
@@ -88,6 +101,31 @@ const Inscriptions = () => {
       await fetchInscriptions();
     }
     setCancelling(null);
+  };
+
+  const handleSubmitAvis = async () => {
+    if (!profile || !avisModal) return;
+    if (!avisForm.commentaire.trim()) {
+      toast.error("Le commentaire est requis");
+      return;
+    }
+    setAvisSaving(true);
+    const { error } = await supabase.from("avis").insert({
+      utilisateur_id: profile.id,
+      inscription_id: avisModal.id,
+      note: avisForm.note,
+      commentaire: avisForm.commentaire.trim(),
+      moderation: "en_attente",
+    });
+    if (error) {
+      toast.error(`Erreur : ${error.message}`, { duration: 8000 });
+    } else {
+      toast.success("Merci ! Ton avis sera publié après modération.");
+      setAvisDeposes(prev => new Set(prev).add(avisModal.id));
+      setAvisModal(null);
+      setAvisForm({ note: 5, commentaire: "" });
+    }
+    setAvisSaving(false);
   };
 
   const switchTab = (next: Onglet) => {
@@ -180,8 +218,22 @@ const Inscriptions = () => {
                 )}
 
                 {tab === "passees" && ins.present && (
-                  <div className="mt-2 inline-flex items-center gap-1.5 text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md">
-                    <CheckCircle2 className="w-3 h-3" /> Présent·e
+                  <div className="mt-2 flex items-center gap-2 flex-wrap">
+                    <span className="inline-flex items-center gap-1.5 text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md">
+                      <CheckCircle2 className="w-3 h-3" /> Présent·e
+                    </span>
+                    {avisDeposes.has(ins.id) ? (
+                      <span className="inline-flex items-center gap-1.5 text-xs bg-amber-50 text-amber-700 px-2 py-1 rounded-md">
+                        <Star className="w-3 h-3 fill-current" /> Avis posté
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => { setAvisModal(ins); setAvisForm({ note: 5, commentaire: "" }); }}
+                        className="inline-flex items-center gap-1.5 text-xs bg-primary/10 text-primary hover:bg-primary/20 px-2 py-1 rounded-md transition-colors"
+                      >
+                        <MessageSquare className="w-3 h-3" /> Laisser un avis
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -213,6 +265,82 @@ const Inscriptions = () => {
               </li>
             ))}
           </ul>
+        </div>
+      )}
+
+      {/* Modal "Laisser un avis" */}
+      {avisModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm p-4"
+          onClick={() => setAvisModal(null)}
+        >
+          <div
+            className="bg-background border rounded-2xl shadow-2xl w-full max-w-md p-6 relative"
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setAvisModal(null)}
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-xl font-bold text-foreground mb-1 flex items-center gap-2">
+              <MessageSquare className="w-5 h-5 text-primary" /> Laisser un avis
+            </h2>
+            <p className="text-sm text-muted-foreground mb-5">
+              {avisModal.atelier?.titre}
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Note</label>
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map(n => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setAvisForm({ ...avisForm, note: n })}
+                      className="p-1 rounded-lg hover:bg-muted transition-colors"
+                    >
+                      <Star className={`w-7 h-7 ${n <= avisForm.note ? "fill-amber-500 text-amber-500" : "text-muted-foreground/40"}`} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Ton ressenti *</label>
+                <textarea
+                  rows={4}
+                  value={avisForm.commentaire}
+                  onChange={e => setAvisForm({ ...avisForm, commentaire: e.target.value })}
+                  placeholder="Ce que tu as aimé, ce qui t'a marqué…"
+                  className="w-full rounded-xl border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Ton avis sera publié sous le nom <span className="font-medium">
+                    {profile?.prenom ?? ""} {profile?.nom?.[0] ?? ""}.
+                  </span> après modération.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 mt-6">
+              <button
+                onClick={() => setAvisModal(null)}
+                className="px-4 py-2 border rounded-xl text-sm font-medium hover:bg-muted transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleSubmitAvis}
+                disabled={avisSaving || !avisForm.commentaire.trim()}
+                className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40"
+              >
+                {avisSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Star className="w-4 h-4" />}
+                Envoyer
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </MembrePremiumLayout>
