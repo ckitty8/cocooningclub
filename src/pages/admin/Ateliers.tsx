@@ -757,7 +757,7 @@ const Ateliers = () => {
             <div className="flex justify-end gap-3 p-6 border-t">
               <button onClick={() => setModal({ open: false, atelier: null })}
                 className="px-4 py-2 text-sm border rounded-full hover:bg-muted transition-colors">Annuler</button>
-              <button onClick={handleSave} disabled={saving || !form.titre || !form.date_atelier}
+              <button onClick={handleSave} disabled={saving || !form.titre || !form.date_atelier || !form.categorie_id}
                 className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-full hover:opacity-90 transition-opacity disabled:opacity-50">
                 {saving ? "Enregistrement..." : "Enregistrer"}
               </button>
