@@ -13,6 +13,9 @@
     "test:watch": "vitest",
     "feedback:pdf": "node scripts/generate-feedback-pdf.mjs",
     "feedback:rex": "node scripts/generate-feedback-pdf.mjs",
+    "feedback:rex:membre": "FEEDBACK_SCOPE=membre node scripts/generate-feedback-pdf.mjs",
+    "feedback:rex:admin": "FEEDBACK_SCOPE=admin node scripts/generate-feedback-pdf.mjs",
+    "feedback:rex:public": "FEEDBACK_SCOPE=public node scripts/generate-feedback-pdf.mjs",
     "feedback:guide": "node scripts/generate-user-guide.mjs"
   },
   "dependencies": {

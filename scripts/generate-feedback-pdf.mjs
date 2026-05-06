@@ -24,8 +24,27 @@ const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, "..");
 const OUT_DIR = path.join(ROOT, "feedback");
 const SHOTS_DIR = path.join(OUT_DIR, "screenshots");
-const PDF_PATH = path.join(OUT_DIR, "REX_V1.pdf");
-const HTML_PATH = path.join(OUT_DIR, "REX_V1.html");
+// Scope optionnel : permet de générer un REX restreint à un sous-ensemble
+// de pages (ex. uniquement l'espace membre).
+//
+//   FEEDBACK_SCOPE=membre        → /espace-membre/*  (10 pages)
+//   FEEDBACK_SCOPE=admin         → /admin/*          (10 pages)
+//   FEEDBACK_SCOPE=public        → site public + auth (6 pages)
+//   non défini (par défaut)      → toutes les pages  (27 pages)
+const SCOPE = (process.env.FEEDBACK_SCOPE || "").toLowerCase();
+
+function inScope(def) {
+  if (!SCOPE) return true;
+  if (SCOPE === "membre") return def.path.startsWith("/espace-membre");
+  if (SCOPE === "admin") return def.path.startsWith("/admin");
+  if (SCOPE === "public") return !def.path.startsWith("/admin") && !def.path.startsWith("/espace-membre");
+  return true;
+}
+
+const SCOPED_PAGES = PAGES.filter(inScope);
+const SCOPE_SUFFIX = SCOPE ? `_${SCOPE === "membre" ? "espace_membre" : SCOPE}` : "";
+const PDF_PATH = path.join(OUT_DIR, `REX${SCOPE_SUFFIX}_V1.pdf`);
+const HTML_PATH = path.join(OUT_DIR, `REX${SCOPE_SUFFIX}_V1.html`);
 
 const PORT = 8080;
 const BASE_URL = `http://localhost:${PORT}`;
@@ -126,7 +145,7 @@ async function captureScreenshots(browser) {
   const page = await context.newPage();
   const results = [];
 
-  for (const def of PAGES) {
+  for (const def of SCOPED_PAGES) {
     const url = `${BASE_URL}${def.path}`;
     const filename = (def.path === "/" ? "index" : def.path.replace(/^\//, "").replace(/\//g, "_")) + ".png";
     const file = path.join(SHOTS_DIR, filename);
