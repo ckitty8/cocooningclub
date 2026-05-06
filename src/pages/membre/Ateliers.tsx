@@ -51,7 +51,7 @@ const Ateliers = () => {
     const [aRes, iRes] = await Promise.all([
       supabase
         .from("ateliers")
-        .select("id, titre, description, description_courte, date_atelier, heure_debut, duree, lieu, url_image, places_max, places_disponibles, tarif_standard, tarif_premium, tarif_affichage, lien_paypal, date_fin_inscription, statut")
+        .select("id, titre, description, description_courte, date_atelier, heure_debut, duree, lieu, url_image, places_max, places_disponibles, tarif_standard, tarif_premium, tarif_affichage, lien_paypal, statut")
         .in("statut", ["publie", "complet"])
         .gte("date_atelier", today)
         .order("date_atelier"),

@@ -17,7 +17,6 @@ interface Atelier {
   description: string | null;
   description_courte: string | null;
   date_atelier: string;
-  date_fin_inscription: string | null;
   heure_debut: string | null;
   duree: string | null;
   lieu: string | null;
@@ -26,7 +25,6 @@ interface Atelier {
   places_disponibles: number;
   tarif_standard: number | null;
   tarif_premium: number | null;
-  tarif_admin: number | null;
   tarif_affichage: string | null;
   lien_paypal: string | null;
   niveau: Niveau | null;
@@ -54,8 +52,8 @@ interface Inscription {
 
 const emptyForm = {
   titre: "", description: "", description_courte: "",
-  date_atelier: "", date_fin_inscription: "", heure_debut: "", duree: "", lieu: "", url_image: "",
-  places_max: 10, tarif_standard: "", tarif_premium: "", tarif_admin: "", tarif_affichage: "",
+  date_atelier: "", heure_debut: "", duree: "", lieu: "", url_image: "",
+  places_max: 10, tarif_standard: "", tarif_premium: "", tarif_affichage: "",
   lien_paypal: "", niveau: "" as Niveau | "", statut: "brouillon" as Statut,
 };
 
@@ -206,13 +204,12 @@ const Ateliers = () => {
   const openEdit = (a: Atelier) => {
     setForm({
       titre: a.titre, description: a.description ?? "", description_courte: a.description_courte ?? "",
-      date_atelier: a.date_atelier, date_fin_inscription: a.date_fin_inscription ?? "",
+      date_atelier: a.date_atelier,
       heure_debut: a.heure_debut ?? "", duree: a.duree ?? "",
       lieu: a.lieu ?? "", url_image: a.url_image ?? "",
       places_max: a.places_max,
       tarif_standard: a.tarif_standard?.toString() ?? "",
       tarif_premium: a.tarif_premium?.toString() ?? "",
-      tarif_admin: a.tarif_admin?.toString() ?? "",
       tarif_affichage: a.tarif_affichage ?? "",
       lien_paypal: a.lien_paypal ?? "",
       niveau: a.niveau ?? "", statut: a.statut,
@@ -244,7 +241,6 @@ const Ateliers = () => {
       description: form.description || null,
       description_courte: form.description_courte || null,
       date_atelier: form.date_atelier,
-      date_fin_inscription: form.date_fin_inscription || null,
       heure_debut: form.heure_debut || null,
       duree: form.duree || null,
       lieu: form.lieu || null,
@@ -252,7 +248,6 @@ const Ateliers = () => {
       places_max: Number(form.places_max),
       tarif_standard: form.tarif_standard ? Number(form.tarif_standard) : null,
       tarif_premium: form.tarif_premium ? Number(form.tarif_premium) : null,
-      tarif_admin: form.tarif_admin ? Number(form.tarif_admin) : null,
       tarif_affichage: form.tarif_affichage || null,
       lien_paypal: form.lien_paypal || null,
       niveau: (form.niveau as Niveau) || null,
@@ -660,12 +655,6 @@ const Ateliers = () => {
                     className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1.5">Date limite d'inscription</label>
-                <input type="date" value={form.date_fin_inscription} onChange={e => f("date_fin_inscription", e.target.value)}
-                  className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
-                <p className="text-xs text-muted-foreground mt-1">Optionnel. Affiché sur la page d'accueil si renseigné.</p>
-              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1.5">Durée</label>
@@ -711,12 +700,6 @@ const Ateliers = () => {
                 <label className="block text-sm font-medium mb-1.5">Tarif affiché</label>
                 <input value={form.tarif_affichage} onChange={e => f("tarif_affichage", e.target.value)}
                   placeholder="ex: À partir de 20€" className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1.5">Tarif interne admin (€)</label>
-                <input type="number" min={0} step={0.01} value={form.tarif_admin} onChange={e => f("tarif_admin", e.target.value)}
-                  placeholder="ex: 12" className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
-                <p className="text-xs text-muted-foreground mt-1">Visible uniquement par les admins (coût réel, marge, etc.). Jamais affiché aux membres.</p>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Lien PayPal</label>
