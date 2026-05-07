@@ -41,9 +41,6 @@ interface FormFieldConfig {
   options: string[] | null;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as any;
-
 const ContactForm = () => {
   const [fields, setFields] = useState<FormFieldConfig[]>([]);
   const [values, setValues] = useState<Record<string, string>>({});
@@ -56,16 +53,18 @@ const ContactForm = () => {
     // maybeSingle() au lieu de single() : si la table est vide ou
     // contient plusieurs lignes, on ne lève pas d'erreur PGRST116 qui
     // laisserait le formulaire en loading infini.
-    db.from("formulaires")
+    supabase
+      .from("formulaires")
       .select("*, form_fields(*)")
       .eq("est_actif", true)
       .order("cree_le")
       .limit(1)
       .maybeSingle()
-      .then(({ data, error }: { data: { form_fields: FormFieldConfig[] } | null; error: unknown }) => {
+      .then(({ data, error }) => {
         if (error) console.error("[ContactForm.fetchFormulaires]", error);
-        if (data?.form_fields) {
-          const sorted = [...data.form_fields].sort((a, b) => a.position - b.position);
+        const fields = (data as { form_fields?: FormFieldConfig[] } | null)?.form_fields;
+        if (fields) {
+          const sorted = [...fields].sort((a, b) => a.position - b.position);
           setFields(sorted);
           const init: Record<string, string> = {};
           sorted.forEach(f => { init[f.id] = ""; });
@@ -91,7 +90,7 @@ const ContactForm = () => {
     const emailField = fields.find(f => f.field_type === "email");
     const telField = fields.find(f => f.field_type === "tel");
 
-    const { error: dbError } = await db.from("contact_messages").insert({
+    const { error: dbError } = await supabase.from("contact_messages").insert({
       email: emailField ? values[emailField.id] || null : null,
       telephone: telField ? values[telField.id] || null : null,
       reponses,
