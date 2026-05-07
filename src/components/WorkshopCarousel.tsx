@@ -31,7 +31,6 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
       <div className="grid md:grid-cols-3 gap-8">
         {visible.map((ws, visibleIdx) => {
           const actualIndex = page * ITEMS_PER_PAGE + visibleIdx;
-          const isSelected = selectedIndex === actualIndex;
           const closed = !!ws.date_fin_inscription
             && new Date(ws.date_fin_inscription + "T23:59:59") < new Date();
 
