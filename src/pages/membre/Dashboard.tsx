@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { ComponentType, ReactNode, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import MembreLayout from "@/components/membre/MembreLayout";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,7 +41,12 @@ const formatDate = (iso: string) =>
 
 const formatTime = (t: string) => t.slice(0, 5);
 
-const Dashboard = () => {
+type LayoutComp = ComponentType<{ children: ReactNode }>;
+
+const Dashboard = ({
+  Layout = MembreLayout,
+  basePath = "/espace-membre",
+}: { Layout?: LayoutComp; basePath?: string } = {}) => {
   const { profile } = useAuth();
   const [loading, setLoading] = useState(true);
   const [upcomingMine, setUpcomingMine] = useState<InscriptionWithAtelier[]>([]);
@@ -98,11 +103,11 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <MembreLayout>
+      <Layout>
         <div className="flex items-center justify-center h-64">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-      </MembreLayout>
+      </Layout>
     );
   }
 
@@ -111,7 +116,7 @@ const Dashboard = () => {
   const subscriptionActive = subscriptionEnd && subscriptionEnd >= new Date();
 
   return (
-    <MembreLayout>
+    <Layout>
       <div className="mb-8">
         <h1 className="text-2xl lg:text-3xl font-bold text-foreground flex items-center gap-2">
           <Sparkles className="w-6 h-6 text-primary" />
@@ -124,7 +129,7 @@ const Dashboard = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <Link to="/espace-membre/inscriptions" className="bg-card border rounded-2xl p-5 hover:shadow-md transition-shadow">
+        <Link to={`${basePath}/inscriptions`} className="bg-card border rounded-2xl p-5 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
               <Ticket className="w-5 h-5 text-primary" />
@@ -135,7 +140,7 @@ const Dashboard = () => {
           <p className="text-xs text-muted-foreground mt-1">Inscriptions à venir</p>
         </Link>
 
-        <Link to="/espace-membre/ateliers" className="bg-card border rounded-2xl p-5 hover:shadow-md transition-shadow">
+        <Link to={`${basePath}/ateliers`} className="bg-card border rounded-2xl p-5 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
               <CalendarDays className="w-5 h-5 text-amber-600" />
@@ -146,7 +151,7 @@ const Dashboard = () => {
           <p className="text-xs text-muted-foreground mt-1">Ateliers proposés</p>
         </Link>
 
-        <Link to="/espace-membre/inscriptions?tab=passees" className="bg-card border rounded-2xl p-5 hover:shadow-md transition-shadow">
+        <Link to={`${basePath}/inscriptions?tab=passees`} className="bg-card border rounded-2xl p-5 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
               <BookOpen className="w-5 h-5 text-emerald-600" />
@@ -176,7 +181,7 @@ const Dashboard = () => {
               <Ticket className="w-4 h-4 text-primary" />
               Mes prochains ateliers
             </h2>
-            <Link to="/espace-membre/inscriptions" className="text-xs text-primary hover:underline flex items-center gap-1">
+            <Link to={`${basePath}/inscriptions`} className="text-xs text-primary hover:underline flex items-center gap-1">
               Tout voir <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -187,7 +192,7 @@ const Dashboard = () => {
                 Vous n'êtes inscrit·e à aucun atelier à venir.
               </p>
               <Link
-                to="/espace-membre/ateliers"
+                to={`${basePath}/ateliers`}
                 className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium hover:opacity-90 transition-opacity"
               >
                 Découvrir les ateliers <ArrowRight className="w-4 h-4" />
@@ -232,13 +237,13 @@ const Dashboard = () => {
               <Newspaper className="w-4 h-4 text-primary" />
               Dernier magazine
             </h2>
-            <Link to="/espace-membre/magazine" className="text-xs text-primary hover:underline flex items-center gap-1">
+            <Link to={`${basePath}/magazine`} className="text-xs text-primary hover:underline flex items-center gap-1">
               Tous <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
 
           {latestMagazine ? (
-            <Link to="/espace-membre/magazine" className="block group">
+            <Link to={`${basePath}/magazine`} className="block group">
               <div className="aspect-[3/4] bg-gradient-to-br from-primary/20 to-amber-500/20 rounded-xl flex items-center justify-center mb-3 overflow-hidden">
                 <Newspaper className="w-12 h-12 text-primary/60 group-hover:scale-110 transition-transform" />
               </div>
@@ -257,7 +262,7 @@ const Dashboard = () => {
           )}
         </div>
       </div>
-    </MembreLayout>
+    </Layout>
   );
 };
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { ComponentType, ReactNode, useEffect, useState } from "react";
 import MembreLayout from "@/components/membre/MembreLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -36,7 +36,9 @@ const formatDate = (iso: string) =>
 
 const formatTime = (t: string) => t.slice(0, 5);
 
-const Ateliers = () => {
+type LayoutComp = ComponentType<{ children: ReactNode }>;
+
+const Ateliers = ({ Layout = MembreLayout }: { Layout?: LayoutComp } = {}) => {
   const { profile } = useAuth();
   const [ateliers, setAteliers] = useState<Atelier[]>([]);
   const [myInscriptions, setMyInscriptions] = useState<Set<string>>(new Set());
@@ -100,16 +102,16 @@ const Ateliers = () => {
 
   if (loading) {
     return (
-      <MembreLayout>
+      <Layout>
         <div className="flex items-center justify-center h-64">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-      </MembreLayout>
+      </Layout>
     );
   }
 
   return (
-    <MembreLayout>
+    <Layout>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">Ateliers</h1>
         <p className="text-muted-foreground text-sm mt-1">
@@ -252,7 +254,7 @@ const Ateliers = () => {
           </div>
         </div>
       )}
-    </MembreLayout>
+    </Layout>
   );
 };
 

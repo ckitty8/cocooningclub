@@ -248,8 +248,13 @@ const Ateliers = () => {
 
     // Vérification : au moins un admin est-il dispo à cette date ?
     if (form.date_atelier) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: dispo } = await (supabase.rpc as any)("admin_dispo_le", { p_date: form.date_atelier });
+      // RPC custom non typée par les types générés : on caste juste le retour
+      // au lieu d'utiliser `any` sur le client entier.
+      const dispoRes = await supabase.rpc(
+        "admin_dispo_le" as never,
+        { p_date: form.date_atelier } as never,
+      );
+      const dispo = dispoRes.data as boolean | null;
       if (dispo === false) {
         const ok = confirm(
           "⚠️ Aucun administrateur n'est disponible à cette date (jour de semaine non dispo ou congés).\n\n" +

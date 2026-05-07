@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { ComponentType, ReactNode, useEffect, useState } from "react";
 import MembreLayout from "@/components/membre/MembreLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -33,7 +33,9 @@ const typeLabel: Record<DocType, string> = {
   lien_externe: "Ressource",
 };
 
-const Magazine = () => {
+type LayoutComp = ComponentType<{ children: ReactNode }>;
+
+const Magazine = ({ Layout = MembreLayout }: { Layout?: LayoutComp } = {}) => {
   const [items, setItems] = useState<Doc[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewer, setViewer] = useState<{ titre: string; url: string } | null>(null);
@@ -88,16 +90,16 @@ const Magazine = () => {
 
   if (loading) {
     return (
-      <MembreLayout>
+      <Layout>
         <div className="flex items-center justify-center h-64">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-      </MembreLayout>
+      </Layout>
     );
   }
 
   return (
-    <MembreLayout>
+    <Layout>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">Documents</h1>
         <p className="text-muted-foreground text-sm mt-1">
@@ -189,7 +191,7 @@ const Magazine = () => {
           </div>
         </div>
       )}
-    </MembreLayout>
+    </Layout>
   );
 };
 
