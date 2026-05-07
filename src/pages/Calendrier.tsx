@@ -47,29 +47,22 @@ const Calendrier = () => {
       .gte("date_atelier", today)
       .order("date_atelier")
       .then(({ data, error }) => {
-        if (!error && data) {
-          setAteliers(data as Workshop[]);
-          // Set initial view to first workshop's month
-          if (data.length > 0) {
-            const firstDate = parseDateAtelier(data[0].date_atelier);
-            setViewYear(firstDate.getFullYear());
-            setViewMonth(firstDate.getMonth());
-          }
+        if (error) {
+          console.error("[Calendrier.fetchAteliers]", error);
+          return;
         }
+        if (data) setAteliers(data as Workshop[]);
       });
   }, []);
 
-  // Open pop-in from URL param (e.g. ?workshop=2 from a card click on home page)
+  // Ouvre la pop-in si l'URL contient ?workshop=N (clic depuis le
+  // carrousel home qui passe l'index dans le query param).
   useEffect(() => {
     const param = searchParams.get("workshop");
     if (param !== null && ateliers.length > 0) {
       const idx = parseInt(param);
       if (!isNaN(idx) && idx >= 0 && idx < ateliers.length) {
-        const ws = ateliers[idx];
-        const d = parseDateAtelier(ws.date_atelier);
-        setViewYear(d.getFullYear());
-        setViewMonth(d.getMonth());
-        setPopinWorkshop(ws);
+        setPopinWorkshop(ateliers[idx]);
       }
     }
   }, [searchParams, ateliers]);

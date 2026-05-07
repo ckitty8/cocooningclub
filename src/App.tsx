@@ -70,7 +70,9 @@ const App = () => (
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
 
-            {/* Espace membre standard */}
+            {/* Espace membre standard — composants par défaut (Layout = MembreLayout, basePath = /espace-membre).
+                Les mêmes composants sont réutilisés plus bas pour /espace-membre-premium en passant le layout
+                premium et le basePath correspondant : aucune duplication de code. */}
             <Route path="/espace-membre"               element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreDashboard /></RoleGuard>} />
             <Route path="/espace-membre/ateliers"      element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreAteliers /></RoleGuard>} />
             <Route path="/espace-membre/inscriptions"  element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreInscriptions /></RoleGuard>} />

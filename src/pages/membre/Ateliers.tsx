@@ -36,6 +36,9 @@ const formatDate = (iso: string) =>
 
 const formatTime = (t: string) => t.slice(0, 5);
 
+// Cette page est partagée entre /espace-membre/ateliers et
+// /espace-membre-premium/ateliers. App.tsx passe le bon Layout en prop ;
+// par défaut on retombe sur MembreLayout (espace standard).
 type LayoutComp = ComponentType<{ children: ReactNode }>;
 
 const Ateliers = ({ Layout = MembreLayout }: { Layout?: LayoutComp } = {}) => {

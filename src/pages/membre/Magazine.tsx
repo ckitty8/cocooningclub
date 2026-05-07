@@ -33,6 +33,8 @@ const typeLabel: Record<DocType, string> = {
   lien_externe: "Ressource",
 };
 
+// Page partagée entre /espace-membre/magazine et
+// /espace-membre-premium/magazine — voir App.tsx pour le routing.
 type LayoutComp = ComponentType<{ children: ReactNode }>;
 
 const Magazine = ({ Layout = MembreLayout }: { Layout?: LayoutComp } = {}) => {

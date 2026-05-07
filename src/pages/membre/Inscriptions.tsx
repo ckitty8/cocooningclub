@@ -39,6 +39,8 @@ const formatDate = (iso: string) =>
 
 const formatTime = (t: string) => t.slice(0, 5);
 
+// Page partagée entre /espace-membre/inscriptions et
+// /espace-membre-premium/inscriptions — voir App.tsx pour le routing.
 type LayoutComp = ComponentType<{ children: ReactNode }>;
 
 const Inscriptions = ({ Layout = MembreLayout }: { Layout?: LayoutComp } = {}) => {

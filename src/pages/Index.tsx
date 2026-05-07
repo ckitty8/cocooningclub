@@ -53,13 +53,17 @@ const ContactForm = () => {
   const [loadingFields, setLoadingFields] = useState(true);
 
   useEffect(() => {
+    // maybeSingle() au lieu de single() : si la table est vide ou
+    // contient plusieurs lignes, on ne lève pas d'erreur PGRST116 qui
+    // laisserait le formulaire en loading infini.
     db.from("formulaires")
       .select("*, form_fields(*)")
       .eq("est_actif", true)
       .order("cree_le")
       .limit(1)
-      .single()
-      .then(({ data }: { data: { form_fields: FormFieldConfig[] } | null }) => {
+      .maybeSingle()
+      .then(({ data, error }: { data: { form_fields: FormFieldConfig[] } | null; error: unknown }) => {
+        if (error) console.error("[ContactForm.fetchFormulaires]", error);
         if (data?.form_fields) {
           const sorted = [...data.form_fields].sort((a, b) => a.position - b.position);
           setFields(sorted);

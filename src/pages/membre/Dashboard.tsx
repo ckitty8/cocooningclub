@@ -41,6 +41,10 @@ const formatDate = (iso: string) =>
 
 const formatTime = (t: string) => t.slice(0, 5);
 
+// Page partagée entre /espace-membre et /espace-membre-premium.
+// Particularité : le Dashboard contient des <Link> internes (vers
+// /inscriptions, /ateliers, /magazine) qui dépendent du préfixe de
+// l'espace courant — d'où le prop `basePath` en plus de Layout.
 type LayoutComp = ComponentType<{ children: ReactNode }>;
 
 const Dashboard = ({

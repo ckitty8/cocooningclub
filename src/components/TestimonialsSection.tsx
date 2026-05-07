@@ -28,7 +28,11 @@ const TestimonialsSection = () => {
       .order("cree_le", { ascending: false })
       .limit(12)
       .then(({ data, error }) => {
-        if (error || !data) return;
+        if (error) {
+          console.error("[TestimonialsSection]", error);
+          return;
+        }
+        if (!data) return;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const mapped = data.map((a: any) => {
           const u = a.utilisateurs;

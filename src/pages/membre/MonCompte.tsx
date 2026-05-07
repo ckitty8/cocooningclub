@@ -21,6 +21,8 @@ interface PaiementHistorique {
   inscription: { atelier: { titre: string } | null } | null;
 }
 
+// Page partagée entre /espace-membre/mon-compte et
+// /espace-membre-premium/mon-compte — voir App.tsx pour le routing.
 type LayoutComp = ComponentType<{ children: ReactNode }>;
 
 const MonCompte = ({ Layout = MembreLayout }: { Layout?: LayoutComp } = {}) => {
