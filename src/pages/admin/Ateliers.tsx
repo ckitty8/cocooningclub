@@ -104,9 +104,10 @@ const Ateliers = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
-  // Recherche + filtre
+  // Recherche + filtres
   const [search, setSearch] = useState("");
   const [filterStatut, setFilterStatut] = useState<Statut | "">("");
+  const [filterCategorie, setFilterCategorie] = useState<string>("toutes"); // id catégorie ou "toutes"
 
   // Panel inscrits
   const [inscritPanel, setInscritPanel] = useState<{ open: boolean; atelier: Atelier | null }>({ open: false, atelier: null });
@@ -155,8 +156,14 @@ const Ateliers = () => {
   const filtered = ateliers.filter(a => {
     const matchSearch = a.titre.toLowerCase().includes(search.toLowerCase());
     const matchStatut = filterStatut === "" || a.statut === filterStatut;
-    return matchSearch && matchStatut;
+    const matchCat = filterCategorie === "toutes" || a.categorie_id === filterCategorie;
+    return matchSearch && matchStatut && matchCat;
   });
+
+  const countByCat = (catId: string) =>
+    catId === "toutes"
+      ? ateliers.length
+      : ateliers.filter(a => a.categorie_id === catId).length;
 
   const openInscrits = async (a: Atelier) => {
     setInscritPanel({ open: true, atelier: a });
@@ -373,6 +380,35 @@ const Ateliers = () => {
           className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium hover:opacity-90 transition-opacity">
           <Plus className="w-4 h-4" /> Ajouter
         </button>
+      </div>
+
+      {/* Onglets catégories */}
+      <div className="flex flex-wrap gap-2 mb-4 border-b pb-3">
+        <button
+          onClick={() => setFilterCategorie("toutes")}
+          className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+            filterCategorie === "toutes"
+              ? "bg-primary text-primary-foreground"
+              : "bg-card border text-foreground hover:bg-muted"
+          }`}
+        >
+          Toutes
+          <span className="ml-2 text-xs opacity-70">({countByCat("toutes")})</span>
+        </button>
+        {categories.map(c => (
+          <button
+            key={c.id}
+            onClick={() => setFilterCategorie(c.id)}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+              filterCategorie === c.id
+                ? "bg-primary text-primary-foreground"
+                : "bg-card border text-foreground hover:bg-muted"
+            }`}
+          >
+            {c.nom}
+            <span className="ml-2 text-xs opacity-70">({countByCat(c.id)})</span>
+          </button>
+        ))}
       </div>
 
       {/* Recherche + filtre */}
