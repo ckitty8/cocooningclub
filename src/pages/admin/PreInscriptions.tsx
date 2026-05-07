@@ -147,7 +147,7 @@ const PreInscriptions = () => {
         supabase
           .from("ateliers")
           .select("id, titre, date_atelier, heure_debut, statut, tarif_standard")
-          .in("statut", ["publie", "complet"])
+          .not("statut", "in", "(annule,termine)")
           .gte("date_atelier", today)
           .order("date_atelier"),
       ]));
