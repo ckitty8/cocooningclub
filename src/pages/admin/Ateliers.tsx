@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
 import { withTimeout } from "@/utils/withTimeout";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, X, MapPin, Clock, Users, Euro, Search, ChevronDown, UserCheck, UserX, Image as ImageIcon, CircleDashed } from "lucide-react";
+import { Plus, Pencil, Trash2, X, MapPin, Clock, Users, Euro, Search, UserCheck, UserX, Image as ImageIcon, CircleDashed } from "lucide-react";
 
 type Statut = "brouillon" | "publie" | "complet" | "annule" | "termine";
 type Niveau = "debutant" | "intermediaire" | "avance";
@@ -164,6 +164,9 @@ const Ateliers = () => {
     catId === "toutes"
       ? ateliers.length
       : ateliers.filter(a => a.categorie_id === catId).length;
+
+  const countByStatut = (s: Statut | "") =>
+    s === "" ? ateliers.length : ateliers.filter(a => a.statut === s).length;
 
   const openInscrits = async (a: Atelier) => {
     setInscritPanel({ open: true, atelier: a });
@@ -411,9 +414,34 @@ const Ateliers = () => {
         ))}
       </div>
 
-      {/* Recherche + filtre */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <div className="relative flex-1">
+      {/* Onglets statut */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        {([
+          ["", "Tous"],
+          ["brouillon", "Brouillon"],
+          ["publie", "Publié"],
+          ["complet", "Complet"],
+          ["termine", "Terminé"],
+          ["annule", "Annulé"],
+        ] as Array<[Statut | "", string]>).map(([val, label]) => (
+          <button
+            key={val || "tous"}
+            onClick={() => setFilterStatut(val)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+              filterStatut === val
+                ? "bg-foreground text-background"
+                : "bg-card border text-foreground hover:bg-muted"
+            }`}
+          >
+            {label}
+            <span className="ml-1.5 opacity-70">({countByStatut(val)})</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Recherche */}
+      <div className="mb-6">
+        <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             value={search}
@@ -421,21 +449,6 @@ const Ateliers = () => {
             placeholder="Rechercher un atelier..."
             className="w-full pl-9 pr-4 py-2.5 border rounded-xl text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary"
           />
-        </div>
-        <div className="relative">
-          <select
-            value={filterStatut}
-            onChange={e => setFilterStatut(e.target.value as Statut | "")}
-            className="appearance-none pl-3 pr-8 py-2.5 border rounded-xl text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-          >
-            <option value="">Tous les statuts</option>
-            <option value="brouillon">Brouillon</option>
-            <option value="publie">Publié</option>
-            <option value="complet">Complet</option>
-            <option value="annule">Annulé</option>
-            <option value="termine">Terminé</option>
-          </select>
-          <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
         </div>
       </div>
 
