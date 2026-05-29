@@ -293,26 +293,6 @@ function buildHtml(captures) {
     })
     .join("\n");
 
-  const transverseBlocks = TRANSVERSE_AUDIT.blocks
-    .map(
-      (block) => `
-      <div class="transverse-block">
-        <h3>${escapeHtml(block.title)}</h3>
-        <ol class="questions">
-          ${block.items
-            .map(
-              (it) => `
-            <li class="question">
-              <div class="question-text">${escapeHtml(it)}</div>
-              <div class="answer-lines"><div class="line"></div></div>
-            </li>`
-            )
-            .join("")}
-        </ol>
-      </div>`
-    )
-    .join("\n");
-
   return `<!doctype html>
 <html lang="fr">
 <head>
@@ -337,31 +317,42 @@ function buildHtml(captures) {
   .pb { page-break-before: always; break-before: page; }
 
   /* Cover */
-  .cover { padding-top: 30mm; text-align: center; }
-  .cover .brand { font-size: 14pt; letter-spacing: 4px; text-transform: uppercase; color: #9ca3af; }
-  .cover h1 { font-size: 30pt; margin: 12mm 0 4mm; }
-  .cover .subtitle { font-size: 13pt; color: #4b5563; max-width: 520px; margin: 0 auto; }
-  .cover .meta { margin-top: 14mm; color: #6b7280; font-size: 10pt; }
+  .cover {
+    height: 190mm;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cover-inner { text-align: center; max-width: 620px; }
+  .cover .brand { font-size: 12pt; letter-spacing: 4px; text-transform: uppercase; color: #9ca3af; }
+  .cover h1 { font-size: 26pt; margin: 6mm 0 4mm; }
+  .cover .subtitle { font-size: 11pt; color: #4b5563; max-width: 520px; margin: 0 auto; line-height: 1.4; }
+  .cover .meta { margin-top: 6mm; color: #6b7280; font-size: 9.5pt; }
   .cover .howto {
-    margin: 14mm auto 0; max-width: 560px; text-align: left;
-    background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px 18px;
+    margin: 8mm auto 0; max-width: 560px; text-align: left;
+    background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 16px;
   }
-  .cover .howto h3 { font-size: 12pt; margin-bottom: 6px; text-transform: none; letter-spacing: 0; }
+  .cover .howto h3 { font-size: 11pt; margin: 0 0 4px; text-transform: none; letter-spacing: 0; }
   .cover .howto ul { margin: 0; padding-left: 18px; }
-  .cover .howto li { margin-bottom: 4px; }
+  .cover .howto li { margin-bottom: 3px; font-size: 10pt; }
 
-  /* TOC */
-  .toc h2 { border-bottom: 2px solid #e5e7eb; padding-bottom: 6px; margin-bottom: 12px; }
-  .toc ol, .toc ul { list-style: none; padding: 0; margin: 0; }
+  /* TOC : passage en 2 colonnes pour tenir sur une A4 paysage. */
+  .toc h2 { border-bottom: 2px solid #e5e7eb; padding-bottom: 4px; margin-bottom: 8px; font-size: 18pt; }
+  .toc ol, .toc ul {
+    list-style: none; padding: 0; margin: 0;
+    column-count: 2; column-gap: 12mm;
+  }
   .toc-section {
-    margin-top: 12px; font-weight: 600; color: #6b7280;
-    text-transform: uppercase; letter-spacing: 1px; font-size: 9pt;
+    margin-top: 6px; font-weight: 600; color: #6b7280;
+    text-transform: uppercase; letter-spacing: 1px; font-size: 8.5pt;
+    break-inside: avoid; break-after: avoid;
   }
+  .toc-section:first-child { margin-top: 0; }
   .toc-item {
-    display: flex; justify-content: space-between; gap: 12px;
-    padding: 4px 0; border-bottom: 1px dotted #e5e7eb;
+    display: flex; justify-content: space-between; gap: 8px;
+    padding: 2px 0; border-bottom: 1px dotted #e5e7eb;
+    font-size: 9pt;
+    break-inside: avoid;
   }
-  .toc-path { color: #9ca3af; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9pt; }
+  .toc-path { color: #9ca3af; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 8pt; }
 
   /* Common header */
   .page-num {
@@ -548,21 +539,20 @@ function buildHtml(captures) {
 </head>
 <body>
   <section class="page cover">
-    <div class="brand">Cocooning Club</div>
-    <h1>Démo du site internet</h1>
-    <p class="subtitle">Pour chaque page : la capture sur une planche A4, puis sur la planche suivante un set de questions UX (parcours, perception, friction) et UI (composition, composants, accessibilité), avec un espace de notes libres.</p>
-    <div class="meta">Document généré le ${escapeHtml(today)}</div>
-    <div class="howto">
-      <h3>Comment l'utiliser ?</h3>
-      <ul>
-        <li><strong>1ère planche</strong> : capture pleine page de l'écran tel qu'affiché.</li>
-        <li><strong>2ème planche</strong> : 4 questions UX, 4 questions UI, et notes libres (le quizz).</li>
-        <li>Pour la documentation des parcours utilisateur (acteur, parcours, règles métier), se référer au <strong>guide utilisateur</strong> séparé.</li>
-        <li><strong>UX</strong> = ce que ressent et fait l'utilisatrice (heuristiques de Nielsen, JTBD, friction).</li>
-        <li><strong>UI</strong> = ce que voit l'utilisatrice (typographie, contraste WCAG, composants, microinteractions).</li>
-        <li><strong>Audit transverse</strong> : grille finale couvrant heuristiques, design system, accessibilité et performance.</li>
-        <li><em>Note : les captures de l'espace administrateur sont peuplées avec des données factices à des fins de démonstration UI ; les noms et chiffres ne correspondent pas à votre vraie base.</em></li>
-      </ul>
+    <div class="cover-inner">
+      <div class="brand">Cocooning Club</div>
+      <h1>Démo du site internet</h1>
+      <p class="subtitle">Pour chaque écran du site : la capture à gauche, le quizz UX/UI à droite (parcours, perception, friction, composants, accessibilité) avec un espace de notes libres.</p>
+      <div class="meta">Document généré le ${escapeHtml(today)}</div>
+      <div class="howto">
+        <h3>Comment l'utiliser ?</h3>
+        <ul>
+          <li><strong>Côté gauche</strong> : capture pleine page de l'écran tel qu'affiché.</li>
+          <li><strong>Côté droit</strong> : 4 questions UX (ce que ressent l'utilisatrice) + 4 questions UI (ce qu'elle voit) + notes libres.</li>
+          <li>Pour les parcours fonctionnels détaillés, se référer au <strong>guide utilisateur</strong> séparé.</li>
+          <li><em>Les captures de l'espace administrateur et membre sont peuplées avec des données factices.</em></li>
+        </ul>
+      </div>
     </div>
   </section>
 
@@ -572,11 +562,6 @@ function buildHtml(captures) {
   </section>
 
   ${pages}
-
-  <section class="page page-transverse pb">
-    <h2>${escapeHtml(TRANSVERSE_AUDIT.title)}</h2>
-    ${transverseBlocks}
-  </section>
 </body>
 </html>`;
 }
