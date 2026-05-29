@@ -115,6 +115,28 @@
   .spread-right .notes-box { margin-top: 2px; }
   .spread-right .notes-box .line { height: 5mm; border-bottom: 1px solid #d1d5db; }
 
+  /* Section intro : page de présentation d'un bloc (admin, membre, ...). */
+  .page-section-intro {
+    height: 190mm;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 0 30mm;
+    background: linear-gradient(135deg, #eef2ff 0%, #fdf2f8 100%);
+    border-radius: 6px;
+  }
+  .section-intro-kicker {
+    font-size: 11pt; letter-spacing: 4px; text-transform: uppercase;
+    color: #6b7280; margin-bottom: 10mm;
+  }
+  .section-intro-title {
+    font-size: 36pt; margin: 0 0 14mm; color: #111827;
+    border-bottom: 3px solid #4338ca; padding-bottom: 6mm;
+    max-width: 220mm;
+  }
+  .section-intro-text {
+    font-size: 13pt; line-height: 1.55; color: #374151;
+    max-width: 200mm; margin: 0 0 6mm;
+  }
+
   /* Spec page (parcours utilisateur en format spécification fonctionnelle) */
   .page-spec .spec-header {
     display: flex; gap: 12px; align-items: flex-start;
@@ -246,6 +268,11 @@
   </section>
 
   
+      <section class="page page-section-intro pb">
+        <div class="section-intro-kicker">Côté adhérente</div>
+        <h1 class="section-intro-title">Espace membre</h1>
+        <p class="section-intro-text">Cette section présente l'expérience vécue par une adhérente du club, qu'elle soit nouvellement inscrite ou membre confirmée. Tableau de bord, parcours d'inscription aux ateliers, suivi de ses inscriptions, consultation du magazine, gestion de son compte : tout ce qu'elle voit après s'être connectée.</p><p class="section-intro-text">Les écrans réservés aux membres premium sont regroupés juste après et constituent une variante enrichie (contenus exclusifs, tarifs préférentiels, services additionnels).</p>
+      </section>
       <section class="page page-spread pb">
         <header class="spread-header">
           <div class="page-num">#1</div>

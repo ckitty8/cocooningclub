@@ -207,9 +207,43 @@ function buildHtml(captures) {
     }
   }
 
+  // Pages d'introduction de section : insérées avant la première planche
+  // de chaque bloc (clé = section concernée, valeur = titre + paragraphe).
+  const SECTION_INTROS = {
+    "Espace administrateur (accès restreint)": {
+      title: "Espace administrateur",
+      kicker: "Accès restreint",
+      paragraphs: [
+        "Cette section regroupe les écrans réservés à l'administration du club. On y pilote la vie quotidienne du club : suivi de l'activité, gestion des membres, planification des ateliers, traitement des pré-inscriptions, modération des avis, configuration du formulaire de contact, des modèles de messages et des disponibilités.",
+        "Chaque planche présente la capture de l'écran et le quizz UX/UI associé. Les chiffres affichés (membres, ateliers, inscriptions, etc.) sont des données de démonstration : seule la structure et l'ergonomie des écrans sont à évaluer ici.",
+      ],
+    },
+    "Espace membre (rôles inscrit / membre)": {
+      title: "Espace membre",
+      kicker: "Côté adhérente",
+      paragraphs: [
+        "Cette section présente l'expérience vécue par une adhérente du club, qu'elle soit nouvellement inscrite ou membre confirmée. Tableau de bord, parcours d'inscription aux ateliers, suivi de ses inscriptions, consultation du magazine, gestion de son compte : tout ce qu'elle voit après s'être connectée.",
+        "Les écrans réservés aux membres premium sont regroupés juste après et constituent une variante enrichie (contenus exclusifs, tarifs préférentiels, services additionnels).",
+      ],
+    },
+  };
+
   let pageNumber = 1;
+  const sectionsIntroduced = new Set();
   const pages = captures
     .map((c) => {
+      let intro = "";
+      if (SECTION_INTROS[c.section] && !sectionsIntroduced.has(c.section)) {
+        sectionsIntroduced.add(c.section);
+        const def = SECTION_INTROS[c.section];
+        intro = `
+      <section class="page page-section-intro pb">
+        <div class="section-intro-kicker">${escapeHtml(def.kicker)}</div>
+        <h1 class="section-intro-title">${escapeHtml(def.title)}</h1>
+        ${def.paragraphs.map((p) => `<p class="section-intro-text">${escapeHtml(p)}</p>`).join("")}
+      </section>`;
+      }
+
       const num = pageNumber++;
 
       const renderQuestion = (q) => `
@@ -255,7 +289,7 @@ function buildHtml(captures) {
         </div>
       </section>`;
 
-      return spreadPage;
+      return intro + spreadPage;
     })
     .join("\n");
 
@@ -395,6 +429,28 @@ function buildHtml(captures) {
   .spread-right .answer-lines .line { height: 4mm; border-bottom: 1px solid #d1d5db; }
   .spread-right .notes-box { margin-top: 2px; }
   .spread-right .notes-box .line { height: 5mm; border-bottom: 1px solid #d1d5db; }
+
+  /* Section intro : page de présentation d'un bloc (admin, membre, ...). */
+  .page-section-intro {
+    height: 190mm;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 0 30mm;
+    background: linear-gradient(135deg, #eef2ff 0%, #fdf2f8 100%);
+    border-radius: 6px;
+  }
+  .section-intro-kicker {
+    font-size: 11pt; letter-spacing: 4px; text-transform: uppercase;
+    color: #6b7280; margin-bottom: 10mm;
+  }
+  .section-intro-title {
+    font-size: 36pt; margin: 0 0 14mm; color: #111827;
+    border-bottom: 3px solid #4338ca; padding-bottom: 6mm;
+    max-width: 220mm;
+  }
+  .section-intro-text {
+    font-size: 13pt; line-height: 1.55; color: #374151;
+    max-width: 200mm; margin: 0 0 6mm;
+  }
 
   /* Spec page (parcours utilisateur en format spécification fonctionnelle) */
   .page-spec .spec-header {
