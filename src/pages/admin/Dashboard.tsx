@@ -117,9 +117,10 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // `visites_site` n'est pas encore dans les types générés Supabase
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const visites = supabase.from("visites_site" as any);
+    // Helper local : chaque requête sur visites_site repart de from()
+    // (les builders Supabase ne sont pas réutilisables, .select() les
+    // consomme). On factorise juste pour ne pas répéter le nom de table.
+    const visites = () => supabase.from("visites_site");
 
     const fetchAll = async () => {
       try {
@@ -163,12 +164,12 @@ const Dashboard = () => {
         const debutMois    = new Date(); debutMois.setDate(debutMois.getDate() - 30);
 
         const [totalRes, jourRes, semaineRes, moisRes, pagesRes, visitesBrut] = await withTimeout(Promise.all([
-          visites.select("id", { count: "exact", head: true }),
-          visites.select("id", { count: "exact", head: true }).gte("cree_le", debutJour.toISOString()),
-          visites.select("id", { count: "exact", head: true }).gte("cree_le", debutSemaine.toISOString()),
-          visites.select("id", { count: "exact", head: true }).gte("cree_le", debutMois.toISOString()),
-          visites.select("page").gte("cree_le", debutMois.toISOString()).limit(2000),
-          visites.select("visiteur_hash").gte("cree_le", debutMois.toISOString()).limit(5000),
+          visites().select("id", { count: "exact", head: true }),
+          visites().select("id", { count: "exact", head: true }).gte("cree_le", debutJour.toISOString()),
+          visites().select("id", { count: "exact", head: true }).gte("cree_le", debutSemaine.toISOString()),
+          visites().select("id", { count: "exact", head: true }).gte("cree_le", debutMois.toISOString()),
+          visites().select("page").gte("cree_le", debutMois.toISOString()).limit(2000),
+          visites().select("visiteur_hash").gte("cree_le", debutMois.toISOString()).limit(5000),
         ]));
 
         // Top pages

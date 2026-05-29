@@ -41,9 +41,6 @@ interface FormFieldConfig {
   options: string[] | null;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as any;
-
 const ContactForm = () => {
   const [fields, setFields] = useState<FormFieldConfig[]>([]);
   const [values, setValues] = useState<Record<string, string>>({});
@@ -53,15 +50,21 @@ const ContactForm = () => {
   const [loadingFields, setLoadingFields] = useState(true);
 
   useEffect(() => {
-    db.from("formulaires")
+    // maybeSingle() au lieu de single() : si la table est vide ou
+    // contient plusieurs lignes, on ne lève pas d'erreur PGRST116 qui
+    // laisserait le formulaire en loading infini.
+    supabase
+      .from("formulaires")
       .select("*, form_fields(*)")
       .eq("est_actif", true)
       .order("cree_le")
       .limit(1)
-      .single()
-      .then(({ data }: { data: { form_fields: FormFieldConfig[] } | null }) => {
-        if (data?.form_fields) {
-          const sorted = [...data.form_fields].sort((a, b) => a.position - b.position);
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (error) console.error("[ContactForm.fetchFormulaires]", error);
+        const fields = (data as { form_fields?: FormFieldConfig[] } | null)?.form_fields;
+        if (fields) {
+          const sorted = [...fields].sort((a, b) => a.position - b.position);
           setFields(sorted);
           const init: Record<string, string> = {};
           sorted.forEach(f => { init[f.id] = ""; });
@@ -87,7 +90,7 @@ const ContactForm = () => {
     const emailField = fields.find(f => f.field_type === "email");
     const telField = fields.find(f => f.field_type === "tel");
 
-    const { error: dbError } = await db.from("contact_messages").insert({
+    const { error: dbError } = await supabase.from("contact_messages").insert({
       email: emailField ? values[emailField.id] || null : null,
       telephone: telField ? values[telField.id] || null : null,
       reponses,
@@ -184,12 +187,17 @@ const Index = () => {
     const today = new Date().toISOString().slice(0, 10);
     supabase
       .from("ateliers")
-      .select("id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, tarif_affichage, tarif_standard, statut")
+      .select("id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, tarif_affichage, tarif_standard, statut, date_fin_inscription")
       .in("statut", ["publie", "complet"])
       .gte("date_atelier", today)
       .order("date_atelier")
       .then(({ data, error }) => {
-        if (!error && data) setAteliers(data as Workshop[]);
+        if (error) {
+          console.error("[Index.fetchAteliers] error:", error);
+          toast.error(`Impossible de charger les ateliers : ${error.message}`, { duration: 8000 });
+          return;
+        }
+        setAteliers((data ?? []) as Workshop[]);
       });
 
     const channel = supabase
@@ -360,7 +368,16 @@ const Index = () => {
           <p className="text-center text-muted-foreground max-w-lg mx-auto mb-16">
             Réservez votre place pour un moment créatif inoubliable.
           </p>
-          <WorkshopCarousel workshops={ateliers} onReserve={openModal} />
+          {ateliers.length === 0 ? (
+            <div className="text-center py-12 border rounded-2xl bg-card max-w-2xl mx-auto">
+              <p className="text-muted-foreground">
+                Aucun atelier programmé pour le moment.<br />
+                Inscris-toi à la newsletter pour être prévenu des prochains.
+              </p>
+            </div>
+          ) : (
+            <WorkshopCarousel workshops={ateliers} onReserve={openModal} />
+          )}
         </div>
       </section>
 

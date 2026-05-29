@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
 import { withTimeout } from "@/utils/withTimeout";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, X, MapPin, Clock, Users, Euro, Search, ChevronDown, UserCheck, UserX, Image as ImageIcon, CircleDashed } from "lucide-react";
+import { Plus, Pencil, Trash2, X, MapPin, Clock, Users, Euro, Search, UserCheck, UserX, Image as ImageIcon, CircleDashed } from "lucide-react";
 
 type Statut = "brouillon" | "publie" | "complet" | "annule" | "termine";
 type Niveau = "debutant" | "intermediaire" | "avance";
@@ -17,6 +17,7 @@ interface Atelier {
   description: string | null;
   description_courte: string | null;
   date_atelier: string;
+  date_fin_inscription: string | null;
   heure_debut: string | null;
   duree: string | null;
   lieu: string | null;
@@ -25,11 +26,16 @@ interface Atelier {
   places_disponibles: number;
   tarif_standard: number | null;
   tarif_premium: number | null;
-  tarif_admin: number | null;
   tarif_affichage: string | null;
   lien_paypal: string | null;
   niveau: Niveau | null;
   statut: Statut;
+  categorie_id: string;
+}
+
+interface Categorie {
+  id: string;
+  nom: string;
 }
 
 interface Inscription {
@@ -53,9 +59,10 @@ interface Inscription {
 
 const emptyForm = {
   titre: "", description: "", description_courte: "",
-  date_atelier: "", heure_debut: "", duree: "", lieu: "", url_image: "",
-  places_max: 10, tarif_standard: "", tarif_premium: "", tarif_admin: "", tarif_affichage: "",
+  date_atelier: "", date_fin_inscription: "", heure_debut: "", duree: "", lieu: "", url_image: "",
+  places_max: 10, tarif_standard: "", tarif_premium: "", tarif_affichage: "",
   lien_paypal: "", niveau: "" as Niveau | "", statut: "brouillon" as Statut,
+  categorie_id: "",
 };
 
 const statutLabels: Record<Statut, string> = {
@@ -89,6 +96,7 @@ const paiementLabel: Record<StatutPaiement, string> = {
 
 const Ateliers = () => {
   const [ateliers, setAteliers] = useState<Atelier[]>([]);
+  const [categories, setCategories] = useState<Categorie[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<{ open: boolean; atelier: Atelier | null }>({ open: false, atelier: null });
   const [form, setForm] = useState(emptyForm);
@@ -96,9 +104,10 @@ const Ateliers = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
-  // Recherche + filtre
+  // Recherche + filtres
   const [search, setSearch] = useState("");
   const [filterStatut, setFilterStatut] = useState<Statut | "">("");
+  const [filterCategorie, setFilterCategorie] = useState<string>("toutes"); // id catégorie ou "toutes"
 
   // Panel inscrits
   const [inscritPanel, setInscritPanel] = useState<{ open: boolean; atelier: Atelier | null }>({ open: false, atelier: null });
@@ -138,11 +147,26 @@ const Ateliers = () => {
 
   useEffect(() => { fetchAteliers(); }, []);
 
+  useEffect(() => {
+    supabase.from("categories").select("id, nom").order("nom").then(({ data }) => {
+      setCategories((data as Categorie[]) ?? []);
+    });
+  }, []);
+
   const filtered = ateliers.filter(a => {
     const matchSearch = a.titre.toLowerCase().includes(search.toLowerCase());
     const matchStatut = filterStatut === "" || a.statut === filterStatut;
-    return matchSearch && matchStatut;
+    const matchCat = filterCategorie === "toutes" || a.categorie_id === filterCategorie;
+    return matchSearch && matchStatut && matchCat;
   });
+
+  const countByCat = (catId: string) =>
+    catId === "toutes"
+      ? ateliers.length
+      : ateliers.filter(a => a.categorie_id === catId).length;
+
+  const countByStatut = (s: Statut | "") =>
+    s === "" ? ateliers.length : ateliers.filter(a => a.statut === s).length;
 
   const openInscrits = async (a: Atelier) => {
     setInscritPanel({ open: true, atelier: a });
@@ -205,15 +229,16 @@ const Ateliers = () => {
   const openEdit = (a: Atelier) => {
     setForm({
       titre: a.titre, description: a.description ?? "", description_courte: a.description_courte ?? "",
-      date_atelier: a.date_atelier, heure_debut: a.heure_debut ?? "", duree: a.duree ?? "",
+      date_atelier: a.date_atelier, date_fin_inscription: a.date_fin_inscription ?? "",
+      heure_debut: a.heure_debut ?? "", duree: a.duree ?? "",
       lieu: a.lieu ?? "", url_image: a.url_image ?? "",
       places_max: a.places_max,
       tarif_standard: a.tarif_standard?.toString() ?? "",
       tarif_premium: a.tarif_premium?.toString() ?? "",
-      tarif_admin: a.tarif_admin?.toString() ?? "",
       tarif_affichage: a.tarif_affichage ?? "",
       lien_paypal: a.lien_paypal ?? "",
       niveau: a.niveau ?? "", statut: a.statut,
+      categorie_id: a.categorie_id,
     });
     setModal({ open: true, atelier: a });
   };
@@ -223,8 +248,13 @@ const Ateliers = () => {
 
     // Vérification : au moins un admin est-il dispo à cette date ?
     if (form.date_atelier) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: dispo } = await (supabase.rpc as any)("admin_dispo_le", { p_date: form.date_atelier });
+      // RPC custom non typée par les types générés : on caste juste le retour
+      // au lieu d'utiliser `any` sur le client entier.
+      const dispoRes = await supabase.rpc(
+        "admin_dispo_le" as never,
+        { p_date: form.date_atelier } as never,
+      );
+      const dispo = dispoRes.data as boolean | null;
       if (dispo === false) {
         const ok = confirm(
           "⚠️ Aucun administrateur n'est disponible à cette date (jour de semaine non dispo ou congés).\n\n" +
@@ -237,27 +267,46 @@ const Ateliers = () => {
       }
     }
 
+    if (!form.categorie_id) {
+      toast.error("Choisis une catégorie");
+      setSaving(false);
+      return;
+    }
+
+    if (!form.heure_debut) {
+      toast.error("L'heure de début est obligatoire");
+      setSaving(false);
+      return;
+    }
+
     const payload = {
       titre: form.titre,
       description: form.description || null,
       description_courte: form.description_courte || null,
       date_atelier: form.date_atelier,
-      heure_debut: form.heure_debut || null,
-      duree: form.duree || null,
+      date_fin_inscription: form.date_fin_inscription || null,
+      heure_debut: form.heure_debut,
+      duree: form.duree || "2 hours",
       lieu: form.lieu || null,
       url_image: form.url_image || null,
       places_max: Number(form.places_max),
-      tarif_standard: form.tarif_standard ? Number(form.tarif_standard) : null,
-      tarif_premium: form.tarif_premium ? Number(form.tarif_premium) : null,
-      tarif_admin: form.tarif_admin ? Number(form.tarif_admin) : null,
+      tarif_standard: form.tarif_standard ? Number(form.tarif_standard) : 0,
+      tarif_premium: form.tarif_premium ? Number(form.tarif_premium) : 0,
       tarif_affichage: form.tarif_affichage || null,
       lien_paypal: form.lien_paypal || null,
-      niveau: (form.niveau as Niveau) || null,
+      niveau: (form.niveau as Niveau) || "debutant",
       statut: form.statut,
+      categorie_id: form.categorie_id,
     };
     if (modal.atelier) {
       const before = modal.atelier;
-      await supabase.from("ateliers").update(payload).eq("id", modal.atelier.id);
+      const { error } = await supabase.from("ateliers").update(payload).eq("id", modal.atelier.id);
+      if (error) {
+        console.error("[Ateliers.handleSave update]", error);
+        toast.error(`Erreur : ${error.message}`, { duration: 8000 });
+        setSaving(false);
+        return;
+      }
       logAction("atelier.update", "ateliers", modal.atelier.id, {
         titre: payload.titre,
         statut_avant: before.statut,
@@ -265,17 +314,24 @@ const Ateliers = () => {
         date_atelier: payload.date_atelier,
       });
     } else {
-      const { data: ins } = await supabase
+      const { data: ins, error } = await supabase
         .from("ateliers")
         .insert({ ...payload, places_disponibles: Number(form.places_max) })
         .select("id")
         .single();
+      if (error) {
+        console.error("[Ateliers.handleSave insert]", error);
+        toast.error(`Erreur : ${error.message}`, { duration: 8000 });
+        setSaving(false);
+        return;
+      }
       logAction("atelier.create", "ateliers", ins?.id ?? null, {
         titre: payload.titre,
         date_atelier: payload.date_atelier,
         statut: payload.statut,
       });
     }
+    toast.success(modal.atelier ? "Atelier mis à jour" : "Atelier créé");
     await fetchAteliers();
     setModal({ open: false, atelier: null });
     setSaving(false);
@@ -334,9 +390,63 @@ const Ateliers = () => {
         </button>
       </div>
 
-      {/* Recherche + filtre */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <div className="relative flex-1">
+      {/* Onglets catégories */}
+      <div className="flex flex-wrap gap-2 mb-4 border-b pb-3">
+        <button
+          onClick={() => setFilterCategorie("toutes")}
+          className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+            filterCategorie === "toutes"
+              ? "bg-primary text-primary-foreground"
+              : "bg-card border text-foreground hover:bg-muted"
+          }`}
+        >
+          Toutes
+          <span className="ml-2 text-xs opacity-70">({countByCat("toutes")})</span>
+        </button>
+        {categories.map(c => (
+          <button
+            key={c.id}
+            onClick={() => setFilterCategorie(c.id)}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+              filterCategorie === c.id
+                ? "bg-primary text-primary-foreground"
+                : "bg-card border text-foreground hover:bg-muted"
+            }`}
+          >
+            {c.nom}
+            <span className="ml-2 text-xs opacity-70">({countByCat(c.id)})</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Onglets statut */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        {([
+          ["", "Tous"],
+          ["brouillon", "Brouillon"],
+          ["publie", "Publié"],
+          ["complet", "Complet"],
+          ["termine", "Terminé"],
+          ["annule", "Annulé"],
+        ] as Array<[Statut | "", string]>).map(([val, label]) => (
+          <button
+            key={val || "tous"}
+            onClick={() => setFilterStatut(val)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+              filterStatut === val
+                ? "bg-foreground text-background"
+                : "bg-card border text-foreground hover:bg-muted"
+            }`}
+          >
+            {label}
+            <span className="ml-1.5 opacity-70">({countByStatut(val)})</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Recherche */}
+      <div className="mb-6">
+        <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             value={search}
@@ -344,21 +454,6 @@ const Ateliers = () => {
             placeholder="Rechercher un atelier..."
             className="w-full pl-9 pr-4 py-2.5 border rounded-xl text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary"
           />
-        </div>
-        <div className="relative">
-          <select
-            value={filterStatut}
-            onChange={e => setFilterStatut(e.target.value as Statut | "")}
-            className="appearance-none pl-3 pr-8 py-2.5 border rounded-xl text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-          >
-            <option value="">Tous les statuts</option>
-            <option value="brouillon">Brouillon</option>
-            <option value="publie">Publié</option>
-            <option value="complet">Complet</option>
-            <option value="annule">Annulé</option>
-            <option value="termine">Terminé</option>
-          </select>
-          <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
         </div>
       </div>
 
@@ -623,6 +718,19 @@ const Ateliers = () => {
                   className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
               <div>
+                <label className="block text-sm font-medium mb-1.5">Catégorie *</label>
+                <select value={form.categorie_id} onChange={e => f("categorie_id", e.target.value)}
+                  className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary">
+                  <option value="">— Choisir une catégorie —</option>
+                  {categories.map(c => (
+                    <option key={c.id} value={c.id}>{c.nom}</option>
+                  ))}
+                </select>
+                {categories.length === 0 && (
+                  <p className="text-xs text-amber-600 mt-1">Aucune catégorie en base. Crée-en une côté Supabase (table categories) avant de continuer.</p>
+                )}
+              </div>
+              <div>
                 <label className="block text-sm font-medium mb-1.5">Description courte</label>
                 <input value={form.description_courte} onChange={e => f("description_courte", e.target.value)}
                   className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
@@ -639,10 +747,16 @@ const Ateliers = () => {
                     className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Heure début</label>
+                  <label className="block text-sm font-medium mb-1.5">Heure début *</label>
                   <input type="time" value={form.heure_debut} onChange={e => f("heure_debut", e.target.value)}
                     className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Date limite d'inscription</label>
+                <input type="date" value={form.date_fin_inscription} onChange={e => f("date_fin_inscription", e.target.value)}
+                  className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
+                <p className="text-xs text-muted-foreground mt-1">Optionnel. Affiché côté membre et bloque les inscriptions après cette date.</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -691,12 +805,6 @@ const Ateliers = () => {
                   placeholder="ex: À partir de 20€" className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5">Tarif interne admin (€)</label>
-                <input type="number" min={0} step={0.01} value={form.tarif_admin} onChange={e => f("tarif_admin", e.target.value)}
-                  placeholder="ex: 12" className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
-                <p className="text-xs text-muted-foreground mt-1">Visible uniquement par les admins (coût réel, marge, etc.). Jamais affiché aux membres.</p>
-              </div>
-              <div>
                 <label className="block text-sm font-medium mb-1.5">Lien PayPal</label>
                 <input value={form.lien_paypal} onChange={e => f("lien_paypal", e.target.value)}
                   placeholder="https://paypal.me/..." className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
@@ -717,7 +825,7 @@ const Ateliers = () => {
             <div className="flex justify-end gap-3 p-6 border-t">
               <button onClick={() => setModal({ open: false, atelier: null })}
                 className="px-4 py-2 text-sm border rounded-full hover:bg-muted transition-colors">Annuler</button>
-              <button onClick={handleSave} disabled={saving || !form.titre || !form.date_atelier}
+              <button onClick={handleSave} disabled={saving || !form.titre || !form.date_atelier || !form.heure_debut || !form.categorie_id}
                 className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-full hover:opacity-90 transition-opacity disabled:opacity-50">
                 {saving ? "Enregistrement..." : "Enregistrer"}
               </button>

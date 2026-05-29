@@ -583,6 +583,131 @@ export type Database = {
         }
         Relationships: []
       }
+      formulaires: {
+        Row: {
+          id: string
+          nom: string
+          description: string | null
+          est_actif: boolean
+          cree_le: string
+          modifie_le: string
+        }
+        Insert: {
+          id?: string
+          nom: string
+          description?: string | null
+          est_actif?: boolean
+          cree_le?: string
+          modifie_le?: string
+        }
+        Update: {
+          id?: string
+          nom?: string
+          description?: string | null
+          est_actif?: boolean
+          cree_le?: string
+          modifie_le?: string
+        }
+        Relationships: []
+      }
+      form_fields: {
+        Row: {
+          id: string
+          formulaire_id: string
+          label: string
+          field_type: "text" | "email" | "tel" | "textarea" | "select"
+          obligatoire: boolean
+          position: number
+          deletable: boolean
+          options: string[] | null
+          cree_le: string
+        }
+        Insert: {
+          id?: string
+          formulaire_id: string
+          label: string
+          field_type: "text" | "email" | "tel" | "textarea" | "select"
+          obligatoire?: boolean
+          position?: number
+          deletable?: boolean
+          options?: string[] | null
+          cree_le?: string
+        }
+        Update: {
+          id?: string
+          formulaire_id?: string
+          label?: string
+          field_type?: "text" | "email" | "tel" | "textarea" | "select"
+          obligatoire?: boolean
+          position?: number
+          deletable?: boolean
+          options?: string[] | null
+          cree_le?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_fields_formulaire_id_fkey"
+            columns: ["formulaire_id"]
+            isOneToOne: false
+            referencedRelation: "formulaires"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contact_messages: {
+        Row: {
+          id: string
+          email: string | null
+          telephone: string | null
+          reponses: Json | null
+          lu: boolean
+          cree_le: string
+        }
+        Insert: {
+          id?: string
+          email?: string | null
+          telephone?: string | null
+          reponses?: Json | null
+          lu?: boolean
+          cree_le?: string
+        }
+        Update: {
+          id?: string
+          email?: string | null
+          telephone?: string | null
+          reponses?: Json | null
+          lu?: boolean
+          cree_le?: string
+        }
+        Relationships: []
+      }
+      visites_site: {
+        Row: {
+          id: string
+          page: string
+          referrer: string | null
+          user_agent: string | null
+          visiteur_hash: string | null
+          cree_le: string
+        }
+        Insert: {
+          id?: string
+          page: string
+          referrer?: string | null
+          user_agent?: string | null
+          visiteur_hash?: string | null
+          cree_le?: string
+        }
+        Update: {
+          id?: string
+          page?: string
+          referrer?: string | null
+          user_agent?: string | null
+          visiteur_hash?: string | null
+          cree_le?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       vue_prochains_ateliers: {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, ChevronLeft, ChevronRight, MapPin, Users, Euro } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, MapPin, Users, Euro, AlarmClock } from "lucide-react";
 import type { Workshop } from "@/data/workshops";
 import { formatDateFr, formatTimeFr } from "@/data/workshops";
 
@@ -31,7 +31,8 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
       <div className="grid md:grid-cols-3 gap-8">
         {visible.map((ws, visibleIdx) => {
           const actualIndex = page * ITEMS_PER_PAGE + visibleIdx;
-          const isSelected = selectedIndex === actualIndex;
+          const closed = !!ws.date_fin_inscription
+            && new Date(ws.date_fin_inscription + "T23:59:59") < new Date();
 
           return (
             <div
@@ -65,14 +66,30 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
                   <span>{ws.tarif_affichage}</span>
                 </div>
 
-                <div className="pt-2 mt-auto">
-                  <button
-                    onClick={(e) => { e.stopPropagation(); onReserve(ws.titre); }}
+                {ws.date_fin_inscription && (
+                  <div className="flex items-center gap-2 text-sm text-foreground">
+                    <AlarmClock className="w-4 h-4 text-primary flex-shrink-0" />
+                    <span>Inscriptions jusqu'au {formatDateFr(ws.date_fin_inscription)}</span>
+                  </div>
+                )}
 
-                    className="w-full bg-primary text-primary-foreground py-3 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
-                  >
-                    Réserver
-                  </button>
+                <div className="pt-2 mt-auto">
+                  {closed ? (
+                    <button
+                      disabled
+                      className="w-full bg-muted text-muted-foreground py-3 rounded-xl text-sm font-medium cursor-not-allowed"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Inscriptions closes
+                    </button>
+                  ) : (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onReserve(ws.titre); }}
+                      className="w-full bg-primary text-primary-foreground py-3 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
+                    >
+                      Réserver
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

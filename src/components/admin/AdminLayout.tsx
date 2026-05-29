@@ -42,8 +42,10 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
       .from("idees")
       .select("id", { count: "exact", head: true })
       .gt("cree_le", since)
-      .then(({ count }) => {
-        if (!cancelled) setIdeesNouvelles(count ?? 0);
+      .then(({ count, error }) => {
+        if (cancelled) return;
+        if (error) console.error("[AdminLayout.idees count]", error);
+        else setIdeesNouvelles(count ?? 0);
       });
     return () => { cancelled = true; };
   }, [profile?.id, location.pathname]);
@@ -58,8 +60,10 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
       .from("inscriptions")
       .select("id", { count: "exact", head: true })
       .eq("statut", "en_attente")
-      .then(({ count }) => {
-        if (!cancelled) setPreInscEnAttente(count ?? 0);
+      .then(({ count, error }) => {
+        if (cancelled) return;
+        if (error) console.error("[AdminLayout.preInsc count]", error);
+        else setPreInscEnAttente(count ?? 0);
       });
     return () => { cancelled = true; };
   }, [profile?.id, location.pathname]);
@@ -72,8 +76,10 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
       .from("avis")
       .select("id", { count: "exact", head: true })
       .eq("moderation", "en_attente")
-      .then(({ count }) => {
-        if (!cancelled) setAvisEnAttente(count ?? 0);
+      .then(({ count, error }) => {
+        if (cancelled) return;
+        if (error) console.error("[AdminLayout.avis count]", error);
+        else setAvisEnAttente(count ?? 0);
       });
     return () => { cancelled = true; };
   }, [profile?.id, location.pathname]);

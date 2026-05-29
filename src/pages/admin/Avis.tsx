@@ -5,7 +5,7 @@ import { logAction } from "@/utils/logAction";
 import { withTimeout } from "@/utils/withTimeout";
 import { toast } from "sonner";
 import {
-  Check, X, Star, MessageSquare, Loader2, Trash2,
+  Check, X, Star, MessageSquare, Loader2, Trash2, Plus,
   CheckCircle2, XCircle, Clock, User, Calendar,
 } from "lucide-react";
 
@@ -13,8 +13,9 @@ type StatutModeration = "en_attente" | "approuve" | "rejete";
 
 interface Avis {
   id: string;
-  utilisateur_id: string;
-  inscription_id: string;
+  utilisateur_id: string | null;
+  inscription_id: string | null;
+  nom_auteur: string | null;
   note: number;
   commentaire: string | null;
   moderation: StatutModeration;
@@ -58,6 +59,17 @@ const Avis = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>("en_attente");
   const [actingOn, setActingOn] = useState<string | null>(null);
+
+  // Modal "Nouveau témoignage"
+  const [addOpen, setAddOpen] = useState(false);
+  const [addSaving, setAddSaving] = useState(false);
+  const [addForm, setAddForm] = useState({
+    nom_auteur: "",
+    note: 5,
+    commentaire: "",
+    moderation: "approuve" as StatutModeration,
+    mis_en_avant: false,
+  });
 
   const fetchAll = async () => {
     try {
@@ -134,6 +146,39 @@ const Avis = () => {
     setActingOn(null);
   };
 
+  const handleCreate = async () => {
+    if (!addForm.nom_auteur.trim()) {
+      toast.error("Le nom de l'auteur est requis");
+      return;
+    }
+    if (!addForm.commentaire.trim()) {
+      toast.error("Le commentaire est requis");
+      return;
+    }
+    setAddSaving(true);
+    const { data, error } = await supabase.from("avis").insert({
+      nom_auteur: addForm.nom_auteur.trim(),
+      note: addForm.note,
+      commentaire: addForm.commentaire.trim(),
+      moderation: addForm.moderation,
+      mis_en_avant: addForm.mis_en_avant && addForm.moderation === "approuve",
+      modere_le: addForm.moderation !== "en_attente" ? new Date().toISOString() : null,
+    }).select("*").single();
+
+    if (error) {
+      toast.error(`Erreur : ${error.message}`, { duration: 8000 });
+    } else {
+      toast.success("Témoignage ajouté");
+      logAction("avis.create_admin", "avis", data?.id ?? null, {
+        nom_auteur: addForm.nom_auteur, note: addForm.note,
+      });
+      setAvis(prev => [data as Avis, ...prev]);
+      setAddOpen(false);
+      setAddForm({ nom_auteur: "", note: 5, commentaire: "", moderation: "approuve", mis_en_avant: false });
+    }
+    setAddSaving(false);
+  };
+
   const handleDelete = async (a: Avis) => {
     if (!confirm("Supprimer définitivement ce témoignage ?")) return;
     setActingOn(a.id);
@@ -158,11 +203,20 @@ const Avis = () => {
 
   return (
     <AdminLayout>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground">Témoignages</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Modère les avis laissés par les membres après les ateliers.
-        </p>
+      <div className="mb-6 flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Témoignages</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Modère les avis laissés par les membres après les ateliers.
+          </p>
+        </div>
+        <button
+          onClick={() => setAddOpen(true)}
+          className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2.5 rounded-full text-sm font-medium hover:opacity-90 transition-opacity"
+        >
+          <Plus className="w-4 h-4" />
+          Nouveau témoignage
+        </button>
       </div>
 
       <div className="flex flex-wrap gap-2 mb-6">
@@ -192,7 +246,12 @@ const Avis = () => {
       ) : (
         <div className="space-y-3">
           {filtered.map(a => {
-            const auteur = `${a.utilisateurs?.prenom ?? ""} ${a.utilisateurs?.nom ?? ""}`.trim() || "—";
+            // Affichage : si avis posté par un membre → "Prénom L."
+            // (anonymisation de la home). Sinon → nom_auteur (admin-créé).
+            const u = a.utilisateurs;
+            const auteur = u?.prenom
+              ? `${u.prenom} ${u.nom?.[0] ?? ""}.`.trim()
+              : a.nom_auteur || "—";
             const atelier = a.inscriptions?.ateliers;
             return (
               <div key={a.id} className="bg-card rounded-2xl border p-5">
@@ -300,6 +359,126 @@ const Avis = () => {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Modal Nouveau témoignage */}
+      {addOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm p-4"
+          onClick={() => setAddOpen(false)}
+        >
+          <div
+            className="bg-background border rounded-2xl shadow-2xl w-full max-w-lg p-6 relative"
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setAddOpen(false)}
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-xl font-bold text-foreground mb-1 flex items-center gap-2">
+              <MessageSquare className="w-5 h-5 text-primary" />
+              Nouveau témoignage
+            </h2>
+            <p className="text-sm text-muted-foreground mb-5">
+              Ajoute manuellement un témoignage pour la home (par ex. retour reçu hors plateforme).
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Auteur *</label>
+                <input
+                  type="text"
+                  value={addForm.nom_auteur}
+                  onChange={e => setAddForm({ ...addForm, nom_auteur: e.target.value })}
+                  placeholder="Marie D."
+                  className="w-full rounded-xl border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Note *</label>
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map(n => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setAddForm({ ...addForm, note: n })}
+                      className="p-1 rounded-lg hover:bg-muted transition-colors"
+                    >
+                      <Star className={`w-6 h-6 ${n <= addForm.note ? "fill-amber-500 text-amber-500" : "text-muted-foreground/40"}`} />
+                    </button>
+                  ))}
+                  <span className="ml-2 self-center text-sm text-muted-foreground">{addForm.note}/5</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Commentaire *</label>
+                <textarea
+                  rows={4}
+                  value={addForm.commentaire}
+                  onChange={e => setAddForm({ ...addForm, commentaire: e.target.value })}
+                  placeholder="Un super atelier, ambiance chaleureuse, j'ai adoré…"
+                  className="w-full rounded-xl border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Statut</label>
+                <div className="flex gap-2 flex-wrap">
+                  {(["en_attente", "approuve", "rejete"] as StatutModeration[]).map(s => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setAddForm({ ...addForm, moderation: s, mis_en_avant: s === "approuve" ? addForm.mis_en_avant : false })}
+                      className={`flex-1 px-3 py-2.5 rounded-xl border text-sm font-medium transition-colors ${
+                        addForm.moderation === s
+                          ? s === "approuve" ? "bg-green-50 border-green-500 text-green-700"
+                            : s === "rejete" ? "bg-red-50 border-red-500 text-red-700"
+                            : "bg-amber-50 border-amber-500 text-amber-700"
+                          : "bg-background border-border text-muted-foreground hover:bg-muted"
+                      }`}
+                    >
+                      {statutLabel[s]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <label className="flex items-center gap-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={addForm.mis_en_avant}
+                  onChange={e => setAddForm({ ...addForm, mis_en_avant: e.target.checked })}
+                  disabled={addForm.moderation !== "approuve"}
+                  className="w-4 h-4 rounded border-border"
+                />
+                <span className={`text-sm ${addForm.moderation !== "approuve" ? "text-muted-foreground" : "text-foreground"}`}>
+                  Mettre en avant sur la home (réservé aux avis approuvés)
+                </span>
+              </label>
+            </div>
+
+            <div className="flex justify-end gap-2 mt-6">
+              <button
+                onClick={() => setAddOpen(false)}
+                className="px-4 py-2 border rounded-xl text-sm font-medium hover:bg-muted transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleCreate}
+                disabled={addSaving || !addForm.nom_auteur.trim() || !addForm.commentaire.trim()}
+                className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40"
+              >
+                {addSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                Ajouter
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </AdminLayout>

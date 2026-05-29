@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { ComponentType, ReactNode, useEffect, useState } from "react";
 import MembreLayout from "@/components/membre/MembreLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import {
   CalendarDays, Clock, MapPin, Users, Euro, Loader2, CheckCircle2,
-  ExternalLink, X,
+  ExternalLink, X, AlarmClock,
 } from "lucide-react";
 
 interface Atelier {
@@ -24,15 +24,24 @@ interface Atelier {
   tarif_premium: number;
   tarif_affichage: string | null;
   lien_paypal: string | null;
+  date_fin_inscription: string | null;
   statut: "publie" | "complet" | "brouillon" | "annule" | "termine";
 }
+
+const isInscriptionsCloses = (a: { date_fin_inscription: string | null }) =>
+  !!a.date_fin_inscription && new Date(a.date_fin_inscription + "T23:59:59") < new Date();
 
 const formatDate = (iso: string) =>
   new Date(iso + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
 const formatTime = (t: string) => t.slice(0, 5);
 
-const Ateliers = () => {
+// Cette page est partagée entre /espace-membre/ateliers et
+// /espace-membre-premium/ateliers. App.tsx passe le bon Layout en prop ;
+// par défaut on retombe sur MembreLayout (espace standard).
+type LayoutComp = ComponentType<{ children: ReactNode }>;
+
+const Ateliers = ({ Layout = MembreLayout }: { Layout?: LayoutComp } = {}) => {
   const { profile } = useAuth();
   const [ateliers, setAteliers] = useState<Atelier[]>([]);
   const [myInscriptions, setMyInscriptions] = useState<Set<string>>(new Set());
@@ -47,7 +56,7 @@ const Ateliers = () => {
     const [aRes, iRes] = await Promise.all([
       supabase
         .from("ateliers")
-        .select("id, titre, description, description_courte, date_atelier, heure_debut, duree, lieu, url_image, places_max, places_disponibles, tarif_standard, tarif_premium, tarif_affichage, lien_paypal, statut")
+        .select("id, titre, description, description_courte, date_atelier, heure_debut, duree, lieu, url_image, places_max, places_disponibles, tarif_standard, tarif_premium, tarif_affichage, lien_paypal, date_fin_inscription, statut")
         .in("statut", ["publie", "complet"])
         .gte("date_atelier", today)
         .order("date_atelier"),
@@ -96,16 +105,16 @@ const Ateliers = () => {
 
   if (loading) {
     return (
-      <MembreLayout>
+      <Layout>
         <div className="flex items-center justify-center h-64">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-      </MembreLayout>
+      </Layout>
     );
   }
 
   return (
-    <MembreLayout>
+    <Layout>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">Ateliers</h1>
         <p className="text-muted-foreground text-sm mt-1">
@@ -123,6 +132,7 @@ const Ateliers = () => {
           {ateliers.map(a => {
             const inscribed = myInscriptions.has(a.id);
             const full = a.statut === "complet" || a.places_disponibles <= 0;
+            const closed = isInscriptionsCloses(a);
             return (
               <div key={a.id} className="bg-card border rounded-2xl overflow-hidden flex flex-col hover:shadow-md transition-shadow">
                 {a.url_image ? (
@@ -144,6 +154,9 @@ const Ateliers = () => {
                     {a.lieu && <div className="flex items-center gap-2"><MapPin className="w-3.5 h-3.5" />{a.lieu}</div>}
                     <div className="flex items-center gap-2"><Users className="w-3.5 h-3.5" />{a.places_disponibles} / {a.places_max} places</div>
                     {a.tarif_affichage && <div className="flex items-center gap-2"><Euro className="w-3.5 h-3.5" />{a.tarif_affichage}</div>}
+                    {a.date_fin_inscription && (
+                      <div className="flex items-center gap-2"><AlarmClock className="w-3.5 h-3.5" />Inscriptions jusqu'au {formatDate(a.date_fin_inscription)}</div>
+                    )}
                   </div>
 
                   <div className="mt-auto pt-4 flex items-center gap-2">
@@ -154,6 +167,10 @@ const Ateliers = () => {
                     ) : full ? (
                       <button disabled className="flex-1 bg-muted text-muted-foreground px-4 py-2 rounded-full text-sm font-medium cursor-not-allowed">
                         Complet
+                      </button>
+                    ) : closed ? (
+                      <button disabled className="flex-1 bg-muted text-muted-foreground px-4 py-2 rounded-full text-sm font-medium cursor-not-allowed">
+                        Inscriptions closes
                       </button>
                     ) : (
                       <button
@@ -240,7 +257,7 @@ const Ateliers = () => {
           </div>
         </div>
       )}
-    </MembreLayout>
+    </Layout>
   );
 };
 

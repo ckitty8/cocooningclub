@@ -28,11 +28,7 @@ import MembreAteliers from "./pages/membre/Ateliers.tsx";
 import MembreInscriptions from "./pages/membre/Inscriptions.tsx";
 import MembreMagazine from "./pages/membre/Magazine.tsx";
 import MembreMonCompte from "./pages/membre/MonCompte.tsx";
-import MembrePremiumDashboard from "./pages/membre-premium/Dashboard.tsx";
-import MembrePremiumAteliers from "./pages/membre-premium/Ateliers.tsx";
-import MembrePremiumInscriptions from "./pages/membre-premium/Inscriptions.tsx";
-import MembrePremiumMagazine from "./pages/membre-premium/Magazine.tsx";
-import MembrePremiumMonCompte from "./pages/membre-premium/MonCompte.tsx";
+import MembrePremiumLayout from "@/components/membre-premium/MembrePremiumLayout";
 
 
 const queryClient = new QueryClient();
@@ -74,19 +70,21 @@ const App = () => (
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
 
-            {/* Espace membre standard */}
+            {/* Espace membre standard — composants par défaut (Layout = MembreLayout, basePath = /espace-membre).
+                Les mêmes composants sont réutilisés plus bas pour /espace-membre-premium en passant le layout
+                premium et le basePath correspondant : aucune duplication de code. */}
             <Route path="/espace-membre"               element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreDashboard /></RoleGuard>} />
             <Route path="/espace-membre/ateliers"      element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreAteliers /></RoleGuard>} />
             <Route path="/espace-membre/inscriptions"  element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreInscriptions /></RoleGuard>} />
             <Route path="/espace-membre/magazine"      element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreMagazine /></RoleGuard>} />
             <Route path="/espace-membre/mon-compte"    element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreMonCompte /></RoleGuard>} />
 
-            {/* Espace membre premium */}
-            <Route path="/espace-membre-premium"               element={<RoleGuard allowedRoles={["membre_premium", "administrateur"]}><MembrePremiumDashboard /></RoleGuard>} />
-            <Route path="/espace-membre-premium/ateliers"      element={<RoleGuard allowedRoles={["membre_premium", "administrateur"]}><MembrePremiumAteliers /></RoleGuard>} />
-            <Route path="/espace-membre-premium/inscriptions"  element={<RoleGuard allowedRoles={["membre_premium", "administrateur"]}><MembrePremiumInscriptions /></RoleGuard>} />
-            <Route path="/espace-membre-premium/magazine"      element={<RoleGuard allowedRoles={["membre_premium", "administrateur"]}><MembrePremiumMagazine /></RoleGuard>} />
-            <Route path="/espace-membre-premium/mon-compte"    element={<RoleGuard allowedRoles={["membre_premium", "administrateur"]}><MembrePremiumMonCompte /></RoleGuard>} />
+            {/* Espace membre premium — réutilise les pages membre/ avec le layout premium */}
+            <Route path="/espace-membre-premium"               element={<RoleGuard allowedRoles={["membre_premium", "administrateur"]}><MembreDashboard Layout={MembrePremiumLayout} basePath="/espace-membre-premium" /></RoleGuard>} />
+            <Route path="/espace-membre-premium/ateliers"      element={<RoleGuard allowedRoles={["membre_premium", "administrateur"]}><MembreAteliers Layout={MembrePremiumLayout} /></RoleGuard>} />
+            <Route path="/espace-membre-premium/inscriptions"  element={<RoleGuard allowedRoles={["membre_premium", "administrateur"]}><MembreInscriptions Layout={MembrePremiumLayout} /></RoleGuard>} />
+            <Route path="/espace-membre-premium/magazine"      element={<RoleGuard allowedRoles={["membre_premium", "administrateur"]}><MembreMagazine Layout={MembrePremiumLayout} /></RoleGuard>} />
+            <Route path="/espace-membre-premium/mon-compte"    element={<RoleGuard allowedRoles={["membre_premium", "administrateur"]}><MembreMonCompte Layout={MembrePremiumLayout} /></RoleGuard>} />
 
             {/* Routes admin protégées */}
             <Route path="/admin/dashboard"         element={<RoleGuard allowedRoles={["administrateur"]}><Dashboard /></RoleGuard>} />

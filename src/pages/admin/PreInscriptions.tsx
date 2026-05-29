@@ -144,10 +144,13 @@ const PreInscriptions = () => {
         supabase
           .from("parametres_messages")
           .select("cle, valeur"),
+        // Liste des ateliers proposables : tous sauf annulés / terminés.
+        // On utilise .in() avec les statuts à inclure (plus lisible et
+        // moins risqué côté typage que .not("statut", "in", ...)).
         supabase
           .from("ateliers")
           .select("id, titre, date_atelier, heure_debut, statut, tarif_standard")
-          .in("statut", ["publie", "complet"])
+          .in("statut", ["brouillon", "publie", "complet"])
           .gte("date_atelier", today)
           .order("date_atelier"),
       ]));
