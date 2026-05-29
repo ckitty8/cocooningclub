@@ -212,76 +212,50 @@ function buildHtml(captures) {
     .map((c) => {
       const num = pageNumber++;
 
-      const uxList = c.ux
-        .map(
-          (q) => `
+      const renderQuestion = (q) => `
           <li class="question">
             <div class="question-text">${escapeHtml(q)}</div>
-            <div class="answer-lines">
-              <div class="line"></div>
-              <div class="line"></div>
-            </div>
-          </li>`
-        )
-        .join("");
+            <div class="answer-lines"><div class="line"></div></div>
+          </li>`;
+      const uxList = c.ux.map(renderQuestion).join("");
+      const uiList = c.ui.map(renderQuestion).join("");
 
-      const uiList = c.ui
-        .map(
-          (q) => `
-          <li class="question">
-            <div class="question-text">${escapeHtml(q)}</div>
-            <div class="answer-lines">
-              <div class="line"></div>
-              <div class="line"></div>
-            </div>
-          </li>`
-        )
-        .join("");
-
-      // Page A : capture pleine page
-      const screenshotPage = `
-      <section class="page page-screenshot pb">
-        <header class="screenshot-header">
+      // Une planche A4 paysage : capture à gauche, quizz à droite.
+      const spreadPage = `
+      <section class="page page-spread pb">
+        <header class="spread-header">
           <div class="page-num">#${num}</div>
-          <div class="screenshot-title">
+          <div class="spread-title">
             <div class="section-tag">${escapeHtml(c.section)}</div>
             <h2>${escapeHtml(c.title)}</h2>
             <div class="path">${escapeHtml(c.path)}</div>
           </div>
         </header>
-        <div class="screenshot-fullbleed">
-          <img src="${encodeURI(c.file)}" alt="Capture de ${escapeHtml(c.title)}" />
-        </div>
-        <p class="caption">${escapeHtml(c.description)}</p>
-      </section>`;
-
-      // Page B : audit UX/UI (le quizz)
-      const auditPage = `
-      <section class="page page-audit pb">
-        <header class="audit-header">
-          <div class="page-num">#${num}</div>
-          <div>
-            <div class="section-tag">Audit UX/UI · ${escapeHtml(c.section)}</div>
-            <h2>${escapeHtml(c.title)}</h2>
+        <div class="spread-body">
+          <div class="spread-left">
+            <div class="screenshot-fullbleed">
+              <img src="${encodeURI(c.file)}" alt="Capture de ${escapeHtml(c.title)}" />
+            </div>
+            <p class="caption">${escapeHtml(c.description)}</p>
           </div>
-        </header>
+          <div class="spread-right">
+            <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
+            <ol class="questions">${uxList}</ol>
 
-        <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
-        <ol class="questions">${uxList}</ol>
+            <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
+            <ol class="questions">${uiList}</ol>
 
-        <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
-        <ol class="questions">${uiList}</ol>
-
-        <h3>Notes libres</h3>
-        <div class="notes-box">
-          <div class="line"></div>
-          <div class="line"></div>
-          <div class="line"></div>
-          <div class="line"></div>
+            <h3>Notes libres</h3>
+            <div class="notes-box">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </div>
         </div>
       </section>`;
 
-      return screenshotPage + auditPage;
+      return spreadPage;
     })
     .join("\n");
 
@@ -309,9 +283,9 @@ function buildHtml(captures) {
 <html lang="fr">
 <head>
 <meta charset="utf-8" />
-<title>Cocooning Club — Audit UX/UI</title>
+<title>Cocooning Club — Démo du site internet</title>
 <style>
-  @page { size: A4; margin: 14mm 14mm; }
+  @page { size: A4 landscape; margin: 10mm 12mm; }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
@@ -369,20 +343,36 @@ function buildHtml(captures) {
     color: #6b7280; font-size: 9.5pt; margin-top: 2px;
   }
 
-  /* Screenshot page (A4 entier dédié à la capture) */
-  .page-screenshot {
-    display: flex; flex-direction: column; height: 269mm;
+  /* Planche A4 paysage : en-tête en haut, capture à gauche / quizz à droite. */
+  .page-spread {
+    display: flex; flex-direction: column; height: 190mm;
+    overflow: hidden;
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
-  .screenshot-header {
+  .spread-header {
     display: flex; gap: 12px; align-items: flex-start;
-    border-bottom: 2px solid #111827; padding-bottom: 6px; margin-bottom: 8px;
+    border-bottom: 2px solid #111827; padding-bottom: 4px; margin-bottom: 6px;
     flex: 0 0 auto;
   }
-  .screenshot-title h2 { font-size: 16pt; margin: 0; }
+  .spread-title h2 { font-size: 15pt; margin: 0; }
+  .spread-body {
+    flex: 1 1 auto;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10mm;
+    min-height: 0;
+  }
+  .spread-left {
+    display: flex; flex-direction: column; min-height: 0;
+  }
+  .spread-right {
+    display: flex; flex-direction: column; min-height: 0;
+    overflow: hidden;
+  }
   .screenshot-fullbleed {
     flex: 1 1 auto; display: flex; align-items: flex-start; justify-content: center;
     border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden;
     background: #f3f4f6; padding: 4px;
+    min-height: 0;
   }
   .screenshot-fullbleed img {
     max-width: 100%; max-height: 100%;
@@ -391,9 +381,20 @@ function buildHtml(captures) {
   }
   .caption {
     flex: 0 0 auto;
-    color: #4b5563; font-size: 9.5pt; font-style: italic;
-    margin: 6px 0 0; text-align: center;
+    color: #4b5563; font-size: 9pt; font-style: italic;
+    margin: 4px 0 0; text-align: center;
   }
+  .spread-right h3 {
+    font-size: 9pt; margin-top: 2px; margin-bottom: 3px;
+    color: #111827; text-transform: uppercase; letter-spacing: 1px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .spread-right h3:first-child { margin-top: 0; }
+  .spread-right ol.questions { padding-left: 16px; margin: 0 0 2px; font-size: 9pt; line-height: 1.3; }
+  .spread-right .question { margin-bottom: 2px; page-break-inside: avoid; }
+  .spread-right .answer-lines .line { height: 4mm; border-bottom: 1px solid #d1d5db; }
+  .spread-right .notes-box { margin-top: 2px; }
+  .spread-right .notes-box .line { height: 5mm; border-bottom: 1px solid #d1d5db; }
 
   /* Spec page (parcours utilisateur en format spécification fonctionnelle) */
   .page-spec .spec-header {
@@ -492,7 +493,7 @@ function buildHtml(captures) {
 <body>
   <section class="page cover">
     <div class="brand">Cocooning Club</div>
-    <h1>Audit UX / UI</h1>
+    <h1>Démo du site internet</h1>
     <p class="subtitle">Pour chaque page : la capture sur une planche A4, puis sur la planche suivante un set de questions UX (parcours, perception, friction) et UI (composition, composants, accessibilité), avec un espace de notes libres.</p>
     <div class="meta">Document généré le ${escapeHtml(today)}</div>
     <div class="howto">
@@ -532,8 +533,9 @@ async function htmlToPdf(browser, htmlPath, pdfPath) {
   await page.pdf({
     path: pdfPath,
     format: "A4",
+    landscape: true,
     printBackground: true,
-    margin: { top: "14mm", bottom: "14mm", left: "14mm", right: "14mm" },
+    margin: { top: "10mm", bottom: "10mm", left: "12mm", right: "12mm" },
   });
   await context.close();
 }
