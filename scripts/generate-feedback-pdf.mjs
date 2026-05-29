@@ -249,7 +249,7 @@ function buildHtml(captures) {
       const renderQuestion = (q) => `
           <li class="question">
             <div class="question-text">${escapeHtml(q)}</div>
-            <div class="answer-lines"><div class="line"></div></div>
+            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
           </li>`;
       const uxList = c.ux.map(renderQuestion).join("");
       const uiList = c.ui.map(renderQuestion).join("");
