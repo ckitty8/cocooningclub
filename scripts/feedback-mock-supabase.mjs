@@ -158,6 +158,11 @@ const ateliers = [
     places_max: 12,
     places_disponibles: 4,
     statut: "publie",
+    niveau: "debutant",
+    categorie_id: "bb000000-0000-0000-0000-000000000001",
+    url_image: null,
+    lien_paypal: null,
+    date_fin_inscription: null,
     type: "bien-etre",
     prix: 28,
     tarif_standard: 28,
@@ -178,6 +183,11 @@ const ateliers = [
     places_max: 10,
     places_disponibles: 0,
     statut: "complet",
+    niveau: "intermediaire",
+    categorie_id: "bb000000-0000-0000-0000-000000000002",
+    url_image: null,
+    lien_paypal: null,
+    date_fin_inscription: null,
     type: "lien",
     prix: 22,
     tarif_standard: 22,
@@ -197,6 +207,11 @@ const ateliers = [
     places_max: 14,
     places_disponibles: 9,
     statut: "publie",
+    niveau: "intermediaire",
+    categorie_id: "bb000000-0000-0000-0000-000000000001",
+    url_image: null,
+    lien_paypal: null,
+    date_fin_inscription: null,
     type: "bien-etre",
     prix: 18,
     tarif_standard: 18,
@@ -216,6 +231,11 @@ const ateliers = [
     places_max: 8,
     places_disponibles: 5,
     statut: "publie",
+    niveau: "debutant",
+    categorie_id: "bb000000-0000-0000-0000-000000000003",
+    url_image: null,
+    lien_paypal: null,
+    date_fin_inscription: null,
     type: "creatif",
     prix: 32,
     tarif_standard: 32,
@@ -235,6 +255,11 @@ const ateliers = [
     places_max: 25,
     places_disponibles: 18,
     statut: "publie",
+    niveau: "debutant",
+    categorie_id: "bb000000-0000-0000-0000-000000000004",
+    url_image: null,
+    lien_paypal: null,
+    date_fin_inscription: null,
     type: "rencontre",
     prix: 35,
     tarif_standard: 35,
@@ -254,6 +279,11 @@ const ateliers = [
     places_max: 12,
     places_disponibles: 0,
     statut: "passe",
+    niveau: "avance",
+    categorie_id: "bb000000-0000-0000-0000-000000000001",
+    url_image: null,
+    lien_paypal: null,
+    date_fin_inscription: null,
     type: "bien-etre",
     prix: 22,
     tarif_standard: 22,
@@ -273,6 +303,11 @@ const ateliers = [
     places_max: 10,
     places_disponibles: 10,
     statut: "brouillon",
+    niveau: "intermediaire",
+    categorie_id: "bb000000-0000-0000-0000-000000000003",
+    url_image: null,
+    lien_paypal: null,
+    date_fin_inscription: null,
     type: "creatif",
     prix: 42,
     tarif_standard: 42,
@@ -374,6 +409,7 @@ const avis = [
     id: "d0000000-0000-0000-0000-000000000001",
     utilisateur_id: utilisateurs[1].id,
     inscription_id: "20000000-0000-0000-0000-000000000001",
+    nom_auteur: null,
     note: 5,
     commentaire:
       "Une parenthèse incroyable ! Christelle a su créer un cadre rassurant et bienveillant. J'ai retrouvé un calme intérieur que j'avais oublié.",
@@ -386,6 +422,7 @@ const avis = [
     id: "d0000000-0000-0000-0000-000000000002",
     utilisateur_id: utilisateurs[3].id,
     inscription_id: "20000000-0000-0000-0000-000000000004",
+    nom_auteur: null,
     note: 4,
     commentaire:
       "Très belle expérience, atelier dense et bien rythmé. J'aurais peut-être aimé un temps de pause supplémentaire en milieu d'atelier.",
@@ -398,6 +435,7 @@ const avis = [
     id: "d0000000-0000-0000-0000-000000000003",
     utilisateur_id: utilisateurs[2].id,
     inscription_id: "20000000-0000-0000-0000-000000000003",
+    nom_auteur: null,
     note: 5,
     commentaire:
       "Un cocon, vraiment. On se sent accueillie sans jugement. J'y retournerai avec joie.",
@@ -410,6 +448,7 @@ const avis = [
     id: "d0000000-0000-0000-0000-000000000004",
     utilisateur_id: utilisateurs[5].id,
     inscription_id: "20000000-0000-0000-0000-000000000006",
+    nom_auteur: null,
     note: 5,
     commentaire:
       "Le brunch était magnifique, organisation parfaite. Bravo à toute l'équipe !",
@@ -422,6 +461,7 @@ const avis = [
     id: "d0000000-0000-0000-0000-000000000005",
     utilisateur_id: utilisateurs[2].id,
     inscription_id: "20000000-0000-0000-0000-000000000003",
+    nom_auteur: null,
     note: 2,
     commentaire:
       "Atelier intéressant mais j'ai trouvé le lieu un peu froid et le temps imparti trop court pour s'exprimer pleinement.",
@@ -429,6 +469,19 @@ const avis = [
     mis_en_avant: false,
     cree_le: isoTs(-45),
     modere_le: isoTs(-44),
+  },
+  {
+    id: "d0000000-0000-0000-0000-000000000006",
+    utilisateur_id: null,
+    inscription_id: null,
+    nom_auteur: "Mathilde D.",
+    note: 5,
+    commentaire:
+      "Témoignage ajouté manuellement par l'admin pour mettre en avant un retour reçu hors plateforme.",
+    moderation: "approuve",
+    mis_en_avant: true,
+    cree_le: isoTs(-20),
+    modere_le: isoTs(-20),
   },
 ];
 
@@ -684,6 +737,13 @@ const visites_site = Array.from({ length: 60 }).map((_, i) => ({
   visites: 35 + Math.floor(Math.random() * 80),
 }));
 
+const categories = [
+  { id: "bb000000-0000-0000-0000-000000000001", nom: "Bien-être", couleur: "#bbf7d0" },
+  { id: "bb000000-0000-0000-0000-000000000002", nom: "Lien", couleur: "#bfdbfe" },
+  { id: "bb000000-0000-0000-0000-000000000003", nom: "Créatif", couleur: "#fbcfe8" },
+  { id: "bb000000-0000-0000-0000-000000000004", nom: "Rencontre", couleur: "#fed7aa" },
+];
+
 export const FAKE_DATA = {
   utilisateurs,
   ateliers,
@@ -699,6 +759,7 @@ export const FAKE_DATA = {
   jours_feries,
   vacances_scolaires,
   visites_site,
+  categories,
 };
 
 // ----- Filtre des requêtes PostgREST -----
