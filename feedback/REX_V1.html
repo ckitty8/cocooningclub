@@ -120,11 +120,25 @@
     display: flex; align-items: center; gap: 6px;
   }
   .spread-right h3:first-child { margin-top: 0; }
-  .spread-right ol.questions { padding-left: 16px; margin: 0 0 2px; font-size: 9pt; line-height: 1.3; }
-  .spread-right .question { margin-bottom: 2px; page-break-inside: avoid; }
-  .spread-right .answer-lines .line { height: 4mm; border-bottom: 1px solid #d1d5db; }
-  .spread-right .notes-box { margin-top: 2px; }
-  .spread-right .notes-box .line { height: 5mm; border-bottom: 1px solid #d1d5db; }
+  .spread-right ol.questions {
+    list-style: none; padding-left: 0; margin: 0 0 6px;
+    font-size: 9.5pt; line-height: 1.4;
+  }
+  .spread-right .question {
+    display: flex; align-items: flex-start; gap: 8px;
+    margin-bottom: 5px; page-break-inside: avoid;
+  }
+  .spread-right .check {
+    flex: 0 0 auto; width: 11px; height: 11px;
+    border: 1.2px solid #4338ca; border-radius: 2px;
+    margin-top: 2px;
+  }
+  .spread-right .question-text { flex: 1 1 auto; }
+  .spread-right .notes-box { margin-top: 4px; }
+  .spread-right .notes-box .dot-line {
+    height: 5.5mm;
+    border-bottom: 1px dotted #9ca3af;
+  }
 
   /* Section intro : page de présentation d'un bloc (admin, membre, ...). */
   .page-section-intro {
@@ -248,7 +262,7 @@
       <div class="brand">Cocooning Club</div>
       <h1>Démo du site internet</h1>
       <p class="subtitle">Pour chaque écran du site : la capture à gauche, le quizz UX/UI à droite (parcours, perception, friction, composants, accessibilité) avec un espace de notes libres.</p>
-      <div class="meta">Document généré le 29 mai 2026</div>
+      <div class="meta">Document généré le 01 juin 2026</div>
       <div class="howto">
         <h3>Comment l'utiliser ?</h3>
         <ul>
@@ -318,46 +332,49 @@
             <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">La promesse du club est-elle claire en moins de 5 secondes ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La promesse du club est-elle claire en moins de 5 secondes ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le CTA principal est-il évident dès l'ouverture ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le CTA principal est-il évident dès l'ouverture ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La proposition de valeur ressort-elle, sans concurrence interne ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La proposition de valeur ressort-elle, sans concurrence interne ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les leviers de réassurance (prix, format, qui anime) sont-ils présents ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les leviers de réassurance (prix, format, qui anime) sont-ils présents ?</span>
           </li></ol>
 
             <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">La hiérarchie typographique (H1/H2/corps) est-elle nette ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La hiérarchie typographique (H1/H2/corps) est-elle nette ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La palette de couleurs est-elle restreinte et cohérente ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La palette de couleurs est-elle restreinte et cohérente ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les boutons primaire / secondaire sont-ils différenciés ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les boutons primaire / secondaire sont-ils différenciés ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les visuels sont-ils cohérents en style et en ratio ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les visuels sont-ils cohérents en style et en ratio ?</span>
           </li></ol>
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>
@@ -383,46 +400,49 @@
             <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Le format d'affichage correspond-il à vos habitudes ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le format d'affichage correspond-il à vos habitudes ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les infos clés (date, places, prix) sont-elles visibles sans cliquer ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les infos clés (date, places, prix) sont-elles visibles sans cliquer ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les filtres répondent-ils à vos vrais critères de tri ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les filtres répondent-ils à vos vrais critères de tri ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les états « complet » ou « fermé » sont-ils clairement signalés ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les états « complet » ou « fermé » sont-ils clairement signalés ?</span>
           </li></ol>
 
             <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Chaque carte respire-t-elle assez visuellement ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Chaque carte respire-t-elle assez visuellement ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les statuts combinent-ils icône + couleur + texte ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les statuts combinent-ils icône + couleur + texte ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Sait-on au regard ce qui est cliquable ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Sait-on au regard ce qui est cliquable ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le rendu mobile reste-t-il lisible sur 360 px ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le rendu mobile reste-t-il lisible sur 360 px ?</span>
           </li></ol>
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>
@@ -448,46 +468,49 @@
             <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Sait-on immédiatement où on entre (membre ou admin) ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Sait-on immédiatement où on entre (membre ou admin) ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le message d'erreur attendu est-il rassurant ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le message d'erreur attendu est-il rassurant ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le lien « mot de passe oublié » est-il visible sans crier ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le lien « mot de passe oublié » est-il visible sans crier ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Manque-t-il « rester connectée » ou un magic link ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Manque-t-il « rester connectée » ou un magic link ?</span>
           </li></ol>
 
             <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Les labels sont-ils au-dessus des champs (pas seulement placeholder) ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les labels sont-ils au-dessus des champs (pas seulement placeholder) ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le bouton « afficher mot de passe » est-il accessible et clair ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le bouton « afficher mot de passe » est-il accessible et clair ?</span>
           </li>
           <li class="question">
-            <div class="question-text">L'état « connexion en cours » est-il visible (bouton + spinner) ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">L'état « connexion en cours » est-il visible (bouton + spinner) ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le poids visuel primaire vs lien est-il équilibré ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le poids visuel primaire vs lien est-il équilibré ?</span>
           </li></ol>
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>
@@ -513,46 +536,49 @@
             <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Le texte rassure-t-il sur l'aboutissement de la procédure ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le texte rassure-t-il sur l'aboutissement de la procédure ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le délai d'attente de l'email est-il précisé ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le délai d'attente de l'email est-il précisé ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Une issue de secours est-elle proposée si rien n'arrive ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Une issue de secours est-elle proposée si rien n'arrive ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le retour vers la connexion est-il visible sans distraire ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le retour vers la connexion est-il visible sans distraire ?</span>
           </li></ol>
 
             <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Un seul champ, un seul bouton : page minimaliste ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Un seul champ, un seul bouton : page minimaliste ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le feedback succès / erreur est-il clair et accessible ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le feedback succès / erreur est-il clair et accessible ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le rythme typographique est-il cohérent avec /login ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le rythme typographique est-il cohérent avec /login ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le bouton reste-t-il accessible avec le clavier ouvert (mobile) ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le bouton reste-t-il accessible avec le clavier ouvert (mobile) ?</span>
           </li></ol>
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>
@@ -578,46 +604,49 @@
             <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Les contraintes du mot de passe sont-elles affichées avant la saisie ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les contraintes du mot de passe sont-elles affichées avant la saisie ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Une confirmation (2 champs) réduit-elle le risque de typo ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Une confirmation (2 champs) réduit-elle le risque de typo ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Un indicateur de force aide-t-il sans stresser ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Un indicateur de force aide-t-il sans stresser ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La sortie de tunnel après succès est-elle évidente ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La sortie de tunnel après succès est-elle évidente ?</span>
           </li></ol>
 
             <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Le bouton « œil » est-il accessible au clavier (focus visible) ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le bouton « œil » est-il accessible au clavier (focus visible) ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La couleur d'erreur respecte-t-elle le contraste accessible ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La couleur d'erreur respecte-t-elle le contraste accessible ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le bouton primaire est-il désactivé tant que les règles ne passent pas ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le bouton primaire est-il désactivé tant que les règles ne passent pas ?</span>
           </li>
           <li class="question">
-            <div class="question-text">L'attribut autocomplete=new-password est-il bien réglé ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">L'attribut autocomplete=new-password est-il bien réglé ?</span>
           </li></ol>
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>
@@ -643,46 +672,49 @@
             <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Le ton déculpabilise-t-il l'utilisatrice ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le ton déculpabilise-t-il l'utilisatrice ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Au moins 3 voies de rattrapage sont-elles offertes ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Au moins 3 voies de rattrapage sont-elles offertes ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La page exprime-t-elle l'identité « cocooning » ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La page exprime-t-elle l'identité « cocooning » ?</span>
           </li>
           <li class="question">
-            <div class="question-text">L'URL erronée est-elle rappelée pour le diagnostic ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">L'URL erronée est-elle rappelée pour le diagnostic ?</span>
           </li></ol>
 
             <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Le header / footer du site reste-t-il présent ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le header / footer du site reste-t-il présent ?</span>
           </li>
           <li class="question">
-            <div class="question-text">L'illustration s'inscrit-elle dans la palette ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">L'illustration s'inscrit-elle dans la palette ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La hiérarchie « titre humain » avant « 404 » est-elle juste ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La hiérarchie « titre humain » avant « 404 » est-elle juste ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les balises &lt;title&gt; et &lt;main&gt; sont-elles correctes ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les balises &lt;title&gt; et &lt;main&gt; sont-elles correctes ?</span>
           </li></ol>
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>
@@ -713,46 +745,49 @@
             <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Les 3 infos clés du jour sont-elles visibles sans scroller ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les 3 infos clés du jour sont-elles visibles sans scroller ?</span>
           </li>
           <li class="question">
-            <div class="question-text">L'action la plus fréquente est-elle accessible en 1 clic ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">L'action la plus fréquente est-elle accessible en 1 clic ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Tous les indicateurs affichés sont-ils actionnables ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Tous les indicateurs affichés sont-ils actionnables ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les chiffres sont-ils explicitement datés (semaine, mois) ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les chiffres sont-ils explicitement datés (semaine, mois) ?</span>
           </li></ol>
 
             <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Hiérarchie KPI : chiffre dominant &gt; label &gt; tendance ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Hiérarchie KPI : chiffre dominant &gt; label &gt; tendance ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Couleur sémantique (vert / rouge) réservée aux variations ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Couleur sémantique (vert / rouge) réservée aux variations ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La densité d'information reste-t-elle gérable ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La densité d'information reste-t-elle gérable ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Sidebar claire (icône + label + état actif) ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Sidebar claire (icône + label + état actif) ?</span>
           </li></ol>
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>
@@ -778,46 +813,49 @@
             <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">La recherche couvre-t-elle vos cas (nom, email, atelier) ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La recherche couvre-t-elle vos cas (nom, email, atelier) ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les filtres principaux sont-ils combinables et persistés ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les filtres principaux sont-ils combinables et persistés ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Des actions de masse (export, message) sont-elles présentes ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Des actions de masse (export, message) sont-elles présentes ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La fiche membre contient-elle l'essentiel sans surcharge ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La fiche membre contient-elle l'essentiel sans surcharge ?</span>
           </li></ol>
 
             <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Alignement tableau (texte gauche, chiffres droite) respecté ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Alignement tableau (texte gauche, chiffres droite) respecté ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Pagination ou scroll infini cohérent avec l'usage admin ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Pagination ou scroll infini cohérent avec l'usage admin ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les avatars / initiales gèrent-ils l'absence de photo ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les avatars / initiales gèrent-ils l'absence de photo ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les pastilles de statut sont-elles visuellement distinctes ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les pastilles de statut sont-elles visuellement distinctes ?</span>
           </li></ol>
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>
@@ -843,46 +881,49 @@
             <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Combien d'étapes pour publier un atelier ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Combien d'étapes pour publier un atelier ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La duplication ou un modèle est-elle disponible ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La duplication ou un modèle est-elle disponible ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Tous les états (brouillon, publié, complet, annulé, passé) visibles ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Tous les états (brouillon, publié, complet, annulé, passé) visibles ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les risques (double saisie, conflit de date) sont-ils prévenus ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les risques (double saisie, conflit de date) sont-ils prévenus ?</span>
           </li></ol>
 
             <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Les champs du formulaire sont-ils groupés par bloc cohérent ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les champs du formulaire sont-ils groupés par bloc cohérent ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Date et heure sont-elles saisissables au clavier ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Date et heure sont-elles saisissables au clavier ?</span>
           </li>
           <li class="question">
-            <div class="question-text">« Enregistrer brouillon » et « Publier » sont-ils distincts ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">« Enregistrer brouillon » et « Publier » sont-ils distincts ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les erreurs sont-elles ancrées au champ concerné ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les erreurs sont-elles ancrées au champ concerné ?</span>
           </li></ol>
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>
@@ -908,46 +949,49 @@
             <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Tous les statuts métier sont-ils représentés ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Tous les statuts métier sont-ils représentés ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La priorité de traitement du jour est-elle suggérée ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La priorité de traitement du jour est-elle suggérée ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Confirmer / refuser / relancer sont-ils accessibles en 1 clic ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Confirmer / refuser / relancer sont-ils accessibles en 1 clic ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La candidate est-elle automatiquement notifiée ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La candidate est-elle automatiquement notifiée ?</span>
           </li></ol>
 
             <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Les colonnes utiles sont-elles lisibles sans scroll horizontal ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les colonnes utiles sont-elles lisibles sans scroll horizontal ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les actions destructrices sont-elles différenciées ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les actions destructrices sont-elles différenciées ?</span>
           </li>
           <li class="question">
-            <div class="question-text">L'empty state guide-t-il vers une action utile ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">L'empty state guide-t-il vers une action utile ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Un badge sur le menu indique-t-il le nombre en attente ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Un badge sur le menu indique-t-il le nombre en attente ?</span>
           </li></ol>
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>
@@ -973,46 +1017,49 @@
             <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Le modèle d'organisation reflète-t-il vos types réels ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le modèle d'organisation reflète-t-il vos types réels ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les droits d'accès (membres / premium / tous) sont-ils clairs ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les droits d'accès (membres / premium / tous) sont-ils clairs ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Sait-on si un document est obsolète (date, alerte) ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Sait-on si un document est obsolète (date, alerte) ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Notification membre à l'ajout : utile ou intrusive ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Notification membre à l'ajout : utile ou intrusive ?</span>
           </li></ol>
 
             <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Liste vs grille : bascule possible et utile ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Liste vs grille : bascule possible et utile ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Zone d'upload explicite avec états (hover, progression) ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Zone d'upload explicite avec états (hover, progression) ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Métadonnées (taille, date) lisibles d'un coup d'œil ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Métadonnées (taille, date) lisibles d'un coup d'œil ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Actions (DL, supprimer) accessibles avec confirmation ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Actions (DL, supprimer) accessibles avec confirmation ?</span>
           </li></ol>
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>
@@ -1038,46 +1085,49 @@
             <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">La longueur du formulaire est-elle assumée (filtre fort vs leads) ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La longueur du formulaire est-elle assumée (filtre fort vs leads) ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Des champs conditionnels existent-ils ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Des champs conditionnels existent-ils ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Un aperçu en mode visiteur est-il accessible avant publication ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Un aperçu en mode visiteur est-il accessible avant publication ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La sortie (export, base) est-elle fluide ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La sortie (export, base) est-elle fluide ?</span>
           </li></ol>
 
             <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Drag &amp; drop pour réordonner les champs ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Drag &amp; drop pour réordonner les champs ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Types de champ (texte, choix, date, RGPD) couvrent-ils les besoins ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Types de champ (texte, choix, date, RGPD) couvrent-ils les besoins ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Convention obligatoire vs facultatif visible et cohérente ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Convention obligatoire vs facultatif visible et cohérente ?</span>
           </li>
           <li class="question">
-            <div class="question-text">État de publication (brouillon, publié, archivé) distinct ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">État de publication (brouillon, publié, archivé) distinct ?</span>
           </li></ol>
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>
@@ -1103,46 +1153,49 @@
             <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Les 3 templates les plus utilisés sont-ils déjà présents ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les 3 templates les plus utilisés sont-ils déjà présents ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les variables ({{prénom}}, etc.) sont-elles documentées dans l'éditeur ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les variables ({{prénom}}, etc.) sont-elles documentées dans l'éditeur ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La distinction email vs SMS est-elle explicite ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La distinction email vs SMS est-elle explicite ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Un test d'envoi est-il possible avant utilisation ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Un test d'envoi est-il possible avant utilisation ?</span>
           </li></ol>
 
             <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">L'éditeur WYSIWYG reste-t-il simple, sans surcharge ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">L'éditeur WYSIWYG reste-t-il simple, sans surcharge ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Un aperçu côte à côte est-il disponible ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Un aperçu côte à côte est-il disponible ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La bibliothèque est-elle triable et recherchable ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La bibliothèque est-elle triable et recherchable ?</span>
           </li>
           <li class="question">
-            <div class="question-text">L'historique des modifications est-il accessible ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">L'historique des modifications est-il accessible ?</span>
           </li></ol>
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>
@@ -1168,46 +1221,49 @@
             <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">La granularité (créneau, demi-journée) reflète-t-elle votre planification ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La granularité (créneau, demi-journée) reflète-t-elle votre planification ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La récurrence couvre-t-elle 80 % des cas ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La récurrence couvre-t-elle 80 % des cas ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les conflits avec un atelier planifié sont-ils prévenus ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les conflits avec un atelier planifié sont-ils prévenus ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Sait-on ce qui est exposé publiquement ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Sait-on ce qui est exposé publiquement ?</span>
           </li></ol>
 
             <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">La vue semaine est-elle claire et lisible ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La vue semaine est-elle claire et lisible ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les états (dispo, pris, bloqué) sont-ils visuellement distincts ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les états (dispo, pris, bloqué) sont-ils visuellement distincts ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le drag pour étendre un créneau est-il intuitif ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le drag pour étendre un créneau est-il intuitif ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La bascule mobile vers une liste est-elle automatique ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La bascule mobile vers une liste est-elle automatique ?</span>
           </li></ol>
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>
@@ -1233,46 +1289,49 @@
             <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Le cycle de vie d'une idée est-il représenté ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le cycle de vie d'une idée est-il représenté ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La boucle de retour à l'autrice est-elle automatique ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La boucle de retour à l'autrice est-elle automatique ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les autres membres peuvent-elles voir et voter ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les autres membres peuvent-elles voir et voter ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Une idée peut-elle se transformer en atelier ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Une idée peut-elle se transformer en atelier ?</span>
           </li></ol>
 
             <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Hiérarchie de carte (titre &gt; description &gt; meta) respectée ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Hiérarchie de carte (titre &gt; description &gt; meta) respectée ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le tri / filtre par défaut est-il pertinent ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le tri / filtre par défaut est-il pertinent ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La palette des statuts reste-t-elle sobre ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La palette des statuts reste-t-elle sobre ?</span>
           </li>
           <li class="question">
-            <div class="question-text">L'empty state encourage-t-il à inviter des contributions ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">L'empty state encourage-t-il à inviter des contributions ?</span>
           </li></ol>
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>
@@ -1298,46 +1357,49 @@
             <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Le format de modération vous fait-il gagner du temps ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le format de modération vous fait-il gagner du temps ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les critères de décision (note, vocabulaire) sont-ils visibles ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les critères de décision (note, vocabulaire) sont-ils visibles ?</span>
           </li>
           <li class="question">
-            <div class="question-text">L'autrice de l'avis est-elle informée du résultat ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">L'autrice de l'avis est-elle informée du résultat ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La mise en avant suit-elle une règle claire ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La mise en avant suit-elle une règle claire ?</span>
           </li></ol>
 
             <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">La note (étoiles + chiffre) est-elle lisible immédiatement ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La note (étoiles + chiffre) est-elle lisible immédiatement ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les badges de statut sont-ils visuellement distincts ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les badges de statut sont-ils visuellement distincts ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les actions inline (approuver, rejeter) sont-elles accessibles ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les actions inline (approuver, rejeter) sont-elles accessibles ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La densité reste-t-elle scannable sur 20+ avis ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La densité reste-t-elle scannable sur 20+ avis ?</span>
           </li></ol>
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>
@@ -1363,46 +1425,49 @@
             <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Quels champs puis-je modifier moi-même sans aide tech ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Quels champs puis-je modifier moi-même sans aide tech ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le changement de mot de passe demande-t-il l'ancien ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le changement de mot de passe demande-t-il l'ancien ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Une notion de co-administratrice est-elle anticipée ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Une notion de co-administratrice est-elle anticipée ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La déconnexion est-elle évidente depuis n'importe où ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La déconnexion est-elle évidente depuis n'importe où ?</span>
           </li></ol>
 
             <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Sections séparées (info, sécurité, préférences) ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Sections séparées (info, sécurité, préférences) ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les champs read-only sont-ils visuellement distincts ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les champs read-only sont-ils visuellement distincts ?</span>
           </li>
           <li class="question">
-            <div class="question-text">« Supprimer le compte » est-il isolé et en couleur tertiaire ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">« Supprimer le compte » est-il isolé et en couleur tertiaire ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le toast de confirmation explicite-t-il QUOI est enregistré ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le toast de confirmation explicite-t-il QUOI est enregistré ?</span>
           </li></ol>
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>
@@ -1433,46 +1498,49 @@
             <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">La salutation et le contenu sont-ils personnalisés ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La salutation et le contenu sont-ils personnalisés ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les 3 actions principales sont-elles à 1 clic ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les 3 actions principales sont-elles à 1 clic ?</span>
           </li>
           <li class="question">
-            <div class="question-text">L'empty state invite-t-il à découvrir le calendrier ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">L'empty state invite-t-il à découvrir le calendrier ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Quel élément donne envie de revenir chaque semaine ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Quel élément donne envie de revenir chaque semaine ?</span>
           </li></ol>
 
             <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Le bloc « prochaine inscription » domine-t-il visuellement ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le bloc « prochaine inscription » domine-t-il visuellement ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La sidebar est-elle cohérente avec l'espace admin ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La sidebar est-elle cohérente avec l'espace admin ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le rendu mobile reste-t-il pertinent ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le rendu mobile reste-t-il pertinent ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les microinteractions s'alignent-elles avec l'identité « cocooning » ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les microinteractions s'alignent-elles avec l'identité « cocooning » ?</span>
           </li></ol>
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>
@@ -1498,46 +1566,49 @@
             <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Qu'apporte cette page de plus que /calendrier public ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Qu'apporte cette page de plus que /calendrier public ?</span>
           </li>
           <li class="question">
-            <div class="question-text">L'inscription est-elle fluide sans re-saisie d'identité ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">L'inscription est-elle fluide sans re-saisie d'identité ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les filtres utiles (thème, jour, animatrice) sont-ils présents ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les filtres utiles (thème, jour, animatrice) sont-ils présents ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le statut « déjà inscrite » est-il visible immédiatement ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le statut « déjà inscrite » est-il visible immédiatement ?</span>
           </li></ol>
 
             <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Hiérarchie carte : photo, titre, date, places, CTA ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Hiérarchie carte : photo, titre, date, places, CTA ?</span>
           </li>
           <li class="question">
-            <div class="question-text">L'état « inscrite » combine-t-il couleur + texte ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">L'état « inscrite » combine-t-il couleur + texte ?</span>
           </li>
           <li class="question">
-            <div class="question-text">L'empty state est-il chaleureux ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">L'empty state est-il chaleureux ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Disposition mobile en 1 colonne bien adaptée ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Disposition mobile en 1 colonne bien adaptée ?</span>
           </li></ol>
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>
@@ -1563,46 +1634,49 @@
             <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">La séparation à venir / passées / annulées est-elle claire ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La séparation à venir / passées / annulées est-elle claire ?</span>
           </li>
           <li class="question">
-            <div class="question-text">L'action principale (annuler, facture, avis) est-elle prioritaire ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">L'action principale (annuler, facture, avis) est-elle prioritaire ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Chaque inscription porte-t-elle ses infos clés sans cliquer ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Chaque inscription porte-t-elle ses infos clés sans cliquer ?</span>
           </li>
           <li class="question">
-            <div class="question-text">L'avis est-il proposé uniquement après l'atelier ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">L'avis est-il proposé uniquement après l'atelier ?</span>
           </li></ol>
 
             <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Les pastilles statut sont-elles visuellement distinctes ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les pastilles statut sont-elles visuellement distinctes ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le statut paiement combine-t-il couleur + texte ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le statut paiement combine-t-il couleur + texte ?</span>
           </li>
           <li class="question">
-            <div class="question-text">L'action « annuler » utilise-t-elle une couleur tertiaire ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">L'action « annuler » utilise-t-elle une couleur tertiaire ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La densité passé / à venir est-elle adaptée ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La densité passé / à venir est-elle adaptée ?</span>
           </li></ol>
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>
@@ -1628,46 +1702,49 @@
             <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Le numéro courant est-il identifiable au premier regard ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le numéro courant est-il identifiable au premier regard ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le confort de lecture (en ligne / téléchargement) est-il assuré ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le confort de lecture (en ligne / téléchargement) est-il assuré ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le sommaire est-il scannable ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le sommaire est-il scannable ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Qu'est-ce qui donne envie de revenir chaque mois ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Qu'est-ce qui donne envie de revenir chaque mois ?</span>
           </li></ol>
 
             <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">La couverture a-t-elle un ratio cohérent et net ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La couverture a-t-elle un ratio cohérent et net ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La typographie de magazine (sérif élégante) est-elle utilisée ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La typographie de magazine (sérif élégante) est-elle utilisée ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le bouton de téléchargement reste-t-il secondaire ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le bouton de téléchargement reste-t-il secondaire ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le viewer mobile est-il performant ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le viewer mobile est-il performant ?</span>
           </li></ol>
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>
@@ -1693,46 +1770,49 @@
             <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Les champs modifiables vs read-only sont-ils explicites ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les champs modifiables vs read-only sont-ils explicites ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La sécurité (ancien mot de passe demandé) est-elle assurée ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La sécurité (ancien mot de passe demandé) est-elle assurée ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La suppression du compte a-t-elle un parcours clair ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La suppression du compte a-t-elle un parcours clair ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les préférences de communication sont-elles transparentes ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les préférences de communication sont-elles transparentes ?</span>
           </li></ol>
 
             <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Sections clairement séparées (info, sécurité, préférences) ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Sections clairement séparées (info, sécurité, préférences) ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les champs read-only sont-ils marqués (cadenas, fond grisé) ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les champs read-only sont-ils marqués (cadenas, fond grisé) ?</span>
           </li>
           <li class="question">
-            <div class="question-text">L'action destructrice est-elle isolée et tertiaire ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">L'action destructrice est-elle isolée et tertiaire ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le toast de confirmation explicite-t-il ce qui est enregistré ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le toast de confirmation explicite-t-il ce qui est enregistré ?</span>
           </li></ol>
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>
@@ -1758,46 +1838,49 @@
             <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Qu'est-ce qui justifie visuellement le statut premium ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Qu'est-ce qui justifie visuellement le statut premium ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les contenus exclusifs sont-ils mis en avant ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les contenus exclusifs sont-ils mis en avant ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le sentiment d'appartenance est-il renforcé ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le sentiment d'appartenance est-il renforcé ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le renouvellement des contenus est-il perceptible ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le renouvellement des contenus est-il perceptible ?</span>
           </li></ol>
 
             <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Le marqueur premium reste-t-il discret ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le marqueur premium reste-t-il discret ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La couleur d'accent diffère-t-elle du standard sans casser la marque ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La couleur d'accent diffère-t-elle du standard sans casser la marque ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La hiérarchie laisse-t-elle place aux actions courantes ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La hiérarchie laisse-t-elle place aux actions courantes ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La sidebar reste-t-elle identique à l'espace standard ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La sidebar reste-t-elle identique à l'espace standard ?</span>
           </li></ol>
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>
@@ -1823,46 +1906,49 @@
             <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">L'avantage premium est-il perceptible immédiatement ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">L'avantage premium est-il perceptible immédiatement ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les ateliers exclusifs sont-ils mis en avant ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les ateliers exclusifs sont-ils mis en avant ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le tarif réduit est-il tangible (prix barré) ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le tarif réduit est-il tangible (prix barré) ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Une notion d'accès anticipé est-elle présente ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Une notion d'accès anticipé est-elle présente ?</span>
           </li></ol>
 
             <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">L'étiquette « Exclusif premium » reste-t-elle discrète ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">L'étiquette « Exclusif premium » reste-t-elle discrète ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le prix barré + nouveau prix est-il lisible ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le prix barré + nouveau prix est-il lisible ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La cohérence avec /espace-membre/ateliers est-elle préservée ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La cohérence avec /espace-membre/ateliers est-elle préservée ?</span>
           </li>
           <li class="question">
-            <div class="question-text">L'étiquette ne masque-t-elle pas le CTA en mobile ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">L'étiquette ne masque-t-elle pas le CTA en mobile ?</span>
           </li></ol>
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>
@@ -1888,46 +1974,49 @@
             <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Quels services premium sont visibles ici ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Quels services premium sont visibles ici ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le tarif premium est-il rappelé sur chaque ligne ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le tarif premium est-il rappelé sur chaque ligne ?</span>
           </li>
           <li class="question">
-            <div class="question-text">L'historique d'inscriptions remonte-t-il assez loin ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">L'historique d'inscriptions remonte-t-il assez loin ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Une action « reporter sans frais » est-elle proposée ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Une action « reporter sans frais » est-elle proposée ?</span>
           </li></ol>
 
             <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">La grille reste-t-elle cohérente avec /espace-membre/inscriptions ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La grille reste-t-elle cohérente avec /espace-membre/inscriptions ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Un badge « Premium » est-il visible sans intruser ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Un badge « Premium » est-il visible sans intruser ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les actions premium sont-elles visuellement différenciées ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les actions premium sont-elles visuellement différenciées ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La densité n'est-elle pas surchargée ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La densité n'est-elle pas surchargée ?</span>
           </li></ol>
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>
@@ -1953,46 +2042,49 @@
             <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Qu'est-ce qui distingue le magazine premium du standard ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Qu'est-ce qui distingue le magazine premium du standard ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La membre voit-elle clairement ce qu'elle gagne en plus ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La membre voit-elle clairement ce qu'elle gagne en plus ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les archives sont-elles accessibles ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les archives sont-elles accessibles ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le téléchargement est-il possible pour tous les contenus ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le téléchargement est-il possible pour tous les contenus ?</span>
           </li></ol>
 
             <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Le marqueur « Bonus premium » reste-t-il discret ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le marqueur « Bonus premium » reste-t-il discret ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La couverture du numéro courant est-elle valorisée ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La couverture du numéro courant est-elle valorisée ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le sommaire distingue-t-il articles standard et bonus ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le sommaire distingue-t-il articles standard et bonus ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le viewer mobile est-il fluide ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le viewer mobile est-il fluide ?</span>
           </li></ol>
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>
@@ -2018,46 +2110,49 @@
             <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">La date de fin d'abonnement est-elle clairement visible ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La date de fin d'abonnement est-elle clairement visible ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le changement d'abonnement est-il transparent (sans piège) ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le changement d'abonnement est-il transparent (sans piège) ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Les avantages premium sont-ils rappelés subtilement ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Les avantages premium sont-ils rappelés subtilement ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La résiliation a-t-elle un parcours clair ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La résiliation a-t-elle un parcours clair ?</span>
           </li></ol>
 
             <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
             <ol class="questions">
           <li class="question">
-            <div class="question-text">Le bloc « Mon abonnement » est-il distinct des autres sections ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le bloc « Mon abonnement » est-il distinct des autres sections ?</span>
           </li>
           <li class="question">
-            <div class="question-text">Le bouton « Résilier » reste-t-il tertiaire (pas rouge agressif) ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">Le bouton « Résilier » reste-t-il tertiaire (pas rouge agressif) ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La liste des factures est-elle exportable globalement ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La liste des factures est-elle exportable globalement ?</span>
           </li>
           <li class="question">
-            <div class="question-text">La cohérence avec /espace-membre/mon-compte est-elle préservée ?</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">La cohérence avec /espace-membre/mon-compte est-elle préservée ?</span>
           </li></ol>
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>

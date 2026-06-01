@@ -248,8 +248,8 @@ function buildHtml(captures) {
 
       const renderQuestion = (q) => `
           <li class="question">
-            <div class="question-text">${escapeHtml(q)}</div>
-            <div class="answer-lines"><div class="line"></div><div class="line"></div></div>
+            <span class="check"></span>
+            <span class="question-text">${escapeHtml(q)}</span>
           </li>`;
       const uxList = c.ux.map(renderQuestion).join("");
       const uiList = c.ui.map(renderQuestion).join("");
@@ -281,9 +281,12 @@ function buildHtml(captures) {
 
             <h3>Notes libres</h3>
             <div class="notes-box">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
+              <div class="dot-line"></div>
             </div>
           </div>
         </div>
@@ -415,11 +418,25 @@ function buildHtml(captures) {
     display: flex; align-items: center; gap: 6px;
   }
   .spread-right h3:first-child { margin-top: 0; }
-  .spread-right ol.questions { padding-left: 16px; margin: 0 0 2px; font-size: 9pt; line-height: 1.3; }
-  .spread-right .question { margin-bottom: 2px; page-break-inside: avoid; }
-  .spread-right .answer-lines .line { height: 4mm; border-bottom: 1px solid #d1d5db; }
-  .spread-right .notes-box { margin-top: 2px; }
-  .spread-right .notes-box .line { height: 5mm; border-bottom: 1px solid #d1d5db; }
+  .spread-right ol.questions {
+    list-style: none; padding-left: 0; margin: 0 0 6px;
+    font-size: 9.5pt; line-height: 1.4;
+  }
+  .spread-right .question {
+    display: flex; align-items: flex-start; gap: 8px;
+    margin-bottom: 5px; page-break-inside: avoid;
+  }
+  .spread-right .check {
+    flex: 0 0 auto; width: 11px; height: 11px;
+    border: 1.2px solid #4338ca; border-radius: 2px;
+    margin-top: 2px;
+  }
+  .spread-right .question-text { flex: 1 1 auto; }
+  .spread-right .notes-box { margin-top: 4px; }
+  .spread-right .notes-box .dot-line {
+    height: 5.5mm;
+    border-bottom: 1px dotted #9ca3af;
+  }
 
   /* Section intro : page de présentation d'un bloc (admin, membre, ...). */
   .page-section-intro {
