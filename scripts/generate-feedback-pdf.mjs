@@ -230,71 +230,77 @@ function buildHtml(captures) {
 
   let pageNumber = 1;
   const sectionsIntroduced = new Set();
-  const pages = captures
-    .map((c) => {
-      let intro = "";
-      if (SECTION_INTROS[c.section] && !sectionsIntroduced.has(c.section)) {
-        sectionsIntroduced.add(c.section);
-        const def = SECTION_INTROS[c.section];
-        intro = `
-      <section class="page page-section-intro pb">
-        <div class="section-intro-kicker">${escapeHtml(def.kicker)}</div>
-        <h1 class="section-intro-title">${escapeHtml(def.title)}</h1>
-        ${def.paragraphs.map((p) => `<p class="section-intro-text">${escapeHtml(p)}</p>`).join("")}
-      </section>`;
-      }
 
-      const num = pageNumber++;
-
-      const renderQuestion = (q) => `
+  const renderQuestion = (q) => `
           <li class="question">
             <span class="check"></span>
             <span class="question-text">${escapeHtml(q)}</span>
           </li>`;
-      const uxList = c.ux.map(renderQuestion).join("");
-      const uiList = c.ui.map(renderQuestion).join("");
 
-      // Une planche A4 paysage : capture à gauche, quizz à droite.
-      const spreadPage = `
-      <section class="page page-spread pb">
-        <header class="spread-header">
+  // Une « mini-carte » = capture + quizz tassés sur la moitié d'une A4 paysage.
+  const renderMini = (c, num) => {
+    const uxList = c.ux.map(renderQuestion).join("");
+    const uiList = c.ui.map(renderQuestion).join("");
+    return `
+      <div class="mini">
+        <header class="mini-header">
           <div class="page-num">#${num}</div>
-          <div class="spread-title">
+          <div class="mini-title">
             <div class="section-tag">${escapeHtml(c.section)}</div>
             <h2>${escapeHtml(c.title)}</h2>
             <div class="path">${escapeHtml(c.path)}</div>
           </div>
         </header>
-        <div class="spread-body">
-          <div class="spread-left">
-            <div class="screenshot-fullbleed">
-              <img src="${encodeURI(c.file)}" alt="Capture de ${escapeHtml(c.title)}" />
-            </div>
-            <p class="caption">${escapeHtml(c.description)}</p>
-          </div>
-          <div class="spread-right">
-            <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
-            <ol class="questions">${uxList}</ol>
-
-            <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
-            <ol class="questions">${uiList}</ol>
-
-            <h3>Notes libres</h3>
-            <div class="notes-box">
-              <div class="dot-line"></div>
-              <div class="dot-line"></div>
-              <div class="dot-line"></div>
-              <div class="dot-line"></div>
-              <div class="dot-line"></div>
-              <div class="dot-line"></div>
-            </div>
+        <div class="mini-shot">
+          <img src="${encodeURI(c.file)}" alt="Capture de ${escapeHtml(c.title)}" />
+        </div>
+        <div class="mini-quizz">
+          <h3><span class="lens lens-ux">UX</span> Parcours, perception, friction</h3>
+          <ol class="questions">${uxList}</ol>
+          <h3><span class="lens lens-ui">UI</span> Composition, composants, accessibilité</h3>
+          <ol class="questions">${uiList}</ol>
+          <h3>Notes</h3>
+          <div class="notes-box">
+            <div class="dot-line"></div>
+            <div class="dot-line"></div>
+            <div class="dot-line"></div>
           </div>
         </div>
-      </section>`;
+      </div>`;
+  };
 
-      return intro + spreadPage;
-    })
-    .join("\n");
+  const out = [];
+  let buffer = [];
+  const flushBuffer = () => {
+    if (buffer.length === 0) return;
+    out.push(`
+      <section class="page page-double pb">
+        ${buffer.join("")}
+      </section>`);
+    buffer = [];
+  };
+
+  for (const c of captures) {
+    // Si on entre dans une nouvelle section avec une page d'intro dédiée,
+    // on flush d'abord la planche en cours pour que l'intro démarre seule.
+    if (SECTION_INTROS[c.section] && !sectionsIntroduced.has(c.section)) {
+      flushBuffer();
+      sectionsIntroduced.add(c.section);
+      const def = SECTION_INTROS[c.section];
+      out.push(`
+      <section class="page page-section-intro pb">
+        <div class="section-intro-kicker">${escapeHtml(def.kicker)}</div>
+        <h1 class="section-intro-title">${escapeHtml(def.title)}</h1>
+        ${def.paragraphs.map((p) => `<p class="section-intro-text">${escapeHtml(p)}</p>`).join("")}
+      </section>`);
+    }
+
+    buffer.push(renderMini(c, pageNumber++));
+    if (buffer.length === 2) flushBuffer();
+  }
+  flushBuffer();
+
+  const pages = out.join("\n");
 
   return `<!doctype html>
 <html lang="fr">
@@ -371,70 +377,69 @@ function buildHtml(captures) {
     color: #6b7280; font-size: 9.5pt; margin-top: 2px;
   }
 
-  /* Planche A4 paysage : en-tête en haut, capture à gauche / quizz à droite. */
-  .page-spread {
-    display: flex; flex-direction: column; height: 190mm;
+  /* Planche A4 paysage : 2 mini-cartes (1 screen + quizz chacune) côte à côte. */
+  .page-double {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6mm;
+    height: 190mm;
     overflow: hidden;
     page-break-inside: avoid;
     break-inside: avoid;
   }
-  .spread-header {
-    display: flex; gap: 12px; align-items: flex-start;
-    border-bottom: 2px solid #111827; padding-bottom: 4px; margin-bottom: 6px;
-    flex: 0 0 auto;
-  }
-  .spread-title h2 { font-size: 15pt; margin: 0; }
-  .spread-body {
-    flex: 1 1 auto;
-    display: grid; grid-template-columns: 1fr 1fr; gap: 10mm;
-    min-height: 0;
-  }
-  .spread-left {
+  .mini {
     display: flex; flex-direction: column; min-height: 0;
-  }
-  .spread-right {
-    display: flex; flex-direction: column; min-height: 0;
+    border: 1px solid #e5e7eb; border-radius: 6px;
+    padding: 6px 8px;
     overflow: hidden;
   }
-  .screenshot-fullbleed {
-    flex: 1 1 auto; display: flex; align-items: flex-start; justify-content: center;
-    border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden;
-    background: #f3f4f6; padding: 4px;
-    min-height: 0;
+  .mini-header {
+    display: flex; gap: 8px; align-items: flex-start;
+    border-bottom: 1px solid #111827; padding-bottom: 3px; margin-bottom: 5px;
+    flex: 0 0 auto;
   }
-  .screenshot-fullbleed img {
+  .mini-header .page-num {
+    font-size: 9pt; padding: 2px 6px; min-width: 30px;
+  }
+  .mini-title h2 { font-size: 11pt; margin: 0; line-height: 1.15; }
+  .mini-title .section-tag { font-size: 7.5pt; padding: 1px 6px; margin-bottom: 1px; }
+  .mini-title .path { font-size: 7.5pt; margin-top: 0; }
+  .mini-shot {
+    flex: 0 0 auto; height: 78mm;
+    display: flex; align-items: flex-start; justify-content: center;
+    border: 1px solid #e5e7eb; border-radius: 4px; overflow: hidden;
+    background: #f3f4f6; padding: 2px;
+    margin-bottom: 5px;
+  }
+  .mini-shot img {
     max-width: 100%; max-height: 100%;
-    width: auto; height: auto;
     object-fit: contain; display: block;
   }
-  .caption {
-    flex: 0 0 auto;
-    color: #4b5563; font-size: 9pt; font-style: italic;
-    margin: 4px 0 0; text-align: center;
+  .mini-quizz {
+    flex: 1 1 auto; min-height: 0; overflow: hidden;
   }
-  .spread-right h3 {
-    font-size: 9pt; margin-top: 2px; margin-bottom: 3px;
-    color: #111827; text-transform: uppercase; letter-spacing: 1px;
-    display: flex; align-items: center; gap: 6px;
+  .mini-quizz h3 {
+    font-size: 7.5pt; margin: 2px 0 1px;
+    color: #111827; text-transform: uppercase; letter-spacing: 0.8px;
+    display: flex; align-items: center; gap: 5px;
   }
-  .spread-right h3:first-child { margin-top: 0; }
-  .spread-right ol.questions {
-    list-style: none; padding-left: 0; margin: 0 0 6px;
-    font-size: 9.5pt; line-height: 1.4;
+  .mini-quizz h3:first-child { margin-top: 0; }
+  .mini-quizz .lens { padding: 0 5px; font-size: 7pt; }
+  .mini-quizz ol.questions {
+    list-style: none; padding-left: 0; margin: 0 0 3px;
+    font-size: 7.5pt; line-height: 1.25;
   }
-  .spread-right .question {
-    display: flex; align-items: flex-start; gap: 8px;
-    margin-bottom: 5px; page-break-inside: avoid;
+  .mini-quizz .question {
+    display: flex; align-items: flex-start; gap: 5px;
+    margin-bottom: 1.5px; page-break-inside: avoid;
   }
-  .spread-right .check {
-    flex: 0 0 auto; width: 11px; height: 11px;
-    border: 1.2px solid #4338ca; border-radius: 2px;
+  .mini-quizz .check {
+    flex: 0 0 auto; width: 8px; height: 8px;
+    border: 1px solid #4338ca; border-radius: 2px;
     margin-top: 2px;
   }
-  .spread-right .question-text { flex: 1 1 auto; }
-  .spread-right .notes-box { margin-top: 4px; }
-  .spread-right .notes-box .dot-line {
-    height: 5.5mm;
+  .mini-quizz .question-text { flex: 1 1 auto; }
+  .mini-quizz .notes-box { margin-top: 2px; }
+  .mini-quizz .notes-box .dot-line {
+    height: 3.8mm;
     border-bottom: 1px dotted #9ca3af;
   }
 
