@@ -16,7 +16,8 @@
     "feedback:rex:membre": "FEEDBACK_SCOPE=membre node scripts/generate-feedback-pdf.mjs",
     "feedback:rex:admin": "FEEDBACK_SCOPE=admin node scripts/generate-feedback-pdf.mjs",
     "feedback:rex:public": "FEEDBACK_SCOPE=public node scripts/generate-feedback-pdf.mjs",
-    "feedback:guide": "node scripts/generate-user-guide.mjs"
+    "feedback:guide": "node scripts/generate-user-guide.mjs",
+    "feedback:valeurs": "node scripts/generate-valeurs-pdf.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
