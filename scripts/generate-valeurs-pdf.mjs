@@ -137,11 +137,7 @@ function buildHtml() {
   }
   .page {
     width: 210mm; height: 297mm;
-    background:
-      radial-gradient(circle at 12% 8%, rgba(254, 215, 170, 0.55), transparent 40%),
-      radial-gradient(circle at 88% 12%, rgba(251, 207, 232, 0.55), transparent 40%),
-      radial-gradient(circle at 50% 100%, rgba(187, 247, 208, 0.55), transparent 45%),
-      linear-gradient(180deg, #fff7ed 0%, #fdf2f8 100%);
+    background: #fff8f0;
     padding: 18mm 16mm 16mm;
     display: flex; flex-direction: column;
   }
@@ -173,13 +169,11 @@ function buildHtml() {
   }
 
   .valeur-card {
-    background:
-      radial-gradient(circle at 100% 0%, rgba(255,255,255,0.55), transparent 50%),
-      linear-gradient(180deg, var(--bg-from) 0%, var(--bg-to) 100%);
+    background: var(--bg-from);
+    border: 1.5px solid var(--accent);
     border-radius: 14px;
     padding: 9mm 8mm 9mm;
     color: var(--ink);
-    box-shadow: 0 2mm 6mm rgba(0, 0, 0, 0.06);
     display: flex; flex-direction: column;
     overflow: hidden;
   }
