@@ -40,11 +40,11 @@ const VALEURS = [
     mantra: "On vient pour faire. On repart avec.",
     icone: spark,
     palette: {
-      bgFrom: "#fef3c7",
-      bgTo: "#fde68a",
-      accent: "#b45309",
-      accentSoft: "#fef9c3",
-      ink: "#451a03",
+      bgFrom: "#f7eddb",
+      bgTo: "#f7eddb",
+      accent: "#b8923f",
+      accentSoft: "#f7eddb",
+      ink: "#3d3029",
     },
   },
   {
@@ -59,11 +59,11 @@ const VALEURS = [
     mantra: "On vient seule. On repart entourée.",
     icone: users,
     palette: {
-      bgFrom: "#fce7f3",
-      bgTo: "#fbcfe8",
-      accent: "#9d174d",
-      accentSoft: "#fdf2f8",
-      ink: "#500724",
+      bgFrom: "#f4d9cc",
+      bgTo: "#f4d9cc",
+      accent: "#d16c47",
+      accentSoft: "#f4d9cc",
+      ink: "#3d3029",
     },
   },
   {
@@ -78,11 +78,11 @@ const VALEURS = [
     mantra: "Ici, vous êtes la bienvenue. Toujours.",
     icone: heart,
     palette: {
-      bgFrom: "#dcfce7",
-      bgTo: "#bbf7d0",
-      accent: "#15803d",
-      accentSoft: "#f0fdf4",
-      ink: "#052e16",
+      bgFrom: "#d8e5dd",
+      bgTo: "#d8e5dd",
+      accent: "#5d8a72",
+      accentSoft: "#d8e5dd",
+      ink: "#3d3029",
     },
   },
 ];
@@ -132,12 +132,16 @@ function buildHtml() {
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
-    font-family: "Georgia", "Times New Roman", serif;
-    color: #1f2937;
+    font-family: "DM Sans", "Helvetica Neue", "Segoe UI", sans-serif;
+    color: #3d3029;
+  }
+  h1, h2, h3, .display {
+    font-family: "Playfair Display", "Georgia", "Times New Roman", serif;
+    font-weight: 700;
   }
   .page {
     width: 210mm; height: 297mm;
-    background: #fff8f0;
+    background: #f8f5f1;
     padding: 18mm 16mm 16mm;
     display: flex; flex-direction: column;
   }
@@ -147,17 +151,16 @@ function buildHtml() {
     text-align: center; margin-bottom: 10mm;
   }
   .head .brand {
-    font-family: "Helvetica Neue", "Segoe UI", sans-serif;
     font-size: 9pt; letter-spacing: 6px; text-transform: uppercase;
-    color: #92400e; margin-bottom: 6mm;
+    color: #d16c47; margin-bottom: 6mm;
   }
   .head h1 {
-    font-size: 36pt; font-weight: 700; color: #7c2d12;
+    font-size: 36pt; color: #3d3029;
     margin: 0; letter-spacing: -1px; line-height: 1.05;
   }
-  .head h1 em { font-style: italic; color: #b45309; }
+  .head h1 em { font-style: italic; color: #d16c47; }
   .head .subtitle {
-    font-size: 11.5pt; color: #78350f;
+    font-size: 11.5pt; color: #7a6856;
     margin: 6mm auto 0; max-width: 130mm; line-height: 1.5;
   }
 
@@ -183,20 +186,20 @@ function buildHtml() {
   }
   .card-icon {
     width: 16mm; height: 16mm; border-radius: 50%;
-    background: rgba(255, 255, 255, 0.55);
+    background: #f8f5f1;
     color: var(--accent);
     display: flex; align-items: center; justify-content: center;
     border: 1.5px solid var(--accent);
   }
   .card-icon svg { width: 9mm; height: 9mm; }
   .card-num {
-    font-family: "Helvetica Neue", sans-serif;
-    font-size: 28pt; font-weight: 200; color: var(--accent);
-    opacity: 0.5; letter-spacing: -2px; line-height: 1;
+    font-size: 28pt; font-weight: 300; color: var(--accent);
+    opacity: 0.55; letter-spacing: -2px; line-height: 1;
   }
   .card-titre {
+    font-family: "Playfair Display", "Georgia", serif;
     font-size: 22pt; font-weight: 700; margin: 0 0 3mm;
-    letter-spacing: -0.5px; line-height: 1;
+    letter-spacing: -0.5px; line-height: 1; color: var(--ink);
   }
   .card-accroche {
     font-style: italic; font-size: 10.5pt; color: var(--accent);
@@ -208,21 +211,21 @@ function buildHtml() {
   }
   .card-intro {
     font-size: 9.5pt; line-height: 1.55; margin: 0 0 6mm;
-    color: #374151;
+    color: #5d4f43;
   }
   .card-mantra {
     margin-top: auto;
     padding: 5mm 5mm;
     border-left: 3px solid var(--accent);
-    background: rgba(255, 255, 255, 0.55);
-    font-family: "Georgia", serif;
+    background: #f8f5f1;
+    font-family: "Playfair Display", "Georgia", serif;
     font-size: 10pt; font-style: italic; color: var(--ink);
     border-radius: 0 6px 6px 0;
     text-align: center;
     line-height: 1.35;
   }
   .card-mantra .quote {
-    font-family: "Georgia", serif;
+    font-family: "Playfair Display", "Georgia", serif;
     font-size: 14pt; color: var(--accent);
     vertical-align: -2pt; margin: 0 2px;
   }
@@ -231,15 +234,14 @@ function buildHtml() {
   .foot {
     margin-top: 8mm;
     display: flex; justify-content: space-between; align-items: center;
-    font-family: "Helvetica Neue", sans-serif;
     font-size: 8pt; letter-spacing: 3px; text-transform: uppercase;
-    color: #92400e; opacity: 0.7;
+    color: #d16c47;
   }
   .foot .dots { display: flex; gap: 3mm; }
   .foot .dot { width: 4mm; height: 4mm; border-radius: 50%; }
-  .foot .dot:nth-child(1) { background: #fde68a; }
-  .foot .dot:nth-child(2) { background: #fbcfe8; }
-  .foot .dot:nth-child(3) { background: #bbf7d0; }
+  .foot .dot:nth-child(1) { background: #e0ba85; }
+  .foot .dot:nth-child(2) { background: #d16c47; }
+  .foot .dot:nth-child(3) { background: #a9c6b3; }
 </style>
 </head>
 <body>
