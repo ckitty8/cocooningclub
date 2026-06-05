@@ -39,13 +39,6 @@ const VALEURS = [
     ],
     mantra: "On vient pour faire. On repart avec.",
     icone: spark,
-    palette: {
-      bgFrom: "#f7eddb",
-      bgTo: "#f7eddb",
-      accent: "#b8923f",
-      accentSoft: "#f7eddb",
-      ink: "#3d3029",
-    },
   },
   {
     nom: "Convivialité",
@@ -58,13 +51,6 @@ const VALEURS = [
     ],
     mantra: "On vient seule. On repart entourée.",
     icone: users,
-    palette: {
-      bgFrom: "#f4d9cc",
-      bgTo: "#f4d9cc",
-      accent: "#d16c47",
-      accentSoft: "#f4d9cc",
-      ink: "#3d3029",
-    },
   },
   {
     nom: "Bienveillance",
@@ -77,13 +63,6 @@ const VALEURS = [
     ],
     mantra: "Ici, vous êtes la bienvenue. Toujours.",
     icone: heart,
-    palette: {
-      bgFrom: "#d8e5dd",
-      bgTo: "#d8e5dd",
-      accent: "#5d8a72",
-      accentSoft: "#d8e5dd",
-      ink: "#3d3029",
-    },
   },
 ];
 
@@ -100,13 +79,7 @@ function heart() {
 
 function buildHtml() {
   const cards = VALEURS.map((v, idx) => `
-    <article class="valeur-card" style="
-      --bg-from: ${v.palette.bgFrom};
-      --bg-to: ${v.palette.bgTo};
-      --accent: ${v.palette.accent};
-      --accent-soft: ${v.palette.accentSoft};
-      --ink: ${v.palette.ink};
-    ">
+    <article class="valeur-card">
       <div class="card-top">
         <div class="card-icon">${v.icone()}</div>
         <div class="card-num">0${idx + 1}</div>
@@ -152,13 +125,13 @@ function buildHtml() {
   }
   .head .brand {
     font-size: 9pt; letter-spacing: 6px; text-transform: uppercase;
-    color: #d16c47; margin-bottom: 6mm;
+    color: #e5734f; margin-bottom: 6mm;
   }
   .head h1 {
     font-size: 36pt; color: #3d3029;
     margin: 0; letter-spacing: -1px; line-height: 1.05;
   }
-  .head h1 em { font-style: italic; color: #d16c47; }
+  .head h1 em { font-style: italic; color: #e5734f; }
   .head .subtitle {
     font-size: 11.5pt; color: #7a6856;
     margin: 6mm auto 0; max-width: 130mm; line-height: 1.5;
@@ -172,11 +145,10 @@ function buildHtml() {
   }
 
   .valeur-card {
-    background: var(--bg-from);
-    border: 1.5px solid var(--accent);
-    border-radius: 14px;
-    padding: 9mm 8mm 9mm;
-    color: var(--ink);
+    background: #f3ede8;
+    border-radius: 16px;
+    padding: 10mm 9mm 9mm;
+    color: #3d3029;
     display: flex; flex-direction: column;
     overflow: hidden;
   }
@@ -186,27 +158,26 @@ function buildHtml() {
   }
   .card-icon {
     width: 16mm; height: 16mm; border-radius: 50%;
-    background: #f8f5f1;
-    color: var(--accent);
+    background: rgba(229, 115, 79, 0.1);
+    color: #e5734f;
     display: flex; align-items: center; justify-content: center;
-    border: 1.5px solid var(--accent);
   }
   .card-icon svg { width: 9mm; height: 9mm; }
   .card-num {
-    font-size: 28pt; font-weight: 300; color: var(--accent);
-    opacity: 0.55; letter-spacing: -2px; line-height: 1;
+    font-size: 28pt; font-weight: 300; color: #e5734f;
+    opacity: 0.5; letter-spacing: -2px; line-height: 1;
   }
   .card-titre {
     font-family: "Playfair Display", "Georgia", serif;
     font-size: 22pt; font-weight: 700; margin: 0 0 3mm;
-    letter-spacing: -0.5px; line-height: 1; color: var(--ink);
+    letter-spacing: -0.5px; line-height: 1; color: #3d3029;
   }
   .card-accroche {
-    font-style: italic; font-size: 10.5pt; color: var(--accent);
+    font-style: italic; font-size: 10.5pt; color: #e5734f;
     margin: 0 0 5mm; line-height: 1.4;
   }
   .card-rule {
-    width: 18mm; height: 2px; background: var(--accent);
+    width: 18mm; height: 2px; background: #e5734f;
     margin: 0 0 6mm;
   }
   .card-intro {
@@ -215,18 +186,18 @@ function buildHtml() {
   }
   .card-mantra {
     margin-top: auto;
-    padding: 5mm 5mm;
-    border-left: 3px solid var(--accent);
-    background: #f8f5f1;
+    padding: 6mm 6mm;
+    border-left: 3px solid #e5734f;
+    background: #faf6f2;
     font-family: "Playfair Display", "Georgia", serif;
-    font-size: 10pt; font-style: italic; color: var(--ink);
+    font-size: 10pt; font-style: italic; color: #3d3029;
     border-radius: 0 6px 6px 0;
     text-align: center;
     line-height: 1.35;
   }
   .card-mantra .quote {
     font-family: "Playfair Display", "Georgia", serif;
-    font-size: 14pt; color: var(--accent);
+    font-size: 14pt; color: #e5734f;
     vertical-align: -2pt; margin: 0 2px;
   }
 
@@ -235,13 +206,11 @@ function buildHtml() {
     margin-top: 8mm;
     display: flex; justify-content: space-between; align-items: center;
     font-size: 8pt; letter-spacing: 3px; text-transform: uppercase;
-    color: #d16c47;
+    color: #e5734f;
   }
   .foot .dots { display: flex; gap: 3mm; }
   .foot .dot { width: 4mm; height: 4mm; border-radius: 50%; }
-  .foot .dot:nth-child(1) { background: #e0ba85; }
-  .foot .dot:nth-child(2) { background: #d16c47; }
-  .foot .dot:nth-child(3) { background: #a9c6b3; }
+  .foot .dot { background: #e5734f; }
 </style>
 </head>
 <body>

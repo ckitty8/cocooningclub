@@ -28,13 +28,13 @@
   }
   .head .brand {
     font-size: 9pt; letter-spacing: 6px; text-transform: uppercase;
-    color: #d16c47; margin-bottom: 6mm;
+    color: #e5734f; margin-bottom: 6mm;
   }
   .head h1 {
     font-size: 36pt; color: #3d3029;
     margin: 0; letter-spacing: -1px; line-height: 1.05;
   }
-  .head h1 em { font-style: italic; color: #d16c47; }
+  .head h1 em { font-style: italic; color: #e5734f; }
   .head .subtitle {
     font-size: 11.5pt; color: #7a6856;
     margin: 6mm auto 0; max-width: 130mm; line-height: 1.5;
@@ -48,11 +48,10 @@
   }
 
   .valeur-card {
-    background: var(--bg-from);
-    border: 1.5px solid var(--accent);
-    border-radius: 14px;
-    padding: 9mm 8mm 9mm;
-    color: var(--ink);
+    background: #f3ede8;
+    border-radius: 16px;
+    padding: 10mm 9mm 9mm;
+    color: #3d3029;
     display: flex; flex-direction: column;
     overflow: hidden;
   }
@@ -62,27 +61,26 @@
   }
   .card-icon {
     width: 16mm; height: 16mm; border-radius: 50%;
-    background: #f8f5f1;
-    color: var(--accent);
+    background: rgba(229, 115, 79, 0.1);
+    color: #e5734f;
     display: flex; align-items: center; justify-content: center;
-    border: 1.5px solid var(--accent);
   }
   .card-icon svg { width: 9mm; height: 9mm; }
   .card-num {
-    font-size: 28pt; font-weight: 300; color: var(--accent);
-    opacity: 0.55; letter-spacing: -2px; line-height: 1;
+    font-size: 28pt; font-weight: 300; color: #e5734f;
+    opacity: 0.5; letter-spacing: -2px; line-height: 1;
   }
   .card-titre {
     font-family: "Playfair Display", "Georgia", serif;
     font-size: 22pt; font-weight: 700; margin: 0 0 3mm;
-    letter-spacing: -0.5px; line-height: 1; color: var(--ink);
+    letter-spacing: -0.5px; line-height: 1; color: #3d3029;
   }
   .card-accroche {
-    font-style: italic; font-size: 10.5pt; color: var(--accent);
+    font-style: italic; font-size: 10.5pt; color: #e5734f;
     margin: 0 0 5mm; line-height: 1.4;
   }
   .card-rule {
-    width: 18mm; height: 2px; background: var(--accent);
+    width: 18mm; height: 2px; background: #e5734f;
     margin: 0 0 6mm;
   }
   .card-intro {
@@ -91,18 +89,18 @@
   }
   .card-mantra {
     margin-top: auto;
-    padding: 5mm 5mm;
-    border-left: 3px solid var(--accent);
-    background: #f8f5f1;
+    padding: 6mm 6mm;
+    border-left: 3px solid #e5734f;
+    background: #faf6f2;
     font-family: "Playfair Display", "Georgia", serif;
-    font-size: 10pt; font-style: italic; color: var(--ink);
+    font-size: 10pt; font-style: italic; color: #3d3029;
     border-radius: 0 6px 6px 0;
     text-align: center;
     line-height: 1.35;
   }
   .card-mantra .quote {
     font-family: "Playfair Display", "Georgia", serif;
-    font-size: 14pt; color: var(--accent);
+    font-size: 14pt; color: #e5734f;
     vertical-align: -2pt; margin: 0 2px;
   }
 
@@ -111,13 +109,11 @@
     margin-top: 8mm;
     display: flex; justify-content: space-between; align-items: center;
     font-size: 8pt; letter-spacing: 3px; text-transform: uppercase;
-    color: #d16c47;
+    color: #e5734f;
   }
   .foot .dots { display: flex; gap: 3mm; }
   .foot .dot { width: 4mm; height: 4mm; border-radius: 50%; }
-  .foot .dot:nth-child(1) { background: #e0ba85; }
-  .foot .dot:nth-child(2) { background: #d16c47; }
-  .foot .dot:nth-child(3) { background: #a9c6b3; }
+  .foot .dot { background: #e5734f; }
 </style>
 </head>
 <body>
@@ -130,13 +126,7 @@
 
     <div class="grid">
       
-    <article class="valeur-card" style="
-      --bg-from: #f7eddb;
-      --bg-to: #f7eddb;
-      --accent: #b8923f;
-      --accent-soft: #f7eddb;
-      --ink: #3d3029;
-    ">
+    <article class="valeur-card">
       <div class="card-top">
         <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg></div>
         <div class="card-num">01</div>
@@ -152,13 +142,7 @@
       </div>
     </article>
 
-    <article class="valeur-card" style="
-      --bg-from: #f4d9cc;
-      --bg-to: #f4d9cc;
-      --accent: #d16c47;
-      --accent-soft: #f4d9cc;
-      --ink: #3d3029;
-    ">
+    <article class="valeur-card">
       <div class="card-top">
         <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
         <div class="card-num">02</div>
@@ -174,13 +158,7 @@
       </div>
     </article>
 
-    <article class="valeur-card" style="
-      --bg-from: #d8e5dd;
-      --bg-to: #d8e5dd;
-      --accent: #5d8a72;
-      --accent-soft: #d8e5dd;
-      --ink: #3d3029;
-    ">
+    <article class="valeur-card">
       <div class="card-top">
         <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></div>
         <div class="card-num">03</div>
