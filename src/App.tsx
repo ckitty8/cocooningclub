@@ -29,7 +29,6 @@ import MembreInscriptions from "./pages/membre/Inscriptions.tsx";
 import MembreMagazine from "./pages/membre/Magazine.tsx";
 import MembreMonCompte from "./pages/membre/MonCompte.tsx";
 import MembrePremiumLayout from "@/components/membre-premium/MembrePremiumLayout";
-import MadameProteinePlanner from "./pages/MadameProteine";
 
 
 const queryClient = new QueryClient();
@@ -100,9 +99,6 @@ const App = () => (
             <Route path="/admin/avis"               element={<RoleGuard allowedRoles={["administrateur"]}><AvisAdmin /></RoleGuard>} />
             <Route path="/admin/mon-compte"         element={<RoleGuard allowedRoles={["administrateur"]}><MonCompte /></RoleGuard>} />
 
-
-            {/* Plan alimentaire Madame Protéine */}
-            <Route path="/plan-alimentaire" element={<MadameProteinePlanner />} />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
