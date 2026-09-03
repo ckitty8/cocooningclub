@@ -27,14 +27,12 @@ const roleBadgeClass: Record<UserRole, string> = {
   administrateur: "bg-purple-100 text-purple-700",
   inscrit:        "bg-gray-100 text-gray-600",
   membre:         "bg-blue-100 text-blue-700",
-  membre_premium: "bg-amber-100 text-amber-700",
 };
 
 const roleLabel: Record<UserRole, string> = {
   administrateur: "Admin",
   inscrit:        "Inscrit",
   membre:         "Membre",
-  membre_premium: "Premium",
 };
 
 const emptyEditForm = {
@@ -334,7 +332,6 @@ const Membres = () => {
           <option value="tous">Tous les rôles</option>
           <option value="inscrit">Inscrits</option>
           <option value="membre">Membres</option>
-          <option value="membre_premium">Premium</option>
           <option value="administrateur">Admins</option>
         </select>
         <select value={filterActif} onChange={e => setFilterActif(e.target.value)}
@@ -494,7 +491,6 @@ const Membres = () => {
                 <select value={createForm.role} onChange={e => setCreateForm(f => ({ ...f, role: e.target.value as UserRole }))} className={fieldClass}>
                   <option value="inscrit">Inscrit</option>
                   <option value="membre">Membre</option>
-                  <option value="membre_premium">Membre Premium</option>
                   <option value="administrateur">Administrateur</option>
                 </select>
               </div>
@@ -571,7 +567,6 @@ const Membres = () => {
                     <select value={editForm.role} onChange={e => setEditForm(f => ({ ...f, role: e.target.value as UserRole }))} className={fieldClass}>
                       <option value="inscrit">Inscrit</option>
                       <option value="membre">Membre</option>
-                      <option value="membre_premium">Membre Premium</option>
                       <option value="administrateur">Administrateur</option>
                     </select>
                   </div>

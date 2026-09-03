@@ -381,7 +381,7 @@ export const PAGES = [
         "Recherche sans résultat → empty state.",
       ],
       regles: [
-        "4 rôles possibles : `administrateur`, `inscrit`, `membre`, `membre_premium`.",
+        "3 rôles possibles : `administrateur`, `inscrit`, `membre`.",
         "Création d'un compte = ligne dans Supabase Auth (`auth.users`) + ligne dans `utilisateurs` (profil métier).",
         "Désactivation = `est_actif = false` (réversible, pas de perte de données).",
         "Toutes les actions sensibles (création, suppression, modification de rôle) sont loguées via `logAction`.",
@@ -495,7 +495,7 @@ export const PAGES = [
     description: "Bibliothèque de documents partagés avec les membres.",
     ux: [
       "Le modèle d'organisation reflète-t-il vos types réels ?",
-      "Les droits d'accès (membres / premium / tous) sont-ils clairs ?",
+      "Les droits d'accès (membres / tous) sont-ils clairs ?",
       "Sait-on si un document est obsolète (date, alerte) ?",
       "Notification membre à l'ajout : utile ou intrusive ?",
     ],
@@ -518,7 +518,7 @@ export const PAGES = [
         "Clique « Ajouter » → modal d'upload.",
         "Choisit le type (`magazine`, `guide`, `lien_externe`), titre, description.",
         "Si type fichier : upload dans le bucket `documents` ; si type lien : saisit l'URL.",
-        "Définit l'accès (`membres`, `premium`, `tous`).",
+        "Définit l'accès (`membres`, `tous`).",
         "Sauvegarde → ligne dans `documents`, fichier accessible via signed URL.",
       ],
       parcoursAlternatifs: [
@@ -530,7 +530,7 @@ export const PAGES = [
       regles: [
         "Stockage des fichiers : bucket Supabase `documents` privé, accès via signed URL temporaire (5 min).",
         "3 types autorisés : `magazine`, `guide`, `lien_externe` (pas de fichier pour ce dernier).",
-        "3 niveaux d'accès : `membres`, `premium` (sous-ensemble), `tous` (membres + premium).",
+        "2 niveaux d'accès : `membres`, `tous`.",
         "Suppression d'un document : on supprime la ligne DB ET le fichier dans Storage.",
       ],
       postconditions:
@@ -856,7 +856,6 @@ export const PAGES = [
       parcoursAlternatifs: [
         "Aucune inscription en cours → CTA vers /espace-membre/ateliers.",
         "Magazine non encore publié → message d'attente.",
-        "Rôle `membre_premium` → redirection vers /espace-membre-premium.",
       ],
       regles: [
         "Visibilité réservée aux rôles `inscrit`, `membre`, `administrateur` (RoleGuard).",
@@ -990,11 +989,9 @@ export const PAGES = [
       parcoursAlternatifs: [
         "Aucun magazine disponible → message « Le prochain numéro arrive bientôt ! ».",
         "Erreur de chargement (signed URL expirée) → retry automatique.",
-        "Membre premium → version enrichie (articles supplémentaires) — à vérifier côté /espace-membre-premium/magazine.",
       ],
       regles: [
         "Stockage : bucket Supabase Storage privé, accès via signed URL.",
-        "Visibilité fonction du rôle : `membre` voit la version standard, `membre_premium` voit la version premium.",
         "Aucune analytique de lecture stockée par défaut (à confirmer RGPD).",
       ],
       postconditions:
@@ -1040,221 +1037,6 @@ export const PAGES = [
       ],
       postconditions:
         "Profil membre mis à jour, éventuelle session invalidée si mot de passe changé.",
-    },
-  },
-  {
-    title: "Premium · Tableau de bord",
-    path: "/espace-membre-premium",
-    section: "Espace membre premium (rôle membre_premium)",
-    description: "Page d'accueil de l'espace premium, avec contenus exclusifs et avantages.",
-    ux: [
-      "Qu'est-ce qui justifie visuellement le statut premium ?",
-      "Les contenus exclusifs sont-ils mis en avant ?",
-      "Le sentiment d'appartenance est-il renforcé ?",
-      "Le renouvellement des contenus est-il perceptible ?",
-    ],
-    ui: [
-      "Le marqueur premium reste-t-il discret ?",
-      "La couleur d'accent diffère-t-elle du standard sans casser la marque ?",
-      "La hiérarchie laisse-t-elle place aux actions courantes ?",
-      "La sidebar reste-t-elle identique à l'espace standard ?",
-    ],
-    spec: {
-      acteur: "Membre premium (rôle `membre_premium`).",
-      objectif:
-        "Accéder à un espace personnalisé avec contenus et avantages exclusifs, sans rupture d'expérience avec l'espace standard.",
-      preconditions: [
-        "Session active avec rôle `membre_premium` ou `administrateur` (RoleGuard).",
-        "Abonnement premium en cours de validité (`fin_abonnement >= today`).",
-      ],
-      parcoursNominal: [
-        "Se connecte → redirection vers /espace-membre-premium si rôle premium.",
-        "Voit son tableau de bord enrichi : prochain atelier, magazine premium, contenu exclusif.",
-        "Clique sur un raccourci → navigation vers les sous-pages premium.",
-      ],
-      parcoursAlternatifs: [
-        "Abonnement expiré → redirection vers une page de renouvellement (à concevoir).",
-        "Rôle non premium → redirection vers /espace-membre standard.",
-        "Aucun atelier ni contenu → empty state contextualisé premium.",
-      ],
-      regles: [
-        "Visibilité réservée aux rôles `membre_premium` et `administrateur`.",
-        "Vérification de validité d'abonnement à chaque chargement (à coupler avec un trigger DB).",
-        "RLS : strictement la même que pour le membre standard, sauf accès à des bucket Storage spécifiques (`magazine_premium`).",
-      ],
-      postconditions:
-        "Membre premium orientée vers ses contenus exclusifs ou ses prochaines actions.",
-    },
-  },
-  {
-    title: "Premium · Ateliers",
-    path: "/espace-membre-premium/ateliers",
-    section: "Espace membre premium (rôle membre_premium)",
-    description: "Catalogue des ateliers, version premium (priorité d'accès, tarif réduit, ateliers exclusifs).",
-    ux: [
-      "L'avantage premium est-il perceptible immédiatement ?",
-      "Les ateliers exclusifs sont-ils mis en avant ?",
-      "Le tarif réduit est-il tangible (prix barré) ?",
-      "Une notion d'accès anticipé est-elle présente ?",
-    ],
-    ui: [
-      "L'étiquette « Exclusif premium » reste-t-elle discrète ?",
-      "Le prix barré + nouveau prix est-il lisible ?",
-      "La cohérence avec /espace-membre/ateliers est-elle préservée ?",
-      "L'étiquette ne masque-t-elle pas le CTA en mobile ?",
-    ],
-    spec: {
-      acteur: "Membre premium s'inscrivant à un atelier.",
-      objectif:
-        "Bénéficier d'un accès prioritaire et / ou d'un tarif réduit aux ateliers du club.",
-      preconditions: [
-        "Session premium active.",
-        "Au moins un atelier publié à venir.",
-      ],
-      parcoursNominal: [
-        "Arrive sur /espace-membre-premium/ateliers.",
-        "Voit la liste avec mise en avant des ateliers exclusifs et tarifs premium.",
-        "Clique « M'inscrire » → inscription en 1 clic au tarif premium.",
-        "Toast de confirmation et badge « Inscrite » immédiat.",
-      ],
-      parcoursAlternatifs: [
-        "Atelier exclusif premium → invisible pour les non-premium (filtre côté DB).",
-        "Atelier complet → liste d'attente avec priorité premium.",
-        "Erreur de paiement → retry possible sans perdre la pré-réservation pendant 15 minutes.",
-      ],
-      regles: [
-        "Tarif appliqué : `tarif_premium` (champ à ajouter ?) ou règle de remise globale (-X% sur `tarif_standard`).",
-        "Accès anticipé : ateliers ouverts aux premium 48h avant les standards (à confirmer côté trigger).",
-        "Ateliers `exclusif_premium = true` invisibles au rôle `membre`.",
-      ],
-      postconditions:
-        "Inscription créée au tarif premium, place réservée prioritairement.",
-    },
-  },
-  {
-    title: "Premium · Mes inscriptions",
-    path: "/espace-membre-premium/inscriptions",
-    section: "Espace membre premium (rôle membre_premium)",
-    description: "Suivi des inscriptions de la membre premium (équivalent membre standard avec services additionnels).",
-    ux: [
-      "Quels services premium sont visibles ici ?",
-      "Le tarif premium est-il rappelé sur chaque ligne ?",
-      "L'historique d'inscriptions remonte-t-il assez loin ?",
-      "Une action « reporter sans frais » est-elle proposée ?",
-    ],
-    ui: [
-      "La grille reste-t-elle cohérente avec /espace-membre/inscriptions ?",
-      "Un badge « Premium » est-il visible sans intruser ?",
-      "Les actions premium sont-elles visuellement différenciées ?",
-      "La densité n'est-elle pas surchargée ?",
-    ],
-    spec: {
-      acteur: "Membre premium gérant ses inscriptions avec services enrichis.",
-      objectif:
-        "Suivre, annuler, reporter ou échanger ses inscriptions avec les avantages liés au statut premium.",
-      preconditions: ["Session premium active.", "Au moins une inscription liée."],
-      parcoursNominal: [
-        "Arrive sur /espace-membre-premium/inscriptions.",
-        "Voit ses inscriptions avec actions étendues (reporter, échanger).",
-        "Pour reporter : sélectionne un autre atelier compatible → mise à jour de l'inscription existante (pas de double annulation/inscription).",
-      ],
-      parcoursAlternatifs: [
-        "Annulation jusqu'à 2h avant l'atelier (vs 24h pour standard).",
-        "Échange entre ateliers du même mois sans frais.",
-        "Téléchargement de toutes les factures de l'année en 1 clic (consolidé).",
-      ],
-      regles: [
-        "Service premium : annulation tardive (jusqu'à 2h avant), échange sans frais, factures consolidées.",
-        "Limite : 3 reports par mois, au-delà retour aux conditions standard.",
-        "Toutes les transitions sont loguées pour audit.",
-      ],
-      postconditions:
-        "Inscription mise à jour ; éventuel email de confirmation au nouvel atelier.",
-    },
-  },
-  {
-    title: "Premium · Magazine",
-    path: "/espace-membre-premium/magazine",
-    section: "Espace membre premium (rôle membre_premium)",
-    description: "Magazine premium : articles bonus, archives complètes, formats enrichis.",
-    ux: [
-      "Qu'est-ce qui distingue le magazine premium du standard ?",
-      "La membre voit-elle clairement ce qu'elle gagne en plus ?",
-      "Les archives sont-elles accessibles ?",
-      "Le téléchargement est-il possible pour tous les contenus ?",
-    ],
-    ui: [
-      "Le marqueur « Bonus premium » reste-t-il discret ?",
-      "La couverture du numéro courant est-elle valorisée ?",
-      "Le sommaire distingue-t-il articles standard et bonus ?",
-      "Le viewer mobile est-il fluide ?",
-    ],
-    spec: {
-      acteur: "Membre premium accédant aux contenus éditoriaux enrichis.",
-      objectif:
-        "Profiter de contenus exclusifs (articles, vidéos, podcasts) en complément du magazine standard.",
-      preconditions: [
-        "Session premium active.",
-        "Magazine en ligne et bonus premium disponibles dans Storage.",
-      ],
-      parcoursNominal: [
-        "Arrive sur /espace-membre-premium/magazine.",
-        "Voit le numéro courant + section bonus premium dédiée.",
-        "Lit en ligne ou télécharge selon le format.",
-      ],
-      parcoursAlternatifs: [
-        "Membre standard tente d'accéder à l'URL → redirection vers /espace-membre/magazine.",
-        "Bonus pas encore publié → message d'attente.",
-        "Archive demandée → accès illimité aux anciens numéros depuis le début de l'abonnement.",
-      ],
-      regles: [
-        "Bucket Storage `magazine_premium` accessible uniquement aux rôles `membre_premium` (RLS).",
-        "Signed URL valable 1h pour chaque ressource.",
-        "Format autorisé : PDF, MP4 (vidéo), MP3 (podcast).",
-      ],
-      postconditions:
-        "Contenu premium consulté ou téléchargé ; signed URL expirée après 1h.",
-    },
-  },
-  {
-    title: "Premium · Mon compte",
-    path: "/espace-membre-premium/mon-compte",
-    section: "Espace membre premium (rôle membre_premium)",
-    description: "Paramètres personnels de la membre premium, avec gestion d'abonnement.",
-    ux: [
-      "La date de fin d'abonnement est-elle clairement visible ?",
-      "Le changement d'abonnement est-il transparent (sans piège) ?",
-      "Les avantages premium sont-ils rappelés subtilement ?",
-      "La résiliation a-t-elle un parcours clair ?",
-    ],
-    ui: [
-      "Le bloc « Mon abonnement » est-il distinct des autres sections ?",
-      "Le bouton « Résilier » reste-t-il tertiaire (pas rouge agressif) ?",
-      "La liste des factures est-elle exportable globalement ?",
-      "La cohérence avec /espace-membre/mon-compte est-elle préservée ?",
-    ],
-    spec: {
-      acteur: "Membre premium gérant son profil et son abonnement.",
-      objectif:
-        "Mettre à jour son profil, gérer son abonnement (renouvellement, résiliation), consulter et télécharger ses factures.",
-      preconditions: ["Session premium active.", "Au moins un cycle d'abonnement enregistré."],
-      parcoursNominal: [
-        "Arrive sur /espace-membre-premium/mon-compte.",
-        "Voit son profil + bloc abonnement (date de fin, montant, prochain prélèvement).",
-        "Modifie son profil ou télécharge ses factures.",
-      ],
-      parcoursAlternatifs: [
-        "Résiliation → modale de confirmation détaillée (date d'effet, conséquences sur les inscriptions futures).",
-        "Renouvellement automatique en panne (paiement refusé) → toast d'alerte + redirection vers /paiement.",
-        "Bascule en standard → confirmation, prise d'effet à la fin de la période payée.",
-      ],
-      regles: [
-        "Le rôle `membre_premium` est lié à un abonnement actif (table `abonnements` ou champs `debut_abonnement`/`fin_abonnement`).",
-        "À l'expiration sans renouvellement, le rôle bascule automatiquement en `membre`.",
-        "Les factures sont stockées dans Storage privé `factures` (RLS strict).",
-      ],
-      postconditions:
-        "Profil ou abonnement mis à jour ; éventuelle confirmation par email pour les changements critiques.",
     },
   },
 ];

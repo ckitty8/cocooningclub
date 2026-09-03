@@ -1,4 +1,4 @@
-import { ComponentType, ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import MembreLayout from "@/components/membre/MembreLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,7 +21,6 @@ interface Atelier {
   places_max: number;
   places_disponibles: number;
   tarif_standard: number;
-  tarif_premium: number;
   tarif_affichage: string | null;
   lien_paypal: string | null;
   date_fin_inscription: string | null;
@@ -36,12 +35,7 @@ const formatDate = (iso: string) =>
 
 const formatTime = (t: string) => t.slice(0, 5);
 
-// Cette page est partagée entre /espace-membre/ateliers et
-// /espace-membre-premium/ateliers. App.tsx passe le bon Layout en prop ;
-// par défaut on retombe sur MembreLayout (espace standard).
-type LayoutComp = ComponentType<{ children: ReactNode }>;
-
-const Ateliers = ({ Layout = MembreLayout }: { Layout?: LayoutComp } = {}) => {
+const Ateliers = () => {
   const { profile } = useAuth();
   const [ateliers, setAteliers] = useState<Atelier[]>([]);
   const [myInscriptions, setMyInscriptions] = useState<Set<string>>(new Set());
@@ -56,7 +50,7 @@ const Ateliers = ({ Layout = MembreLayout }: { Layout?: LayoutComp } = {}) => {
     const [aRes, iRes] = await Promise.all([
       supabase
         .from("ateliers")
-        .select("id, titre, description, description_courte, date_atelier, heure_debut, duree, lieu, url_image, places_max, places_disponibles, tarif_standard, tarif_premium, tarif_affichage, lien_paypal, date_fin_inscription, statut")
+        .select("id, titre, description, description_courte, date_atelier, heure_debut, duree, lieu, url_image, places_max, places_disponibles, tarif_standard, tarif_affichage, lien_paypal, date_fin_inscription, statut")
         .in("statut", ["publie", "complet"])
         .gte("date_atelier", today)
         .order("date_atelier"),
@@ -105,16 +99,16 @@ const Ateliers = ({ Layout = MembreLayout }: { Layout?: LayoutComp } = {}) => {
 
   if (loading) {
     return (
-      <Layout>
+      <MembreLayout>
         <div className="flex items-center justify-center h-64">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-      </Layout>
+      </MembreLayout>
     );
   }
 
   return (
-    <Layout>
+    <MembreLayout>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">Ateliers</h1>
         <p className="text-muted-foreground text-sm mt-1">
@@ -257,7 +251,7 @@ const Ateliers = ({ Layout = MembreLayout }: { Layout?: LayoutComp } = {}) => {
           </div>
         </div>
       )}
-    </Layout>
+    </MembreLayout>
   );
 };
 

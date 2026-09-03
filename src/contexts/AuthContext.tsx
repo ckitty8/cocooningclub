@@ -3,7 +3,7 @@ import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { withTimeout } from "@/utils/withTimeout";
 
-export type UserRole = "administrateur" | "inscrit" | "membre" | "membre_premium";
+export type UserRole = "administrateur" | "inscrit" | "membre";
 
 export interface Profile {
   id: string;

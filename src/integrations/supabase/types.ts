@@ -20,7 +20,7 @@ export type Database = {
           prenom: string
           nom: string
           telephone: string | null
-          role: "administrateur" | "inscrit" | "membre" | "membre_premium"
+          role: "administrateur" | "inscrit" | "membre"
           url_avatar: string | null
           debut_abonnement: string | null
           fin_abonnement: string | null
@@ -37,7 +37,7 @@ export type Database = {
           prenom: string
           nom: string
           telephone?: string | null
-          role?: "administrateur" | "inscrit" | "membre" | "membre_premium"
+          role?: "administrateur" | "inscrit" | "membre"
           url_avatar?: string | null
           debut_abonnement?: string | null
           fin_abonnement?: string | null
@@ -54,7 +54,7 @@ export type Database = {
           prenom?: string
           nom?: string
           telephone?: string | null
-          role?: "administrateur" | "inscrit" | "membre" | "membre_premium"
+          role?: "administrateur" | "inscrit" | "membre"
           url_avatar?: string | null
           debut_abonnement?: string | null
           fin_abonnement?: string | null
@@ -161,7 +161,6 @@ export type Database = {
           places_max: number
           places_disponibles: number
           tarif_standard: number
-          tarif_premium: number
           tarif_affichage: string | null
           lien_paypal: string | null
           statut: "brouillon" | "publie" | "complet" | "annule" | "termine"
@@ -186,7 +185,6 @@ export type Database = {
           places_max?: number
           places_disponibles?: number
           tarif_standard?: number
-          tarif_premium?: number
           tarif_affichage?: string | null
           lien_paypal?: string | null
           statut?: "brouillon" | "publie" | "complet" | "annule" | "termine"
@@ -211,7 +209,6 @@ export type Database = {
           places_max?: number
           places_disponibles?: number
           tarif_standard?: number
-          tarif_premium?: number
           tarif_affichage?: string | null
           lien_paypal?: string | null
           statut?: "brouillon" | "publie" | "complet" | "annule" | "termine"

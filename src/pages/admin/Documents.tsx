@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Plus, Pencil, Trash2, X, ExternalLink, FileText, BookOpen, Newspaper, Image as ImageIcon, type LucideIcon } from "lucide-react";
 
 type DocType = "magazine" | "guide" | "lien_externe";
-type DocAcces = "membres" | "premium" | "tous";
+type DocAcces = "membres" | "tous";
 
 interface Document {
   id: string;
@@ -36,8 +36,7 @@ const typeLabel: Record<DocType, string> = {
 
 const accesLabel: Record<DocAcces, string> = {
   membres: "Membres uniquement",
-  premium: "Premium uniquement",
-  tous:    "Membres + Premium",
+  tous:    "Tous les membres",
 };
 
 const emptyForm = {
@@ -328,8 +327,7 @@ const Documents = () => {
                   <select value={form.acces} onChange={e => setForm(f => ({ ...f, acces: e.target.value as DocAcces }))}
                     className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary">
                     <option value="membres">Membres uniquement</option>
-                    <option value="premium">Premium uniquement</option>
-                    <option value="tous">Membres + Premium</option>
+                    <option value="tous">Tous les membres</option>
                   </select>
                 </div>
               </div>

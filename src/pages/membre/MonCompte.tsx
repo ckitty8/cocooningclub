@@ -1,11 +1,11 @@
-import { ComponentType, ReactNode, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import MembreLayout from "@/components/membre/MembreLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import {
   User, Mail, Phone, Image as ImageIcon, Save, Upload, Trash2, Loader2,
-  Info, Lock, Crown, CalendarRange, Receipt, KeyRound, Cake,
+  Info, Lock, CalendarRange, Receipt, KeyRound, Cake,
 } from "lucide-react";
 
 const MAX_AVATAR_MB = 2;
@@ -21,11 +21,7 @@ interface PaiementHistorique {
   inscription: { atelier: { titre: string } | null } | null;
 }
 
-// Page partagée entre /espace-membre/mon-compte et
-// /espace-membre-premium/mon-compte — voir App.tsx pour le routing.
-type LayoutComp = ComponentType<{ children: ReactNode }>;
-
-const MonCompte = ({ Layout = MembreLayout }: { Layout?: LayoutComp } = {}) => {
+const MonCompte = () => {
   const { profile, user, refreshProfile } = useAuth();
   const [form, setForm] = useState({ prenom: "", nom: "", email: "", telephone: "", date_naissance: "" });
   const [originalEmail, setOriginalEmail] = useState("");
@@ -71,11 +67,11 @@ const MonCompte = ({ Layout = MembreLayout }: { Layout?: LayoutComp } = {}) => {
 
   if (!profile) {
     return (
-      <Layout>
+      <MembreLayout>
         <div className="flex items-center justify-center h-64">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-      </Layout>
+      </MembreLayout>
     );
   }
 
@@ -205,11 +201,10 @@ const MonCompte = ({ Layout = MembreLayout }: { Layout?: LayoutComp } = {}) => {
     administrateur: "Administrateur",
     inscrit: "Inscrit",
     membre: "Membre",
-    membre_premium: "Membre Premium",
   };
 
   return (
-    <Layout>
+    <MembreLayout>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">Mon compte</h1>
         <p className="text-muted-foreground text-sm mt-1">
@@ -341,7 +336,6 @@ const MonCompte = ({ Layout = MembreLayout }: { Layout?: LayoutComp } = {}) => {
             <div className="flex items-center justify-between py-2 border-b">
               <span className="text-muted-foreground">Statut</span>
               <span className="inline-flex items-center gap-1 font-medium">
-                {profile.role === "membre_premium" && <Crown className="w-3.5 h-3.5 text-amber-500" />}
                 {roleLabel[profile.role] ?? profile.role}
               </span>
             </div>
@@ -427,7 +421,7 @@ const MonCompte = ({ Layout = MembreLayout }: { Layout?: LayoutComp } = {}) => {
           )}
         </div>
       </div>
-    </Layout>
+    </MembreLayout>
   );
 };
 

@@ -123,9 +123,9 @@ async function captureScreenshots(browser) {
   await attachSupabaseMock(context, log);
 
   // Pré-charge la session admin dans localStorage pour les routes
-  // authentifiées (/admin, /espace-membre, /espace-membre-premium), et
-  // l'efface pour les pages publiques (sinon /login, /forgot-password
-  // redirigent immédiatement vers /admin/dashboard).
+  // authentifiées (/admin, /espace-membre), et l'efface pour les pages
+  // publiques (sinon /login, /forgot-password redirigent immédiatement
+  // vers /admin/dashboard).
   const supabaseUrl = STUB_ENV.VITE_SUPABASE_URL;
   const seed = buildAuthLocalStorage(supabaseUrl);
   await context.addInitScript(({ key, value }) => {
@@ -223,7 +223,6 @@ function buildHtml(captures) {
       kicker: "Côté adhérente",
       paragraphs: [
         "Cette section présente l'expérience vécue par une adhérente du club, qu'elle soit nouvellement inscrite ou membre confirmée. Tableau de bord, parcours d'inscription aux ateliers, suivi de ses inscriptions, consultation du magazine, gestion de son compte : tout ce qu'elle voit après s'être connectée.",
-        "Les écrans réservés aux membres premium sont regroupés juste après et constituent une variante enrichie (contenus exclusifs, tarifs préférentiels, services additionnels).",
       ],
     },
   };

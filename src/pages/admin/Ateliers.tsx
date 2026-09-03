@@ -25,7 +25,6 @@ interface Atelier {
   places_max: number;
   places_disponibles: number;
   tarif_standard: number | null;
-  tarif_premium: number | null;
   tarif_affichage: string | null;
   lien_paypal: string | null;
   niveau: Niveau | null;
@@ -53,14 +52,14 @@ interface Inscription {
     prenom: string | null;
     nom: string | null;
     email: string | null;
-    role: "administrateur" | "inscrit" | "membre" | "membre_premium" | null;
+    role: "administrateur" | "inscrit" | "membre" | null;
   } | null;
 }
 
 const emptyForm = {
   titre: "", description: "", description_courte: "",
   date_atelier: "", date_fin_inscription: "", heure_debut: "", duree: "", lieu: "", url_image: "",
-  places_max: 10, tarif_standard: "", tarif_premium: "", tarif_affichage: "",
+  places_max: 10, tarif_standard: "", tarif_affichage: "",
   lien_paypal: "", niveau: "" as Niveau | "", statut: "brouillon" as Statut,
   categorie_id: "",
 };
@@ -180,7 +179,7 @@ const Ateliers = () => {
 
     // Si l'inscription a été faite en mode "invité" (utilisateur_id null)
     // mais que l'email correspond à un compte existant, on rapatrie la
-    // fiche pour appliquer le bon tarif (premium) et le bon badge.
+    // fiche pour appliquer le bon badge.
     const guestEmails = Array.from(new Set(
       insc
         .filter(i => !i.utilisateur_id && i.email_invite)
@@ -234,7 +233,6 @@ const Ateliers = () => {
       lieu: a.lieu ?? "", url_image: a.url_image ?? "",
       places_max: a.places_max,
       tarif_standard: a.tarif_standard?.toString() ?? "",
-      tarif_premium: a.tarif_premium?.toString() ?? "",
       tarif_affichage: a.tarif_affichage ?? "",
       lien_paypal: a.lien_paypal ?? "",
       niveau: a.niveau ?? "", statut: a.statut,
@@ -291,7 +289,6 @@ const Ateliers = () => {
       url_image: form.url_image || null,
       places_max: Number(form.places_max),
       tarif_standard: form.tarif_standard ? Number(form.tarif_standard) : 0,
-      tarif_premium: form.tarif_premium ? Number(form.tarif_premium) : 0,
       tarif_affichage: form.tarif_affichage || null,
       lien_paypal: form.lien_paypal || null,
       niveau: (form.niveau as Niveau) || "debutant",
@@ -571,27 +568,19 @@ const Ateliers = () => {
                   {(() => {
                     const atelier = inscritPanel.atelier;
                     const tarifStd = atelier?.tarif_standard ?? 0;
-                    const tarifPrem = atelier?.tarif_premium ?? tarifStd;
-                    const atelierIsPaid = tarifStd > 0 || tarifPrem > 0;
-                    const montantPour = (insc: Inscription): number => {
-                      const role = insc.utilisateurs?.role;
-                      return role === "membre_premium" ? tarifPrem : tarifStd;
-                    };
+                    const atelierIsPaid = tarifStd > 0;
+                    const montantPour = (): number => tarifStd;
                     return inscriptions.map(insc => {
                       const prenom = insc.prenom_invite ?? insc.utilisateurs?.prenom ?? "";
                       const nom = insc.nom_invite ?? insc.utilisateurs?.nom ?? "";
                       const email = insc.email_invite ?? insc.utilisateurs?.email ?? "";
-                      const role = insc.utilisateurs?.role;
-                      const montant = montantPour(insc);
+                      const montant = montantPour();
                       return (
                     <div key={insc.id} className="px-6 py-4 flex items-center gap-4">
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm flex items-center gap-2">
                           {prenom} {nom}
-                          {role === "membre_premium" && (
-                            <span className="text-[10px] uppercase tracking-wider bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">Premium</span>
-                          )}
-                          {insc.utilisateur_id && role !== "membre_premium" && (
+                          {insc.utilisateur_id && (
                             <span className="text-[10px] uppercase tracking-wider bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">Membre</span>
                           )}
                         </p>
@@ -658,14 +647,13 @@ const Ateliers = () => {
               </div>
               {(() => {
                 const tarifStd = inscritPanel.atelier?.tarif_standard ?? 0;
-                const tarifPrem = inscritPanel.atelier?.tarif_premium ?? tarifStd;
-                if (tarifStd === 0 && tarifPrem === 0) return null;
+                if (tarifStd === 0) return null;
                 const totalAttendu = inscriptions
                   .filter(i => i.statut === "confirme")
-                  .reduce((s, i) => s + (i.utilisateurs?.role === "membre_premium" ? tarifPrem : tarifStd), 0);
+                  .reduce((s) => s + tarifStd, 0);
                 const totalEncaisse = inscriptions
                   .filter(i => i.statut === "confirme" && i.statut_paiement === "paye")
-                  .reduce((s, i) => s + (i.utilisateurs?.role === "membre_premium" ? tarifPrem : tarifStd), 0);
+                  .reduce((s) => s + tarifStd, 0);
                 return (
                   <div>
                     Total attendu : <span className="font-semibold text-foreground">{totalAttendu.toFixed(2)} €</span>
@@ -787,17 +775,10 @@ const Ateliers = () => {
                   </select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">Tarif standard (€)</label>
-                  <input type="number" min={0} step={0.01} value={form.tarif_standard} onChange={e => f("tarif_standard", e.target.value)}
-                    placeholder="25" className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">Tarif premium (€)</label>
-                  <input type="number" min={0} step={0.01} value={form.tarif_premium} onChange={e => f("tarif_premium", e.target.value)}
-                    placeholder="20" className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
-                </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Tarif standard (€)</label>
+                <input type="number" min={0} step={0.01} value={form.tarif_standard} onChange={e => f("tarif_standard", e.target.value)}
+                  placeholder="25" className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Tarif affiché</label>
@@ -808,7 +789,6 @@ const Ateliers = () => {
                 <label className="block text-sm font-medium mb-1.5">Lien PayPal</label>
                 <input value={form.lien_paypal} onChange={e => f("lien_paypal", e.target.value)}
                   placeholder="https://paypal.me/..." className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
-                <p className="text-xs text-muted-foreground mt-1">Affiché uniquement aux membres standard</p>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Statut</label>

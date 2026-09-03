@@ -32,7 +32,7 @@ interface Inscription {
     nom: string | null;
     email: string | null;
     telephone: string | null;
-    role: "administrateur" | "inscrit" | "membre" | "membre_premium" | null;
+    role: "administrateur" | "inscrit" | "membre" | null;
   } | null;
 }
 
@@ -161,7 +161,7 @@ const PreInscriptions = () => {
         // Pour les inscriptions invité (utilisateur_id null) dont l'email
         // correspond pourtant à un compte existant, on rapatrie la fiche
         // utilisateurs côté client pour afficher le bon badge (Admin /
-        // Premium / Membre) et le bon nom dans inscIdentite().
+        // Membre) et le bon nom dans inscIdentite().
         const guestEmails = Array.from(new Set(
           insc
             .filter(i => !i.utilisateur_id && i.email_invite)
@@ -499,7 +499,6 @@ const PreInscriptions = () => {
                       if (!role) return null;
                       const map: Record<string, { label: string; cls: string }> = {
                         administrateur: { label: "Admin",   cls: "bg-purple-100 text-purple-700" },
-                        membre_premium: { label: "Premium", cls: "bg-amber-100 text-amber-700" },
                         membre:         { label: "Membre",  cls: "bg-primary/10 text-primary" },
                         inscrit:        { label: "Inscrit", cls: "bg-gray-100 text-gray-600" },
                       };

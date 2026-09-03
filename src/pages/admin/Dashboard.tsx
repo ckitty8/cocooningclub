@@ -39,7 +39,6 @@ interface Stats {
   pre_inscriptions_en_attente: number;
   ateliers_a_venir: number;
   membres_actifs: number;
-  membres_premium: number;
   messages_non_lus: number;
 }
 
@@ -105,7 +104,6 @@ const Dashboard = () => {
     pre_inscriptions_en_attente: 0,
     ateliers_a_venir: 0,
     membres_actifs: 0,
-    membres_premium: 0,
     messages_non_lus: 0,
   });
   const [prochainAteliers, setProchainAteliers] = useState<Atelier[]>([]);
@@ -150,8 +148,7 @@ const Dashboard = () => {
         setStats({
           pre_inscriptions_en_attente: inscAttRes.count ?? 0,
           ateliers_a_venir:  ateliersCountRes.count ?? 0,
-          membres_actifs:    utilisateurs.filter(u => u.role === "membre" || u.role === "membre_premium").length,
-          membres_premium:   utilisateurs.filter(u => u.role === "membre_premium").length,
+          membres_actifs:    utilisateurs.filter(u => u.role === "membre").length,
           messages_non_lus:  msgsRes.count ?? 0,
         });
         setProchainAteliers((proAtelRes.data as Atelier[]) ?? []);
@@ -259,7 +256,6 @@ const Dashboard = () => {
           icon={Users}
           label="Membres actifs"
           value={stats.membres_actifs}
-          sub={`${stats.membres_premium} premium`}
           href="/admin/membres"
         />
         <KpiCard
