@@ -1,5 +1,5 @@
 import { useState, useEffect, FormEvent } from "react";
-import { Sparkles, Calendar, Heart, Users, X, CalendarPlus, Download, CheckCircle2 } from "lucide-react";
+import { Sparkles, Calendar, Heart, Users, X, CalendarPlus, Download, CheckCircle2, MessageCircle, Palette, Briefcase, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import WorkshopCarousel from "@/components/WorkshopCarousel";
 import TestimonialsSection from "@/components/TestimonialsSection";
@@ -354,6 +354,55 @@ const Index = () => {
                 <h3 className="font-display text-xl font-semibold text-foreground">{item.title}</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Nos univers */}
+      <section className="py-24">
+        <div className="container mx-auto px-6">
+          <h2 className="text-3xl md:text-4xl font-display font-bold text-center text-foreground mb-4">
+            Nos univers
+          </h2>
+          <p className="text-center text-muted-foreground max-w-lg mx-auto mb-16">
+            Trois grandes familles d'ateliers pour répondre à toutes vos envies du moment.
+          </p>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: MessageCircle,
+                title: "Papotages",
+                desc: "Des rencontres informelles pour échanger, se confier et créer du lien autour d'un café.",
+                accent: "bg-rose-500/10 text-rose-600",
+              },
+              {
+                icon: Palette,
+                title: "Créatifs",
+                desc: "Peinture, bougie, macramé, poterie… des ateliers manuels pour se reconnecter à soi.",
+                accent: "bg-primary/10 text-primary",
+              },
+              {
+                icon: Briefcase,
+                title: "Business",
+                desc: "Entrepreneuriat, développement pro et perso : des ateliers pour avancer entourée.",
+                accent: "bg-amber-500/10 text-amber-600",
+              },
+            ].map((univers) => (
+              <Link
+                key={univers.title}
+                to="/calendrier"
+                className="group bg-card rounded-2xl p-8 text-center space-y-4 border hover:shadow-lg hover:-translate-y-0.5 transition-all"
+              >
+                <div className={`inline-flex items-center justify-center w-14 h-14 rounded-full ${univers.accent}`}>
+                  <univers.icon className="w-6 h-6" />
+                </div>
+                <h3 className="font-display text-xl font-semibold text-foreground">{univers.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">{univers.desc}</p>
+                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                  Voir les ateliers <ArrowRight className="w-3.5 h-3.5" />
+                </span>
+              </Link>
             ))}
           </div>
         </div>
