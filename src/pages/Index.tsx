@@ -1,5 +1,5 @@
 import { useState, useEffect, FormEvent } from "react";
-import { Sparkles, Calendar, Heart, Users, X, CalendarPlus, Download, CheckCircle2, MessageCircle, Palette, Briefcase, ArrowRight } from "lucide-react";
+import { Sparkles, Calendar, Heart, Users, X, CalendarPlus, Download, CheckCircle2, MessageCircle, Palette, Briefcase } from "lucide-react";
 import { Link } from "react-router-dom";
 import WorkshopCarousel from "@/components/WorkshopCarousel";
 import TestimonialsSection from "@/components/TestimonialsSection";
@@ -389,20 +389,21 @@ const Index = () => {
                 accent: "bg-amber-500/10 text-amber-600",
               },
             ].map((univers) => (
-              <Link
-                key={univers.title}
-                to="/calendrier"
-                className="group bg-card rounded-2xl p-8 text-center space-y-4 border hover:shadow-lg hover:-translate-y-0.5 transition-all"
-              >
-                <div className={`inline-flex items-center justify-center w-14 h-14 rounded-full ${univers.accent}`}>
-                  <univers.icon className="w-6 h-6" />
+              <div key={univers.title} className="group h-64 [perspective:1200px]">
+                <div className="relative h-full w-full transition-transform duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
+                  {/* Face avant */}
+                  <div className="absolute inset-0 [backface-visibility:hidden] bg-card rounded-2xl p-8 border flex flex-col items-center justify-center gap-4">
+                    <div className={`inline-flex items-center justify-center w-14 h-14 rounded-full ${univers.accent}`}>
+                      <univers.icon className="w-6 h-6" />
+                    </div>
+                    <h3 className="font-display text-xl font-semibold text-foreground">{univers.title}</h3>
+                  </div>
+                  {/* Face arrière */}
+                  <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-card rounded-2xl p-8 border flex items-center justify-center text-center">
+                    <p className="text-muted-foreground text-sm leading-relaxed">{univers.desc}</p>
+                  </div>
                 </div>
-                <h3 className="font-display text-xl font-semibold text-foreground">{univers.title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">{univers.desc}</p>
-                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                  Voir les ateliers <ArrowRight className="w-3.5 h-3.5" />
-                </span>
-              </Link>
+              </div>
             ))}
           </div>
         </div>
