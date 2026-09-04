@@ -65,11 +65,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     // onAuthStateChange est la source unique de vérité
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
 
       if (session?.user) {
+        // TOKEN_REFRESHED se déclenche automatiquement (ex: quand l'onglet
+        // reprend le focus après être resté en arrière-plan) sans que
+        // l'utilisateur ou son profil n'aient changé. Ne pas repasser
+        // `loading` à true dans ce cas : RoleGuard démonterait la page en
+        // cours (et donc toute modale ouverte / saisie en cours) le temps
+        // du rechargement, alors que rien n'a réellement changé.
+        if (event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
+          return;
+        }
         // Marque le profile comme en cours de chargement pour que le
         // Login (et tout autre consumer) puisse savoir qu'on attend
         // encore le résultat du fetchProfile.
