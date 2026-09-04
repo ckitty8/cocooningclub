@@ -66,6 +66,12 @@ const emptyForm = {
   antenne_id: "",
 };
 
+// Brouillon persistant : si l'onglet est déchargé par le navigateur (mise en
+// veille, économiseur de mémoire) pendant que la modale est ouverte, la
+// saisie en cours serait perdue au retour. On la sauvegarde en continu pour
+// pouvoir la restaurer automatiquement.
+const DRAFT_KEY = "admin.ateliers.draft";
+
 const statutLabels: Record<Statut, string> = {
   brouillon: "Brouillon", publie: "Publié", complet: "Complet",
   annule: "Annulé", termine: "Terminé",
@@ -153,6 +159,48 @@ const Ateliers = () => {
       setAntennes((data as Antenne[]) ?? []);
     });
   }, []);
+
+  // Sauvegarde continue du brouillon pendant que la modale est ouverte.
+  useEffect(() => {
+    if (!modal.open) return;
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ atelierId: modal.atelier?.id ?? null, form }));
+    } catch {
+      // stockage indisponible (navigation privée, quota...) : tant pis
+    }
+  }, [modal.open, modal.atelier, form]);
+
+  // Restauration du brouillon une fois les ateliers chargés (nécessaire pour
+  // retrouver l'atelier concerné si c'était une modification en cours).
+  const draftRestoredRef = useRef(false);
+  useEffect(() => {
+    if (draftRestoredRef.current || loading) return;
+    draftRestoredRef.current = true;
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const draft = JSON.parse(raw) as { atelierId: string | null; form: typeof emptyForm };
+      if (draft.atelierId) {
+        const found = ateliers.find(a => a.id === draft.atelierId);
+        if (!found) {
+          localStorage.removeItem(DRAFT_KEY);
+          return;
+        }
+        setModal({ open: true, atelier: found });
+      } else {
+        setModal({ open: true, atelier: null });
+      }
+      setForm(draft.form);
+      toast.info("Un brouillon en cours a été restauré");
+    } catch {
+      localStorage.removeItem(DRAFT_KEY);
+    }
+  }, [loading, ateliers]);
+
+  const closeModal = () => {
+    localStorage.removeItem(DRAFT_KEY);
+    setModal({ open: false, atelier: null });
+  };
 
   const filtered = ateliers.filter(a => {
     const matchSearch = a.titre.toLowerCase().includes(search.toLowerCase());
@@ -333,7 +381,7 @@ const Ateliers = () => {
     }
     toast.success(modal.atelier ? "Atelier mis à jour" : "Atelier créé");
     await fetchAteliers();
-    setModal({ open: false, atelier: null });
+    closeModal();
     setSaving(false);
   };
 
@@ -687,7 +735,7 @@ const Ateliers = () => {
           <div className="bg-card rounded-2xl border w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b sticky top-0 bg-card z-10">
               <h2 className="font-semibold text-lg">{modal.atelier ? "Modifier l'atelier" : "Nouvel atelier"}</h2>
-              <button onClick={() => setModal({ open: false, atelier: null })}
+              <button onClick={closeModal}
                 className="p-1.5 rounded-lg hover:bg-muted"><X className="w-4 h-4" /></button>
             </div>
             <div className="p-6 space-y-4">
@@ -828,7 +876,7 @@ const Ateliers = () => {
               </div>
             </div>
             <div className="flex justify-end gap-3 p-6 border-t">
-              <button onClick={() => setModal({ open: false, atelier: null })}
+              <button onClick={closeModal}
                 className="px-4 py-2 text-sm border rounded-full hover:bg-muted transition-colors">Annuler</button>
               <button onClick={handleSave} disabled={saving || !form.titre || !form.date_atelier || !form.heure_debut || !form.antenne_id}
                 className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-full hover:opacity-90 transition-opacity disabled:opacity-50">
