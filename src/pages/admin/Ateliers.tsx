@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
 import { withTimeout } from "@/utils/withTimeout";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
+import { searchAdresse, type AdresseSuggestion } from "@/utils/adresseAutocomplete";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, X, MapPin, Clock, Users, Euro, Search, UserCheck, UserX, Image as ImageIcon, CircleDashed } from "lucide-react";
 
@@ -112,6 +113,13 @@ const Ateliers = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
+  // Autocomplétion de l'adresse (API Adresse gouv.fr)
+  const [adresseSuggestions, setAdresseSuggestions] = useState<AdresseSuggestion[]>([]);
+  const [showAdresseSuggestions, setShowAdresseSuggestions] = useState(false);
+  const [adresseLoading, setAdresseLoading] = useState(false);
+  const adresseDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const adresseAbortRef = useRef<AbortController | null>(null);
+
   // Recherche + filtres
   const [search, setSearch] = useState("");
   const [filterStatut, setFilterStatut] = useState<Statut | "">("");
@@ -201,6 +209,8 @@ const Ateliers = () => {
   const closeModal = () => {
     localStorage.removeItem(DRAFT_KEY);
     setModal({ open: false, atelier: null });
+    setAdresseSuggestions([]);
+    setShowAdresseSuggestions(false);
   };
 
   const filtered = ateliers.filter(a => {
@@ -420,6 +430,41 @@ const Ateliers = () => {
       }
       return next;
     });
+  };
+
+  const handleAdresseChange = (value: string) => {
+    f("adresse", value);
+    setShowAdresseSuggestions(true);
+
+    if (adresseDebounceRef.current) clearTimeout(adresseDebounceRef.current);
+    if (value.trim().length < 3) {
+      setAdresseSuggestions([]);
+      setAdresseLoading(false);
+      return;
+    }
+
+    adresseDebounceRef.current = setTimeout(async () => {
+      adresseAbortRef.current?.abort();
+      const controller = new AbortController();
+      adresseAbortRef.current = controller;
+      setAdresseLoading(true);
+      try {
+        const results = await searchAdresse(value, controller.signal);
+        setAdresseSuggestions(results);
+      } catch (err) {
+        if ((err as Error).name !== "AbortError") {
+          console.error("[Ateliers.handleAdresseChange]", err);
+        }
+      } finally {
+        if (adresseAbortRef.current === controller) setAdresseLoading(false);
+      }
+    }, 300);
+  };
+
+  const selectAdresseSuggestion = (label: string) => {
+    f("adresse", label);
+    setAdresseSuggestions([]);
+    setShowAdresseSuggestions(false);
   };
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -860,11 +905,36 @@ const Ateliers = () => {
                     className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>
               </div>
-              <div>
+              <div className="relative">
                 <label className="block text-sm font-medium mb-1.5">Adresse (lien Google Maps)</label>
-                <input value={form.adresse} onChange={e => f("adresse", e.target.value)}
+                <input
+                  value={form.adresse}
+                  onChange={e => handleAdresseChange(e.target.value)}
+                  onFocus={() => setShowAdresseSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowAdresseSuggestions(false), 150)}
                   placeholder="ex: 12 rue des Lilas, 75000 Paris"
-                  className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
+                  autoComplete="off"
+                  className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                {showAdresseSuggestions && (adresseLoading || adresseSuggestions.length > 0) && (
+                  <ul className="absolute z-20 left-0 right-0 mt-1 bg-card border rounded-xl shadow-lg max-h-56 overflow-y-auto">
+                    {adresseLoading && (
+                      <li className="px-3 py-2 text-xs text-muted-foreground">Recherche...</li>
+                    )}
+                    {adresseSuggestions.map(s => (
+                      <li key={s.label}>
+                        <button
+                          type="button"
+                          onMouseDown={e => e.preventDefault()}
+                          onClick={() => selectAdresseSuggestion(s.label)}
+                          className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors"
+                        >
+                          {s.label}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
                 <p className="text-xs text-muted-foreground mt-1">
                   Le lieu sera cliquable et ouvrira cette adresse dans Google Maps.
                 </p>
