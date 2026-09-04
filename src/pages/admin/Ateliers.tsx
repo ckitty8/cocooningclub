@@ -6,7 +6,7 @@ import { withTimeout } from "@/utils/withTimeout";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { searchAdresse, type AdresseSuggestion } from "@/utils/adresseAutocomplete";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, X, MapPin, Clock, Users, Euro, Search, UserCheck, UserX, Image as ImageIcon, CircleDashed } from "lucide-react";
+import { Plus, Pencil, Trash2, Copy, X, MapPin, Clock, Users, Euro, Search, UserCheck, UserX, Image as ImageIcon, CircleDashed } from "lucide-react";
 
 type Statut = "brouillon" | "publie" | "complet" | "annule" | "termine";
 type Niveau = "debutant" | "intermediaire" | "avance";
@@ -300,6 +300,25 @@ const Ateliers = () => {
       antenne_id: a.antenne_id,
     });
     setModal({ open: true, atelier: a });
+  };
+
+  // Duplique un atelier existant (quel que soit son statut) : pré-remplit le
+  // formulaire avec les mêmes infos, mais comme un nouvel atelier (pas d'id,
+  // repart en brouillon) pour que l'admin ajuste la date avant de publier.
+  const openDuplicate = (a: Atelier) => {
+    setForm({
+      titre: `${a.titre} (copie)`, description: a.description ?? "", description_courte: a.description_courte ?? "",
+      date_atelier: a.date_atelier, date_fin_inscription: a.date_fin_inscription ?? "",
+      heure_debut: a.heure_debut ?? "", heure_fin: a.heure_fin ?? "", duree: a.duree ?? "",
+      lieu: a.lieu ?? "", adresse: a.adresse ?? "", url_image: a.url_image ?? "",
+      places_max: a.places_max,
+      tarif_standard: a.tarif_standard?.toString() ?? "",
+      tarif_affichage: a.tarif_affichage ?? "",
+      lien_paypal: a.lien_paypal ?? "",
+      niveau: a.niveau ?? "", statut: "brouillon",
+      antenne_id: a.antenne_id,
+    });
+    setModal({ open: true, atelier: null });
   };
 
   const handleSave = async () => {
@@ -658,6 +677,10 @@ const Ateliers = () => {
                   <button onClick={() => openEdit(a)}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs border rounded-full hover:bg-muted transition-colors flex-1 justify-center">
                     <Pencil className="w-3 h-3" /> Modifier
+                  </button>
+                  <button onClick={() => openDuplicate(a)} title="Dupliquer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs border rounded-full hover:bg-muted transition-colors">
+                    <Copy className="w-3 h-3" />
                   </button>
                   <button onClick={() => handleDelete(a.id)}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-destructive/30 text-destructive rounded-full hover:bg-destructive/10 transition-colors">
