@@ -181,6 +181,10 @@ const Ateliers = () => {
 
   // Restauration du brouillon une fois les ateliers chargés (nécessaire pour
   // retrouver l'atelier concerné si c'était une modification en cours).
+  // Demande confirmation avant de rouvrir la modale : si le brouillon
+  // provient en fait d'un enregistrement déjà réussi juste avant un
+  // rechargement de page, on ne veut surtout pas le resoumettre en silence
+  // (ça créerait un doublon en base).
   const draftRestoredRef = useRef(false);
   useEffect(() => {
     if (draftRestoredRef.current || loading) return;
@@ -189,18 +193,25 @@ const Ateliers = () => {
       const raw = localStorage.getItem(DRAFT_KEY);
       if (!raw) return;
       const draft = JSON.parse(raw) as { atelierId: string | null; form: typeof emptyForm };
+      let atelier: Atelier | null = null;
       if (draft.atelierId) {
         const found = ateliers.find(a => a.id === draft.atelierId);
         if (!found) {
           localStorage.removeItem(DRAFT_KEY);
           return;
         }
-        setModal({ open: true, atelier: found });
-      } else {
-        setModal({ open: true, atelier: null });
+        atelier = found;
       }
+      const ok = confirm(
+        `Un brouillon non enregistré a été retrouvé pour l'atelier "${draft.form.titre || "(sans titre)"}".\n\n` +
+        "Voulez-vous le restaurer ? Si vous l'avez déjà enregistré juste avant, cliquez sur Annuler pour éviter un doublon."
+      );
+      if (!ok) {
+        localStorage.removeItem(DRAFT_KEY);
+        return;
+      }
+      setModal({ open: true, atelier });
       setForm(draft.form);
-      toast.info("Un brouillon en cours a été restauré");
     } catch {
       localStorage.removeItem(DRAFT_KEY);
     }
@@ -386,6 +397,12 @@ const Ateliers = () => {
         setSaving(false);
         return;
       }
+      // Le brouillon est effacé tout de suite après le succès en base, avant
+      // tout autre await : si la page est déchargée juste après (veille,
+      // changement d'onglet), on ne veut surtout pas qu'un brouillon
+      // "orphelin" se restaure au retour et déclenche un second
+      // enregistrement du même atelier (doublon en base).
+      localStorage.removeItem(DRAFT_KEY);
       logAction("atelier.update", "ateliers", modal.atelier.id, {
         titre: payload.titre,
         statut_avant: before.statut,
@@ -404,6 +421,7 @@ const Ateliers = () => {
         setSaving(false);
         return;
       }
+      localStorage.removeItem(DRAFT_KEY);
       logAction("atelier.create", "ateliers", ins?.id ?? null, {
         titre: payload.titre,
         date_atelier: payload.date_atelier,
