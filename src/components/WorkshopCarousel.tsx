@@ -45,7 +45,7 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
                 <h3 className="font-display text-xl font-semibold text-foreground">{ws.titre}</h3>
               </div>
               <div className="p-6 space-y-3 flex-1 flex flex-col">
-                <p className="text-muted-foreground text-sm leading-relaxed mb-2">{ws.description}</p>
+                <p className="text-muted-foreground text-sm leading-relaxed mb-2">{ws.description_courte || ws.description}</p>
 
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <Calendar className="w-4 h-4 text-primary flex-shrink-0" />

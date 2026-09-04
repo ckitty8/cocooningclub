@@ -7,6 +7,7 @@ export interface Workshop {
   places_disponibles: number;
   places_max: number;
   description: string;
+  description_courte?: string | null;
   lieu: string;
   adresse?: string | null;
   tarif_affichage: string;
