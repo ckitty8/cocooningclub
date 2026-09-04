@@ -29,10 +29,10 @@ interface Atelier {
   lien_paypal: string | null;
   niveau: Niveau | null;
   statut: Statut;
-  categorie_id: string;
+  antenne_id: string;
 }
 
-interface Categorie {
+interface Antenne {
   id: string;
   nom: string;
 }
@@ -61,7 +61,7 @@ const emptyForm = {
   date_atelier: "", date_fin_inscription: "", heure_debut: "", duree: "", lieu: "", url_image: "",
   places_max: 10, tarif_standard: "", tarif_affichage: "",
   lien_paypal: "", niveau: "" as Niveau | "", statut: "brouillon" as Statut,
-  categorie_id: "",
+  antenne_id: "",
 };
 
 const statutLabels: Record<Statut, string> = {
@@ -95,7 +95,7 @@ const paiementLabel: Record<StatutPaiement, string> = {
 
 const Ateliers = () => {
   const [ateliers, setAteliers] = useState<Atelier[]>([]);
-  const [categories, setCategories] = useState<Categorie[]>([]);
+  const [antennes, setAntennes] = useState<Antenne[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<{ open: boolean; atelier: Atelier | null }>({ open: false, atelier: null });
   const [form, setForm] = useState(emptyForm);
@@ -106,7 +106,7 @@ const Ateliers = () => {
   // Recherche + filtres
   const [search, setSearch] = useState("");
   const [filterStatut, setFilterStatut] = useState<Statut | "">("");
-  const [filterCategorie, setFilterCategorie] = useState<string>("toutes"); // id catégorie ou "toutes"
+  const [filterAntenne, setFilterAntenne] = useState<string>("toutes"); // id antenne ou "toutes"
 
   // Panel inscrits
   const [inscritPanel, setInscritPanel] = useState<{ open: boolean; atelier: Atelier | null }>({ open: false, atelier: null });
@@ -147,22 +147,22 @@ const Ateliers = () => {
   useEffect(() => { fetchAteliers(); }, []);
 
   useEffect(() => {
-    supabase.from("categories").select("id, nom").order("nom").then(({ data }) => {
-      setCategories((data as Categorie[]) ?? []);
+    supabase.from("antennes").select("id, nom").order("ordre_affichage").then(({ data }) => {
+      setAntennes((data as Antenne[]) ?? []);
     });
   }, []);
 
   const filtered = ateliers.filter(a => {
     const matchSearch = a.titre.toLowerCase().includes(search.toLowerCase());
     const matchStatut = filterStatut === "" || a.statut === filterStatut;
-    const matchCat = filterCategorie === "toutes" || a.categorie_id === filterCategorie;
-    return matchSearch && matchStatut && matchCat;
+    const matchAntenne = filterAntenne === "toutes" || a.antenne_id === filterAntenne;
+    return matchSearch && matchStatut && matchAntenne;
   });
 
-  const countByCat = (catId: string) =>
-    catId === "toutes"
+  const countByAntenne = (antenneId: string) =>
+    antenneId === "toutes"
       ? ateliers.length
-      : ateliers.filter(a => a.categorie_id === catId).length;
+      : ateliers.filter(a => a.antenne_id === antenneId).length;
 
   const countByStatut = (s: Statut | "") =>
     s === "" ? ateliers.length : ateliers.filter(a => a.statut === s).length;
@@ -236,7 +236,7 @@ const Ateliers = () => {
       tarif_affichage: a.tarif_affichage ?? "",
       lien_paypal: a.lien_paypal ?? "",
       niveau: a.niveau ?? "", statut: a.statut,
-      categorie_id: a.categorie_id,
+      antenne_id: a.antenne_id,
     });
     setModal({ open: true, atelier: a });
   };
@@ -265,8 +265,8 @@ const Ateliers = () => {
       }
     }
 
-    if (!form.categorie_id) {
-      toast.error("Choisis une catégorie");
+    if (!form.antenne_id) {
+      toast.error("Choisis une antenne");
       setSaving(false);
       return;
     }
@@ -293,7 +293,7 @@ const Ateliers = () => {
       lien_paypal: form.lien_paypal || null,
       niveau: (form.niveau as Niveau) || "debutant",
       statut: form.statut,
-      categorie_id: form.categorie_id,
+      antenne_id: form.antenne_id,
     };
     if (modal.atelier) {
       const before = modal.atelier;
@@ -387,31 +387,31 @@ const Ateliers = () => {
         </button>
       </div>
 
-      {/* Onglets catégories */}
+      {/* Onglets antennes */}
       <div className="flex flex-wrap gap-2 mb-4 border-b pb-3">
         <button
-          onClick={() => setFilterCategorie("toutes")}
+          onClick={() => setFilterAntenne("toutes")}
           className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-            filterCategorie === "toutes"
+            filterAntenne === "toutes"
               ? "bg-primary text-primary-foreground"
               : "bg-card border text-foreground hover:bg-muted"
           }`}
         >
           Toutes
-          <span className="ml-2 text-xs opacity-70">({countByCat("toutes")})</span>
+          <span className="ml-2 text-xs opacity-70">({countByAntenne("toutes")})</span>
         </button>
-        {categories.map(c => (
+        {antennes.map(c => (
           <button
             key={c.id}
-            onClick={() => setFilterCategorie(c.id)}
+            onClick={() => setFilterAntenne(c.id)}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-              filterCategorie === c.id
+              filterAntenne === c.id
                 ? "bg-primary text-primary-foreground"
                 : "bg-card border text-foreground hover:bg-muted"
             }`}
           >
             {c.nom}
-            <span className="ml-2 text-xs opacity-70">({countByCat(c.id)})</span>
+            <span className="ml-2 text-xs opacity-70">({countByAntenne(c.id)})</span>
           </button>
         ))}
       </div>
@@ -706,16 +706,16 @@ const Ateliers = () => {
                   className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5">Catégorie *</label>
-                <select value={form.categorie_id} onChange={e => f("categorie_id", e.target.value)}
+                <label className="block text-sm font-medium mb-1.5">Antenne *</label>
+                <select value={form.antenne_id} onChange={e => f("antenne_id", e.target.value)}
                   className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary">
-                  <option value="">— Choisir une catégorie —</option>
-                  {categories.map(c => (
+                  <option value="">— Choisir une antenne —</option>
+                  {antennes.map(c => (
                     <option key={c.id} value={c.id}>{c.nom}</option>
                   ))}
                 </select>
-                {categories.length === 0 && (
-                  <p className="text-xs text-amber-600 mt-1">Aucune catégorie en base. Crée-en une côté Supabase (table categories) avant de continuer.</p>
+                {antennes.length === 0 && (
+                  <p className="text-xs text-amber-600 mt-1">Aucune antenne en base. Crée-en une côté Supabase (table antennes) avant de continuer.</p>
                 )}
               </div>
               <div>
@@ -805,7 +805,7 @@ const Ateliers = () => {
             <div className="flex justify-end gap-3 p-6 border-t">
               <button onClick={() => setModal({ open: false, atelier: null })}
                 className="px-4 py-2 text-sm border rounded-full hover:bg-muted transition-colors">Annuler</button>
-              <button onClick={handleSave} disabled={saving || !form.titre || !form.date_atelier || !form.heure_debut || !form.categorie_id}
+              <button onClick={handleSave} disabled={saving || !form.titre || !form.date_atelier || !form.heure_debut || !form.antenne_id}
                 className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-full hover:opacity-90 transition-opacity disabled:opacity-50">
                 {saving ? "Enregistrement..." : "Enregistrer"}
               </button>

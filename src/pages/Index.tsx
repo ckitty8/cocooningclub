@@ -359,14 +359,14 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Nos univers */}
+      {/* Nos antennes */}
       <section className="py-24">
         <div className="container mx-auto px-6">
           <h2 className="text-3xl md:text-4xl font-display font-bold text-center text-foreground mb-4">
-            Nos univers
+            Nos antennes
           </h2>
           <p className="text-center text-muted-foreground max-w-lg mx-auto mb-16">
-            Trois grandes familles d'ateliers pour répondre à toutes vos envies du moment.
+            Trois grandes antennes d'ateliers pour répondre à toutes vos envies du moment.
           </p>
           <div className="grid md:grid-cols-3 gap-8">
             {[
@@ -388,19 +388,19 @@ const Index = () => {
                 desc: "Entrepreneuriat, développement pro et perso : des ateliers pour avancer entourée.",
                 accent: "bg-amber-500/10 text-amber-600",
               },
-            ].map((univers) => (
-              <div key={univers.title} className="group h-64 [perspective:1200px]">
+            ].map((antenne) => (
+              <div key={antenne.title} className="group h-64 [perspective:1200px]">
                 <div className="relative h-full w-full transition-transform duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
                   {/* Face avant */}
                   <div className="absolute inset-0 [backface-visibility:hidden] bg-card rounded-2xl p-8 border flex flex-col items-center justify-center gap-4">
-                    <div className={`inline-flex items-center justify-center w-14 h-14 rounded-full ${univers.accent}`}>
-                      <univers.icon className="w-6 h-6" />
+                    <div className={`inline-flex items-center justify-center w-14 h-14 rounded-full ${antenne.accent}`}>
+                      <antenne.icon className="w-6 h-6" />
                     </div>
-                    <h3 className="font-display text-xl font-semibold text-foreground">{univers.title}</h3>
+                    <h3 className="font-display text-xl font-semibold text-foreground">{antenne.title}</h3>
                   </div>
                   {/* Face arrière */}
                   <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-card rounded-2xl p-8 border flex items-center justify-center text-center">
-                    <p className="text-muted-foreground text-sm leading-relaxed">{univers.desc}</p>
+                    <p className="text-muted-foreground text-sm leading-relaxed">{antenne.desc}</p>
                   </div>
                 </div>
               </div>

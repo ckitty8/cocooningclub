@@ -7,639 +7,344 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.4"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
-      utilisateurs: {
+      antennes: {
         Row: {
-          id: string
-          email: string
-          mot_de_passe_hash: string | null
-          prenom: string
-          nom: string
-          telephone: string | null
-          role: "administrateur" | "inscrit" | "membre"
-          url_avatar: string | null
-          debut_abonnement: string | null
-          fin_abonnement: string | null
-          est_actif: boolean
-          couleur_conges: string | null
-          code_couleur_conges: string | null
           cree_le: string
-          modifie_le: string
-        }
-        Insert: {
-          id?: string
-          email: string
-          mot_de_passe_hash?: string | null
-          prenom: string
-          nom: string
-          telephone?: string | null
-          role?: "administrateur" | "inscrit" | "membre"
-          url_avatar?: string | null
-          debut_abonnement?: string | null
-          fin_abonnement?: string | null
-          est_actif?: boolean
-          couleur_conges?: string | null
-          code_couleur_conges?: string | null
-          cree_le?: string
-          modifie_le?: string
-        }
-        Update: {
-          id?: string
-          email?: string
-          mot_de_passe_hash?: string | null
-          prenom?: string
-          nom?: string
-          telephone?: string | null
-          role?: "administrateur" | "inscrit" | "membre"
-          url_avatar?: string | null
-          debut_abonnement?: string | null
-          fin_abonnement?: string | null
-          est_actif?: boolean
-          couleur_conges?: string | null
-          code_couleur_conges?: string | null
-          cree_le?: string
-          modifie_le?: string
-        }
-        Relationships: []
-      }
-      formateurs: {
-        Row: {
-          id: string
-          prenom: string
-          nom: string
-          email: string | null
-          telephone: string | null
-          bio: string | null
-          specialites: string | null
-          url_photo: string | null
-          est_externe: boolean
-          utilisateur_id: string | null
-          est_actif: boolean
-          cree_le: string
-          modifie_le: string
-        }
-        Insert: {
-          id?: string
-          prenom: string
-          nom: string
-          email?: string | null
-          telephone?: string | null
-          bio?: string | null
-          specialites?: string | null
-          url_photo?: string | null
-          est_externe?: boolean
-          utilisateur_id?: string | null
-          est_actif?: boolean
-          cree_le?: string
-          modifie_le?: string
-        }
-        Update: {
-          id?: string
-          prenom?: string
-          nom?: string
-          email?: string | null
-          telephone?: string | null
-          bio?: string | null
-          specialites?: string | null
-          url_photo?: string | null
-          est_externe?: boolean
-          utilisateur_id?: string | null
-          est_actif?: boolean
-          cree_le?: string
-          modifie_le?: string
-        }
-        Relationships: []
-      }
-      categories: {
-        Row: {
-          id: string
-          nom: string
           description: string | null
+          id: string
+          nom: string
+          ordre_affichage: number
           slug: string
           url_icone: string | null
-          ordre_affichage: number
-          cree_le: string
         }
         Insert: {
+          cree_le?: string
+          description?: string | null
           id?: string
           nom: string
-          description?: string | null
+          ordre_affichage?: number
           slug: string
           url_icone?: string | null
-          ordre_affichage?: number
-          cree_le?: string
         }
         Update: {
+          cree_le?: string
+          description?: string | null
           id?: string
           nom?: string
-          description?: string | null
+          ordre_affichage?: number
           slug?: string
           url_icone?: string | null
-          ordre_affichage?: number
-          cree_le?: string
         }
         Relationships: []
       }
       ateliers: {
         Row: {
-          id: string
-          categorie_id: string
-          formateur_id: string | null
-          titre: string
+          antenne_id: string
+          cree_le: string
+          date_atelier: string
+          date_fin_inscription: string | null
           description: string | null
           description_courte: string | null
-          niveau: "debutant" | "intermediaire" | "avance"
-          lieu: string | null
-          url_image: string | null
-          date_atelier: string
-          heure_debut: string
           duree: string
-          places_max: number
-          places_disponibles: number
-          tarif_standard: number
-          tarif_affichage: string | null
-          lien_paypal: string | null
-          statut: "brouillon" | "publie" | "complet" | "annule" | "termine"
-          modele_id: string | null
-          recurrence: "hebdomadaire" | "bimensuel" | "mensuel" | null
-          cree_le: string
-          modifie_le: string
-        }
-        Insert: {
-          id?: string
-          categorie_id: string
-          formateur_id?: string | null
-          titre: string
-          description?: string | null
-          description_courte?: string | null
-          niveau?: "debutant" | "intermediaire" | "avance"
-          lieu?: string | null
-          url_image?: string | null
-          date_atelier: string
+          formateur_id: string | null
           heure_debut: string
-          duree?: string
-          places_max?: number
-          places_disponibles?: number
-          tarif_standard?: number
-          tarif_affichage?: string | null
-          lien_paypal?: string | null
-          statut?: "brouillon" | "publie" | "complet" | "annule" | "termine"
-          modele_id?: string | null
-          recurrence?: "hebdomadaire" | "bimensuel" | "mensuel" | null
-          cree_le?: string
-          modifie_le?: string
-        }
-        Update: {
-          id?: string
-          categorie_id?: string
-          formateur_id?: string | null
-          titre?: string
-          description?: string | null
-          description_courte?: string | null
-          niveau?: "debutant" | "intermediaire" | "avance"
-          lieu?: string | null
-          url_image?: string | null
-          date_atelier?: string
-          heure_debut?: string
-          duree?: string
-          places_max?: number
-          places_disponibles?: number
-          tarif_standard?: number
-          tarif_affichage?: string | null
-          lien_paypal?: string | null
-          statut?: "brouillon" | "publie" | "complet" | "annule" | "termine"
-          modele_id?: string | null
-          recurrence?: "hebdomadaire" | "bimensuel" | "mensuel" | null
-          cree_le?: string
-          modifie_le?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ateliers_categorie_id_fkey"
-            columns: ["categorie_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      inscriptions: {
-        Row: {
           id: string
-          atelier_id: string
-          utilisateur_id: string | null
-          nom_invite: string | null
-          prenom_invite: string | null
-          email_invite: string | null
-          telephone_invite: string | null
-          date_naissance: string | null
-          statut: "en_attente" | "confirme" | "annule"
-          statut_paiement: "en_attente" | "paye" | "non_requis"
-          present: boolean
-          inscrit_le: string
-          annule_le: string | null
+          lien_paypal: string | null
+          lieu: string | null
+          modele_id: string | null
+          modifie_le: string
+          niveau: Database["public"]["Enums"]["niveau_atelier"]
+          places_disponibles: number
+          places_max: number
+          recurrence: Database["public"]["Enums"]["type_recurrence"] | null
+          statut: Database["public"]["Enums"]["statut_atelier"]
+          tarif_admin: number | null
+          tarif_affichage: string | null
+          tarif_standard: number
+          titre: string
+          url_image: string | null
         }
         Insert: {
+          antenne_id: string
+          cree_le?: string
+          date_atelier: string
+          date_fin_inscription?: string | null
+          description?: string | null
+          description_courte?: string | null
+          duree?: string
+          formateur_id?: string | null
+          heure_debut: string
           id?: string
-          atelier_id: string
-          utilisateur_id?: string | null
-          nom_invite?: string | null
-          prenom_invite?: string | null
-          email_invite?: string | null
-          telephone_invite?: string | null
-          date_naissance?: string | null
-          statut?: "en_attente" | "confirme" | "annule"
-          statut_paiement?: "en_attente" | "paye" | "non_requis"
-          present?: boolean
-          inscrit_le?: string
-          annule_le?: string | null
+          lien_paypal?: string | null
+          lieu?: string | null
+          modele_id?: string | null
+          modifie_le?: string
+          niveau?: Database["public"]["Enums"]["niveau_atelier"]
+          places_disponibles?: number
+          places_max?: number
+          recurrence?: Database["public"]["Enums"]["type_recurrence"] | null
+          statut?: Database["public"]["Enums"]["statut_atelier"]
+          tarif_admin?: number | null
+          tarif_affichage?: string | null
+          tarif_standard?: number
+          titre: string
+          url_image?: string | null
         }
         Update: {
+          antenne_id?: string
+          cree_le?: string
+          date_atelier?: string
+          date_fin_inscription?: string | null
+          description?: string | null
+          description_courte?: string | null
+          duree?: string
+          formateur_id?: string | null
+          heure_debut?: string
           id?: string
-          atelier_id?: string
-          utilisateur_id?: string | null
-          nom_invite?: string | null
-          prenom_invite?: string | null
-          email_invite?: string | null
-          telephone_invite?: string | null
-          date_naissance?: string | null
-          statut?: "en_attente" | "confirme" | "annule"
-          statut_paiement?: "en_attente" | "paye" | "non_requis"
-          present?: boolean
-          inscrit_le?: string
-          annule_le?: string | null
+          lien_paypal?: string | null
+          lieu?: string | null
+          modele_id?: string | null
+          modifie_le?: string
+          niveau?: Database["public"]["Enums"]["niveau_atelier"]
+          places_disponibles?: number
+          places_max?: number
+          recurrence?: Database["public"]["Enums"]["type_recurrence"] | null
+          statut?: Database["public"]["Enums"]["statut_atelier"]
+          tarif_admin?: number | null
+          tarif_affichage?: string | null
+          tarif_standard?: number
+          titre?: string
+          url_image?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "inscriptions_atelier_id_fkey"
-            columns: ["atelier_id"]
+            foreignKeyName: "ateliers_antenne_id_fkey"
+            columns: ["antenne_id"]
+            isOneToOne: false
+            referencedRelation: "antennes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ateliers_formateur_id_fkey"
+            columns: ["formateur_id"]
+            isOneToOne: false
+            referencedRelation: "formateurs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ateliers_modele_id_fkey"
+            columns: ["modele_id"]
             isOneToOne: false
             referencedRelation: "ateliers"
             referencedColumns: ["id"]
-          }
+          },
+          {
+            foreignKeyName: "ateliers_modele_id_fkey"
+            columns: ["modele_id"]
+            isOneToOne: false
+            referencedRelation: "vue_prochains_ateliers"
+            referencedColumns: ["id"]
+          },
         ]
       }
       avis: {
         Row: {
-          id: string
-          utilisateur_id: string
-          inscription_id: string
-          note: number
           commentaire: string | null
-          moderation: "en_attente" | "approuve" | "rejete"
+          cree_le: string
+          id: string
+          inscription_id: string | null
           mis_en_avant: boolean
-          cree_le: string
+          moderation: Database["public"]["Enums"]["statut_moderation"]
           modere_le: string | null
-        }
-        Insert: {
-          id?: string
-          utilisateur_id: string
-          inscription_id: string
+          nom_auteur: string | null
           note: number
-          commentaire?: string | null
-          moderation?: "en_attente" | "approuve" | "rejete"
-          mis_en_avant?: boolean
-          cree_le?: string
-          modere_le?: string | null
-        }
-        Update: {
-          id?: string
-          utilisateur_id?: string
-          inscription_id?: string
-          note?: number
-          commentaire?: string | null
-          moderation?: "en_attente" | "approuve" | "rejete"
-          mis_en_avant?: boolean
-          cree_le?: string
-          modere_le?: string | null
-        }
-        Relationships: []
-      }
-      transactions_paypal: {
-        Row: {
-          id: string
-          inscription_id: string
-          paypal_transaction_id: string
-          montant: number
-          devise: string
-          email_payeur: string | null
-          statut: "en_attente" | "complete" | "rembourse" | "echoue"
-          donnees_brutes: Record<string, unknown> | null
-          paypal_cree_le: string | null
-          enregistre_le: string
-        }
-        Insert: {
-          id?: string
-          inscription_id: string
-          paypal_transaction_id: string
-          montant: number
-          devise?: string
-          email_payeur?: string | null
-          statut?: "en_attente" | "complete" | "rembourse" | "echoue"
-          donnees_brutes?: Record<string, unknown> | null
-          paypal_cree_le?: string | null
-          enregistre_le?: string
-        }
-        Update: {
-          id?: string
-          inscription_id?: string
-          paypal_transaction_id?: string
-          montant?: number
-          devise?: string
-          email_payeur?: string | null
-          statut?: "en_attente" | "complete" | "rembourse" | "echoue"
-          donnees_brutes?: Record<string, unknown> | null
-          paypal_cree_le?: string | null
-          enregistre_le?: string
-        }
-        Relationships: []
-      }
-      parametres_messages: {
-        Row: {
-          id: string
-          cle: string
-          libelle: string
-          valeur: string
-          description: string | null
-          modifie_le: string
-          modifie_par: string | null
-        }
-        Insert: {
-          id?: string
-          cle: string
-          libelle: string
-          valeur: string
-          description?: string | null
-          modifie_le?: string
-          modifie_par?: string | null
-        }
-        Update: {
-          id?: string
-          cle?: string
-          libelle?: string
-          valeur?: string
-          description?: string | null
-          modifie_le?: string
-          modifie_par?: string | null
-        }
-        Relationships: []
-      }
-      idees: {
-        Row: {
-          id: string
-          utilisateur_id: string
-          categorie: "evolution_site" | "ateliers" | "anomalie_site" | "membres" | "communication" | "evenements" | "organisation" | "autre"
-          titre: string
-          description: string | null
-          cree_le: string
-          modifie_le: string
-        }
-        Insert: {
-          id?: string
-          utilisateur_id: string
-          categorie?: "evolution_site" | "ateliers" | "anomalie_site" | "membres" | "communication" | "evenements" | "organisation" | "autre"
-          titre: string
-          description?: string | null
-          cree_le?: string
-          modifie_le?: string
-        }
-        Update: {
-          id?: string
-          utilisateur_id?: string
-          categorie?: "evolution_site" | "ateliers" | "anomalie_site" | "membres" | "communication" | "evenements" | "organisation" | "autre"
-          titre?: string
-          description?: string | null
-          cree_le?: string
-          modifie_le?: string
-        }
-        Relationships: []
-      }
-      idee_reactions: {
-        Row: {
-          id: string
-          idee_id: string
-          utilisateur_id: string
-          reaction: "valide" | "non_valide" | "a_discuter"
-          cree_le: string
-        }
-        Insert: {
-          id?: string
-          idee_id: string
-          utilisateur_id: string
-          reaction: "valide" | "non_valide" | "a_discuter"
-          cree_le?: string
-        }
-        Update: {
-          id?: string
-          idee_id?: string
-          utilisateur_id?: string
-          reaction?: "valide" | "non_valide" | "a_discuter"
-          cree_le?: string
-        }
-        Relationships: []
-      }
-      logs: {
-        Row: {
-          id: string
           utilisateur_id: string | null
-          action: string
-          table_cible: string | null
-          enregistrement_cible_id: string | null
-          details: Record<string, unknown> | null
-          adresse_ip: string | null
-          user_agent: string | null
-          horodatage: string
         }
         Insert: {
+          commentaire?: string | null
+          cree_le?: string
           id?: string
+          inscription_id?: string | null
+          mis_en_avant?: boolean
+          moderation?: Database["public"]["Enums"]["statut_moderation"]
+          modere_le?: string | null
+          nom_auteur?: string | null
+          note: number
           utilisateur_id?: string | null
-          action: string
-          table_cible?: string | null
-          enregistrement_cible_id?: string | null
-          details?: Record<string, unknown> | null
-          adresse_ip?: string | null
-          user_agent?: string | null
-          horodatage?: string
         }
         Update: {
+          commentaire?: string | null
+          cree_le?: string
           id?: string
+          inscription_id?: string | null
+          mis_en_avant?: boolean
+          moderation?: Database["public"]["Enums"]["statut_moderation"]
+          modere_le?: string | null
+          nom_auteur?: string | null
+          note?: number
           utilisateur_id?: string | null
-          action?: string
-          table_cible?: string | null
-          enregistrement_cible_id?: string | null
-          details?: Record<string, unknown> | null
-          adresse_ip?: string | null
-          user_agent?: string | null
-          horodatage?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avis_inscription_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: false
+            referencedRelation: "inscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "avis_utilisateur_id_fkey"
+            columns: ["utilisateur_id"]
+            isOneToOne: false
+            referencedRelation: "utilisateurs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contact_messages: {
+        Row: {
+          cree_le: string
+          email: string | null
+          id: string
+          lu: boolean
+          reponses: Json | null
+          telephone: string | null
+        }
+        Insert: {
+          cree_le?: string
+          email?: string | null
+          id?: string
+          lu?: boolean
+          reponses?: Json | null
+          telephone?: string | null
+        }
+        Update: {
+          cree_le?: string
+          email?: string | null
+          id?: string
+          lu?: boolean
+          reponses?: Json | null
+          telephone?: string | null
         }
         Relationships: []
       }
       disponibilites: {
         Row: {
-          id: string
-          utilisateur_id: string
-          jour_semaine: number
+          cree_le: string
           heure_debut: string
           heure_fin: string
-          cree_le: string
+          id: string
+          jour_semaine: number
+          utilisateur_id: string
         }
         Insert: {
-          id?: string
-          utilisateur_id: string
-          jour_semaine: number
+          cree_le?: string
           heure_debut: string
           heure_fin: string
-          cree_le?: string
+          id?: string
+          jour_semaine: number
+          utilisateur_id: string
         }
         Update: {
-          id?: string
-          utilisateur_id?: string
-          jour_semaine?: number
+          cree_le?: string
           heure_debut?: string
           heure_fin?: string
-          cree_le?: string
-        }
-        Relationships: []
-      }
-      indisponibilites: {
-        Row: {
-          id: string
-          utilisateur_id: string
-          date_debut: string
-          date_fin: string
-          motif: string | null
-          cree_le: string
-        }
-        Insert: {
           id?: string
-          utilisateur_id: string
-          date_debut: string
-          date_fin: string
-          motif?: string | null
-          cree_le?: string
-        }
-        Update: {
-          id?: string
+          jour_semaine?: number
           utilisateur_id?: string
-          date_debut?: string
-          date_fin?: string
-          motif?: string | null
-          cree_le?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "disponibilites_utilisateur_id_fkey"
+            columns: ["utilisateur_id"]
+            isOneToOne: false
+            referencedRelation: "utilisateurs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
-      jours_feries: {
+      documents: {
         Row: {
-          id: string
-          date: string
-          nom: string
-          annee: number
-        }
-        Insert: {
-          id?: string
-          date: string
-          nom: string
-          annee: number
-        }
-        Update: {
-          id?: string
-          date?: string
-          nom?: string
-          annee?: number
-        }
-        Relationships: []
-      }
-      vacances_scolaires: {
-        Row: {
-          id: string
-          nom: string
-          date_debut: string
-          date_fin: string
-          annee_scolaire: string
-          zone: string
-        }
-        Insert: {
-          id?: string
-          nom: string
-          date_debut: string
-          date_fin: string
-          annee_scolaire: string
-          zone?: string
-        }
-        Update: {
-          id?: string
-          nom?: string
-          date_debut?: string
-          date_fin?: string
-          annee_scolaire?: string
-          zone?: string
-        }
-        Relationships: []
-      }
-      formulaires: {
-        Row: {
-          id: string
-          nom: string
+          acces: Database["public"]["Enums"]["acces_document"]
+          created_at: string
           description: string | null
-          est_actif: boolean
-          cree_le: string
+          fichier_chemin: string | null
+          fichier_url: string | null
+          id: string
+          lien_externe: string | null
           modifie_le: string
+          titre: string
+          type: Database["public"]["Enums"]["type_document"]
+          url_image: string | null
         }
         Insert: {
-          id?: string
-          nom: string
+          acces?: Database["public"]["Enums"]["acces_document"]
+          created_at?: string
           description?: string | null
-          est_actif?: boolean
-          cree_le?: string
+          fichier_chemin?: string | null
+          fichier_url?: string | null
+          id?: string
+          lien_externe?: string | null
           modifie_le?: string
+          titre: string
+          type?: Database["public"]["Enums"]["type_document"]
+          url_image?: string | null
         }
         Update: {
-          id?: string
-          nom?: string
+          acces?: Database["public"]["Enums"]["acces_document"]
+          created_at?: string
           description?: string | null
-          est_actif?: boolean
-          cree_le?: string
+          fichier_chemin?: string | null
+          fichier_url?: string | null
+          id?: string
+          lien_externe?: string | null
           modifie_le?: string
+          titre?: string
+          type?: Database["public"]["Enums"]["type_document"]
+          url_image?: string | null
         }
         Relationships: []
       }
       form_fields: {
         Row: {
-          id: string
-          formulaire_id: string
-          label: string
-          field_type: "text" | "email" | "tel" | "textarea" | "select"
-          obligatoire: boolean
-          position: number
-          deletable: boolean
-          options: string[] | null
           cree_le: string
+          deletable: boolean
+          field_type: string
+          formulaire_id: string
+          id: string
+          label: string
+          obligatoire: boolean
+          options: string[] | null
+          position: number
         }
         Insert: {
-          id?: string
-          formulaire_id: string
-          label: string
-          field_type: "text" | "email" | "tel" | "textarea" | "select"
-          obligatoire?: boolean
-          position?: number
-          deletable?: boolean
-          options?: string[] | null
           cree_le?: string
+          deletable?: boolean
+          field_type: string
+          formulaire_id: string
+          id?: string
+          label: string
+          obligatoire?: boolean
+          options?: string[] | null
+          position?: number
         }
         Update: {
-          id?: string
-          formulaire_id?: string
-          label?: string
-          field_type?: "text" | "email" | "tel" | "textarea" | "select"
-          obligatoire?: boolean
-          position?: number
-          deletable?: boolean
-          options?: string[] | null
           cree_le?: string
+          deletable?: boolean
+          field_type?: string
+          formulaire_id?: string
+          id?: string
+          label?: string
+          obligatoire?: boolean
+          options?: string[] | null
+          position?: number
         }
         Relationships: [
           {
@@ -651,111 +356,798 @@ export type Database = {
           },
         ]
       }
-      contact_messages: {
+      formateurs: {
         Row: {
-          id: string
-          email: string | null
-          telephone: string | null
-          reponses: Json | null
-          lu: boolean
+          bio: string | null
           cree_le: string
+          email: string | null
+          est_actif: boolean
+          est_externe: boolean
+          id: string
+          modifie_le: string
+          nom: string
+          prenom: string
+          specialites: string | null
+          telephone: string | null
+          url_photo: string | null
+          utilisateur_id: string | null
         }
         Insert: {
-          id?: string
-          email?: string | null
-          telephone?: string | null
-          reponses?: Json | null
-          lu?: boolean
+          bio?: string | null
           cree_le?: string
+          email?: string | null
+          est_actif?: boolean
+          est_externe?: boolean
+          id?: string
+          modifie_le?: string
+          nom: string
+          prenom: string
+          specialites?: string | null
+          telephone?: string | null
+          url_photo?: string | null
+          utilisateur_id?: string | null
         }
         Update: {
-          id?: string
-          email?: string | null
-          telephone?: string | null
-          reponses?: Json | null
-          lu?: boolean
+          bio?: string | null
           cree_le?: string
+          email?: string | null
+          est_actif?: boolean
+          est_externe?: boolean
+          id?: string
+          modifie_le?: string
+          nom?: string
+          prenom?: string
+          specialites?: string | null
+          telephone?: string | null
+          url_photo?: string | null
+          utilisateur_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "formateurs_utilisateur_id_fkey"
+            columns: ["utilisateur_id"]
+            isOneToOne: true
+            referencedRelation: "utilisateurs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      formulaires: {
+        Row: {
+          cree_le: string
+          description: string | null
+          est_actif: boolean
+          id: string
+          modifie_le: string
+          nom: string
+        }
+        Insert: {
+          cree_le?: string
+          description?: string | null
+          est_actif?: boolean
+          id?: string
+          modifie_le?: string
+          nom: string
+        }
+        Update: {
+          cree_le?: string
+          description?: string | null
+          est_actif?: boolean
+          id?: string
+          modifie_le?: string
+          nom?: string
+        }
+        Relationships: []
+      }
+      idee_reactions: {
+        Row: {
+          cree_le: string
+          id: string
+          idee_id: string
+          reaction: Database["public"]["Enums"]["reaction_idee"]
+          utilisateur_id: string
+        }
+        Insert: {
+          cree_le?: string
+          id?: string
+          idee_id: string
+          reaction: Database["public"]["Enums"]["reaction_idee"]
+          utilisateur_id: string
+        }
+        Update: {
+          cree_le?: string
+          id?: string
+          idee_id?: string
+          reaction?: Database["public"]["Enums"]["reaction_idee"]
+          utilisateur_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "idee_reactions_idee_id_fkey"
+            columns: ["idee_id"]
+            isOneToOne: false
+            referencedRelation: "idees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "idee_reactions_utilisateur_id_fkey"
+            columns: ["utilisateur_id"]
+            isOneToOne: false
+            referencedRelation: "utilisateurs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      idees: {
+        Row: {
+          categorie: Database["public"]["Enums"]["categorie_idee"]
+          cree_le: string
+          description: string | null
+          id: string
+          modifie_le: string
+          titre: string
+          utilisateur_id: string
+        }
+        Insert: {
+          categorie?: Database["public"]["Enums"]["categorie_idee"]
+          cree_le?: string
+          description?: string | null
+          id?: string
+          modifie_le?: string
+          titre: string
+          utilisateur_id: string
+        }
+        Update: {
+          categorie?: Database["public"]["Enums"]["categorie_idee"]
+          cree_le?: string
+          description?: string | null
+          id?: string
+          modifie_le?: string
+          titre?: string
+          utilisateur_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "idees_utilisateur_id_fkey"
+            columns: ["utilisateur_id"]
+            isOneToOne: false
+            referencedRelation: "utilisateurs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      indisponibilites: {
+        Row: {
+          cree_le: string
+          date_debut: string
+          date_fin: string
+          id: string
+          motif: string | null
+          utilisateur_id: string
+        }
+        Insert: {
+          cree_le?: string
+          date_debut: string
+          date_fin: string
+          id?: string
+          motif?: string | null
+          utilisateur_id: string
+        }
+        Update: {
+          cree_le?: string
+          date_debut?: string
+          date_fin?: string
+          id?: string
+          motif?: string | null
+          utilisateur_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "indisponibilites_utilisateur_id_fkey"
+            columns: ["utilisateur_id"]
+            isOneToOne: false
+            referencedRelation: "utilisateurs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inscriptions: {
+        Row: {
+          annule_le: string | null
+          atelier_id: string
+          date_naissance: string | null
+          email_invite: string | null
+          id: string
+          inscrit_le: string
+          nom_invite: string | null
+          prenom_invite: string | null
+          present: boolean
+          statut: Database["public"]["Enums"]["statut_inscription"]
+          statut_paiement: Database["public"]["Enums"]["statut_paiement"]
+          telephone_invite: string | null
+          utilisateur_id: string | null
+        }
+        Insert: {
+          annule_le?: string | null
+          atelier_id: string
+          date_naissance?: string | null
+          email_invite?: string | null
+          id?: string
+          inscrit_le?: string
+          nom_invite?: string | null
+          prenom_invite?: string | null
+          present?: boolean
+          statut?: Database["public"]["Enums"]["statut_inscription"]
+          statut_paiement?: Database["public"]["Enums"]["statut_paiement"]
+          telephone_invite?: string | null
+          utilisateur_id?: string | null
+        }
+        Update: {
+          annule_le?: string | null
+          atelier_id?: string
+          date_naissance?: string | null
+          email_invite?: string | null
+          id?: string
+          inscrit_le?: string
+          nom_invite?: string | null
+          prenom_invite?: string | null
+          present?: boolean
+          statut?: Database["public"]["Enums"]["statut_inscription"]
+          statut_paiement?: Database["public"]["Enums"]["statut_paiement"]
+          telephone_invite?: string | null
+          utilisateur_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inscriptions_atelier_id_fkey"
+            columns: ["atelier_id"]
+            isOneToOne: false
+            referencedRelation: "ateliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inscriptions_atelier_id_fkey"
+            columns: ["atelier_id"]
+            isOneToOne: false
+            referencedRelation: "vue_prochains_ateliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inscriptions_utilisateur_id_fkey"
+            columns: ["utilisateur_id"]
+            isOneToOne: false
+            referencedRelation: "utilisateurs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inscriptions_backup_20260430: {
+        Row: {
+          annule_le: string | null
+          atelier_id: string | null
+          date_naissance: string | null
+          email_invite: string | null
+          id: string | null
+          inscrit_le: string | null
+          nom_invite: string | null
+          prenom_invite: string | null
+          present: boolean | null
+          statut: Database["public"]["Enums"]["statut_inscription"] | null
+          statut_paiement: Database["public"]["Enums"]["statut_paiement"] | null
+          telephone_invite: string | null
+          utilisateur_id: string | null
+        }
+        Insert: {
+          annule_le?: string | null
+          atelier_id?: string | null
+          date_naissance?: string | null
+          email_invite?: string | null
+          id?: string | null
+          inscrit_le?: string | null
+          nom_invite?: string | null
+          prenom_invite?: string | null
+          present?: boolean | null
+          statut?: Database["public"]["Enums"]["statut_inscription"] | null
+          statut_paiement?:
+            | Database["public"]["Enums"]["statut_paiement"]
+            | null
+          telephone_invite?: string | null
+          utilisateur_id?: string | null
+        }
+        Update: {
+          annule_le?: string | null
+          atelier_id?: string | null
+          date_naissance?: string | null
+          email_invite?: string | null
+          id?: string | null
+          inscrit_le?: string | null
+          nom_invite?: string | null
+          prenom_invite?: string | null
+          present?: boolean | null
+          statut?: Database["public"]["Enums"]["statut_inscription"] | null
+          statut_paiement?:
+            | Database["public"]["Enums"]["statut_paiement"]
+            | null
+          telephone_invite?: string | null
+          utilisateur_id?: string | null
+        }
+        Relationships: []
+      }
+      jours_feries: {
+        Row: {
+          annee: number
+          date: string
+          id: string
+          nom: string
+        }
+        Insert: {
+          annee: number
+          date: string
+          id?: string
+          nom: string
+        }
+        Update: {
+          annee?: number
+          date?: string
+          id?: string
+          nom?: string
+        }
+        Relationships: []
+      }
+      logs: {
+        Row: {
+          action: Database["public"]["Enums"]["type_action_log"]
+          adresse_ip: string | null
+          details: Json | null
+          enregistrement_cible_id: string | null
+          horodatage: string
+          id: string
+          table_cible: string | null
+          user_agent: string | null
+          utilisateur_id: string | null
+        }
+        Insert: {
+          action: Database["public"]["Enums"]["type_action_log"]
+          adresse_ip?: string | null
+          details?: Json | null
+          enregistrement_cible_id?: string | null
+          horodatage?: string
+          id?: string
+          table_cible?: string | null
+          user_agent?: string | null
+          utilisateur_id?: string | null
+        }
+        Update: {
+          action?: Database["public"]["Enums"]["type_action_log"]
+          adresse_ip?: string | null
+          details?: Json | null
+          enregistrement_cible_id?: string | null
+          horodatage?: string
+          id?: string
+          table_cible?: string | null
+          user_agent?: string | null
+          utilisateur_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "logs_utilisateur_id_fkey"
+            columns: ["utilisateur_id"]
+            isOneToOne: false
+            referencedRelation: "utilisateurs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      modeles_message: {
+        Row: {
+          canal: string
+          contenu: string
+          cree_le: string | null
+          id: string
+          nom: string
+          sujet: string | null
+        }
+        Insert: {
+          canal: string
+          contenu: string
+          cree_le?: string | null
+          id?: string
+          nom: string
+          sujet?: string | null
+        }
+        Update: {
+          canal?: string
+          contenu?: string
+          cree_le?: string | null
+          id?: string
+          nom?: string
+          sujet?: string | null
+        }
+        Relationships: []
+      }
+      parametres_messages: {
+        Row: {
+          cle: string
+          description: string | null
+          id: string
+          libelle: string
+          modifie_le: string
+          modifie_par: string | null
+          valeur: string
+        }
+        Insert: {
+          cle: string
+          description?: string | null
+          id?: string
+          libelle: string
+          modifie_le?: string
+          modifie_par?: string | null
+          valeur: string
+        }
+        Update: {
+          cle?: string
+          description?: string | null
+          id?: string
+          libelle?: string
+          modifie_le?: string
+          modifie_par?: string | null
+          valeur?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parametres_messages_modifie_par_fkey"
+            columns: ["modifie_par"]
+            isOneToOne: false
+            referencedRelation: "utilisateurs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions_paypal: {
+        Row: {
+          devise: string
+          donnees_brutes: Json | null
+          email_payeur: string | null
+          enregistre_le: string
+          id: string
+          inscription_id: string
+          montant: number
+          paypal_cree_le: string | null
+          paypal_transaction_id: string
+          statut: Database["public"]["Enums"]["statut_transaction_paypal"]
+        }
+        Insert: {
+          devise?: string
+          donnees_brutes?: Json | null
+          email_payeur?: string | null
+          enregistre_le?: string
+          id?: string
+          inscription_id: string
+          montant: number
+          paypal_cree_le?: string | null
+          paypal_transaction_id: string
+          statut?: Database["public"]["Enums"]["statut_transaction_paypal"]
+        }
+        Update: {
+          devise?: string
+          donnees_brutes?: Json | null
+          email_payeur?: string | null
+          enregistre_le?: string
+          id?: string
+          inscription_id?: string
+          montant?: number
+          paypal_cree_le?: string | null
+          paypal_transaction_id?: string
+          statut?: Database["public"]["Enums"]["statut_transaction_paypal"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_paypal_inscription_id_fkey"
+            columns: ["inscription_id"]
+            isOneToOne: true
+            referencedRelation: "inscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions_paypal_backup_20260430: {
+        Row: {
+          devise: string | null
+          donnees_brutes: Json | null
+          email_payeur: string | null
+          enregistre_le: string | null
+          id: string | null
+          inscription_id: string | null
+          montant: number | null
+          paypal_cree_le: string | null
+          paypal_transaction_id: string | null
+          statut:
+            | Database["public"]["Enums"]["statut_transaction_paypal"]
+            | null
+        }
+        Insert: {
+          devise?: string | null
+          donnees_brutes?: Json | null
+          email_payeur?: string | null
+          enregistre_le?: string | null
+          id?: string | null
+          inscription_id?: string | null
+          montant?: number | null
+          paypal_cree_le?: string | null
+          paypal_transaction_id?: string | null
+          statut?:
+            | Database["public"]["Enums"]["statut_transaction_paypal"]
+            | null
+        }
+        Update: {
+          devise?: string | null
+          donnees_brutes?: Json | null
+          email_payeur?: string | null
+          enregistre_le?: string | null
+          id?: string | null
+          inscription_id?: string | null
+          montant?: number | null
+          paypal_cree_le?: string | null
+          paypal_transaction_id?: string | null
+          statut?:
+            | Database["public"]["Enums"]["statut_transaction_paypal"]
+            | null
+        }
+        Relationships: []
+      }
+      utilisateurs: {
+        Row: {
+          code_couleur_conges: string | null
+          couleur_conges: string | null
+          cree_le: string
+          date_naissance: string | null
+          debut_abonnement: string | null
+          email: string
+          est_actif: boolean
+          fin_abonnement: string | null
+          id: string
+          modifie_le: string
+          mot_de_passe_hash: string | null
+          nom: string
+          prenom: string
+          role: Database["public"]["Enums"]["role_utilisateur"]
+          telephone: string | null
+          url_avatar: string | null
+        }
+        Insert: {
+          code_couleur_conges?: string | null
+          couleur_conges?: string | null
+          cree_le?: string
+          date_naissance?: string | null
+          debut_abonnement?: string | null
+          email: string
+          est_actif?: boolean
+          fin_abonnement?: string | null
+          id?: string
+          modifie_le?: string
+          mot_de_passe_hash?: string | null
+          nom: string
+          prenom: string
+          role?: Database["public"]["Enums"]["role_utilisateur"]
+          telephone?: string | null
+          url_avatar?: string | null
+        }
+        Update: {
+          code_couleur_conges?: string | null
+          couleur_conges?: string | null
+          cree_le?: string
+          date_naissance?: string | null
+          debut_abonnement?: string | null
+          email?: string
+          est_actif?: boolean
+          fin_abonnement?: string | null
+          id?: string
+          modifie_le?: string
+          mot_de_passe_hash?: string | null
+          nom?: string
+          prenom?: string
+          role?: Database["public"]["Enums"]["role_utilisateur"]
+          telephone?: string | null
+          url_avatar?: string | null
+        }
+        Relationships: []
+      }
+      vacances_scolaires: {
+        Row: {
+          annee_scolaire: string
+          date_debut: string
+          date_fin: string
+          id: string
+          nom: string
+          zone: string
+        }
+        Insert: {
+          annee_scolaire: string
+          date_debut: string
+          date_fin: string
+          id?: string
+          nom: string
+          zone?: string
+        }
+        Update: {
+          annee_scolaire?: string
+          date_debut?: string
+          date_fin?: string
+          id?: string
+          nom?: string
+          zone?: string
         }
         Relationships: []
       }
       visites_site: {
         Row: {
+          cree_le: string
           id: string
           page: string
           referrer: string | null
           user_agent: string | null
           visiteur_hash: string | null
-          cree_le: string
         }
         Insert: {
+          cree_le?: string
           id?: string
           page: string
           referrer?: string | null
           user_agent?: string | null
           visiteur_hash?: string | null
-          cree_le?: string
         }
         Update: {
+          cree_le?: string
           id?: string
           page?: string
           referrer?: string | null
           user_agent?: string | null
           visiteur_hash?: string | null
-          cree_le?: string
         }
         Relationships: []
       }
     }
     Views: {
-      vue_prochains_ateliers: {
+      vue_avis_publies: {
         Row: {
-          id: string | null
-          titre: string | null
-          description_courte: string | null
-          categorie: string | null
-          lieu: string | null
-          date_atelier: string | null
-          heure_debut: string | null
-          places_disponibles: number | null
-          places_max: number | null
-          tarif_affichage: string | null
-          statut: string | null
+          antenne: string | null
+          atelier_titre: string | null
+          avis_id: string | null
+          commentaire: string | null
+          cree_le: string | null
+          mis_en_avant: boolean | null
+          note: number | null
+          prenom: string | null
+          url_avatar: string | null
         }
         Relationships: []
       }
-      vue_avis_publies: {
+      vue_logs: {
         Row: {
-          avis_id: string | null
-          note: number | null
-          commentaire: string | null
-          mis_en_avant: boolean | null
-          cree_le: string | null
-          prenom: string | null
-          atelier_titre: string | null
-          categorie: string | null
+          action: Database["public"]["Enums"]["type_action_log"] | null
+          adresse_ip: string | null
+          auteur: string | null
+          auteur_code_couleur: string | null
+          auteur_couleur: string | null
+          auteur_email: string | null
+          details: Json | null
+          enregistrement_cible_id: string | null
+          horodatage: string | null
+          id: string | null
+          table_cible: string | null
+          user_agent: string | null
+          utilisateur_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "logs_utilisateur_id_fkey"
+            columns: ["utilisateur_id"]
+            isOneToOne: false
+            referencedRelation: "utilisateurs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vue_prochains_ateliers: {
+        Row: {
+          antenne: string | null
+          antenne_slug: string | null
+          date_atelier: string | null
+          description: string | null
+          description_courte: string | null
+          duree: string | null
+          formateur_nom: string | null
+          formateur_photo: string | null
+          formateur_prenom: string | null
+          heure_debut: string | null
+          id: string | null
+          lieu: string | null
+          niveau: Database["public"]["Enums"]["niveau_atelier"] | null
+          places_disponibles: number | null
+          places_max: number | null
+          statut: Database["public"]["Enums"]["statut_atelier"] | null
+          tarif_affichage: string | null
+          tarif_standard: number | null
+          titre: string | null
+          url_image: string | null
         }
         Relationships: []
       }
       vue_suivi_inscriptions: {
         Row: {
-          prenom: string | null
-          nom: string | null
-          email: string | null
           atelier_titre: string | null
           date_atelier: string | null
-          statut_inscription: string | null
-          statut_paiement: string | null
-          present: boolean | null
+          date_naissance: string | null
+          email: string | null
           inscrit_le: string | null
+          montant: number | null
+          nom: string | null
+          paypal_transaction_id: string | null
+          prenom: string | null
+          present: boolean | null
+          role: Database["public"]["Enums"]["role_utilisateur"] | null
+          statut_inscription:
+            | Database["public"]["Enums"]["statut_inscription"]
+            | null
+          statut_paiement: Database["public"]["Enums"]["statut_paiement"] | null
+          statut_paypal:
+            | Database["public"]["Enums"]["statut_transaction_paypal"]
+            | null
         }
         Relationships: []
       }
     }
     Functions: {
-      [_ in never]: never
+      admin_dispo_le: { Args: { p_date: string }; Returns: boolean }
+      depublier_ateliers_passes: { Args: never; Returns: number }
+      is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      acces_document: "membres" | "premium" | "tous"
+      categorie_idee:
+        | "evolution_site"
+        | "ateliers"
+        | "anomalie_site"
+        | "membres"
+        | "communication"
+        | "evenements"
+        | "organisation"
+        | "autre"
+      niveau_atelier: "debutant" | "intermediaire" | "avance"
+      reaction_idee: "valide" | "non_valide" | "a_discuter"
+      role_utilisateur:
+        | "administrateur"
+        | "inscrit"
+        | "membre"
+        | "membre_premium"
+      statut_atelier: "brouillon" | "publie" | "complet" | "annule" | "termine"
+      statut_inscription: "en_attente" | "confirme" | "annule"
+      statut_moderation: "en_attente" | "approuve" | "rejete"
+      statut_paiement: "en_attente" | "paye" | "non_requis"
+      statut_transaction_paypal:
+        | "en_attente"
+        | "complete"
+        | "rembourse"
+        | "echoue"
+      type_action_log:
+        | "connexion"
+        | "deconnexion"
+        | "inscription_atelier"
+        | "annulation_inscription"
+        | "paiement_recu"
+        | "remboursement"
+        | "avis_soumis"
+        | "avis_modere"
+        | "profil_modifie"
+        | "mot_de_passe_modifie"
+        | "atelier_cree"
+        | "atelier_modifie"
+        | "membre_promu"
+        | "membre_desactive"
+        | "export_donnees"
+        | "autre"
+      type_document: "magazine" | "guide" | "lien_externe"
+      type_recurrence: "hebdomadaire" | "bimensuel" | "mensuel"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -771,12 +1163,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -800,11 +1192,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -825,11 +1217,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -850,11 +1242,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -867,11 +1259,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -882,6 +1274,56 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      acces_document: ["membres", "premium", "tous"],
+      categorie_idee: [
+        "evolution_site",
+        "ateliers",
+        "anomalie_site",
+        "membres",
+        "communication",
+        "evenements",
+        "organisation",
+        "autre",
+      ],
+      niveau_atelier: ["debutant", "intermediaire", "avance"],
+      reaction_idee: ["valide", "non_valide", "a_discuter"],
+      role_utilisateur: [
+        "administrateur",
+        "inscrit",
+        "membre",
+        "membre_premium",
+      ],
+      statut_atelier: ["brouillon", "publie", "complet", "annule", "termine"],
+      statut_inscription: ["en_attente", "confirme", "annule"],
+      statut_moderation: ["en_attente", "approuve", "rejete"],
+      statut_paiement: ["en_attente", "paye", "non_requis"],
+      statut_transaction_paypal: [
+        "en_attente",
+        "complete",
+        "rembourse",
+        "echoue",
+      ],
+      type_action_log: [
+        "connexion",
+        "deconnexion",
+        "inscription_atelier",
+        "annulation_inscription",
+        "paiement_recu",
+        "remboursement",
+        "avis_soumis",
+        "avis_modere",
+        "profil_modifie",
+        "mot_de_passe_modifie",
+        "atelier_cree",
+        "atelier_modifie",
+        "membre_promu",
+        "membre_desactive",
+        "export_donnees",
+        "autre",
+      ],
+      type_document: ["magazine", "guide", "lien_externe"],
+      type_recurrence: ["hebdomadaire", "bimensuel", "mensuel"],
+    },
   },
 } as const
