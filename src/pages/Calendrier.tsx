@@ -146,11 +146,12 @@ const Calendrier = () => {
             </h2>
           </Link>
           <span className="text-xs tracking-[0.35em] uppercase text-muted-foreground mt-1">Club</span>
-          <div className="flex gap-8 mt-4 font-body text-sm tracking-[0.12em] uppercase text-foreground/80">
+          <div className="flex flex-wrap justify-center gap-4 md:gap-8 mt-4 font-body text-xs md:text-sm tracking-[0.12em] uppercase text-foreground/80">
             <Link to="/#apropos" className="hover:text-primary transition-colors">À propos</Link>
             <Link to="/#ateliers" className="hover:text-primary transition-colors">Nos Ateliers</Link>
             <Link to="/calendrier" className="text-primary font-medium">Calendrier</Link>
             <Link to="/#contact" className="hover:text-primary transition-colors">Contact</Link>
+            <Link to="/login" className="md:hidden hover:text-primary transition-colors">Espace Membre</Link>
           </div>
         </div>
       </nav>

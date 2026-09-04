@@ -181,6 +181,9 @@ const Index = () => {
   const [ateliers, setAteliers] = useState<Workshop[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [confirmedWorkshop, setConfirmedWorkshop] = useState<Workshop | null>(null);
+  // Sur mobile/tactile il n'y a pas de :hover : on permet aussi de retourner
+  // une antenne au tap, en plus du survol souris sur desktop.
+  const [flippedAntenne, setFlippedAntenne] = useState<number | null>(null);
 
   useEffect(() => {
     trackVisit("/");
@@ -388,9 +391,13 @@ const Index = () => {
                 desc: "Entrepreneuriat, développement pro et perso : des ateliers pour avancer entourée.",
                 accent: "bg-amber-500/10 text-amber-600",
               },
-            ].map((antenne) => (
-              <div key={antenne.title} className="group h-64 [perspective:1200px]">
-                <div className="relative h-full w-full transition-transform duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
+            ].map((antenne, i) => (
+              <div
+                key={antenne.title}
+                className="group h-64 [perspective:1200px] cursor-pointer"
+                onClick={() => setFlippedAntenne(prev => (prev === i ? null : i))}
+              >
+                <div className={`relative h-full w-full transition-transform duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)] ${flippedAntenne === i ? "[transform:rotateY(180deg)]" : ""}`}>
                   {/* Face avant */}
                   <div className="absolute inset-0 [backface-visibility:hidden] bg-card rounded-2xl p-8 border flex flex-col items-center justify-center gap-4">
                     <div className={`inline-flex items-center justify-center w-14 h-14 rounded-full ${antenne.accent}`}>
