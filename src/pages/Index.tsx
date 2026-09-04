@@ -311,14 +311,14 @@ const Index = () => {
           <div className="space-y-6">
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium">
               <Sparkles className="w-4 h-4" />
-              Ateliers créatifs à taille humaine
+              Papotages, Créatifs & Business, à taille humaine
             </div>
             <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-bold text-foreground leading-tight">
               Sortez de la routine,{" "}
-              <span className="italic text-primary">créez.</span>
+              <span className="italic text-primary">connectez.</span>
             </h1>
             <p className="text-base md:text-lg text-muted-foreground max-w-md leading-relaxed">
-              Cocooning Club propose des ateliers créatifs 1 à 2 fois par mois dans une ambiance chaleureuse et bienveillante. Pas besoin d'être artiste, juste d'avoir envie de déconnecter.
+              Cocooning Club propose des ateliers autour de 3 antennes — Papotages, Créatifs et Business — 1 à 2 fois par mois dans une ambiance chaleureuse et bienveillante. Pas besoin d'être experte, juste d'avoir envie de déconnecter.
             </p>
             <button
               onClick={() => openModal()}
@@ -342,11 +342,11 @@ const Index = () => {
             Un moment pour soi
           </h2>
           <p className="text-center text-muted-foreground max-w-lg mx-auto mb-16">
-            Nos ateliers sont pensés comme des bulles de douceur. On déconnecte, on crée, on partage.
+            Nos ateliers sont pensés comme des bulles de douceur. On se retrouve, on échange, on avance.
           </p>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { icon: Sparkles, title: "Créativité", desc: "Des thèmes variés chaque mois : bougie, aquarelle, macramé, poterie…" },
+              { icon: Sparkles, title: "Diversité", desc: "Papotages, ateliers créatifs, sessions business : une palette large pour se retrouver autrement." },
               { icon: Users, title: "Convivialité", desc: "Petits groupes pour un moment chaleureux et des échanges authentiques." },
               { icon: Heart, title: "Bienveillance", desc: "Aucun niveau requis. On vient comme on est, on repart le cœur léger." },
             ].map((item) => (
@@ -423,7 +423,7 @@ const Index = () => {
             Prochains ateliers
           </h2>
           <p className="text-center text-muted-foreground max-w-lg mx-auto mb-16">
-            Réservez votre place pour un moment créatif inoubliable.
+            Réservez votre place, quelle que soit l'antenne qui vous attire.
           </p>
           {ateliers.length === 0 ? (
             <div className="text-center py-12 border rounded-2xl bg-card max-w-2xl mx-auto">

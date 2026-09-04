@@ -11,7 +11,7 @@ const Footer = () => {
               Cocooning Club
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
-              Des ateliers créatifs pour déconnecter, créer et partager dans une ambiance douce et bienveillante.
+              Papotages, ateliers créatifs et business : des rendez-vous pour déconnecter, échanger et grandir ensemble dans une ambiance douce et bienveillante.
             </p>
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <span>Fait avec</span>
