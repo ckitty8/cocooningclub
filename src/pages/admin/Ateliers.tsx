@@ -734,7 +734,7 @@ const Ateliers = () => {
       {/* Modal ajout/édition */}
       {modal.open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-card rounded-2xl border w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-card rounded-2xl border w-full max-w-2xl shadow-xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b sticky top-0 bg-card z-10">
               <h2 className="font-semibold text-lg">{modal.atelier ? "Modifier l'atelier" : "Nouvel atelier"}</h2>
               <button onClick={closeModal}
@@ -766,11 +766,6 @@ const Ateliers = () => {
                 <p className="text-xs text-muted-foreground mt-2">JPG, PNG, WebP. Max 5 Mo.</p>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5">Titre *</label>
-                <input value={form.titre} onChange={e => f("titre", e.target.value)}
-                  className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
-              </div>
-              <div>
                 <label className="block text-sm font-medium mb-1.5">Antenne *</label>
                 <select value={form.antenne_id} onChange={e => f("antenne_id", e.target.value)}
                   className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary">
@@ -782,6 +777,11 @@ const Ateliers = () => {
                 {antennes.length === 0 && (
                   <p className="text-xs text-amber-600 mt-1">Aucune antenne en base. Crée-en une côté Supabase (table antennes) avant de continuer.</p>
                 )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Titre *</label>
+                <input value={form.titre} onChange={e => f("titre", e.target.value)}
+                  className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Description courte</label>
@@ -800,16 +800,22 @@ const Ateliers = () => {
                     className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>
                 <div>
+                  <label className="block text-sm font-medium mb-1.5">Durée</label>
+                  <input value={form.duree} onChange={e => f("duree", e.target.value)}
+                    placeholder="ex: 2h30" className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
                   <label className="block text-sm font-medium mb-1.5">Heure début *</label>
                   <input type="time" value={form.heure_debut} onChange={e => f("heure_debut", e.target.value)}
                     className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1.5">Heure fin</label>
-                <input type="time" value={form.heure_fin} onChange={e => f("heure_fin", e.target.value)}
-                  className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
-                <p className="text-xs text-muted-foreground mt-1">Optionnel.</p>
+                <div>
+                  <label className="block text-sm font-medium mb-1.5">Heure fin</label>
+                  <input type="time" value={form.heure_fin} onChange={e => f("heure_fin", e.target.value)}
+                    className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Date limite d'inscription</label>
@@ -819,14 +825,14 @@ const Ateliers = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Durée</label>
-                  <input value={form.duree} onChange={e => f("duree", e.target.value)}
-                    placeholder="ex: 2h30" className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
-                </div>
-                <div>
                   <label className="block text-sm font-medium mb-1.5">Lieu</label>
                   <input value={form.lieu} onChange={e => f("lieu", e.target.value)}
                     placeholder="ex: Salle des fêtes"
+                    className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1.5">Places max</label>
+                  <input type="number" min={1} value={form.places_max} onChange={e => f("places_max", e.target.value)}
                     className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>
               </div>
@@ -841,30 +847,15 @@ const Ateliers = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Places max</label>
-                  <input type="number" min={1} value={form.places_max} onChange={e => f("places_max", e.target.value)}
-                    className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
+                  <label className="block text-sm font-medium mb-1.5">Tarif standard (€)</label>
+                  <input type="number" min={0} step={0.01} value={form.tarif_standard} onChange={e => f("tarif_standard", e.target.value)}
+                    placeholder="25" className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Niveau</label>
-                  <select value={form.niveau} onChange={e => f("niveau", e.target.value)}
-                    className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary">
-                    <option value="">— Non défini —</option>
-                    <option value="debutant">Débutant</option>
-                    <option value="intermediaire">Intermédiaire</option>
-                    <option value="avance">Avancé</option>
-                  </select>
+                  <label className="block text-sm font-medium mb-1.5">Tarif affiché</label>
+                  <input value={form.tarif_affichage} onChange={e => f("tarif_affichage", e.target.value)}
+                    placeholder="ex: À partir de 20€" className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1.5">Tarif standard (€)</label>
-                <input type="number" min={0} step={0.01} value={form.tarif_standard} onChange={e => f("tarif_standard", e.target.value)}
-                  placeholder="25" className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1.5">Tarif affiché</label>
-                <input value={form.tarif_affichage} onChange={e => f("tarif_affichage", e.target.value)}
-                  placeholder="ex: À partir de 20€" className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Lien PayPal</label>
