@@ -56,6 +56,7 @@ export type Database = {
           duree: string
           formateur_id: string | null
           heure_debut: string
+          heure_fin: string | null
           id: string
           lien_paypal: string | null
           lieu: string | null
@@ -83,6 +84,7 @@ export type Database = {
           duree?: string
           formateur_id?: string | null
           heure_debut: string
+          heure_fin?: string | null
           id?: string
           lien_paypal?: string | null
           lieu?: string | null
@@ -110,6 +112,7 @@ export type Database = {
           duree?: string
           formateur_id?: string | null
           heure_debut?: string
+          heure_fin?: string | null
           id?: string
           lien_paypal?: string | null
           lieu?: string | null

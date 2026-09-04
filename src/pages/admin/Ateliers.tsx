@@ -20,6 +20,7 @@ interface Atelier {
   date_atelier: string;
   date_fin_inscription: string | null;
   heure_debut: string | null;
+  heure_fin: string | null;
   duree: string | null;
   lieu: string | null;
   adresse: string | null;
@@ -60,7 +61,7 @@ interface Inscription {
 
 const emptyForm = {
   titre: "", description: "", description_courte: "",
-  date_atelier: "", date_fin_inscription: "", heure_debut: "", duree: "", lieu: "", adresse: "", url_image: "",
+  date_atelier: "", date_fin_inscription: "", heure_debut: "", heure_fin: "", duree: "", lieu: "", adresse: "", url_image: "",
   places_max: 10, tarif_standard: "", tarif_affichage: "",
   lien_paypal: "", niveau: "" as Niveau | "", statut: "brouillon" as Statut,
   antenne_id: "",
@@ -279,7 +280,7 @@ const Ateliers = () => {
     setForm({
       titre: a.titre, description: a.description ?? "", description_courte: a.description_courte ?? "",
       date_atelier: a.date_atelier, date_fin_inscription: a.date_fin_inscription ?? "",
-      heure_debut: a.heure_debut ?? "", duree: a.duree ?? "",
+      heure_debut: a.heure_debut ?? "", heure_fin: a.heure_fin ?? "", duree: a.duree ?? "",
       lieu: a.lieu ?? "", adresse: a.adresse ?? "", url_image: a.url_image ?? "",
       places_max: a.places_max,
       tarif_standard: a.tarif_standard?.toString() ?? "",
@@ -334,6 +335,7 @@ const Ateliers = () => {
       date_atelier: form.date_atelier,
       date_fin_inscription: form.date_fin_inscription || null,
       heure_debut: form.heure_debut,
+      heure_fin: form.heure_fin || null,
       duree: form.duree || "2 hours",
       lieu: form.lieu || null,
       adresse: form.adresse || null,
@@ -802,6 +804,12 @@ const Ateliers = () => {
                   <input type="time" value={form.heure_debut} onChange={e => f("heure_debut", e.target.value)}
                     className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Heure fin</label>
+                <input type="time" value={form.heure_fin} onChange={e => f("heure_fin", e.target.value)}
+                  className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
+                <p className="text-xs text-muted-foreground mt-1">Optionnel.</p>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Date limite d'inscription</label>
