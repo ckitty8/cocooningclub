@@ -366,7 +366,7 @@ const Calendrier = () => {
       {reserveOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" onClick={() => setReserveOpen(false)} />
-          <div className="relative bg-background rounded-2xl shadow-2xl w-full max-w-md p-8 border">
+          <div className="relative bg-background rounded-2xl shadow-2xl w-full max-w-xl p-8 border">
             <button
               onClick={() => setReserveOpen(false)}
               className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground"

@@ -459,7 +459,7 @@ const Index = () => {
       {modalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-foreground/40 backdrop-blur-sm" onClick={() => setModalOpen(false)}>
           <div
-            className="bg-background rounded-2xl md:rounded-3xl border shadow-2xl w-full max-w-md mx-3 p-5 md:p-8 relative animate-in fade-in zoom-in-95 duration-200"
+            className="bg-background rounded-2xl md:rounded-3xl border shadow-2xl w-full max-w-xl mx-3 p-5 md:p-8 relative animate-in fade-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             <button onClick={() => setModalOpen(false)} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors">
