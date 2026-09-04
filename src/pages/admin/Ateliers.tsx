@@ -398,6 +398,30 @@ const Ateliers = () => {
   const f = (key: keyof typeof form, val: string | number) =>
     setForm(prev => ({ ...prev, [key]: val }));
 
+  const formatDuree = (minutes: number) => {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return m === 0 ? `${h}h` : `${h}h${String(m).padStart(2, "0")}`;
+  };
+
+  // Met à jour l'heure de début/fin et pré-remplit la durée calculée à
+  // partir des deux horaires. Le champ durée reste une saisie libre :
+  // l'utilisateur peut toujours la modifier manuellement ensuite.
+  const handleHeureChange = (key: "heure_debut" | "heure_fin", value: string) => {
+    setForm(prev => {
+      const next = { ...prev, [key]: value };
+      const debut = key === "heure_debut" ? value : prev.heure_debut;
+      const fin = key === "heure_fin" ? value : prev.heure_fin;
+      if (debut && fin) {
+        const [h1, m1] = debut.split(":").map(Number);
+        const [h2, m2] = fin.split(":").map(Number);
+        const diff = (h2 * 60 + m2) - (h1 * 60 + m1);
+        if (diff > 0) next.duree = formatDuree(diff);
+      }
+      return next;
+    });
+  };
+
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -808,12 +832,12 @@ const Ateliers = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1.5">Heure début *</label>
-                  <input type="time" value={form.heure_debut} onChange={e => f("heure_debut", e.target.value)}
+                  <input type="time" value={form.heure_debut} onChange={e => handleHeureChange("heure_debut", e.target.value)}
                     className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1.5">Heure fin</label>
-                  <input type="time" value={form.heure_fin} onChange={e => f("heure_fin", e.target.value)}
+                  <input type="time" value={form.heure_fin} onChange={e => handleHeureChange("heure_fin", e.target.value)}
                     className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>
               </div>
