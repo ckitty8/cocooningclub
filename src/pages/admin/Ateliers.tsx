@@ -3,6 +3,7 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
 import { withTimeout } from "@/utils/withTimeout";
+import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, X, MapPin, Clock, Users, Euro, Search, UserCheck, UserX, Image as ImageIcon, CircleDashed } from "lucide-react";
 
@@ -21,6 +22,7 @@ interface Atelier {
   heure_debut: string | null;
   duree: string | null;
   lieu: string | null;
+  adresse: string | null;
   url_image: string | null;
   places_max: number;
   places_disponibles: number;
@@ -58,7 +60,7 @@ interface Inscription {
 
 const emptyForm = {
   titre: "", description: "", description_courte: "",
-  date_atelier: "", date_fin_inscription: "", heure_debut: "", duree: "", lieu: "", url_image: "",
+  date_atelier: "", date_fin_inscription: "", heure_debut: "", duree: "", lieu: "", adresse: "", url_image: "",
   places_max: 10, tarif_standard: "", tarif_affichage: "",
   lien_paypal: "", niveau: "" as Niveau | "", statut: "brouillon" as Statut,
   antenne_id: "",
@@ -230,7 +232,7 @@ const Ateliers = () => {
       titre: a.titre, description: a.description ?? "", description_courte: a.description_courte ?? "",
       date_atelier: a.date_atelier, date_fin_inscription: a.date_fin_inscription ?? "",
       heure_debut: a.heure_debut ?? "", duree: a.duree ?? "",
-      lieu: a.lieu ?? "", url_image: a.url_image ?? "",
+      lieu: a.lieu ?? "", adresse: a.adresse ?? "", url_image: a.url_image ?? "",
       places_max: a.places_max,
       tarif_standard: a.tarif_standard?.toString() ?? "",
       tarif_affichage: a.tarif_affichage ?? "",
@@ -286,6 +288,7 @@ const Ateliers = () => {
       heure_debut: form.heure_debut,
       duree: form.duree || "2 hours",
       lieu: form.lieu || null,
+      adresse: form.adresse || null,
       url_image: form.url_image || null,
       places_max: Number(form.places_max),
       tarif_standard: form.tarif_standard ? Number(form.tarif_standard) : 0,
@@ -498,7 +501,19 @@ const Ateliers = () => {
                   {a.lieu && (
                     <div className="flex items-center gap-1.5">
                       <MapPin className="w-3.5 h-3.5 shrink-0" />
-                      <span>{a.lieu}</span>
+                      {a.adresse ? (
+                        <a
+                          href={googleMapsSearchUrl(a.adresse)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={e => e.stopPropagation()}
+                          className="hover:underline"
+                        >
+                          {a.lieu}
+                        </a>
+                      ) : (
+                        <span>{a.lieu}</span>
+                      )}
                     </div>
                   )}
                   <div className="flex items-center gap-1.5">
@@ -755,8 +770,18 @@ const Ateliers = () => {
                 <div>
                   <label className="block text-sm font-medium mb-1.5">Lieu</label>
                   <input value={form.lieu} onChange={e => f("lieu", e.target.value)}
+                    placeholder="ex: Salle des fêtes"
                     className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Adresse (lien Google Maps)</label>
+                <input value={form.adresse} onChange={e => f("adresse", e.target.value)}
+                  placeholder="ex: 12 rue des Lilas, 75000 Paris"
+                  className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Le lieu sera cliquable et ouvrira cette adresse dans Google Maps.
+                </p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>

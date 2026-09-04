@@ -8,6 +8,7 @@ export interface Workshop {
   places_max: number;
   description: string;
   lieu: string;
+  adresse?: string | null;
   tarif_affichage: string;
   tarif_standard: number;
   statut: string;

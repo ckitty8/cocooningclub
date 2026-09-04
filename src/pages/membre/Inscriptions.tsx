@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import MembreLayout from "@/components/membre/MembreLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { toast } from "sonner";
 import {
   CalendarDays, Clock, MapPin, Loader2, Ticket, X,
@@ -18,6 +19,7 @@ interface AtelierResume {
   heure_debut: string;
   duree: string;
   lieu: string | null;
+  adresse: string | null;
   url_image: string | null;
   tarif_standard: number;
   tarif_affichage: string | null;
@@ -60,7 +62,7 @@ const Inscriptions = () => {
     const [inscRes, avisRes] = await Promise.all([
       supabase
         .from("inscriptions")
-        .select("id, statut, statut_paiement, present, inscrit_le, annule_le, atelier:ateliers(id, titre, date_atelier, heure_debut, duree, lieu, url_image, tarif_standard, tarif_affichage, lien_paypal)")
+        .select("id, statut, statut_paiement, present, inscrit_le, annule_le, atelier:ateliers(id, titre, date_atelier, heure_debut, duree, lieu, adresse, url_image, tarif_standard, tarif_affichage, lien_paypal)")
         .eq("utilisateur_id", profile.id)
         .order("inscrit_le", { ascending: false }),
       supabase
@@ -204,7 +206,16 @@ const Inscriptions = () => {
                 <p className="text-xs text-muted-foreground mt-1 capitalize">{formatDate(ins.atelier.date_atelier)}</p>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1.5 flex-wrap">
                   <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{formatTime(ins.atelier.heure_debut)} · {ins.atelier.duree}</span>
-                  {ins.atelier.lieu && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{ins.atelier.lieu}</span>}
+                  {ins.atelier.lieu && (
+                    <span className="flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      {ins.atelier.adresse ? (
+                        <a href={googleMapsSearchUrl(ins.atelier.adresse)} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                          {ins.atelier.lieu}
+                        </a>
+                      ) : ins.atelier.lieu}
+                    </span>
+                  )}
                   {ins.atelier.tarif_affichage && <span>{ins.atelier.tarif_affichage}</span>}
                 </div>
 

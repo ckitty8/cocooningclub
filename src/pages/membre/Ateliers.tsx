@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import MembreLayout from "@/components/membre/MembreLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { toast } from "sonner";
 import {
   CalendarDays, Clock, MapPin, Users, Euro, Loader2, CheckCircle2,
@@ -17,6 +18,7 @@ interface Atelier {
   heure_debut: string;
   duree: string;
   lieu: string | null;
+  adresse: string | null;
   url_image: string | null;
   places_max: number;
   places_disponibles: number;
@@ -50,7 +52,7 @@ const Ateliers = () => {
     const [aRes, iRes] = await Promise.all([
       supabase
         .from("ateliers")
-        .select("id, titre, description, description_courte, date_atelier, heure_debut, duree, lieu, url_image, places_max, places_disponibles, tarif_standard, tarif_affichage, lien_paypal, date_fin_inscription, statut")
+        .select("id, titre, description, description_courte, date_atelier, heure_debut, duree, lieu, adresse, url_image, places_max, places_disponibles, tarif_standard, tarif_affichage, lien_paypal, date_fin_inscription, statut")
         .in("statut", ["publie", "complet"])
         .gte("date_atelier", today)
         .order("date_atelier"),
@@ -145,7 +147,16 @@ const Ateliers = () => {
                   <div className="space-y-1.5 text-xs text-muted-foreground mt-3">
                     <div className="flex items-center gap-2 capitalize"><CalendarDays className="w-3.5 h-3.5" />{formatDate(a.date_atelier)}</div>
                     <div className="flex items-center gap-2"><Clock className="w-3.5 h-3.5" />{formatTime(a.heure_debut)} · {a.duree}</div>
-                    {a.lieu && <div className="flex items-center gap-2"><MapPin className="w-3.5 h-3.5" />{a.lieu}</div>}
+                    {a.lieu && (
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-3.5 h-3.5" />
+                        {a.adresse ? (
+                          <a href={googleMapsSearchUrl(a.adresse)} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                            {a.lieu}
+                          </a>
+                        ) : a.lieu}
+                      </div>
+                    )}
                     <div className="flex items-center gap-2"><Users className="w-3.5 h-3.5" />{a.places_disponibles} / {a.places_max} places</div>
                     {a.tarif_affichage && <div className="flex items-center gap-2"><Euro className="w-3.5 h-3.5" />{a.tarif_affichage}</div>}
                     {a.date_fin_inscription && (
@@ -214,7 +225,13 @@ const Ateliers = () => {
                 {popin.lieu && (
                   <div className="bg-muted/40 rounded-xl p-3 col-span-2">
                     <p className="text-xs text-muted-foreground">Lieu</p>
-                    <p className="font-medium mt-0.5">{popin.lieu}</p>
+                    {popin.adresse ? (
+                      <a href={googleMapsSearchUrl(popin.adresse)} target="_blank" rel="noopener noreferrer" className="font-medium mt-0.5 inline-block hover:underline">
+                        {popin.lieu}
+                      </a>
+                    ) : (
+                      <p className="font-medium mt-0.5">{popin.lieu}</p>
+                    )}
                   </div>
                 )}
                 <div className="bg-muted/40 rounded-xl p-3">

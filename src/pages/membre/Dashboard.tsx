@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import MembreLayout from "@/components/membre/MembreLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import {
   CalendarDays, Ticket, BookOpen, ArrowRight, Loader2, Sparkles,
   Clock, MapPin, Newspaper,
@@ -15,6 +16,7 @@ interface AtelierResume {
   heure_debut: string;
   duree: string;
   lieu: string | null;
+  adresse: string | null;
   url_image: string | null;
   tarif_affichage: string | null;
 }
@@ -57,7 +59,7 @@ const Dashboard = () => {
       const [insRes, allRes, pastRes, magRes] = await Promise.all([
         supabase
           .from("inscriptions")
-          .select("id, statut, statut_paiement, atelier:ateliers(id, titre, date_atelier, heure_debut, duree, lieu, url_image, tarif_affichage)")
+          .select("id, statut, statut_paiement, atelier:ateliers(id, titre, date_atelier, heure_debut, duree, lieu, adresse, url_image, tarif_affichage)")
           .eq("utilisateur_id", profile.id)
           .neq("statut", "annule")
           .gte("ateliers.date_atelier", today)
@@ -209,7 +211,16 @@ const Dashboard = () => {
                     <p className="text-xs text-muted-foreground mt-0.5 capitalize">{formatDate(ins.atelier.date_atelier)}</p>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
                       <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{formatTime(ins.atelier.heure_debut)}</span>
-                      {ins.atelier.lieu && <span className="flex items-center gap-1 truncate"><MapPin className="w-3 h-3" />{ins.atelier.lieu}</span>}
+                      {ins.atelier.lieu && (
+                        <span className="flex items-center gap-1 truncate">
+                          <MapPin className="w-3 h-3" />
+                          {ins.atelier.adresse ? (
+                            <a href={googleMapsSearchUrl(ins.atelier.adresse)} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                              {ins.atelier.lieu}
+                            </a>
+                          ) : ins.atelier.lieu}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${

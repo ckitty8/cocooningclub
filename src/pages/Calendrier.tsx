@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { googleCalendarUrl, downloadIcsFile } from "@/utils/calendarLinks";
+import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { trackVisit } from "@/utils/trackVisit";
 
 const FRENCH_DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
@@ -42,7 +43,7 @@ const Calendrier = () => {
     const today = new Date().toISOString().slice(0, 10);
     supabase
       .from("ateliers")
-      .select("id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, tarif_affichage, tarif_standard, statut, date_fin_inscription")
+      .select("id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription")
       .in("statut", ["publie", "complet"])
       .gte("date_atelier", today)
       .order("date_atelier")
@@ -239,7 +240,18 @@ const Calendrier = () => {
                                 </span>
                                 {ws.lieu && (
                                   <span className="inline-flex items-center gap-1.5">
-                                    <MapPin className="w-3.5 h-3.5" /> {ws.lieu}
+                                    <MapPin className="w-3.5 h-3.5" />
+                                    {ws.adresse ? (
+                                      <a
+                                        href={googleMapsSearchUrl(ws.adresse)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        onClick={e => e.stopPropagation()}
+                                        className="hover:underline"
+                                      >
+                                        {ws.lieu}
+                                      </a>
+                                    ) : ws.lieu}
                                   </span>
                                 )}
                                 <span className="inline-flex items-center gap-1.5">
@@ -301,7 +313,18 @@ const Calendrier = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
-                  <span>{popinWorkshop.lieu}</span>
+                  {popinWorkshop.adresse ? (
+                    <a
+                      href={googleMapsSearchUrl(popinWorkshop.adresse)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline"
+                    >
+                      {popinWorkshop.lieu}
+                    </a>
+                  ) : (
+                    <span>{popinWorkshop.lieu}</span>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <Clock className="w-4 h-4 text-primary flex-shrink-0" />

@@ -4,6 +4,7 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { withTimeout } from "@/utils/withTimeout";
+import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import {
   Users, CalendarDays, MessageSquare, UserCheck, ArrowRight,
   Clock, MapPin, User, Mail, Sparkles, AlertCircle, Loader2, Eye, TrendingUp
@@ -15,6 +16,7 @@ interface Atelier {
   date_atelier: string;
   heure_debut: string | null;
   lieu: string | null;
+  adresse: string | null;
   places_max: number;
   places_disponibles: number;
   statut: string;
@@ -134,7 +136,7 @@ const Dashboard = () => {
             .in("statut", ["publie", "complet"]).gte("date_atelier", today),
           supabase.from("contact_messages").select("id", { count: "exact", head: true }).eq("lu", false),
           supabase.from("ateliers")
-            .select("id, titre, date_atelier, heure_debut, lieu, places_max, places_disponibles, statut")
+            .select("id, titre, date_atelier, heure_debut, lieu, adresse, places_max, places_disponibles, statut")
             .in("statut", ["publie", "complet"]).gte("date_atelier", today)
             .order("date_atelier").limit(4),
           supabase.from("inscriptions")
@@ -314,7 +316,11 @@ const Dashboard = () => {
                       {a.lieu && (
                         <span className="inline-flex items-center gap-1">
                           <MapPin className="w-3 h-3" />
-                          {a.lieu}
+                          {a.adresse ? (
+                            <a href={googleMapsSearchUrl(a.adresse)} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                              {a.lieu}
+                            </a>
+                          ) : a.lieu}
                         </span>
                       )}
                     </div>

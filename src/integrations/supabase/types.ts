@@ -46,6 +46,7 @@ export type Database = {
       }
       ateliers: {
         Row: {
+          adresse: string | null
           antenne_id: string
           cree_le: string
           date_atelier: string
@@ -72,6 +73,7 @@ export type Database = {
           url_image: string | null
         }
         Insert: {
+          adresse?: string | null
           antenne_id: string
           cree_le?: string
           date_atelier: string
@@ -98,6 +100,7 @@ export type Database = {
           url_image?: string | null
         }
         Update: {
+          adresse?: string | null
           antenne_id?: string
           cree_le?: string
           date_atelier?: string

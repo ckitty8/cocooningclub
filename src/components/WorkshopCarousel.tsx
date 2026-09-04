@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Calendar, ChevronLeft, ChevronRight, MapPin, Users, Euro, AlarmClock } from "lucide-react";
 import type { Workshop } from "@/data/workshops";
 import { formatDateFr, formatTimeFr } from "@/data/workshops";
+import { googleMapsSearchUrl } from "@/utils/googleMaps";
 
 interface WorkshopCarouselProps {
   workshops: Workshop[];
@@ -53,7 +54,19 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
 
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
-                  <span>{ws.lieu}</span>
+                  {ws.adresse ? (
+                    <a
+                      href={googleMapsSearchUrl(ws.adresse)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={e => e.stopPropagation()}
+                      className="hover:underline"
+                    >
+                      {ws.lieu}
+                    </a>
+                  ) : (
+                    <span>{ws.lieu}</span>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-2 text-sm text-foreground">

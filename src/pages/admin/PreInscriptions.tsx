@@ -3,6 +3,7 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
 import { withTimeout } from "@/utils/withTimeout";
+import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { toast } from "sonner";
 import {
   Check, X, Mail, MessageSquare, Clock, Calendar, MapPin, Phone, User,
@@ -26,6 +27,7 @@ interface Inscription {
     date_atelier: string;
     heure_debut: string;
     lieu: string | null;
+    adresse: string | null;
   } | null;
   utilisateurs?: {
     prenom: string | null;
@@ -139,7 +141,7 @@ const PreInscriptions = () => {
       const [inscRes, tplRes, atelRes] = await withTimeout(Promise.all([
         supabase
           .from("inscriptions")
-          .select("*, ateliers(id, titre, date_atelier, heure_debut, lieu), utilisateurs(prenom, nom, email, telephone, role)")
+          .select("*, ateliers(id, titre, date_atelier, heure_debut, lieu, adresse), utilisateurs(prenom, nom, email, telephone, role)")
           .order("inscrit_le", { ascending: false }),
         supabase
           .from("parametres_messages")
@@ -543,7 +545,13 @@ const PreInscriptions = () => {
                         {insc.ateliers.lieu && (
                           <div className="flex items-center gap-2 text-muted-foreground">
                             <MapPin className="w-3.5 h-3.5 shrink-0" />
-                            <span className="truncate">{insc.ateliers.lieu}</span>
+                            {insc.ateliers.adresse ? (
+                              <a href={googleMapsSearchUrl(insc.ateliers.adresse)} target="_blank" rel="noopener noreferrer" className="truncate hover:underline">
+                                {insc.ateliers.lieu}
+                              </a>
+                            ) : (
+                              <span className="truncate">{insc.ateliers.lieu}</span>
+                            )}
                           </div>
                         )}
                       </>
