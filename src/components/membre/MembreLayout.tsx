@@ -2,7 +2,7 @@ import { ReactNode, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  LayoutDashboard, CalendarDays, Ticket, BookOpen, User,
+  LayoutDashboard, CalendarDays, Ticket, BookOpen, User, Lightbulb,
   LogOut, Menu, ChevronRight,
 } from "lucide-react";
 
@@ -11,6 +11,7 @@ const navItems = [
   { href: "/espace-membre/ateliers",     label: "Ateliers",          icon: CalendarDays },
   { href: "/espace-membre/inscriptions", label: "Mes inscriptions",  icon: Ticket },
   { href: "/espace-membre/magazine",     label: "Documents",         icon: BookOpen },
+  { href: "/espace-membre/boite-a-idees", label: "Boîte à idées",    icon: Lightbulb },
   { href: "/espace-membre/mon-compte",   label: "Mon compte",        icon: User },
 ];
 

@@ -28,6 +28,7 @@ import MembreAteliers from "./pages/membre/Ateliers.tsx";
 import MembreInscriptions from "./pages/membre/Inscriptions.tsx";
 import MembreMagazine from "./pages/membre/Magazine.tsx";
 import MembreMonCompte from "./pages/membre/MonCompte.tsx";
+import MembreBoiteAIdees from "./pages/membre/BoiteAIdees.tsx";
 
 
 const queryClient = new QueryClient();
@@ -75,6 +76,7 @@ const App = () => (
             <Route path="/espace-membre/inscriptions"  element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreInscriptions /></RoleGuard>} />
             <Route path="/espace-membre/magazine"      element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreMagazine /></RoleGuard>} />
             <Route path="/espace-membre/mon-compte"    element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreMonCompte /></RoleGuard>} />
+            <Route path="/espace-membre/boite-a-idees" element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreBoiteAIdees /></RoleGuard>} />
 
             {/* Routes admin protégées */}
             <Route path="/admin/dashboard"         element={<RoleGuard allowedRoles={["administrateur"]}><Dashboard /></RoleGuard>} />

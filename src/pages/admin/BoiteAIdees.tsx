@@ -84,10 +84,13 @@ const BoiteAIdees = () => {
   // ─── Fetch ───
   const fetchAll = async () => {
     try {
+      // Les idées viennent maintenant aussi des membres (pas seulement des
+      // admins) : on récupère tous les utilisateurs pour afficher le bon
+      // nom d'auteur, pas seulement les admins.
       const [iRes, rRes, aRes] = await withTimeout(Promise.all([
         supabase.from("idees").select("*").order("cree_le", { ascending: false }),
         supabase.from("idee_reactions").select("*"),
-        supabase.from("utilisateurs").select("id, prenom, nom, couleur_conges, code_couleur_conges").eq("role", "administrateur"),
+        supabase.from("utilisateurs").select("id, prenom, nom, couleur_conges, code_couleur_conges"),
       ]));
       setIdees((iRes.data as Idee[]) ?? []);
       setReactions((rRes.data as IdeeReaction[]) ?? []);
@@ -261,7 +264,7 @@ const BoiteAIdees = () => {
             Boîte à idées
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Propose des idées, commente celles des autres. Chaque admin a sa couleur.
+            Idées envoyées par les membres et les admins. Réagis pour donner ton avis (visible par l'auteur).
           </p>
         </div>
         <button
@@ -341,7 +344,8 @@ const BoiteAIdees = () => {
                     <span className="text-xs font-medium bg-muted px-2.5 py-1 rounded-full">
                       {getCatEmoji(idee.categorie)} {getCatLabel(idee.categorie)}
                     </span>
-                    {isAuthor && (
+                    {/* Un admin peut gérer n'importe quelle idée (pas seulement les siennes) */}
+                    {(isAuthor || profile?.role === "administrateur") && (
                       <div className="flex gap-1">
                         <button
                           onClick={() => openEdit(idee)}
