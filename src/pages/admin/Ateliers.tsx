@@ -458,7 +458,7 @@ const Ateliers = () => {
       } finally {
         if (adresseAbortRef.current === controller) setAdresseLoading(false);
       }
-    }, 300);
+    }, 500);
   };
 
   const selectAdresseSuggestion = (label: string) => {
