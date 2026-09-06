@@ -1,4 +1,4 @@
-import { Heart, Instagram, Facebook, Mail } from "lucide-react";
+import { Heart, Instagram, Mail } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -51,15 +51,6 @@ const Footer = () => {
                 aria-label="Instagram"
               >
                 <Instagram className="w-4 h-4" />
-              </a>
-              <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-9 h-9 flex items-center justify-center rounded-full border border-border text-muted-foreground hover:text-primary hover:border-primary transition-colors"
-                aria-label="Facebook"
-              >
-                <Facebook className="w-4 h-4" />
               </a>
               <a
                 href="mailto:le.cocooning.club@gmail.com"
