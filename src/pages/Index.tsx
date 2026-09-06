@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/hero-workshop.jpg";
 import type { Workshop } from "@/data/workshops";
 import { formatDateFr, formatTimeFr } from "@/data/workshops";
+import { ANTENNES_THEME } from "@/data/antennesTheme";
 import { googleCalendarUrl, downloadIcsFile } from "@/utils/calendarLinks";
 import { trackVisit } from "@/utils/trackVisit";
 
@@ -377,19 +378,19 @@ const Index = () => {
                 icon: MessageCircle,
                 title: "Papotages",
                 desc: "Des rencontres informelles pour échanger, se confier et créer du lien autour d'un café.",
-                accent: "bg-rose-500/10 text-rose-600",
+                accent: ANTENNES_THEME.papotages.accent,
               },
               {
                 icon: Palette,
                 title: "Créatifs",
                 desc: "Peinture, bougie, macramé, poterie… des ateliers manuels pour se reconnecter à soi.",
-                accent: "bg-primary/10 text-primary",
+                accent: ANTENNES_THEME.creatifs.accent,
               },
               {
                 icon: Briefcase,
                 title: "Business",
                 desc: "Entrepreneuriat, développement pro et perso : des ateliers pour avancer entourée.",
-                accent: "bg-amber-500/10 text-amber-600",
+                accent: ANTENNES_THEME.business.accent,
               },
             ].map((antenne, i) => (
               <div
@@ -400,7 +401,10 @@ const Index = () => {
                 <div className={`relative h-full w-full transition-transform duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)] ${flippedAntenne === i ? "[transform:rotateY(180deg)]" : ""}`}>
                   {/* Face avant */}
                   <div className="absolute inset-0 [backface-visibility:hidden] bg-card rounded-2xl p-8 border flex flex-col items-center justify-center gap-4">
-                    <div className={`inline-flex items-center justify-center w-14 h-14 rounded-full ${antenne.accent}`}>
+                    <div
+                      className="inline-flex items-center justify-center w-14 h-14 rounded-full"
+                      style={{ backgroundColor: `${antenne.accent}1A`, color: antenne.accent }}
+                    >
                       <antenne.icon className="w-6 h-6" />
                     </div>
                     <h3 className="font-display text-xl font-semibold text-foreground">{antenne.title}</h3>
