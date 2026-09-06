@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { googleCalendarUrl, downloadIcsFile } from "@/utils/calendarLinks";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { trackVisit } from "@/utils/trackVisit";
+import { usePageSeo } from "@/hooks/usePageSeo";
 
 const FRENCH_DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
@@ -30,6 +31,10 @@ const inscriptionSchema = z.object({
 type InscriptionData = z.infer<typeof inscriptionSchema>;
 
 const Calendrier = () => {
+  usePageSeo(
+    "Calendrier des ateliers | Cocooning Club",
+    "Consultez le calendrier des prochains ateliers Papotages, Créatifs et Business du Cocooning Club et réservez votre place."
+  );
   const [searchParams] = useSearchParams();
   const { profile } = useAuth();
   const [ateliers, setAteliers] = useState<Workshop[]>([]);

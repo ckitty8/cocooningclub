@@ -1,7 +1,11 @@
 User-agent: Googlebot
+Disallow: /admin/
+Disallow: /espace-membre/
 Allow: /
 
 User-agent: Bingbot
+Disallow: /admin/
+Disallow: /espace-membre/
 Allow: /
 
 User-agent: Twitterbot
@@ -11,4 +15,8 @@ User-agent: facebookexternalhit
 Allow: /
 
 User-agent: *
+Disallow: /admin/
+Disallow: /espace-membre/
 Allow: /
+
+Sitemap: https://lecocooningclub.fr/sitemap.xml

@@ -14,6 +14,7 @@ import heroImage from "@/assets/hero-workshop.jpg";
 import type { Workshop } from "@/data/workshops";
 import { formatDateFr, formatTimeFr } from "@/data/workshops";
 import { ANTENNES_THEME } from "@/data/antennesTheme";
+import { usePageSeo } from "@/hooks/usePageSeo";
 import { googleCalendarUrl, downloadIcsFile } from "@/utils/calendarLinks";
 import { trackVisit } from "@/utils/trackVisit";
 
@@ -179,6 +180,10 @@ const ContactForm = () => {
 };
 
 const Index = () => {
+  usePageSeo(
+    "Cocooning Club | Ateliers Papotages, Créatifs & Business",
+    "Cocooning Club propose des ateliers Papotages, Créatifs et Business dans une ambiance chaleureuse et bienveillante. Rejoignez notre communauté pour déconnecter, créer et échanger."
+  );
   const [ateliers, setAteliers] = useState<Workshop[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [confirmedWorkshop, setConfirmedWorkshop] = useState<Workshop | null>(null);
