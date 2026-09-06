@@ -6,17 +6,21 @@
 
 @layer base {
   :root {
-    --background: 30 33% 96%;
-    --foreground: 20 20% 20%;
+    /* Charte graphique du club (Canva) — couleurs secondaires : rouge
+       terracotta #b95b43 (primary), pêche pâle #fde4d4 (background/card),
+       brun foncé #633b32 (foreground). Cf. src/data/antennesTheme.ts pour
+       les couleurs primaires (accents par antenne) et le détail des codes. */
+    --background: 23 91% 91%;
+    --foreground: 11 33% 29%;
 
-    --card: 30 30% 93%;
-    --card-foreground: 20 20% 20%;
+    --card: 23 91% 88%;
+    --card-foreground: 11 33% 29%;
 
-    --popover: 30 33% 96%;
-    --popover-foreground: 20 20% 20%;
+    --popover: 23 91% 91%;
+    --popover-foreground: 11 33% 29%;
 
-    --primary: 16 60% 55%;
-    --primary-foreground: 30 33% 96%;
+    --primary: 12 47% 49%;
+    --primary-foreground: 23 91% 91%;
 
     --secondary: 140 20% 72%;
     --secondary-foreground: 20 20% 20%;
@@ -32,7 +36,7 @@
 
     --border: 30 20% 85%;
     --input: 30 20% 85%;
-    --ring: 16 60% 55%;
+    --ring: 12 47% 49%;
 
     --radius: 0.75rem;
 

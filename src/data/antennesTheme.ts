@@ -1,14 +1,12 @@
-// Charte graphique Canva des 3 antennes du club.
-// Couleurs estimées visuellement à partir de la maquette Canva partagée
-// (logos + pastilles de couleur) — aucun code hex exact n'a été fourni.
-// À corriger ici si les codes exacts sont communiqués depuis Canva.
+// Charte graphique officielle du club (Canva).
+// Couleurs primaires = accent distinctif de chaque antenne.
+// Couleurs secondaires = palette commune du site (cf. src/index.css :
+// --primary = rust, --background/--card = peche, --foreground = brun).
 
-// Couleurs communes aux 3 antennes (déjà proches de --primary/--foreground
-// du site, cf. src/index.css).
 export const CHARTE_COMMUNE = {
-  rust: "#C15A34",  // rouge terracotta
-  peche: "#F8E1CB", // pêche pâle
-  brun: "#55341F",  // brun foncé
+  rust: "#b95b43",  // rouge terracotta
+  peche: "#fde4d4", // pêche pâle
+  brun: "#633b32",  // brun foncé
 };
 
 export interface AntenneTheme {
@@ -17,7 +15,7 @@ export interface AntenneTheme {
 }
 
 export const ANTENNES_THEME: Record<"papotages" | "creatifs" | "business", AntenneTheme> = {
-  papotages: { nom: "Papotages", accent: "#CB9686" }, // rose poudré
-  creatifs:  { nom: "Créatifs",  accent: "#839A78" }, // vert sauge
-  business:  { nom: "Business",  accent: "#A06E8A" }, // mauve
+  papotages: { nom: "Papotages", accent: "#ce8f7e" }, // rose poudré
+  creatifs:  { nom: "Créatifs",  accent: "#82947a" }, // vert sauge
+  business:  { nom: "Business",  accent: "#9e6678" }, // mauve
 };
