@@ -15,7 +15,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['Playfair Display', 'serif'],
+        display: ['Great Vibes', 'cursive'],
         body: ['DM Sans', 'sans-serif'],
       },
       colors: {

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=DM+Sans:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -40,7 +40,7 @@
 
     --radius: 0.75rem;
 
-    --font-display: 'Playfair Display', serif;
+    --font-display: 'Great Vibes', cursive;
     --font-body: 'DM Sans', sans-serif;
 
     --sidebar-background: 0 0% 98%;
