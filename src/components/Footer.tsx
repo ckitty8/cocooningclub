@@ -7,7 +7,7 @@ const Footer = () => {
         <div className="grid md:grid-cols-3 gap-8 md:gap-12 mb-8 md:mb-12">
           {/* Brand */}
           <div className="space-y-4">
-            <h3 className="font-display text-2xl font-bold text-foreground tracking-[0.08em] uppercase">
+            <h3 className="font-brand text-2xl font-bold text-foreground tracking-[0.08em] uppercase">
               Cocooning Club
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">

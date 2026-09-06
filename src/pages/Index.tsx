@@ -290,7 +290,7 @@ const Index = () => {
 
           <img src="/favicon.png" alt="Logo Cocooning Club" className="mx-auto mb-2 w-16 md:w-20" />
           <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-            <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground tracking-[0.08em] uppercase leading-tight text-center hover:opacity-80 transition-opacity">
+            <h2 className="font-brand text-3xl md:text-5xl font-bold text-foreground tracking-[0.08em] uppercase leading-tight text-center hover:opacity-80 transition-opacity">
               Cocooning Club
             </h2>
           </Link>

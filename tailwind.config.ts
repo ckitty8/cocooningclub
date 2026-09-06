@@ -16,6 +16,10 @@ export default {
     extend: {
       fontFamily: {
         display: ['Great Vibes', 'cursive'],
+        // Réservée au nom "Cocooning Club" (wordmark) : Great Vibes en
+        // majuscules espacées perd son tracé cursif et devient illisible,
+        // donc ce seul élément reste en Playfair Display.
+        brand: ['Playfair Display', 'serif'],
         body: ['DM Sans', 'sans-serif'],
       },
       colors: {

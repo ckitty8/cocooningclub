@@ -92,7 +92,7 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       <div className="p-6 border-b">
-        <Link to="/" className="font-display text-xl font-bold tracking-[0.08em] uppercase text-foreground hover:opacity-80 transition-opacity">
+        <Link to="/" className="font-brand text-xl font-bold tracking-[0.08em] uppercase text-foreground hover:opacity-80 transition-opacity">
           Cocooning Club
         </Link>
         <p className="text-xs text-muted-foreground mt-1 tracking-wide uppercase">Administration</p>
@@ -193,7 +193,7 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
           <button onClick={() => setSidebarOpen(true)} className="p-1.5 rounded-lg hover:bg-muted">
             <Menu className="w-5 h-5" />
           </button>
-          <span className="font-display font-bold tracking-[0.08em] uppercase text-sm">Cocooning Club</span>
+          <span className="font-brand font-bold tracking-[0.08em] uppercase text-sm">Cocooning Club</span>
         </header>
 
         <main className="flex-1 p-6 lg:p-8 max-w-7xl w-full mx-auto">

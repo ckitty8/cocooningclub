@@ -141,7 +141,7 @@ const Calendrier = () => {
             Espace Membre
           </Link>
           <Link to="/">
-            <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground tracking-[0.08em] uppercase leading-tight text-center hover:opacity-80 transition-opacity">
+            <h2 className="font-brand text-3xl md:text-5xl font-bold text-foreground tracking-[0.08em] uppercase leading-tight text-center hover:opacity-80 transition-opacity">
               Cocooning Club
             </h2>
           </Link>

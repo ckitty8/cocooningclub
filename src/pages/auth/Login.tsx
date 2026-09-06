@@ -81,7 +81,7 @@ const Login = () => {
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-10">
-          <Link to="/" className="font-display text-3xl font-bold text-foreground tracking-[0.08em] uppercase hover:opacity-80 transition-opacity">
+          <Link to="/" className="font-brand text-3xl font-bold text-foreground tracking-[0.08em] uppercase hover:opacity-80 transition-opacity">
             Cocooning Club
           </Link>
           <p className="text-muted-foreground mt-2 text-sm">Connexion à votre espace</p>
