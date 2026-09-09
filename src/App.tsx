@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import RoleGuard from "@/components/RoleGuard";
 import Index from "./pages/Index.tsx";
 import Calendrier from "./pages/Calendrier.tsx";
+import Confidentialite from "./pages/Confidentialite.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Login from "./pages/auth/Login.tsx";
 import ForgotPassword from "./pages/auth/ForgotPassword.tsx";
@@ -69,6 +70,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/confidentialite" element={<Confidentialite />} />
 
             {/* Espace membre */}
             <Route path="/espace-membre"               element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreDashboard /></RoleGuard>} />

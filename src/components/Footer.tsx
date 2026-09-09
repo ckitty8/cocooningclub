@@ -71,7 +71,12 @@ const Footer = () => {
         {/* Bottom bar */}
         <div className="border-t pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <p>© 2026 Cocooning Club · Tous droits réservés</p>
-          <p>Gagny · Chelles · Le Raincy</p>
+          <div className="flex items-center gap-4">
+            <a href="/confidentialite" className="hover:text-primary transition-colors">
+              Paramètres de confidentialité
+            </a>
+            <p>Gagny · Chelles · Le Raincy</p>
+          </div>
         </div>
       </div>
     </footer>
