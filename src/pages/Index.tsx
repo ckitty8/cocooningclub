@@ -337,7 +337,7 @@ const Index = () => {
       </section>
 
       {/* Values */}
-      <section className="py-24 bg-card" id="apropos">
+      <section className="py-24 bg-card scroll-mt-80 sm:scroll-mt-56 md:scroll-mt-64" id="apropos">
         <div className="container mx-auto px-6">
           <h2 className="text-3xl md:text-4xl font-display font-bold text-center text-foreground mb-4">
             Un moment pour soi
@@ -421,7 +421,7 @@ const Index = () => {
       </section>
 
       {/* Workshops */}
-      <section className="py-24" id="ateliers">
+      <section className="py-24 scroll-mt-80 sm:scroll-mt-56 md:scroll-mt-64" id="ateliers">
         <div className="container mx-auto px-6">
           <h2 className="text-3xl md:text-4xl font-display font-bold text-center text-foreground mb-4">
             Prochains ateliers
@@ -449,7 +449,7 @@ const Index = () => {
       <JournalSection />
 
       {/* Contact */}
-      <section className="py-24 bg-card" id="contact">
+      <section className="py-24 bg-card scroll-mt-80 sm:scroll-mt-56 md:scroll-mt-64" id="contact">
         <div className="container mx-auto px-6 max-w-xl">
           <div className="text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-4">
