@@ -71,7 +71,7 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
 
                     className="w-full bg-primary text-primary-foreground py-3 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
                   >
-                    Réserver
+                    Pré-inscription
                   </button>
                 </div>
               </div>
