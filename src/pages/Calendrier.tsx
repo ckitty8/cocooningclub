@@ -355,7 +355,7 @@ const Calendrier = () => {
                   onClick={() => openReserve(popinWorkshop)}
                   className="w-full bg-primary text-primary-foreground py-3 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
                 >
-                  Réserver ma place
+                  Pré-inscription
                 </button>
               )}
             </div>
