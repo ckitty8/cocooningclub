@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { ChevronRight, MapPin, Clock, Users, Euro, X, Calendar, CalendarPlus, Download, CheckCircle2 } from "lucide-react";
+import { ChevronRight, MapPin, Clock, Users, Euro, X, Calendar, CalendarPlus, Download, CheckCircle2, Link2 } from "lucide-react";
 import { FRENCH_MONTHS, formatDateFr, formatTimeFr, parseDateAtelier } from "@/data/workshops";
 import type { Workshop } from "@/data/workshops";
 import { useForm } from "react-hook-form";
@@ -33,30 +33,33 @@ const inscriptionSchema = z.object({
 type InscriptionData = z.infer<typeof inscriptionSchema>;
 
 const Calendrier = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { profile } = useAuth();
   const { ateliers, loading: ateliersLoading, error: ateliersError, reload: reloadAteliers } =
     usePublicAteliers(ATELIERS_COLUMNS);
-  const [popinWorkshop, setPopinWorkshop] = useState<Workshop | null>(null);
   const [reserveOpen, setReserveOpen] = useState(false);
   const [confirmedWorkshop, setConfirmedWorkshop] = useState<Workshop | null>(null);
 
-  // Fetch workshops from Supabase
   useEffect(() => {
     trackVisit("/calendrier");
   }, []);
 
-  // Ouvre la pop-in si l'URL contient ?workshop=N (clic depuis le
-  // carrousel home qui passe l'index dans le query param).
-  useEffect(() => {
-    const param = searchParams.get("workshop");
-    if (param !== null && ateliers.length > 0) {
-      const idx = parseInt(param);
-      if (!isNaN(idx) && idx >= 0 && idx < ateliers.length) {
-        setPopinWorkshop(ateliers[idx]);
-      }
+  // La pop-in est pilotée par l'URL (?atelier=<id>) pour que le lien soit
+  // partageable.
+  const atelierId = searchParams.get("atelier");
+  const popinWorkshop = atelierId ? ateliers.find((a) => a.id === atelierId) ?? null : null;
+  const openPopin = (ws: Workshop) => setSearchParams({ atelier: ws.id });
+  const closePopin = () => setSearchParams({}, { replace: true });
+
+  const copyWorkshopLink = async (ws: Workshop) => {
+    const url = `${window.location.origin}/calendrier?atelier=${ws.id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Lien copié dans le presse-papiers");
+    } catch {
+      window.prompt("Copiez le lien de l'atelier :", url);
     }
-  }, [searchParams, ateliers]);
+  };
 
   const { register, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm<InscriptionData>({
     resolver: zodResolver(inscriptionSchema),
@@ -211,7 +214,7 @@ const Calendrier = () => {
                         return (
                           <button
                             key={ws.id}
-                            onClick={() => setPopinWorkshop(ws)}
+                            onClick={() => openPopin(ws)}
                             className={`w-full text-left flex items-stretch gap-4 rounded-2xl border bg-card p-4 hover:shadow-md transition-all ${
                               isSelected ? "ring-2 ring-primary" : "hover:ring-1 hover:ring-primary/30"
                             }`}
@@ -291,7 +294,7 @@ const Calendrier = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
             className="absolute inset-0 bg-foreground/30 backdrop-blur-sm"
-            onClick={() => setPopinWorkshop(null)}
+            onClick={closePopin}
           />
           <div className="relative bg-background rounded-2xl shadow-2xl w-full max-w-md border overflow-hidden">
             {/* Header */}
@@ -305,7 +308,8 @@ const Calendrier = () => {
                 </h3>
               </div>
               <button
-                onClick={() => setPopinWorkshop(null)}
+                onClick={closePopin}
+                aria-label="Fermer"
                 className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0 mt-0.5"
               >
                 <X className="w-5 h-5" />
@@ -364,6 +368,13 @@ const Calendrier = () => {
                   Pré-inscription
                 </button>
               )}
+              <button
+                onClick={() => copyWorkshopLink(popinWorkshop)}
+                className="w-full flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Link2 className="w-4 h-4" />
+                Copier le lien de l'atelier
+              </button>
             </div>
           </div>
         </div>
