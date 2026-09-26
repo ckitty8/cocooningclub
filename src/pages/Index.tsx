@@ -16,6 +16,9 @@ import { formatDateFr, formatTimeFr } from "@/data/workshops";
 import { ANTENNES_THEME } from "@/data/antennesTheme";
 import { googleCalendarUrl, downloadIcsFile } from "@/utils/calendarLinks";
 import { trackVisit } from "@/utils/trackVisit";
+import { usePublicAteliers } from "@/hooks/usePublicAteliers";
+
+const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, description_courte, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription";
 
 const PIERRE_ORACLE = "Atelier Créatif — Pierre & Oracle";
 
@@ -179,7 +182,8 @@ const ContactForm = () => {
 };
 
 const Index = () => {
-  const [ateliers, setAteliers] = useState<Workshop[]>([]);
+  const { ateliers, setAteliers, loading: ateliersLoading, error: ateliersError, reload: reloadAteliers } =
+    usePublicAteliers(ATELIERS_COLUMNS);
   const [modalOpen, setModalOpen] = useState(false);
   const [confirmedWorkshop, setConfirmedWorkshop] = useState<Workshop | null>(null);
   // Sur mobile/tactile il n'y a pas de :hover : on permet aussi de retourner
@@ -188,21 +192,6 @@ const Index = () => {
 
   useEffect(() => {
     trackVisit("/");
-    const today = new Date().toISOString().slice(0, 10);
-    supabase
-      .from("ateliers")
-      .select("id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, description_courte, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription")
-      .in("statut", ["publie", "complet"])
-      .gte("date_atelier", today)
-      .order("date_atelier")
-      .then(({ data, error }) => {
-        if (error) {
-          console.error("[Index.fetchAteliers] error:", error);
-          toast.error(`Impossible de charger les ateliers : ${error.message}`, { duration: 8000 });
-          return;
-        }
-        setAteliers((data ?? []) as Workshop[]);
-      });
 
     const channel = supabase
       .channel("ateliers-spots")
@@ -220,7 +209,7 @@ const Index = () => {
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, []);
+  }, [setAteliers]);
 
   const {
     register,
@@ -431,10 +420,27 @@ const Index = () => {
           </p>
           {ateliers.length === 0 ? (
             <div className="text-center py-12 border rounded-2xl bg-card max-w-2xl mx-auto">
-              <p className="text-muted-foreground">
-                Aucun atelier programmé pour le moment.<br />
-                Inscris-toi à la newsletter pour être prévenu des prochains.
-              </p>
+              {ateliersLoading ? (
+                <p className="text-muted-foreground">Chargement des ateliers…</p>
+              ) : ateliersError ? (
+                <>
+                  <p className="text-muted-foreground mb-4">
+                    Impossible de charger les ateliers pour le moment.<br />
+                    Vérifie ta connexion puis réessaie.
+                  </p>
+                  <button
+                    onClick={reloadAteliers}
+                    className="bg-primary text-primary-foreground px-6 py-2.5 rounded-full text-sm font-medium hover:opacity-90 transition-opacity"
+                  >
+                    Réessayer
+                  </button>
+                </>
+              ) : (
+                <p className="text-muted-foreground">
+                  Aucun atelier programmé pour le moment.<br />
+                  Inscris-toi à la newsletter pour être prévenu des prochains.
+                </p>
+              )}
             </div>
           ) : (
             <WorkshopCarousel workshops={ateliers} onReserve={openModal} />

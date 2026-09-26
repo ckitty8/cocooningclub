@@ -12,6 +12,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { googleCalendarUrl, downloadIcsFile } from "@/utils/calendarLinks";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { trackVisit } from "@/utils/trackVisit";
+import { usePublicAteliers } from "@/hooks/usePublicAteliers";
+
+const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription";
 
 const FRENCH_DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
@@ -32,7 +35,8 @@ type InscriptionData = z.infer<typeof inscriptionSchema>;
 const Calendrier = () => {
   const [searchParams] = useSearchParams();
   const { profile } = useAuth();
-  const [ateliers, setAteliers] = useState<Workshop[]>([]);
+  const { ateliers, loading: ateliersLoading, error: ateliersError, reload: reloadAteliers } =
+    usePublicAteliers(ATELIERS_COLUMNS);
   const [popinWorkshop, setPopinWorkshop] = useState<Workshop | null>(null);
   const [reserveOpen, setReserveOpen] = useState(false);
   const [confirmedWorkshop, setConfirmedWorkshop] = useState<Workshop | null>(null);
@@ -40,20 +44,6 @@ const Calendrier = () => {
   // Fetch workshops from Supabase
   useEffect(() => {
     trackVisit("/calendrier");
-    const today = new Date().toISOString().slice(0, 10);
-    supabase
-      .from("ateliers")
-      .select("id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription")
-      .in("statut", ["publie", "complet"])
-      .gte("date_atelier", today)
-      .order("date_atelier")
-      .then(({ data, error }) => {
-        if (error) {
-          console.error("[Calendrier.fetchAteliers]", error);
-          return;
-        }
-        if (data) setAteliers(data as Workshop[]);
-      });
   }, []);
 
   // Ouvre la pop-in si l'URL contient ?workshop=N (clic depuis le
@@ -172,7 +162,23 @@ const Calendrier = () => {
           {ateliers.length === 0 ? (
             <div className="text-center py-16 border rounded-2xl bg-card">
               <Calendar className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-              <p className="text-muted-foreground">Aucun atelier programmé pour le moment.</p>
+              {ateliersLoading ? (
+                <p className="text-muted-foreground">Chargement des ateliers…</p>
+              ) : ateliersError ? (
+                <>
+                  <p className="text-muted-foreground mb-4">
+                    Impossible de charger les ateliers pour le moment. Vérifie ta connexion puis réessaie.
+                  </p>
+                  <button
+                    onClick={reloadAteliers}
+                    className="bg-primary text-primary-foreground px-6 py-2.5 rounded-full text-sm font-medium hover:opacity-90 transition-opacity"
+                  >
+                    Réessayer
+                  </button>
+                </>
+              ) : (
+                <p className="text-muted-foreground">Aucun atelier programmé pour le moment.</p>
+              )}
             </div>
           ) : (
             <div className="space-y-12">
