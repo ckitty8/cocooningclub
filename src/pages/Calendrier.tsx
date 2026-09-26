@@ -13,8 +13,9 @@ import { googleCalendarUrl, downloadIcsFile } from "@/utils/calendarLinks";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { trackVisit } from "@/utils/trackVisit";
 import { usePublicAteliers } from "@/hooks/usePublicAteliers";
+import { antenneAccent } from "@/data/antennesTheme";
 
-const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription";
+const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription, description_courte, antennes(nom)";
 
 const FRENCH_DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
@@ -296,10 +297,22 @@ const Calendrier = () => {
             className="absolute inset-0 bg-foreground/30 backdrop-blur-sm"
             onClick={closePopin}
           />
-          <div className="relative bg-background rounded-2xl shadow-2xl w-full max-w-md border overflow-hidden">
+          <div className="relative bg-background rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto border">
+            <div className="h-1.5" style={{ backgroundColor: antenneAccent(popinWorkshop.antennes?.nom) }} />
             {/* Header */}
             <div className="bg-primary/8 px-6 py-5 border-b flex items-start justify-between gap-3">
               <div>
+                {popinWorkshop.antennes?.nom && (
+                  <span
+                    className="inline-block text-[11px] tracking-[0.12em] uppercase font-medium px-2.5 py-1 rounded-full mb-3"
+                    style={{
+                      backgroundColor: `${antenneAccent(popinWorkshop.antennes.nom)}26`,
+                      color: antenneAccent(popinWorkshop.antennes.nom),
+                    }}
+                  >
+                    {popinWorkshop.antennes.nom}
+                  </span>
+                )}
                 <p className="text-xs tracking-[0.15em] uppercase text-primary font-medium mb-1">
                   {formatDateFr(popinWorkshop.date_atelier)} · {formatTimeFr(popinWorkshop.heure_debut)}
                 </p>
@@ -318,9 +331,11 @@ const Calendrier = () => {
 
             {/* Body */}
             <div className="px-6 py-5 space-y-4">
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                {popinWorkshop.description}
-              </p>
+              {(popinWorkshop.description || popinWorkshop.description_courte) && (
+                <p className="text-foreground/80 text-[15px] leading-relaxed whitespace-pre-line">
+                  {popinWorkshop.description || popinWorkshop.description_courte}
+                </p>
+              )}
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
@@ -339,7 +354,10 @@ const Calendrier = () => {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <Clock className="w-4 h-4 text-primary flex-shrink-0" />
-                  <span>{formatTimeFr(popinWorkshop.heure_debut)}</span>
+                  <span>
+                    {formatTimeFr(popinWorkshop.heure_debut)}
+                    {popinWorkshop.duree ? ` · ${popinWorkshop.duree}` : ""}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <Users className="w-4 h-4 text-primary flex-shrink-0" />

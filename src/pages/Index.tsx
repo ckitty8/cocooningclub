@@ -186,9 +186,6 @@ const Index = () => {
     usePublicAteliers(ATELIERS_COLUMNS);
   const [modalOpen, setModalOpen] = useState(false);
   const [confirmedWorkshop, setConfirmedWorkshop] = useState<Workshop | null>(null);
-  // Sur mobile/tactile il n'y a pas de :hover : on permet aussi de retourner
-  // une antenne au tap, en plus du survol souris sur desktop.
-  const [flippedAntenne, setFlippedAntenne] = useState<number | null>(null);
 
   useEffect(() => {
     trackVisit("/");
@@ -381,27 +378,28 @@ const Index = () => {
                 desc: "Entrepreneuriat, développement pro et perso : des ateliers pour avancer entourée.",
                 accent: ANTENNES_THEME.business.accent,
               },
-            ].map((antenne, i) => (
+            ].map((antenne) => (
               <div
                 key={antenne.title}
-                className="group h-64 [perspective:1200px] cursor-pointer"
-                onClick={() => setFlippedAntenne(prev => (prev === i ? null : i))}
+                className="bg-card rounded-2xl border overflow-hidden flex flex-col items-center text-center transition-all hover:-translate-y-1 hover:shadow-lg"
               >
-                <div className={`relative h-full w-full transition-transform duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)] ${flippedAntenne === i ? "[transform:rotateY(180deg)]" : ""}`}>
-                  {/* Face avant */}
-                  <div className="absolute inset-0 [backface-visibility:hidden] bg-card rounded-2xl p-8 border flex flex-col items-center justify-center gap-4">
-                    <div
-                      className="inline-flex items-center justify-center w-14 h-14 rounded-full"
-                      style={{ backgroundColor: `${antenne.accent}1A`, color: antenne.accent }}
-                    >
-                      <antenne.icon className="w-6 h-6" />
-                    </div>
-                    <h3 className="font-display text-xl font-semibold text-foreground">{antenne.title}</h3>
+                <div className="h-1.5 w-full" style={{ backgroundColor: antenne.accent }} />
+                <div className="p-8 flex flex-col items-center gap-4 flex-1">
+                  <div
+                    className="inline-flex items-center justify-center w-14 h-14 rounded-full"
+                    style={{ backgroundColor: `${antenne.accent}26`, color: antenne.accent }}
+                  >
+                    <antenne.icon className="w-6 h-6" />
                   </div>
-                  {/* Face arrière */}
-                  <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-card rounded-2xl p-8 border flex items-center justify-center text-center">
-                    <p className="text-muted-foreground text-sm leading-relaxed">{antenne.desc}</p>
-                  </div>
+                  <h3 className="font-display text-2xl font-semibold text-foreground">{antenne.title}</h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">{antenne.desc}</p>
+                  <a
+                    href="#ateliers"
+                    className="mt-auto pt-2 text-sm font-medium hover:underline"
+                    style={{ color: antenne.accent }}
+                  >
+                    Voir les ateliers →
+                  </a>
                 </div>
               </div>
             ))}

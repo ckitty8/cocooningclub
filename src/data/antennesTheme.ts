@@ -19,3 +19,14 @@ export const ANTENNES_THEME: Record<"papotages" | "creatifs" | "business", Anten
   creatifs:  { nom: "Créatifs",  accent: "#82947a" }, // vert sauge
   business:  { nom: "Business",  accent: "#9e6678" }, // mauve
 };
+
+/** Couleur d'accent d'une antenne à partir de son nom en base (rust par défaut). */
+export const antenneAccent = (nom?: string | null): string => {
+  const key = (nom ?? "")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase();
+  return key in ANTENNES_THEME
+    ? ANTENNES_THEME[key as keyof typeof ANTENNES_THEME].accent
+    : CHARTE_COMMUNE.rust;
+};

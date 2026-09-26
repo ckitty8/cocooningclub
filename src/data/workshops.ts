@@ -14,6 +14,7 @@ export interface Workshop {
   tarif_standard: number;
   statut: string;
   date_fin_inscription?: string | null;
+  antennes?: { nom: string } | null;
 }
 
 export const MONTH_MAP: Record<string, number> = {
