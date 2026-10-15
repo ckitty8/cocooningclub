@@ -23,7 +23,7 @@ const Footer = () => {
 
           {/* Navigation */}
           <div className="space-y-4">
-            <h4 className="text-xs font-semibold tracking-[0.25em] uppercase text-foreground">Navigation</h4>
+            <h4 className="text-2xl md:text-3xl font-display font-bold text-foreground">Navigation</h4>
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li>
                 <Link to="/#apropos" className="hover:text-primary transition-colors">À propos</Link>
@@ -45,7 +45,7 @@ const Footer = () => {
 
           {/* Contact & Réseaux */}
           <div className="space-y-4">
-            <h4 className="text-xs font-semibold tracking-[0.25em] uppercase text-foreground">Nous suivre</h4>
+            <h4 className="text-2xl md:text-3xl font-display font-bold text-foreground">Nous suivre</h4>
             <div className="flex gap-3">
               <a
                 href="https://www.instagram.com/cocooningclub?igsh=d2xkcWYxM3B6YTJo"
@@ -75,7 +75,7 @@ const Footer = () => {
         {/* Bottom bar */}
         <div className="border-t pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <p>© 2026 Cocooning Club · Tous droits réservés</p>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
             <Link to="/cgu" className="hover:text-primary transition-colors">
               CGU
             </Link>
