@@ -1,5 +1,5 @@
 import { useState, useEffect, FormEvent } from "react";
-import { Sparkles, Calendar, Heart, Users, X, CalendarPlus, Download, CheckCircle2 } from "lucide-react";
+import { Sparkles, Heart, Users, X, CalendarPlus, Download, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import WorkshopCarousel from "@/components/WorkshopCarousel";
 import TestimonialsSection from "@/components/TestimonialsSection";
@@ -7,7 +7,6 @@ import JournalSection from "@/components/JournalSection";
 import Footer from "@/components/Footer";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/hero-workshop-1920.webp";
@@ -21,26 +20,18 @@ import { googleCalendarUrl, downloadIcsFile } from "@/utils/calendarLinks";
 import { trackVisit } from "@/utils/trackVisit";
 import { usePublicAteliers } from "@/hooks/usePublicAteliers";
 import { useAntiSpam } from "@/hooks/useAntiSpam";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  ATELIER_AVEC_DATE_NAISSANCE,
+  envoyerPreInscription,
+  preInscriptionSchema,
+  valeursInitiales,
+  type PreInscriptionData,
+} from "@/lib/preInscription";
 import { messageErreurServeur } from "@/utils/messageErreurServeur";
 
 const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, description_courte, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription";
 
-const PIERRE_ORACLE = "Atelier Créatif — Pierre & Oracle";
-
-const inscriptionSchema = z.object({
-  name: z.string().trim().min(2, "Le nom doit contenir au moins 2 caractères.").max(100),
-  email: z.string().trim().email("Veuillez entrer un email valide.").max(255),
-  // Même règle que private.telephone_valide() côté base.
-  phone: z.string().trim().regex(/^[0-9 +().-]{6,20}$/, "Numéro de téléphone invalide.").optional().or(z.literal("")),
-  workshop: z.string().min(1, "Veuillez choisir un atelier."),
-  birthdate: z.string().optional(),
-  cgu: z.boolean().refine(v => v, "Merci d'accepter les CGU et la politique de confidentialité."),
-}).refine((d) => d.workshop !== PIERRE_ORACLE || (!!d.birthdate && d.birthdate.trim().length > 0), {
-  message: "La date de naissance est requise pour cet atelier.",
-  path: ["birthdate"],
-});
-
-type InscriptionData = z.infer<typeof inscriptionSchema>;
 
 // ── Formulaire de contact dynamique ──────────────────────
 interface FormFieldConfig {
@@ -194,6 +185,7 @@ const ContactForm = () => {
 };
 
 const Index = () => {
+  const { profile } = useAuth();
   const { ateliers, setAteliers, loading: ateliersLoading, error: ateliersError, reload: reloadAteliers } =
     usePublicAteliers(ATELIERS_COLUMNS);
   const [modalOpen, setModalOpen] = useState(false);
@@ -229,9 +221,9 @@ const Index = () => {
     reset,
     watch,
     formState: { errors, isSubmitting },
-  } = useForm<InscriptionData>({
-    resolver: zodResolver(inscriptionSchema),
-    defaultValues: { name: "", email: "", phone: "", workshop: "", birthdate: "", cgu: false },
+  } = useForm<PreInscriptionData>({
+    resolver: zodResolver(preInscriptionSchema),
+    defaultValues: valeursInitiales(),
   });
 
   const selectedWorkshop = watch("workshop");
@@ -239,45 +231,30 @@ const Index = () => {
 
   const openModal = (workshopTitle?: string) => {
     inscriptionAntiSpam.reset();
-    reset({ name: "", email: "", phone: "", workshop: workshopTitle || "", birthdate: "", cgu: false });
+    reset(valeursInitiales(workshopTitle, profile));
     setConfirmedWorkshop(null);
     setModalOpen(true);
   };
 
-  const onSubmit = async (data: InscriptionData) => {
-    const atelier = ateliers.find((a) => a.titre === data.workshop);
-    const nameParts = data.name.trim().split(/\s+/);
-    const prenom = nameParts[0] || "";
-    const nom = nameParts.slice(1).join(" ") || prenom;
+  const onSubmit = async (data: PreInscriptionData) => {
+    const atelier = ateliers.find(a => a.titre === data.workshop);
+    if (!atelier) {
+      toast.error("Cet atelier n'est plus disponible. Merci d'en choisir un autre.");
+      return;
+    }
 
     // Robot repéré : on simule une pré-inscription réussie sans rien enregistrer.
-    const { error } = inscriptionAntiSpam.isBot() ? { error: null } : await supabase.from("inscriptions").insert({
-      atelier_id: atelier?.id ?? null,
-      prenom_invite: prenom,
-      nom_invite: nom,
-      email_invite: data.email,
-      statut: "en_attente",
-      statut_paiement: atelier && atelier.tarif_standard > 0 ? "en_attente" : "non_requis",
-      ...(data.phone ? { telephone_invite: data.phone } : {}),
-      ...(data.birthdate ? { date_naissance: data.birthdate } : {}),
-    });
-
+    const { error } = inscriptionAntiSpam.isBot()
+      ? { error: null }
+      : await envoyerPreInscription(data, atelier.id, profile);
     if (error) {
       toast.error(messageErreurServeur(error));
       return;
     }
 
-    // Pré-inscription : on ne décrémente PAS les places (trigger DB le fera à la validation admin)
-    if (atelier) {
-      setConfirmedWorkshop(atelier);
-    } else {
-      toast.success(
-        `Merci ${prenom} ! Votre pré-inscription a bien été enregistrée. Vous recevrez une confirmation par email ou WhatsApp après validation.`,
-        { duration: 6000 }
-      );
-      setModalOpen(false);
-    }
-    reset();
+    // Les places ne sont décomptées qu'à la validation par l'admin (trigger en base).
+    setConfirmedWorkshop(atelier);
+    reset(valeursInitiales());
   };
 
   return (
@@ -500,6 +477,9 @@ const Index = () => {
       {modalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-foreground/40 backdrop-blur-sm" onClick={() => setModalOpen(false)}>
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Pré-inscription"
             className="bg-background rounded-2xl md:rounded-3xl border shadow-2xl w-full max-w-xl mx-3 p-5 md:p-8 relative animate-in fade-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
@@ -557,6 +537,7 @@ const Index = () => {
                     <label className="block text-sm font-medium text-foreground mb-1.5">Nom complet</label>
                     <input
                       {...register("name")}
+                      readOnly={!!profile}
                       placeholder="Marie Dupont"
                       className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     />
@@ -567,6 +548,7 @@ const Index = () => {
                     <label className="block text-sm font-medium text-foreground mb-1.5">Email</label>
                     <input
                       {...register("email")}
+                      readOnly={!!profile}
                       type="email"
                       placeholder="marie@email.com"
                       className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
@@ -603,7 +585,7 @@ const Index = () => {
                     {errors.workshop && <p className="text-destructive text-xs mt-1">{errors.workshop.message}</p>}
                   </div>
 
-                  {selectedWorkshop === PIERRE_ORACLE && (
+                  {selectedWorkshop === ATELIER_AVEC_DATE_NAISSANCE && (
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-1.5">Date de naissance</label>
                       <input

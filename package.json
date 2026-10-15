@@ -11,6 +11,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
     "feedback:pdf": "node scripts/generate-feedback-pdf.mjs",
     "feedback:rex": "node scripts/generate-feedback-pdf.mjs",
     "feedback:rex:membre": "FEEDBACK_SCOPE=membre node scripts/generate-feedback-pdf.mjs",

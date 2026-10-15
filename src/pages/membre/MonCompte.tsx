@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import MembreLayout from "@/components/membre/MembreLayout";
 import { supabase } from "@/integrations/supabase/client";
+import type { TablesUpdate } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { compressImage } from "@/utils/compressImage";
@@ -106,7 +107,7 @@ const MonCompte = () => {
       setEmailChangePending(true);
     }
 
-    const payload: Record<string, unknown> = {
+    const payload: TablesUpdate<"utilisateurs"> = {
       prenom: form.prenom.trim(),
       nom: form.nom.trim(),
       telephone: form.telephone.trim() || null,

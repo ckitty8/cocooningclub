@@ -17,38 +17,22 @@ const TestimonialsSection = () => {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    // On affiche uniquement les avis approuvés ET mis en avant.
-    // L'auteur s'affiche en "Prénom L." si lié à un membre, sinon
-    // sur nom_auteur (témoignage admin libre).
-    supabase
-      .from("avis")
-      .select("id, note, commentaire, nom_auteur, mis_en_avant, moderation, utilisateurs(prenom, nom), inscriptions(ateliers(titre))")
-      .eq("moderation", "approuve")
-      .eq("mis_en_avant", true)
-      .order("cree_le", { ascending: false })
-      .limit(12)
-      .then(({ data, error }) => {
-        if (error) {
-          console.error("[TestimonialsSection]", error);
-          return;
-        }
-        if (!data) return;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const mapped = data.map((a: any) => {
-          const u = a.utilisateurs;
-          const auteur = u?.prenom
-            ? `${u.prenom} ${u.nom?.[0] ?? ""}.`.trim()
-            : a.nom_auteur || "—";
-          return {
-            id: a.id,
-            texte: a.commentaire ?? "",
-            auteur,
-            atelier: a.inscriptions?.ateliers?.titre ?? null,
-            note: a.note,
-          };
-        });
-        setItems(mapped);
-      });
+    // Avis approuvés et mis en avant. La fonction côté base renvoie déjà
+    // l'auteur au format « Prénom N. » (ou le nom saisi par l'admin) :
+    // un visiteur n'a pas le droit de lire la table utilisateurs.
+    supabase.rpc("temoignages_publics").then(({ data, error }) => {
+      if (error) {
+        console.error("[TestimonialsSection]", error);
+        return;
+      }
+      setItems((data ?? []).map(a => ({
+        id: a.id,
+        texte: a.commentaire,
+        auteur: a.auteur,
+        atelier: a.atelier_titre,
+        note: a.note,
+      })));
+    });
   }, []);
 
   if (items.length === 0) return null;

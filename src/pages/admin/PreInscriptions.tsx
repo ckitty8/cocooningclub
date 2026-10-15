@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
+import type { TablesUpdate } from "@/integrations/supabase/types";
 import { logAction } from "@/utils/logAction";
 import { withTimeout } from "@/utils/withTimeout";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
@@ -20,6 +21,7 @@ interface Inscription {
   telephone_invite: string | null;
   date_naissance: string | null;
   statut: "en_attente" | "confirme" | "annule";
+  statut_paiement: "en_attente" | "paye" | "non_requis";
   inscrit_le: string;
   ateliers?: {
     id: string;
@@ -220,7 +222,7 @@ const PreInscriptions = () => {
     if (next === "annule" && !confirm(`Refuser la pré-inscription de ${id.prenom} ${id.nom} ?`)) return;
 
     setActingOn(insc.id);
-    const payload: Record<string, unknown> = { statut: next };
+    const payload: TablesUpdate<"inscriptions"> = { statut: next };
     payload.annule_le = next === "annule" ? new Date().toISOString() : null;
 
     const { error } = await supabase
@@ -331,7 +333,7 @@ const PreInscriptions = () => {
       // (édition d'une inscription membre). Les champs invite sont
       // mis à jour quoi qu'il arrive — ils prennent le pas sur
       // utilisateurs.* dans l'affichage côté admin.
-      const payload: Record<string, unknown> = {
+      const payload: TablesUpdate<"inscriptions"> = {
         atelier_id: newForm.atelier_id,
         utilisateur_id: utilisateurId,
         prenom_invite: newForm.prenom.trim(),

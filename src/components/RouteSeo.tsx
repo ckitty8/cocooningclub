@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 // Domaine canonique : toujours la prod, même sur les previews Vercel.
-const SITE_URL = "https://lecocooningclub.fr";
+const SITE_URL = "https://www.lecocooningclub.fr";
 
 interface PageMeta {
   title: string;

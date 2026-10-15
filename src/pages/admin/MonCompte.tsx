@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
+import type { TablesUpdate } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { logAction } from "@/utils/logAction";
 import { toast } from "sonner";
@@ -89,7 +90,7 @@ const MonCompte = () => {
     }
 
     // 2) Mise à jour de la table utilisateurs
-    const payload: Record<string, unknown> = {
+    const payload: TablesUpdate<"utilisateurs"> = {
       prenom:           form.prenom.trim(),
       nom:              form.nom.trim(),
       telephone:        form.telephone.trim() || null,

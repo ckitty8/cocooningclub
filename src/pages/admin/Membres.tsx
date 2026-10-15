@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
+import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { logAction } from "@/utils/logAction";
 import { withTimeout } from "@/utils/withTimeout";
@@ -141,7 +142,7 @@ const Membres = () => {
     // 2. Insérer la ligne utilisateurs.
     //    - Actif : on lie à l'UUID auth (pour que les RLS auth.uid() = id marchent)
     //    - Inactif : on laisse Postgres générer un UUID (pas de compte auth associé)
-    const insertPayload: Record<string, unknown> = {
+    const insertPayload: TablesInsert<"utilisateurs"> = {
       email: createForm.email,
       nom: createForm.nom,
       prenom: createForm.prenom,
@@ -207,7 +208,7 @@ const Membres = () => {
       }
     }
 
-    const payload: Record<string, unknown> = {
+    const payload: TablesUpdate<"utilisateurs"> = {
       nom: editForm.nom, prenom: editForm.prenom, email: editForm.email,
       telephone: editForm.telephone || null,
       date_naissance: editForm.date_naissance || null,

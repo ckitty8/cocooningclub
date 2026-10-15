@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,18 +23,18 @@ const Login = () => {
 
   const isInactive = searchParams.get("inactive") === "true";
 
-  const clearStuckTimer = () => {
+  const clearStuckTimer = useCallback(() => {
     if (stuckTimerRef.current) {
       clearTimeout(stuckTimerRef.current);
       stuckTimerRef.current = null;
     }
-  };
+  }, []);
 
-  const stopAwaiting = () => {
+  const stopAwaiting = useCallback(() => {
     awaitingProfileRef.current = false;
     clearStuckTimer();
     setSubmitting(false);
-  };
+  }, [clearStuckTimer]);
 
   // Redirection quand profile est chargé. Si on attendait le profile et
   // que AuthContext a fini de charger sans le trouver, on affiche une
@@ -52,9 +52,9 @@ const Login = () => {
       stopAwaiting();
       setError("Profil introuvable pour ce compte. Contacte l'administrateur.");
     }
-  }, [profile, user, authLoading, navigate]);
+  }, [profile, user, authLoading, navigate, stopAwaiting]);
 
-  useEffect(() => () => clearStuckTimer(), []);
+  useEffect(() => () => clearStuckTimer(), [clearStuckTimer]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

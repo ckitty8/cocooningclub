@@ -48,9 +48,6 @@ const typeLabel: Record<FieldType, string> = {
 
 const emptyFieldForm = { label: "", field_type: "text" as FieldType, obligatoire: false, options: "" };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as any;
-
 // ─── List view ───────────────────────────────────────────────────────────────
 
 const FormCard = ({
@@ -156,7 +153,7 @@ const Formulaire = () => {
   const fetchFormulaires = async () => {
     try {
       const { data } = await withTimeout(
-        db.from("formulaires").select("*, form_fields(id)").order("cree_le")
+        supabase.from("formulaires").select("*, form_fields(id)").order("cree_le")
       );
       setFormulaires((data as FormulaireRow[]) ?? []);
     } catch (err) {
@@ -167,13 +164,13 @@ const Formulaire = () => {
   };
 
   const fetchFields = async (formulaireId: string) => {
-    const { data } = await db.from("form_fields").select("*").eq("formulaire_id", formulaireId).order("position");
+    const { data } = await supabase.from("form_fields").select("*").eq("formulaire_id", formulaireId).order("position");
     setFields((data as FormField[]) ?? []);
   };
 
   const fetchMessages = async () => {
     setMsgsLoading(true);
-    const { data } = await db.from("contact_messages").select("*").order("cree_le", { ascending: false });
+    const { data } = await supabase.from("contact_messages").select("*").order("cree_le", { ascending: false });
     setMessages((data as ContactMessage[]) ?? []);
     setMsgsLoading(false);
   };
@@ -182,7 +179,7 @@ const Formulaire = () => {
   useEffect(() => { if (tab === "messages") fetchMessages(); }, [tab]);
 
   const toggleLu = async (msg: ContactMessage) => {
-    await db.from("contact_messages").update({ lu: !msg.lu }).eq("id", msg.id);
+    await supabase.from("contact_messages").update({ lu: !msg.lu }).eq("id", msg.id);
     setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, lu: !m.lu } : m));
   };
 
@@ -200,34 +197,34 @@ const Formulaire = () => {
   };
 
   const handleDuplicate = async (f: FormulaireRow) => {
-    const { data: newForm } = await db.from("formulaires").insert({
+    const { data: newForm } = await supabase.from("formulaires").insert({
       nom: `${f.nom} (copie)`,
       description: f.description,
       est_actif: false,
     }).select().single();
     if (!newForm) return;
-    const { data: origFields } = await db.from("form_fields").select("*").eq("formulaire_id", f.id).order("position");
+    const { data: origFields } = await supabase.from("form_fields").select("*").eq("formulaire_id", f.id).order("position");
     if (origFields && origFields.length > 0) {
-      await db.from("form_fields").insert(origFields.map(({ id: _id, cree_le: _c, ...rest }: FormField & { cree_le: string }) => ({ ...rest, formulaire_id: newForm.id })));
+      await supabase.from("form_fields").insert(origFields.map(({ id: _id, cree_le: _c, ...rest }: FormField & { cree_le: string }) => ({ ...rest, formulaire_id: newForm.id })));
     }
     fetchFormulaires();
   };
 
   const handleDelete = async (f: FormulaireRow) => {
     if (!confirm(`Supprimer le formulaire "${f.nom}" et tous ses champs ?`)) return;
-    await db.from("formulaires").delete().eq("id", f.id);
+    await supabase.from("formulaires").delete().eq("id", f.id);
     fetchFormulaires();
   };
 
   const handleToggleActive = async (f: FormulaireRow) => {
-    await db.from("formulaires").update({ est_actif: !f.est_actif }).eq("id", f.id);
+    await supabase.from("formulaires").update({ est_actif: !f.est_actif }).eq("id", f.id);
     fetchFormulaires();
   };
 
   const handleCreate = async () => {
     if (!newName.trim()) return;
     setCreating(true);
-    await db.from("formulaires").insert({ nom: newName.trim(), description: newDesc.trim() || null, est_actif: false });
+    await supabase.from("formulaires").insert({ nom: newName.trim(), description: newDesc.trim() || null, est_actif: false });
     setNewModal(false);
     setNewName("");
     setNewDesc("");
@@ -239,7 +236,7 @@ const Formulaire = () => {
   const saveFormMeta = async () => {
     if (!editingForm) return;
     setSavingMeta(true);
-    await db.from("formulaires").update({ nom: formName, description: formDesc || null }).eq("id", editingForm.id);
+    await supabase.from("formulaires").update({ nom: formName, description: formDesc || null }).eq("id", editingForm.id);
     setSavingMeta(false);
     setMetaSaved(true);
     setTimeout(() => setMetaSaved(false), 2000);
@@ -260,13 +257,13 @@ const Formulaire = () => {
       : null;
 
     if (modal.field) {
-      await db.from("form_fields").update({
+      await supabase.from("form_fields").update({
         label: fieldForm.label, field_type: fieldForm.field_type,
         obligatoire: fieldForm.obligatoire, options,
       }).eq("id", modal.field.id);
     } else {
       const maxPos = fields.reduce((max, f) => Math.max(max, f.position), 0);
-      await db.from("form_fields").insert({
+      await supabase.from("form_fields").insert({
         formulaire_id: editingForm.id,
         label: fieldForm.label, field_type: fieldForm.field_type,
         obligatoire: fieldForm.obligatoire, options,
@@ -281,7 +278,7 @@ const Formulaire = () => {
   const handleDeleteField = async (f: FormField) => {
     if (!f.deletable) return;
     if (!confirm(`Supprimer le champ "${f.label}" ?`)) return;
-    await db.from("form_fields").delete().eq("id", f.id);
+    await supabase.from("form_fields").delete().eq("id", f.id);
     await fetchFields(editingForm!.id);
   };
 
@@ -289,8 +286,8 @@ const Formulaire = () => {
     const swap = dir === "up" ? idx - 1 : idx + 1;
     if (swap < 0 || swap >= fields.length) return;
     await Promise.all([
-      db.from("form_fields").update({ position: fields[swap].position }).eq("id", fields[idx].id),
-      db.from("form_fields").update({ position: fields[idx].position }).eq("id", fields[swap].id),
+      supabase.from("form_fields").update({ position: fields[swap].position }).eq("id", fields[idx].id),
+      supabase.from("form_fields").update({ position: fields[idx].position }).eq("id", fields[swap].id),
     ]);
     await fetchFields(editingForm!.id);
   };

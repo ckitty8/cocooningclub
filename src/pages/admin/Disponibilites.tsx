@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -126,7 +126,7 @@ const Disponibilites = () => {
   const [newConge, setNewConge] = useState({ date_debut: "", date_fin: "", motif: "" });
   const [saving, setSaving] = useState(false);
 
-  const fetchAll = async () => {
+  const fetchAll = useCallback(async () => {
     if (!profile?.id) {
       setLoading(false);
       return;
@@ -138,8 +138,7 @@ const Disponibilites = () => {
         supabase.from("jours_feries").select("*").order("date"),
         supabase.from("vacances_scolaires").select("*").eq("zone", "C").order("date_debut"),
         supabase.from("utilisateurs").select("id, prenom, nom, couleur_conges").eq("role", "administrateur"),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (supabase.from("indisponibilites") as any).select("*, utilisateurs(couleur_conges, prenom)").order("date_debut"),
+        supabase.from("indisponibilites").select("*, utilisateurs(couleur_conges, prenom)").order("date_debut"),
       ]));
       setDisponibilites((dRes.data as Disponibilite[]) ?? []);
       setIndisponibilites((iRes.data as Indisponibilite[]) ?? []);
@@ -148,8 +147,7 @@ const Disponibilites = () => {
       setAdmins((aRes.data as Admin[]) ?? []);
 
       // Transform join result into flat structure
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const allI = ((allIRes.data as any[]) ?? []).map((row: any) => ({
+      const allI = (allIRes.data ?? []).map(row => ({
         id: row.id,
         utilisateur_id: row.utilisateur_id,
         date_debut: row.date_debut,
@@ -166,7 +164,7 @@ const Disponibilites = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [profile?.id]);
 
   const handleChangeColor = async (couleur: CouleurKey | null) => {
     if (!profile?.id) return;
@@ -188,8 +186,7 @@ const Disponibilites = () => {
     setSavingColor(false);
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { fetchAll(); }, [profile?.id]);
+  useEffect(() => { fetchAll(); }, [fetchAll]);
 
   // ────────────────────────────────────────────────────
   // Disponibilités
@@ -570,10 +567,7 @@ const Disponibilites = () => {
 
         const todayIso = toIsoDate(today.getFullYear(), today.getMonth(), today.getDate());
         const selectedEvents = selectedDay
-          ? (() => {
-              const [, m, d] = selectedDay.split("-").map(Number);
-              return getEventsForDay(d);
-            })()
+          ? getEventsForDay(Number(selectedDay.split("-")[2]))
           : [];
 
         return (

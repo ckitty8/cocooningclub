@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 /**
  * Enregistre une action admin dans la table logs.
@@ -13,7 +14,7 @@ export const logAction = async (
   action: string,
   table_cible?: string | null,
   enregistrement_cible_id?: string | null,
-  details?: Record<string, unknown> | null
+  details?: { [key: string]: Json | undefined } | null
 ): Promise<void> => {
   try {
     const { data } = await supabase.auth.getUser();

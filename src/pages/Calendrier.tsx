@@ -5,14 +5,19 @@ import { FRENCH_MONTHS, formatDateFr, formatTimeFr, parseDateAtelier } from "@/d
 import type { Workshop } from "@/data/workshops";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { googleCalendarUrl, downloadIcsFile } from "@/utils/calendarLinks";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { trackVisit } from "@/utils/trackVisit";
 import { useAntiSpam } from "@/hooks/useAntiSpam";
+import {
+  ATELIER_AVEC_DATE_NAISSANCE,
+  envoyerPreInscription,
+  preInscriptionSchema,
+  valeursInitiales,
+  type PreInscriptionData,
+} from "@/lib/preInscription";
 import { messageErreurServeur } from "@/utils/messageErreurServeur";
 import { usePublicAteliers } from "@/hooks/usePublicAteliers";
 
@@ -20,21 +25,6 @@ const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_di
 
 const FRENCH_DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
-const PIERRE_ORACLE = "Atelier Créatif — Pierre & Oracle";
-
-const inscriptionSchema = z.object({
-  name: z.string().trim().min(2, "Le nom doit contenir au moins 2 caractères.").max(100),
-  email: z.string().trim().email("Veuillez entrer un email valide.").max(255),
-  // Même règle que private.telephone_valide() côté base.
-  phone: z.string().trim().regex(/^[0-9 +().-]{6,20}$/, "Numéro de téléphone invalide.").optional().or(z.literal("")),
-  workshop: z.string().min(1, "Veuillez choisir un atelier."),
-  birthdate: z.string().optional(),
-  cgu: z.boolean().refine(v => v, "Merci d'accepter les CGU et la politique de confidentialité."),
-}).refine((d) => d.workshop !== PIERRE_ORACLE || (!!d.birthdate && d.birthdate.trim().length > 0), {
-  message: "La date de naissance est requise pour cet atelier.",
-  path: ["birthdate"],
-});
-type InscriptionData = z.infer<typeof inscriptionSchema>;
 
 const Calendrier = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -65,9 +55,9 @@ const Calendrier = () => {
     }
   };
 
-  const { register, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm<InscriptionData>({
-    resolver: zodResolver(inscriptionSchema),
-    defaultValues: { name: "", email: "", phone: "", workshop: "", birthdate: "", cgu: false },
+  const { register, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm<PreInscriptionData>({
+    resolver: zodResolver(preInscriptionSchema),
+    defaultValues: valeursInitiales(),
   });
 
   const selectedWorkshop = watch("workshop");
@@ -75,44 +65,29 @@ const Calendrier = () => {
 
   const openReserve = (ws: Workshop) => {
     antiSpam.reset();
-    reset({ name: "", email: "", phone: "", workshop: ws.titre, birthdate: "", cgu: false });
+    reset(valeursInitiales(ws.titre, profile));
     setConfirmedWorkshop(null);
     setReserveOpen(true);
   };
 
-  const onSubmit = async (data: InscriptionData) => {
-    const atelier = ateliers.find((a) => a.titre === data.workshop);
-    const nameParts = data.name.trim().split(/\s+/);
-    const prenom = nameParts[0] || "";
-    const nom = nameParts.slice(1).join(" ") || prenom;
-
-    // Si l'utilisateur est connecté on lie l'inscription à son compte
-    // (utilisateur_id) pour qu'elle apparaisse correctement dans son
-    // espace membre et avec le bon rôle côté admin. On garde quand même
-    // les champs invité au cas où le formulaire a été modifié.
-    // Robot repéré : on simule une pré-inscription réussie sans rien enregistrer.
-    const { error } = antiSpam.isBot() ? { error: null } : await supabase.from("inscriptions").insert({
-      atelier_id: atelier?.id ?? null,
-      utilisateur_id: profile?.id ?? null,
-      prenom_invite: prenom,
-      nom_invite: nom,
-      email_invite: data.email,
-      statut: "en_attente",
-      statut_paiement: atelier && atelier.tarif_standard > 0 ? "en_attente" : "non_requis",
-      ...(data.phone ? { telephone_invite: data.phone } : {}),
-      ...(data.birthdate ? { date_naissance: data.birthdate } : {}),
-    });
-    if (error) { toast.error(messageErreurServeur(error)); return; }
-    if (atelier) {
-      setConfirmedWorkshop(atelier);
-    } else {
-      toast.success(
-        `Merci ${prenom} ! Votre pré-inscription a bien été enregistrée. Vous recevrez une confirmation par email ou WhatsApp après validation.`,
-        { duration: 6000 }
-      );
-      setReserveOpen(false);
+  const onSubmit = async (data: PreInscriptionData) => {
+    const atelier = ateliers.find(a => a.titre === data.workshop);
+    if (!atelier) {
+      toast.error("Cet atelier n'est plus disponible. Merci d'en choisir un autre.");
+      return;
     }
-    reset();
+
+    // Robot repéré : on simule une pré-inscription réussie sans rien enregistrer.
+    const { error } = antiSpam.isBot()
+      ? { error: null }
+      : await envoyerPreInscription(data, atelier.id, profile);
+    if (error) {
+      toast.error(messageErreurServeur(error));
+      return;
+    }
+
+    setConfirmedWorkshop(atelier);
+    reset(valeursInitiales());
   };
 
 
@@ -303,7 +278,7 @@ const Calendrier = () => {
             className="absolute inset-0 bg-foreground/30 backdrop-blur-sm"
             onClick={closePopin}
           />
-          <div className="relative bg-background rounded-2xl shadow-2xl w-full max-w-md border overflow-hidden">
+          <div role="dialog" aria-modal="true" aria-label={popinWorkshop.titre} className="relative bg-background rounded-2xl shadow-2xl w-full max-w-md border overflow-hidden">
             {/* Header */}
             <div className="bg-primary/8 px-6 py-5 border-b flex items-start justify-between gap-3">
               <div>
@@ -391,7 +366,7 @@ const Calendrier = () => {
       {reserveOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" onClick={() => setReserveOpen(false)} />
-          <div className="relative bg-background rounded-2xl shadow-2xl w-full max-w-xl p-8 border">
+          <div role="dialog" aria-modal="true" aria-label="Pré-inscription" className="relative bg-background rounded-2xl shadow-2xl w-full max-w-xl p-8 border">
             <button
               onClick={() => setReserveOpen(false)}
               className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground"
@@ -448,12 +423,12 @@ const Calendrier = () => {
                   {antiSpam.honeypot}
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-1">Nom complet</label>
-                    <input {...register("name")} className="w-full border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Votre nom" />
+                    <input {...register("name")} readOnly={!!profile} className="w-full border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Votre nom" />
                     {errors.name && <p className="text-xs text-destructive mt-1">{errors.name.message}</p>}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-1">Email</label>
-                    <input {...register("email")} type="email" className="w-full border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" placeholder="votre@email.com" />
+                    <input {...register("email")} readOnly={!!profile} type="email" className="w-full border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" placeholder="votre@email.com" />
                     {errors.email && <p className="text-xs text-destructive mt-1">{errors.email.message}</p>}
                   </div>
                   <div>
@@ -473,7 +448,7 @@ const Calendrier = () => {
                     </select>
                     {errors.workshop && <p className="text-xs text-destructive mt-1">{errors.workshop.message}</p>}
                   </div>
-                  {selectedWorkshop === PIERRE_ORACLE && (
+                  {selectedWorkshop === ATELIER_AVEC_DATE_NAISSANCE && (
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-1">Date de naissance</label>
                       <input

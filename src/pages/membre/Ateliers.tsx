@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import MembreLayout from "@/components/membre/MembreLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { toast } from "sonner";
+import { messageErreurServeur } from "@/utils/messageErreurServeur";
 import {
   CalendarDays, Clock, MapPin, Users, Euro, Loader2, CheckCircle2,
   ExternalLink, X, AlarmClock,
@@ -45,7 +46,7 @@ const Ateliers = () => {
   const [registering, setRegistering] = useState<string | null>(null);
   const [popin, setPopin] = useState<Atelier | null>(null);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!profile) return;
     const today = new Date().toISOString().slice(0, 10);
 
@@ -66,30 +67,28 @@ const Ateliers = () => {
     setAteliers((aRes.data as Atelier[]) ?? []);
     setMyInscriptions(new Set(((iRes.data ?? []) as { atelier_id: string }[]).map(i => i.atelier_id)));
     setLoading(false);
-  };
+  }, [profile]);
 
-  useEffect(() => { fetchData(); }, [profile]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   const handleRegister = async (atelier: Atelier) => {
     if (!profile) return;
     setRegistering(atelier.id);
 
-    const isPaid = atelier.tarif_standard > 0;
+    // Statuts d'inscription et de paiement fixés par la base (trigger).
     const { error } = await supabase.from("inscriptions").insert({
       atelier_id: atelier.id,
       utilisateur_id: profile.id,
-      statut: "en_attente",
-      statut_paiement: isPaid ? "en_attente" : "non_requis",
     });
 
     if (error) {
-      toast.error(`Erreur : ${error.message}`, { duration: 6000 });
+      toast.error(messageErreurServeur(error), { duration: 6000 });
       setRegistering(null);
       return;
     }
 
     toast.success(
-      isPaid
+      atelier.tarif_standard > 0
         ? "Inscription enregistrée. Pensez à régler votre paiement via PayPal pour la confirmer."
         : "Inscription enregistrée — confirmation à venir.",
       { duration: 6000 }

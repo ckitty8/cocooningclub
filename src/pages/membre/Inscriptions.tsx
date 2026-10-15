@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import MembreLayout from "@/components/membre/MembreLayout";
 import { supabase } from "@/integrations/supabase/client";
@@ -57,7 +57,7 @@ const Inscriptions = () => {
   const [avisForm, setAvisForm] = useState({ note: 5, commentaire: "" });
   const [avisSaving, setAvisSaving] = useState(false);
 
-  const fetchInscriptions = async () => {
+  const fetchInscriptions = useCallback(async () => {
     if (!profile) return;
     const [inscRes, avisRes] = await Promise.all([
       supabase
@@ -81,9 +81,9 @@ const Inscriptions = () => {
     }
     setItems(((data ?? []) as unknown as Inscription[]).filter(i => i.atelier !== null));
     setLoading(false);
-  };
+  }, [profile]);
 
-  useEffect(() => { fetchInscriptions(); }, [profile]);
+  useEffect(() => { fetchInscriptions(); }, [fetchInscriptions]);
 
   const today = new Date().toISOString().slice(0, 10);
   const upcoming = items.filter(i => i.atelier && i.atelier.date_atelier >= today && i.statut !== "annule");

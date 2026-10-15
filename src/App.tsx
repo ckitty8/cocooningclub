@@ -1,9 +1,6 @@
 import { useEffect } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import RoleGuard from "@/components/RoleGuard";
 import RouteSeo from "@/components/RouteSeo";
@@ -33,8 +30,6 @@ import MembreMagazine from "./pages/membre/Magazine.tsx";
 import MembreMonCompte from "./pages/membre/MonCompte.tsx";
 import MembreBoiteAIdees from "./pages/membre/BoiteAIdees.tsx";
 
-
-const queryClient = new QueryClient();
 
 // Remonte en haut à chaque changement de page, sauf si l'URL vise une ancre
 // (ex. /#contact depuis le footer du calendrier) : on fait alors défiler
@@ -80,54 +75,51 @@ const RecoveryRedirect = () => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <ScrollToTop />
-          <RouteSeo />
-          <RecoveryRedirect />
-          <Routes>
-            {/* Routes publiques */}
-            <Route path="/" element={<Index />} />
-            <Route path="/calendrier" element={<Calendrier />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/confidentialite" element={<Confidentialite />} />
-            <Route path="/cgu" element={<Cgu />} />
+  <>
+    <Toaster />
+    <BrowserRouter>
+      <AuthProvider>
+        <ScrollToTop />
+        <RouteSeo />
+        <RecoveryRedirect />
+        <Routes>
+          {/* Routes publiques */}
+          <Route path="/" element={<Index />} />
+          <Route path="/calendrier" element={<Calendrier />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/confidentialite" element={<Confidentialite />} />
+          <Route path="/cgu" element={<Cgu />} />
 
-            {/* Espace membre */}
-            <Route path="/espace-membre"               element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreDashboard /></RoleGuard>} />
-            <Route path="/espace-membre/ateliers"      element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreAteliers /></RoleGuard>} />
-            <Route path="/espace-membre/inscriptions"  element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreInscriptions /></RoleGuard>} />
-            <Route path="/espace-membre/magazine"      element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreMagazine /></RoleGuard>} />
-            <Route path="/espace-membre/mon-compte"    element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreMonCompte /></RoleGuard>} />
-            <Route path="/espace-membre/boite-a-idees" element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreBoiteAIdees /></RoleGuard>} />
+          {/* Espace membre */}
+          <Route path="/espace-membre"               element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreDashboard /></RoleGuard>} />
+          <Route path="/espace-membre/ateliers"      element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreAteliers /></RoleGuard>} />
+          <Route path="/espace-membre/inscriptions"  element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreInscriptions /></RoleGuard>} />
+          <Route path="/espace-membre/magazine"      element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreMagazine /></RoleGuard>} />
+          <Route path="/espace-membre/mon-compte"    element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreMonCompte /></RoleGuard>} />
+          <Route path="/espace-membre/boite-a-idees" element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreBoiteAIdees /></RoleGuard>} />
 
-            {/* Routes admin protégées */}
-            <Route path="/admin/dashboard"         element={<RoleGuard allowedRoles={["administrateur"]}><Dashboard /></RoleGuard>} />
-            <Route path="/admin/membres"           element={<RoleGuard allowedRoles={["administrateur"]}><Membres /></RoleGuard>} />
-            <Route path="/admin/ateliers"          element={<RoleGuard allowedRoles={["administrateur"]}><AteliersAdmin /></RoleGuard>} />
-            <Route path="/admin/pre-inscriptions"  element={<RoleGuard allowedRoles={["administrateur"]}><PreInscriptions /></RoleGuard>} />
-            <Route path="/admin/documents"         element={<RoleGuard allowedRoles={["administrateur"]}><Documents /></RoleGuard>} />
-            <Route path="/admin/formulaire"        element={<RoleGuard allowedRoles={["administrateur"]}><Formulaire /></RoleGuard>} />
-            <Route path="/admin/messages-templates" element={<RoleGuard allowedRoles={["administrateur"]}><TemplatesMessages /></RoleGuard>} />
-            <Route path="/admin/disponibilites"     element={<RoleGuard allowedRoles={["administrateur"]}><Disponibilites /></RoleGuard>} />
-            <Route path="/admin/boite-a-idees"      element={<RoleGuard allowedRoles={["administrateur"]}><BoiteAIdees /></RoleGuard>} />
-            <Route path="/admin/avis"               element={<RoleGuard allowedRoles={["administrateur"]}><AvisAdmin /></RoleGuard>} />
-            <Route path="/admin/mon-compte"         element={<RoleGuard allowedRoles={["administrateur"]}><MonCompte /></RoleGuard>} />
+          {/* Routes admin protégées */}
+          <Route path="/admin/dashboard"         element={<RoleGuard allowedRoles={["administrateur"]}><Dashboard /></RoleGuard>} />
+          <Route path="/admin/membres"           element={<RoleGuard allowedRoles={["administrateur"]}><Membres /></RoleGuard>} />
+          <Route path="/admin/ateliers"          element={<RoleGuard allowedRoles={["administrateur"]}><AteliersAdmin /></RoleGuard>} />
+          <Route path="/admin/pre-inscriptions"  element={<RoleGuard allowedRoles={["administrateur"]}><PreInscriptions /></RoleGuard>} />
+          <Route path="/admin/documents"         element={<RoleGuard allowedRoles={["administrateur"]}><Documents /></RoleGuard>} />
+          <Route path="/admin/formulaire"        element={<RoleGuard allowedRoles={["administrateur"]}><Formulaire /></RoleGuard>} />
+          <Route path="/admin/messages-templates" element={<RoleGuard allowedRoles={["administrateur"]}><TemplatesMessages /></RoleGuard>} />
+          <Route path="/admin/disponibilites"     element={<RoleGuard allowedRoles={["administrateur"]}><Disponibilites /></RoleGuard>} />
+          <Route path="/admin/boite-a-idees"      element={<RoleGuard allowedRoles={["administrateur"]}><BoiteAIdees /></RoleGuard>} />
+          <Route path="/admin/avis"               element={<RoleGuard allowedRoles={["administrateur"]}><AvisAdmin /></RoleGuard>} />
+          <Route path="/admin/mon-compte"         element={<RoleGuard allowedRoles={["administrateur"]}><MonCompte /></RoleGuard>} />
 
 
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
+  </>
 );
 
 export default App;

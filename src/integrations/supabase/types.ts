@@ -702,7 +702,7 @@ export type Database = {
       }
       logs: {
         Row: {
-          action: Database["public"]["Enums"]["type_action_log"]
+          action: string
           adresse_ip: string | null
           details: Json | null
           enregistrement_cible_id: string | null
@@ -713,7 +713,7 @@ export type Database = {
           utilisateur_id: string | null
         }
         Insert: {
-          action: Database["public"]["Enums"]["type_action_log"]
+          action: string
           adresse_ip?: string | null
           details?: Json | null
           enregistrement_cible_id?: string | null
@@ -724,7 +724,7 @@ export type Database = {
           utilisateur_id?: string | null
         }
         Update: {
-          action?: Database["public"]["Enums"]["type_action_log"]
+          action?: string
           adresse_ip?: string | null
           details?: Json | null
           enregistrement_cible_id?: string | null
@@ -1014,23 +1014,9 @@ export type Database = {
       }
     }
     Views: {
-      vue_avis_publies: {
-        Row: {
-          antenne: string | null
-          atelier_titre: string | null
-          avis_id: string | null
-          commentaire: string | null
-          cree_le: string | null
-          mis_en_avant: boolean | null
-          note: number | null
-          prenom: string | null
-          url_avatar: string | null
-        }
-        Relationships: []
-      }
       vue_logs: {
         Row: {
-          action: Database["public"]["Enums"]["type_action_log"] | null
+          action: string | null
           adresse_ip: string | null
           auteur: string | null
           auteur_code_couleur: string | null
@@ -1107,6 +1093,16 @@ export type Database = {
       admin_dispo_le: { Args: { p_date: string }; Returns: boolean }
       depublier_ateliers_passes: { Args: never; Returns: number }
       is_admin: { Args: never; Returns: boolean }
+      temoignages_publics: {
+        Args: { p_limite?: number }
+        Returns: {
+          atelier_titre: string | null
+          auteur: string
+          commentaire: string
+          id: string
+          note: number
+        }[]
+      }
     }
     Enums: {
       acces_document: "membres" | "premium" | "tous"
@@ -1135,23 +1131,6 @@ export type Database = {
         | "complete"
         | "rembourse"
         | "echoue"
-      type_action_log:
-        | "connexion"
-        | "deconnexion"
-        | "inscription_atelier"
-        | "annulation_inscription"
-        | "paiement_recu"
-        | "remboursement"
-        | "avis_soumis"
-        | "avis_modere"
-        | "profil_modifie"
-        | "mot_de_passe_modifie"
-        | "atelier_cree"
-        | "atelier_modifie"
-        | "membre_promu"
-        | "membre_desactive"
-        | "export_donnees"
-        | "autre"
       type_document: "magazine" | "guide" | "lien_externe"
       type_recurrence: "hebdomadaire" | "bimensuel" | "mensuel"
     }
@@ -1309,24 +1288,6 @@ export const Constants = {
         "complete",
         "rembourse",
         "echoue",
-      ],
-      type_action_log: [
-        "connexion",
-        "deconnexion",
-        "inscription_atelier",
-        "annulation_inscription",
-        "paiement_recu",
-        "remboursement",
-        "avis_soumis",
-        "avis_modere",
-        "profil_modifie",
-        "mot_de_passe_modifie",
-        "atelier_cree",
-        "atelier_modifie",
-        "membre_promu",
-        "membre_desactive",
-        "export_donnees",
-        "autre",
       ],
       type_document: ["magazine", "guide", "lien_externe"],
       type_recurrence: ["hebdomadaire", "bimensuel", "mensuel"],
