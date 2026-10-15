@@ -32,6 +32,12 @@ const PUBLIC_PAGES: Record<string, PageMeta> = {
       "Comment le Cocooning Club collecte, utilise et protège vos données personnelles, et comment exercer vos droits.",
     index: true,
   },
+  "/cgu": {
+    title: "Conditions générales d'utilisation · Cocooning Club",
+    description:
+      "Conditions d'utilisation du site du Cocooning Club : pré-inscription aux ateliers, paiement, annulation, espace membre, avis et propriété intellectuelle.",
+    index: true,
+  },
   "/login": { title: "Connexion à l'espace membre · Cocooning Club", index: false },
   "/forgot-password": { title: "Mot de passe oublié · Cocooning Club", index: false },
   "/reset-password": { title: "Nouveau mot de passe · Cocooning Club", index: false },

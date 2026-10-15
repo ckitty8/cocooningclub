@@ -76,6 +76,9 @@ const Footer = () => {
         <div className="border-t pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <p>© 2026 Cocooning Club · Tous droits réservés</p>
           <div className="flex items-center gap-4">
+            <Link to="/cgu" className="hover:text-primary transition-colors">
+              CGU
+            </Link>
             <Link to="/confidentialite" className="hover:text-primary transition-colors">
               Paramètres de confidentialité
             </Link>

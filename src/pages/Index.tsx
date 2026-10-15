@@ -29,6 +29,7 @@ const inscriptionSchema = z.object({
   phone: z.string().trim().max(20).optional().or(z.literal("")),
   workshop: z.string().min(1, "Veuillez choisir un atelier."),
   birthdate: z.string().optional(),
+  cgu: z.boolean().refine(v => v, "Merci d'accepter les CGU et la politique de confidentialité."),
 }).refine((d) => d.workshop !== PIERRE_ORACLE || (!!d.birthdate && d.birthdate.trim().length > 0), {
   message: "La date de naissance est requise pour cet atelier.",
   path: ["birthdate"],
@@ -220,13 +221,13 @@ const Index = () => {
     formState: { errors, isSubmitting },
   } = useForm<InscriptionData>({
     resolver: zodResolver(inscriptionSchema),
-    defaultValues: { name: "", email: "", phone: "", workshop: "", birthdate: "" },
+    defaultValues: { name: "", email: "", phone: "", workshop: "", birthdate: "", cgu: false },
   });
 
   const selectedWorkshop = watch("workshop");
 
   const openModal = (workshopTitle?: string) => {
-    reset({ name: "", email: "", phone: "", workshop: workshopTitle || "", birthdate: "" });
+    reset({ name: "", email: "", phone: "", workshop: workshopTitle || "", birthdate: "", cgu: false });
     setConfirmedWorkshop(null);
     setModalOpen(true);
   };
@@ -599,6 +600,23 @@ const Index = () => {
                       {errors.birthdate && <p className="text-destructive text-xs mt-1">{errors.birthdate.message}</p>}
                     </div>
                   )}
+
+                  <div>
+                    <label className="flex items-start gap-2.5 text-xs text-muted-foreground leading-relaxed cursor-pointer">
+                      <input
+                        {...register("cgu")}
+                        type="checkbox"
+                        className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+                      />
+                      <span>
+                        J'accepte les{" "}
+                        <Link to="/cgu" target="_blank" className="text-primary underline underline-offset-2">conditions générales d'utilisation</Link>
+                        {" "}et la{" "}
+                        <Link to="/confidentialite" target="_blank" className="text-primary underline underline-offset-2">politique de confidentialité</Link>.
+                      </span>
+                    </label>
+                    {errors.cgu && <p className="text-destructive text-xs mt-1">{errors.cgu.message}</p>}
+                  </div>
 
                   <button
                     type="submit"
