@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Profile } from "@/contexts/AuthContext";
+import type { Profile } from "@/contexts/auth";
 import {
   ATELIER_AVEC_DATE_NAISSANCE,
   preInscriptionSchema,

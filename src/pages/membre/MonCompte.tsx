@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import MembreLayout from "@/components/membre/MembreLayout";
 import { supabase } from "@/integrations/supabase/client";
 import type { TablesUpdate } from "@/integrations/supabase/types";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { messageErreurServeur } from "@/utils/messageErreurServeur";
 import { compressImage } from "@/utils/compressImage";

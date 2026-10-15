@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { logAction } from "@/utils/logAction";
 import { withTimeout } from "@/utils/withTimeout";
 import { toast } from "sonner";
 import { Plus, Search, Pencil, Trash2, UserX, UserCheck2, X, Eye, EyeOff } from "lucide-react";
-import type { UserRole } from "@/contexts/AuthContext";
+import type { UserRole } from "@/contexts/auth";
 
 interface Utilisateur {
   id: string;

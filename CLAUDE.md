@@ -6,7 +6,6 @@ Quand l'utilisateur demande ce qu'il reste à faire, lui rappeler en premier les
 
 ## Points en attente
 
-- **Code mort à supprimer** (suppression refusée par les permissions de la session) : voir la section « Code mort » ci-dessous.
 
 - **Mentions légales** (obligatoires, loi LCEN) : page à créer avec éditeur (nom, adresse, statut juridique du club), directeur de publication et hébergeur (Vercel). L'utilisateur a toutes les infos mais veut traiter ce point plus tard.
 - **Google Analytics 4 + bannière cookie** : reporté à plus tard par l'utilisateur. Il faudra son identifiant de mesure `G-XXXXXXXXXX`.
@@ -19,19 +18,16 @@ Quand l'utilisateur demande ce qu'il reste à faire, lui rappeler en premier les
 ## Plan de mise en conformité (octobre 2026)
 
 Ordre prévu :
-1. ✅ Fait (commit aab2b35). Restent hors code : supprimer les pages mortes `src/pages/ForgotPassword.tsx`, `src/pages/ResetPassword.tsx`, `src/pages/admin/Messages.tsx` et `src/assets/hero-workshop.jpg` (suppression refusée par les permissions) ; soumettre le sitemap dans Google Search Console. Contenu : Rapide et sans risque : HSTS / en-têtes de sécurité, sitemap + robots.txt, page 404, liens cassés, compression images (favicon de 783 Ko), meta title par page, image de partage 1200×630, favicon multi-tailles, textes alternatifs.
+1. ✅ Fait (commit aab2b35). Reste hors code : soumettre le sitemap dans Google Search Console. Contenu : Rapide et sans risque : HSTS / en-têtes de sécurité, sitemap + robots.txt, page 404, liens cassés, compression images (favicon de 783 Ko), meta title par page, image de partage 1200×630, favicon multi-tailles, textes alternatifs.
 2. Juridique et analytics : ✅ CGU (page `/cgu` + case à cocher obligatoire sur les formulaires de pré-inscription ; textes « annulation / remboursement » à faire valider par l'utilisateur) ; bannière cookie, GA4, mise à jour de `/confidentialite` (GA, durée de conservation), mentions légales quand l'utilisateur fournit les infos.
 3. Sécurité : ✅ migrations `20261015000000_verrouille_colonnes_sensibles.sql` et `20261015000001_validation_et_limite_envois.sql` (appliquées en prod le 16/10) ; ✅ `20261016000000_coherence_fonctionnelle.sql` appliquée en prod (journal admin, annulation par un membre, places rendues, témoignages, durcissement anti-spam). Note : l'outil `apply_migration` expire depuis la session, les migrations se collent dans le SQL Editor Supabase ; ✅ piège à robots + délai minimal côté navigateur (`useAntiSpam`). Reste : Cloudflare Turnstile (nécessite un compte Cloudflare de l'utilisateur).
 4. Contraste (AA) et responsive (360 → 1280 px).
 
-## Code mort
+## Qualité du code
 
-Fichiers inaccessibles depuis `src/main.tsx` (calcul par les imports), à supprimer puis activer `noUnusedLocals` / `noUnusedParameters` dans `tsconfig.app.json` :
-- `src/App.css`, `src/assets/hero-workshop.jpg`, `src/components/NavLink.tsx`, `src/data/antennesTheme.ts`, `src/hooks/use-mobile.tsx`, `src/hooks/use-toast.ts`
-- `src/pages/ForgotPassword.tsx`, `src/pages/ResetPassword.tsx`, `src/pages/admin/Messages.tsx` (remplacée par Formulaire)
-- `src/components/ui/*` sauf `sonner.tsx` (soit 48 fichiers, dont `toast.tsx`, `toaster.tsx`, `tooltip.tsx`, `use-toast.ts`)
-- `playwright-fixture.ts`, `src/test/example.test.ts`
-- Dépendances devenues inutiles : `@tanstack/react-query`, `next-themes`, `cmdk`, `date-fns`, `embla-carousel-react`, `input-otp`, `react-day-picker`, `react-resizable-panels`, `recharts`, `vaul`, et tous les `@radix-ui/*`.
+- `noUnusedLocals` / `noUnusedParameters` activés : `npx tsc -p tsconfig.app.json --noEmit` doit rester à 0 erreur, `npm run lint` à 0 avertissement.
+- Code mort supprimé le 16/10 (composants shadcn/ui inutilisés, anciennes pages, dépendances). Seul `src/components/ui/sonner.tsx` reste de shadcn ; ajouter un composant = l'écrire ou le réinstaller, pas réintroduire tout le kit.
+- Gestionnaires de paquets : `package-lock.json` (npm, cf. README) et `bun.lock` (Bun, utilisé par Vercel) doivent rester synchronisés : `bun add/remove …` puis `npm install --package-lock-only`.
 
 ## Tests
 

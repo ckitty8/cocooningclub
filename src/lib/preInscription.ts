@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
-import type { Profile } from "@/contexts/AuthContext";
+import type { Profile } from "@/contexts/auth";
 
 // Pré-inscription à un atelier, partagée par l'accueil et le calendrier.
 // Les statuts (inscription, paiement, présence) sont fixés par la base

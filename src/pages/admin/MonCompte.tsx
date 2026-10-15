@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import type { TablesUpdate } from "@/integrations/supabase/types";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { logAction } from "@/utils/logAction";
 import { toast } from "sonner";
 import { compressImage } from "@/utils/compressImage";

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import MembreLayout from "@/components/membre/MembreLayout";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import {
   CalendarDays, Ticket, BookOpen, ArrowRight, Loader2, Sparkles,

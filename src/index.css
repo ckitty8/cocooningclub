@@ -8,8 +8,8 @@
   :root {
     /* Charte graphique du club (Canva) — couleurs secondaires : rouge
        terracotta #b95b43 (primary), pêche pâle #fde4d4 (background/card),
-       brun foncé #633b32 (foreground). Cf. src/data/antennesTheme.ts pour
-       les couleurs primaires (accents par antenne) et le détail des codes. */
+       brun foncé #633b32 (foreground). Couleurs primaires (une par espace) :
+       `colors.espace` dans tailwind.config.ts. */
     --background: 23 91% 91%;
     --foreground: 11 33% 29%;
 

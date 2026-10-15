@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { CalendarPlus, CheckCircle2, Download, X } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { useAntiSpam } from "@/hooks/useAntiSpam";
 import { formatDateFr, formatTimeFr, type Workshop } from "@/data/workshops";
 import {
