@@ -21,25 +21,55 @@
 --
 -- Qui est concerné : uniquement les requêtes du site, qui passent par
 -- PostgREST avec les rôles `anon` ou `authenticated`. Les administratrices
--- (private.is_admin()), le SQL editor, le service_role et les triggers
+-- (rôle 'administrateur' dans utilisateurs), le SQL editor, le service_role et les triggers
 -- internes (rôle postgres / supabase_auth_admin) ne sont pas bridés.
 -- =====================================================
 
 
+-- Schéma privé (non exposé par l'API). Il existe déjà dans certains
+-- environnements : création idempotente.
+CREATE SCHEMA IF NOT EXISTS private;
+REVOKE ALL ON SCHEMA private FROM PUBLIC;
+-- anon et authenticated doivent pouvoir résoudre les helpers appelés depuis
+-- les triggers ; seuls les objets explicitement autorisés leur sont ouverts.
+GRANT USAGE ON SCHEMA private TO anon, authenticated;
+
+
+-- La personne connectée est-elle administratrice ?
+-- Volontairement indépendant de is_admin() (public.is_admin en prod,
+-- private.is_admin dans les migrations du dépôt). SECURITY DEFINER pour
+-- lire utilisateurs sans dépendre de sa RLS.
+CREATE OR REPLACE FUNCTION private.utilisateur_est_admin()
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.utilisateurs
+    WHERE id = auth.uid() AND role = 'administrateur'
+  );
+$$;
+
+REVOKE EXECUTE ON FUNCTION private.utilisateur_est_admin() FROM PUBLIC;
+GRANT  EXECUTE ON FUNCTION private.utilisateur_est_admin() TO authenticated;
+
+
 -- Helper : la requête vient-elle d'un client du site non administrateur ?
--- `anon` n'a pas accès au schéma private : on ne doit pas appeler
--- is_admin() pour lui, d'où l'évaluation en deux temps.
+-- SECURITY INVOKER : current_user doit rester le rôle de la requête
+-- (anon / authenticated), pas le propriétaire de la fonction.
 CREATE OR REPLACE FUNCTION private.est_client_non_admin()
 RETURNS BOOLEAN
 LANGUAGE plpgsql
 STABLE
-SET search_path = public, pg_catalog
+SET search_path = ''
 AS $$
 BEGIN
   IF current_user = 'anon' THEN
     RETURN TRUE;
   ELSIF current_user = 'authenticated' THEN
-    RETURN NOT private.is_admin();
+    RETURN NOT private.utilisateur_est_admin();
   END IF;
   RETURN FALSE;
 END;
@@ -47,10 +77,6 @@ $$;
 
 REVOKE EXECUTE ON FUNCTION private.est_client_non_admin() FROM PUBLIC;
 GRANT  EXECUTE ON FUNCTION private.est_client_non_admin() TO anon, authenticated;
--- anon doit pouvoir résoudre private.est_client_non_admin() dans les
--- triggers d'inscription (les autres objets de private restent fermés :
--- is_admin() n'est exécutable que par authenticated).
-GRANT USAGE ON SCHEMA private TO anon;
 
 
 -- ─────────────────────────────────────────────

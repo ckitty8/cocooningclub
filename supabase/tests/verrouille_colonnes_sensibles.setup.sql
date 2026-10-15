@@ -1,5 +1,8 @@
 -- Mini-environnement façon Supabase
-CREATE ROLE anon NOLOGIN; CREATE ROLE authenticated NOLOGIN;
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN CREATE ROLE anon NOLOGIN; END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticated') THEN CREATE ROLE authenticated NOLOGIN; END IF;
+END $$;
 CREATE SCHEMA auth;
 CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
 GRANT USAGE ON SCHEMA auth TO anon, authenticated; GRANT EXECUTE ON FUNCTION auth.uid() TO anon, authenticated;
@@ -14,20 +17,19 @@ CREATE TABLE inscriptions (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), atelie
 CREATE TABLE avis (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), utilisateur_id uuid NOT NULL, inscription_id uuid NOT NULL UNIQUE, note int, commentaire text, moderation statut_moderation NOT NULL DEFAULT 'en_attente', mis_en_avant bool NOT NULL DEFAULT false, cree_le timestamptz NOT NULL DEFAULT now(), modere_le timestamptz, nom_auteur text);
 GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA public TO anon, authenticated;
 ALTER TABLE utilisateurs ENABLE ROW LEVEL SECURITY; ALTER TABLE ateliers ENABLE ROW LEVEL SECURITY; ALTER TABLE inscriptions ENABLE ROW LEVEL SECURITY; ALTER TABLE avis ENABLE ROW LEVEL SECURITY;
-CREATE SCHEMA private; REVOKE ALL ON SCHEMA private FROM PUBLIC; GRANT USAGE ON SCHEMA private TO authenticated;
-CREATE FUNCTION private.is_admin() RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public, pg_catalog AS $$ SELECT EXISTS (SELECT 1 FROM public.utilisateurs WHERE id = auth.uid() AND role = 'administrateur') $$;
-REVOKE EXECUTE ON FUNCTION private.is_admin() FROM PUBLIC; GRANT EXECUTE ON FUNCTION private.is_admin() TO authenticated;
+-- Comme en prod : is_admin() dans public, pas de schéma private au départ.
+CREATE FUNCTION public.is_admin() RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public, pg_catalog AS $$ SELECT EXISTS (SELECT 1 FROM public.utilisateurs WHERE id = auth.uid() AND role = 'administrateur') $$;
 -- Policies reproduisant la prod
 CREATE POLICY utilisateurs_select_self ON utilisateurs FOR SELECT USING ((select auth.uid()) = id);
 CREATE POLICY utilisateurs_update_self ON utilisateurs FOR UPDATE USING ((select auth.uid()) = id) WITH CHECK ((select auth.uid()) = id);
-CREATE POLICY utilisateurs_admin ON utilisateurs FOR ALL TO authenticated USING (private.is_admin()) WITH CHECK (private.is_admin());
+CREATE POLICY utilisateurs_admin ON utilisateurs FOR ALL TO authenticated USING (is_admin()) WITH CHECK (is_admin());
 CREATE POLICY ateliers_select_public ON ateliers FOR SELECT TO anon, authenticated USING (statut IN ('publie','complet','termine'));
 CREATE POLICY inscriptions_insert_public ON inscriptions FOR INSERT TO anon, authenticated WITH CHECK (true);
 CREATE POLICY inscriptions_select_owner ON inscriptions FOR SELECT TO authenticated USING (auth.uid() = utilisateur_id);
 CREATE POLICY inscriptions_update_owner ON inscriptions FOR UPDATE TO authenticated USING (auth.uid() = utilisateur_id) WITH CHECK (auth.uid() = utilisateur_id);
-CREATE POLICY inscriptions_admin ON inscriptions FOR ALL TO authenticated USING (private.is_admin()) WITH CHECK (private.is_admin());
+CREATE POLICY inscriptions_admin ON inscriptions FOR ALL TO authenticated USING (is_admin()) WITH CHECK (is_admin());
 CREATE POLICY avis_creer ON avis FOR INSERT TO authenticated WITH CHECK ((select auth.uid()) = utilisateur_id);
-CREATE POLICY avis_admin ON avis FOR ALL TO authenticated USING (private.is_admin()) WITH CHECK (private.is_admin());
+CREATE POLICY avis_admin ON avis FOR ALL TO authenticated USING (is_admin()) WITH CHECK (is_admin());
 -- Données
 INSERT INTO utilisateurs (id, email, prenom, nom, role) VALUES
  ('11111111-1111-1111-1111-111111111111','membre@x.fr','Marie','Membre','membre'),
