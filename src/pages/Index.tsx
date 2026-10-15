@@ -1,5 +1,5 @@
 import { useState, useEffect, FormEvent } from "react";
-import { Sparkles, Heart, Users } from "lucide-react";
+import { ArrowRight, Sparkles, Heart, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import WorkshopCarousel from "@/components/WorkshopCarousel";
 import TestimonialsSection from "@/components/TestimonialsSection";
@@ -171,15 +171,38 @@ const ContactForm = () => {
   );
 };
 
+// Les trois espaces du club. Classes Tailwind écrites en entier pour que
+// le compilateur les détecte (pas de classes construites dynamiquement).
+const ESPACES = [
+  {
+    titre: "Papotages",
+    logo: logoPapotages,
+    description: "Des rencontres informelles pour échanger, se confier et créer du lien autour d'un café.",
+    liseret: "bg-espace-papotages",
+    fond: "bg-espace-papotages-fond",
+  },
+  {
+    titre: "Créatifs",
+    logo: logoCreatifs,
+    description: "Peinture, bougie, macramé, poterie… des ateliers manuels pour se reconnecter à soi.",
+    liseret: "bg-espace-creatifs",
+    fond: "bg-espace-creatifs-fond",
+  },
+  {
+    titre: "Business",
+    logo: logoBusiness,
+    description: "Entrepreneuriat, développement pro et perso : des ateliers pour avancer entourée.",
+    liseret: "bg-espace-business",
+    fond: "bg-espace-business-fond",
+  },
+];
+
 const Index = () => {
   const { ateliers, setAteliers, loading: ateliersLoading, error: ateliersError, reload: reloadAteliers } =
     usePublicAteliers(ATELIERS_COLUMNS);
   // Titre de l'atelier présélectionné dans la fenêtre de pré-inscription
   // ("" = aucun), ou null quand la fenêtre est fermée.
   const [preInscription, setPreInscription] = useState<string | null>(null);
-  // Sur mobile/tactile il n'y a pas de :hover : on permet aussi de retourner
-  // un espace au tap, en plus du survol souris sur desktop.
-  const [flippedAntenne, setFlippedAntenne] = useState<number | null>(null);
 
   useEffect(() => {
     trackVisit("/");
@@ -301,57 +324,44 @@ const Index = () => {
       </section>
 
       {/* Nos espaces */}
-      <section className="py-24">
+      <section className="py-24 scroll-mt-80 sm:scroll-mt-56 md:scroll-mt-64" id="espaces">
         <div className="container mx-auto px-6">
-          <h2 className="text-3xl md:text-4xl font-display font-bold text-center text-foreground mb-4">
+          <h2 className="text-5xl md:text-6xl font-display text-center text-foreground mb-3">
             Nos espaces
           </h2>
-          <p className="text-center text-muted-foreground max-w-lg mx-auto mb-16">
+          <p className="text-center text-muted-foreground max-w-lg mx-auto mb-14">
             Trois grands espaces d'ateliers pour répondre à toutes vos envies du moment.
           </p>
           <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                logo: logoPapotages,
-                title: "Papotages",
-                desc: "Des rencontres informelles pour échanger, se confier et créer du lien autour d'un café.",
-              },
-              {
-                logo: logoCreatifs,
-                title: "Créatifs",
-                desc: "Peinture, bougie, macramé, poterie… des ateliers manuels pour se reconnecter à soi.",
-              },
-              {
-                logo: logoBusiness,
-                title: "Business",
-                desc: "Entrepreneuriat, développement pro et perso : des ateliers pour avancer entourée.",
-              },
-            ].map((antenne, i) => (
-              <div
-                key={antenne.title}
-                className="group h-64 [perspective:1200px] cursor-pointer"
-                onClick={() => setFlippedAntenne(prev => (prev === i ? null : i))}
+            {ESPACES.map(espace => (
+              <article
+                key={espace.titre}
+                className="flex flex-col overflow-hidden rounded-3xl bg-[#fffaf6] shadow-[0_1px_0_rgba(99,59,50,0.06),0_12px_32px_-18px_rgba(99,59,50,0.35)]"
               >
-                <div className={`relative h-full w-full transition-transform duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)] ${flippedAntenne === i ? "[transform:rotateY(180deg)]" : ""}`}>
-                  {/* Face avant */}
-                  <div className="absolute inset-0 [backface-visibility:hidden] bg-card rounded-2xl p-6 border flex items-center justify-center">
-                    {/* Logo de l'espace (charte graphique) : il contient déjà le nom,
-                        le titre reste présent pour les lecteurs d'écran et Google. */}
-                    <img
-                      src={antenne.logo}
-                      alt=""
-                      loading="lazy"
-                      decoding="async"
-                      className="max-h-full max-w-full object-contain"
-                    />
-                    <h3 className="sr-only">{antenne.title}</h3>
-                  </div>
-                  {/* Face arrière */}
-                  <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-card rounded-2xl p-8 border flex items-center justify-center text-center">
-                    <p className="text-muted-foreground text-sm leading-relaxed">{antenne.desc}</p>
-                  </div>
+                <div className={`h-1.5 ${espace.liseret}`} />
+                <div className={`flex h-48 items-center justify-center px-8 py-6 ${espace.fond}`}>
+                  <img
+                    src={espace.logo}
+                    alt={`Logo de l'espace ${espace.titre}`}
+                    loading="lazy"
+                    decoding="async"
+                    className="max-h-36 max-w-full object-contain"
+                  />
                 </div>
-              </div>
+                <div className="flex flex-1 flex-col gap-3 px-8 pb-8 pt-7">
+                  <h3 className="font-body text-xs font-semibold uppercase tracking-[0.18em] text-foreground">
+                    {espace.titre}
+                  </h3>
+                  <p className="flex-1 text-base leading-relaxed text-muted-foreground">{espace.description}</p>
+                  <Link
+                    to="/calendrier"
+                    className="inline-flex min-h-11 items-center gap-2 self-start text-sm font-semibold text-foreground transition-colors hover:text-primary"
+                  >
+                    Voir les prochains ateliers
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </Link>
+                </div>
+              </article>
             ))}
           </div>
         </div>
