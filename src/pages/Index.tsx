@@ -1,5 +1,5 @@
 import { useState, useEffect, FormEvent } from "react";
-import { Sparkles, Calendar, Heart, Users, X, CalendarPlus, Download, CheckCircle2, MessageCircle, Palette, Briefcase } from "lucide-react";
+import { Sparkles, Calendar, Heart, Users, X, CalendarPlus, Download, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import WorkshopCarousel from "@/components/WorkshopCarousel";
 import TestimonialsSection from "@/components/TestimonialsSection";
@@ -12,9 +12,11 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/hero-workshop-1920.webp";
 import heroImageSmall from "@/assets/hero-workshop-960.webp";
+import logoPapotages from "@/assets/espaces/papotages.webp";
+import logoCreatifs from "@/assets/espaces/creatifs.webp";
+import logoBusiness from "@/assets/espaces/business.webp";
 import type { Workshop } from "@/data/workshops";
 import { formatDateFr, formatTimeFr } from "@/data/workshops";
-import { ANTENNES_THEME } from "@/data/antennesTheme";
 import { googleCalendarUrl, downloadIcsFile } from "@/utils/calendarLinks";
 import { trackVisit } from "@/utils/trackVisit";
 import { usePublicAteliers } from "@/hooks/usePublicAteliers";
@@ -386,22 +388,19 @@ const Index = () => {
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
-                icon: MessageCircle,
+                logo: logoPapotages,
                 title: "Papotages",
                 desc: "Des rencontres informelles pour échanger, se confier et créer du lien autour d'un café.",
-                accent: ANTENNES_THEME.papotages.accent,
               },
               {
-                icon: Palette,
+                logo: logoCreatifs,
                 title: "Créatifs",
                 desc: "Peinture, bougie, macramé, poterie… des ateliers manuels pour se reconnecter à soi.",
-                accent: ANTENNES_THEME.creatifs.accent,
               },
               {
-                icon: Briefcase,
+                logo: logoBusiness,
                 title: "Business",
                 desc: "Entrepreneuriat, développement pro et perso : des ateliers pour avancer entourée.",
-                accent: ANTENNES_THEME.business.accent,
               },
             ].map((antenne, i) => (
               <div
@@ -411,14 +410,17 @@ const Index = () => {
               >
                 <div className={`relative h-full w-full transition-transform duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)] ${flippedAntenne === i ? "[transform:rotateY(180deg)]" : ""}`}>
                   {/* Face avant */}
-                  <div className="absolute inset-0 [backface-visibility:hidden] bg-card rounded-2xl p-8 border flex flex-col items-center justify-center gap-4">
-                    <div
-                      className="inline-flex items-center justify-center w-14 h-14 rounded-full"
-                      style={{ backgroundColor: `${antenne.accent}1A`, color: antenne.accent }}
-                    >
-                      <antenne.icon className="w-6 h-6" />
-                    </div>
-                    <h3 className="font-display text-xl font-semibold text-foreground">{antenne.title}</h3>
+                  <div className="absolute inset-0 [backface-visibility:hidden] bg-card rounded-2xl p-6 border flex items-center justify-center">
+                    {/* Logo de l'espace (charte graphique) : il contient déjà le nom,
+                        le titre reste présent pour les lecteurs d'écran et Google. */}
+                    <img
+                      src={antenne.logo}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      className="max-h-full max-w-full object-contain"
+                    />
+                    <h3 className="sr-only">{antenne.title}</h3>
                   </div>
                   {/* Face arrière */}
                   <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-card rounded-2xl p-8 border flex items-center justify-center text-center">
