@@ -12,7 +12,7 @@ Quand l'utilisateur demande ce qu'il reste à faire, lui rappeler en premier les
 ## Décisions prises
 
 - **Analytics** : Google Analytics 4 (mise en place reportée). Implique une vraie bannière cookie (Accepter / Refuser / Personnaliser), avec Google Consent Mode v2 : rien n'est chargé avant consentement.
-- **Domaine** : `lecocooningclub.fr` sans `www` (l'utilisateur n'a pas de préférence) ; rediriger `www` vers le domaine nu.
+- **Domaine** : le domaine principal configuré dans Vercel est `www.lecocooningclub.fr` (Vercel redirige déjà le domaine nu vers `www`). NE JAMAIS ajouter de redirection `www` ↔ domaine nu dans `vercel.json` : le 15/10 une règle `www` → nu a créé une boucle (ERR_TOO_MANY_REDIRECTS, site KO). Les URL canoniques / sitemap / og:image pointent vers `https://lecocooningclub.fr`, qui redirige proprement vers `www` : à aligner sur `www` lors d'un prochain passage SEO.
 
 ## Plan de mise en conformité (octobre 2026)
 
