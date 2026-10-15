@@ -358,7 +358,7 @@ const Ateliers = () => {
     }
 
     if (!form.antenne_id) {
-      toast.error("Choisis une antenne");
+      toast.error("Choisis un espace");
       setSaving(false);
       return;
     }
@@ -550,7 +550,7 @@ const Ateliers = () => {
         </button>
       </div>
 
-      {/* Onglets antennes */}
+      {/* Onglets espaces */}
       <div className="flex flex-wrap gap-2 mb-4 border-b pb-3">
         <button
           onClick={() => setFilterAntenne("toutes")}
@@ -560,7 +560,7 @@ const Ateliers = () => {
               : "bg-card border text-foreground hover:bg-muted"
           }`}
         >
-          Toutes
+          Tous
           <span className="ml-2 text-xs opacity-70">({countByAntenne("toutes")})</span>
         </button>
         {antennes.map(c => (
@@ -880,16 +880,16 @@ const Ateliers = () => {
                 <p className="text-xs text-muted-foreground mt-2">JPG, PNG, WebP. Max 5 Mo.</p>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5">Antenne *</label>
+                <label className="block text-sm font-medium mb-1.5">Espace *</label>
                 <select value={form.antenne_id} onChange={e => f("antenne_id", e.target.value)}
                   className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary">
-                  <option value="">— Choisir une antenne —</option>
+                  <option value="">— Choisir un espace —</option>
                   {antennes.map(c => (
                     <option key={c.id} value={c.id}>{c.nom}</option>
                   ))}
                 </select>
                 {antennes.length === 0 && (
-                  <p className="text-xs text-amber-600 mt-1">Aucune antenne en base. Crée-en une côté Supabase (table antennes) avant de continuer.</p>
+                  <p className="text-xs text-amber-600 mt-1">Aucun espace en base. Crée-en un côté Supabase (table antennes) avant de continuer.</p>
                 )}
               </div>
               <div>

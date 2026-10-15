@@ -197,7 +197,7 @@ const Index = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [confirmedWorkshop, setConfirmedWorkshop] = useState<Workshop | null>(null);
   // Sur mobile/tactile il n'y a pas de :hover : on permet aussi de retourner
-  // une antenne au tap, en plus du survol souris sur desktop.
+  // un espace au tap, en plus du survol souris sur desktop.
   const [flippedAntenne, setFlippedAntenne] = useState<number | null>(null);
 
   useEffect(() => {
@@ -321,7 +321,7 @@ const Index = () => {
               <span className="italic text-primary">connectez.</span>
             </h1>
             <p className="text-base md:text-lg text-muted-foreground max-w-md leading-relaxed">
-              Cocooning Club propose des ateliers autour de 3 antennes — Papotages, Créatifs et Business — 1 à 2 fois par mois dans une ambiance chaleureuse et bienveillante. Pas besoin d'être experte, juste d'avoir envie de déconnecter.
+              Cocooning Club propose des ateliers autour de 3 espaces — Papotages, Créatifs et Business — 1 à 2 fois par mois dans une ambiance chaleureuse et bienveillante. Pas besoin d'être experte, juste d'avoir envie de déconnecter.
             </p>
             <button
               onClick={() => openModal()}
@@ -374,14 +374,14 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Nos antennes */}
+      {/* Nos espaces */}
       <section className="py-24">
         <div className="container mx-auto px-6">
           <h2 className="text-3xl md:text-4xl font-display font-bold text-center text-foreground mb-4">
-            Nos antennes
+            Nos espaces
           </h2>
           <p className="text-center text-muted-foreground max-w-lg mx-auto mb-16">
-            Trois grandes antennes d'ateliers pour répondre à toutes vos envies du moment.
+            Trois grands espaces d'ateliers pour répondre à toutes vos envies du moment.
           </p>
           <div className="grid md:grid-cols-3 gap-8">
             {[
@@ -438,7 +438,7 @@ const Index = () => {
             Prochains ateliers
           </h2>
           <p className="text-center text-muted-foreground max-w-lg mx-auto mb-16">
-            Réservez votre place, quelle que soit l'antenne qui vous attire.
+            Réservez votre place, quel que soit l'espace qui vous attire.
           </p>
           {ateliers.length === 0 ? (
             <div className="text-center py-12 border rounded-2xl bg-card max-w-2xl mx-auto">
