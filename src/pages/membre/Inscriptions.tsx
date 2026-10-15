@@ -191,7 +191,7 @@ const Inscriptions = () => {
           {visible.map(ins => ins.atelier && (
             <li key={ins.id} className="bg-card border rounded-2xl p-4 flex items-start gap-4 flex-wrap sm:flex-nowrap">
               {ins.atelier.url_image ? (
-                <img src={ins.atelier.url_image} alt="" className="w-20 h-20 rounded-xl object-cover shrink-0" />
+                <img src={ins.atelier.url_image} alt="" loading="lazy" decoding="async" className="w-20 h-20 rounded-xl object-cover shrink-0" />
               ) : (
                 <div className="w-20 h-20 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                   <CalendarDays className="w-7 h-7 text-primary" />

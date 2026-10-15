@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import RoleGuard from "@/components/RoleGuard";
+import RouteSeo from "@/components/RouteSeo";
 import Index from "./pages/Index.tsx";
 import Calendrier from "./pages/Calendrier.tsx";
 import Confidentialite from "./pages/Confidentialite.tsx";
@@ -34,9 +35,32 @@ import MembreBoiteAIdees from "./pages/membre/BoiteAIdees.tsx";
 
 const queryClient = new QueryClient();
 
+// Remonte en haut à chaque changement de page, sauf si l'URL vise une ancre
+// (ex. /#contact depuis le footer du calendrier) : on fait alors défiler
+// jusqu'à la section. La section peut ne pas encore exister au premier rendu
+// (contenu chargé depuis Supabase), d'où quelques nouvelles tentatives.
 const ScrollToTop = () => {
-  const { pathname } = useLocation();
-  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  const { pathname, hash } = useLocation();
+  useEffect(() => {
+    // Les fragments de Supabase (#access_token=...) ne sont pas des ancres.
+    const id = hash.length > 1 && !hash.includes("=") ? decodeURIComponent(hash.slice(1)) : "";
+    if (!id) {
+      window.scrollTo(0, 0);
+      return;
+    }
+    let tries = 0;
+    let timer: number | undefined;
+    const scrollToAnchor = () => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth" });
+      } else if (tries++ < 20) {
+        timer = window.setTimeout(scrollToAnchor, 100);
+      }
+    };
+    scrollToAnchor();
+    return () => window.clearTimeout(timer);
+  }, [pathname, hash]);
   return null;
 };
 
@@ -62,6 +86,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <ScrollToTop />
+          <RouteSeo />
           <RecoveryRedirect />
           <Routes>
             {/* Routes publiques */}

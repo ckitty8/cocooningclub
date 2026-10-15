@@ -6,6 +6,7 @@ import { withTimeout } from "@/utils/withTimeout";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { searchAdresse, type AdresseSuggestion } from "@/utils/adresseAutocomplete";
 import { toast } from "sonner";
+import { compressImage } from "@/utils/compressImage";
 import { Plus, Pencil, Trash2, Copy, X, MapPin, Clock, Users, Euro, Search, UserCheck, UserX, Image as ImageIcon, CircleDashed } from "lucide-react";
 
 type Statut = "brouillon" | "publie" | "complet" | "annule" | "termine";
@@ -505,12 +506,15 @@ const Ateliers = () => {
   };
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    let file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
       toast.error("Seules les images sont acceptées");
       return;
     }
+    // Les photos de téléphone font souvent 3 à 8 Mo : on les réduit avant
+    // la vérification de taille et l'envoi.
+    file = await compressImage(file, { maxSize: 1600 });
     if (file.size > 5 * 1024 * 1024) {
       toast.error("L'image doit faire moins de 5 Mo");
       return;
@@ -631,7 +635,7 @@ const Ateliers = () => {
             return (
               <div key={a.id} className="bg-card rounded-2xl border overflow-hidden flex flex-col">
                 {a.url_image && (
-                  <img src={a.url_image} alt={a.titre} className="w-full aspect-[16/10] object-contain bg-muted/30" />
+                  <img src={a.url_image} alt={a.titre} loading="lazy" decoding="async" className="w-full aspect-[16/10] object-contain bg-muted/30" />
                 )}
                 <div className="p-5 flex flex-col flex-1">
                 <div className="flex items-start justify-between mb-3">
@@ -855,7 +859,7 @@ const Ateliers = () => {
                 <label className="block text-sm font-medium mb-1.5">Photo de présentation</label>
                 <div className="flex items-start gap-3">
                   {form.url_image ? (
-                    <img src={form.url_image} alt="" className="w-24 h-24 rounded-xl object-cover border" />
+                    <img src={form.url_image} alt="Aperçu de l'image de l'atelier" className="w-24 h-24 rounded-xl object-cover border" />
                   ) : (
                     <div className="w-24 h-24 rounded-xl border-2 border-dashed flex items-center justify-center text-muted-foreground">
                       <ImageIcon className="w-6 h-6" />

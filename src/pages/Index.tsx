@@ -10,7 +10,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import heroImage from "@/assets/hero-workshop.jpg";
+import heroImage from "@/assets/hero-workshop-1920.webp";
+import heroImageSmall from "@/assets/hero-workshop-960.webp";
 import type { Workshop } from "@/data/workshops";
 import { formatDateFr, formatTimeFr } from "@/data/workshops";
 import { ANTENNES_THEME } from "@/data/antennesTheme";
@@ -277,7 +278,7 @@ const Index = () => {
             Espace Membre
           </Link>
 
-          <img src="/favicon.png" alt="Logo Cocooning Club" className="mx-auto mb-2 w-16 md:w-20" />
+          <img src="/logo-160.webp" alt="Logo Cocooning Club" width={80} height={80} className="mx-auto mb-2 w-16 md:w-20 h-auto" />
           <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
             <h2 className="font-brand text-3xl md:text-5xl font-bold text-foreground tracking-[0.08em] uppercase leading-tight text-center hover:opacity-80 transition-opacity">
               Cocooning Club
@@ -319,7 +320,16 @@ const Index = () => {
           </div>
           <div className="relative">
             <div className="rounded-3xl overflow-hidden shadow-2xl">
-              <img src={heroImage} alt="Table d'atelier créatif avec bougies, peinture et matériaux" className="w-full h-[280px] sm:h-[380px] md:h-[500px] object-cover" />
+              <img
+                src={heroImage}
+                srcSet={`${heroImageSmall} 960w, ${heroImage} 1920w`}
+                sizes="(min-width: 768px) 50vw, 100vw"
+                width={1920}
+                height={1080}
+                // React 18 ne connaît pas encore fetchPriority : on passe l'attribut HTML brut.
+                {...{ fetchpriority: "high" }}
+                alt="Table d'atelier créatif avec bougies allumées, palette d'aquarelle, ciseaux et pelote de laine"
+                className="w-full h-[280px] sm:h-[380px] md:h-[500px] object-cover" />
             </div>
           </div>
         </div>

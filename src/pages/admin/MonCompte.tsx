@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { logAction } from "@/utils/logAction";
 import { toast } from "sonner";
+import { compressImage } from "@/utils/compressImage";
 import {
   User, Mail, Image as ImageIcon, Save, Upload, Trash2, Loader2, Info, AlertCircle,
   Phone, Calendar, CalendarRange,
@@ -120,13 +121,16 @@ const MonCompte = () => {
 
   // ── Upload avatar ──
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    let file = e.target.files?.[0];
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
       toast.error("Seules les images sont acceptées");
       return;
     }
+    // Les photos de téléphone font souvent 3 à 8 Mo : on les réduit avant
+    // la vérification de taille et l'envoi.
+    file = await compressImage(file, { maxSize: 512 });
     if (file.size > MAX_AVATAR_MB * 1024 * 1024) {
       toast.error(`L'image doit faire moins de ${MAX_AVATAR_MB} Mo`);
       return;
@@ -210,7 +214,7 @@ const MonCompte = () => {
               {profile.url_avatar ? (
                 <img
                   src={profile.url_avatar}
-                  alt="Avatar"
+                  alt="Ma photo de profil"
                   className="w-24 h-24 rounded-full object-cover border-2 border-muted"
                   onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
                 />

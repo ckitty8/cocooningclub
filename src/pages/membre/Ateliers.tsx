@@ -132,7 +132,7 @@ const Ateliers = () => {
             return (
               <div key={a.id} className="bg-card border rounded-2xl overflow-hidden flex flex-col hover:shadow-md transition-shadow">
                 {a.url_image ? (
-                  <img src={a.url_image} alt={a.titre} className="w-full aspect-[16/10] object-contain bg-muted/30" />
+                  <img src={a.url_image} alt={a.titre} loading="lazy" decoding="async" className="w-full aspect-[16/10] object-contain bg-muted/30" />
                 ) : (
                   <div className="w-full aspect-[16/10] bg-gradient-to-br from-primary/15 to-amber-500/15 flex items-center justify-center">
                     <CalendarDays className="w-10 h-10 text-primary/50" />
@@ -206,7 +206,7 @@ const Ateliers = () => {
               </div>
 
               {popin.url_image && (
-                <img src={popin.url_image} alt="" className="w-full aspect-[16/10] object-contain rounded-xl mb-4 bg-muted/30" />
+                <img src={popin.url_image} alt={popin.titre} className="w-full aspect-[16/10] object-contain rounded-xl mb-4 bg-muted/30" />
               )}
 
               {popin.description && (

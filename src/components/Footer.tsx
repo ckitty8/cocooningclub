@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Heart, Instagram, Mail } from "lucide-react";
 
 const Footer = () => {
@@ -25,16 +26,19 @@ const Footer = () => {
             <h4 className="text-xs font-semibold tracking-[0.25em] uppercase text-foreground">Navigation</h4>
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li>
-                <a href="#apropos" className="hover:text-primary transition-colors">À propos</a>
+                <Link to="/#apropos" className="hover:text-primary transition-colors">À propos</Link>
               </li>
               <li>
-                <a href="#ateliers" className="hover:text-primary transition-colors">Nos Ateliers</a>
+                <Link to="/#ateliers" className="hover:text-primary transition-colors">Nos Ateliers</Link>
               </li>
               <li>
-                <a href="#contact" className="hover:text-primary transition-colors">Contact</a>
+                <Link to="/calendrier" className="hover:text-primary transition-colors">Calendrier</Link>
               </li>
               <li>
-                <a href="/login" className="hover:text-primary transition-colors">Espace Membre</a>
+                <Link to="/#contact" className="hover:text-primary transition-colors">Contact</Link>
+              </li>
+              <li>
+                <Link to="/login" className="hover:text-primary transition-colors">Espace Membre</Link>
               </li>
             </ul>
           </div>
@@ -72,9 +76,9 @@ const Footer = () => {
         <div className="border-t pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <p>© 2026 Cocooning Club · Tous droits réservés</p>
           <div className="flex items-center gap-4">
-            <a href="/confidentialite" className="hover:text-primary transition-colors">
+            <Link to="/confidentialite" className="hover:text-primary transition-colors">
               Paramètres de confidentialité
-            </a>
+            </Link>
             <p>Gagny · Chelles · Le Raincy</p>
           </div>
         </div>

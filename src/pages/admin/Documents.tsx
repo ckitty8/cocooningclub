@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
 import { withTimeout } from "@/utils/withTimeout";
 import { toast } from "sonner";
+import { compressImage } from "@/utils/compressImage";
 import { Plus, Pencil, Trash2, X, ExternalLink, FileText, BookOpen, Newspaper, Image as ImageIcon, type LucideIcon } from "lucide-react";
 
 type DocType = "magazine" | "guide" | "lien_externe";
@@ -86,12 +87,15 @@ const Documents = () => {
   };
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
+    let f = e.target.files?.[0];
     if (!f) return;
     if (!f.type.startsWith("image/")) {
       toast.error("Seules les images sont acceptées");
       return;
     }
+    // Les photos de téléphone font souvent 3 à 8 Mo : on les réduit avant
+    // la vérification de taille et l'envoi.
+    f = await compressImage(f, { maxSize: 1600 });
     if (f.size > 5 * 1024 * 1024) {
       toast.error("L'image doit faire moins de 5 Mo");
       return;
@@ -229,7 +233,7 @@ const Documents = () => {
               return (
                 <div key={d.id} className="flex items-center gap-4 px-6 py-4 hover:bg-muted/20 transition-colors">
                   {d.url_image ? (
-                    <img src={d.url_image} alt="" className="w-12 h-12 rounded-xl object-contain bg-muted/30 shrink-0 border" />
+                    <img src={d.url_image} alt="" loading="lazy" decoding="async" className="w-12 h-12 rounded-xl object-contain bg-muted/30 shrink-0 border" />
                   ) : (
                     <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                       <Icon className="w-5 h-5 text-primary" />
@@ -282,7 +286,7 @@ const Documents = () => {
                 <label className="block text-sm font-medium mb-1.5">Photo de présentation</label>
                 <div className="flex items-start gap-3">
                   {form.url_image ? (
-                    <img src={form.url_image} alt="" className="w-24 h-24 rounded-xl object-cover border" />
+                    <img src={form.url_image} alt="Aperçu de l'image du document" className="w-24 h-24 rounded-xl object-cover border" />
                   ) : (
                     <div className="w-24 h-24 rounded-xl border-2 border-dashed flex items-center justify-center text-muted-foreground">
                       <ImageIcon className="w-6 h-6" />

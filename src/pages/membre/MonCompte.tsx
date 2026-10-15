@@ -3,6 +3,7 @@ import MembreLayout from "@/components/membre/MembreLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { compressImage } from "@/utils/compressImage";
 import {
   User, Mail, Phone, Image as ImageIcon, Save, Upload, Trash2, Loader2,
   Info, Lock, CalendarRange, Receipt, KeyRound, Cake,
@@ -128,12 +129,15 @@ const MonCompte = () => {
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    let file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
       toast.error("Seules les images sont acceptées");
       return;
     }
+    // Les photos de téléphone font souvent 3 à 8 Mo : on les réduit avant
+    // la vérification de taille et l'envoi.
+    file = await compressImage(file, { maxSize: 512 });
     if (file.size > MAX_AVATAR_MB * 1024 * 1024) {
       toast.error(`L'image doit faire moins de ${MAX_AVATAR_MB} Mo`);
       return;
@@ -222,7 +226,7 @@ const MonCompte = () => {
           <div className="flex items-center gap-5 flex-wrap">
             <div className="relative">
               {profile.url_avatar ? (
-                <img src={profile.url_avatar} alt="Avatar" className="w-24 h-24 rounded-full object-cover border-2 border-muted" onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                <img src={profile.url_avatar} alt="Ma photo de profil" className="w-24 h-24 rounded-full object-cover border-2 border-muted" onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
               ) : (
                 <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center text-primary text-3xl font-bold">{initials}</div>
               )}

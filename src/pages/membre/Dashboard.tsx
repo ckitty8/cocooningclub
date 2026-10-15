@@ -200,7 +200,7 @@ const Dashboard = () => {
               {upcomingMine.map(ins => ins.atelier && (
                 <li key={ins.id} className="flex items-start gap-4 p-3 rounded-xl border hover:bg-muted/40 transition-colors">
                   {ins.atelier.url_image ? (
-                    <img src={ins.atelier.url_image} alt="" className="w-16 h-16 rounded-lg object-cover shrink-0" />
+                    <img src={ins.atelier.url_image} alt="" loading="lazy" decoding="async" className="w-16 h-16 rounded-lg object-cover shrink-0" />
                   ) : (
                     <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                       <CalendarDays className="w-6 h-6 text-primary" />

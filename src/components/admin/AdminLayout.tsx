@@ -142,7 +142,7 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
           {profile?.url_avatar ? (
             <img
               src={profile.url_avatar}
-              alt="Avatar"
+              alt="Ma photo de profil"
               className="w-8 h-8 rounded-full object-cover shrink-0"
               onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
             />

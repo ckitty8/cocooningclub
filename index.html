@@ -3,20 +3,52 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cocooning Club</title>
-    <meta name="description" content="Cocooning club - on se parle, on papote, et les connexions se font toutes seules" />
+    <!-- Valeurs par défaut (page d'accueil) : chaque page les remplace via src/components/RouteSeo.tsx -->
+    <title>Cocooning Club · Ateliers à Gagny, Chelles et Le Raincy</title>
+    <meta name="description" content="Cocooning Club propose des ateliers Papotages, Créatifs et Business à Gagny, Chelles et Le Raincy, dans une ambiance douce et bienveillante. Découvrez les prochains ateliers et pré-inscrivez-vous." />
     <meta name="author" content="Cocooning Club" />
+    <meta name="theme-color" content="#E8A87C" />
+    <link rel="canonical" href="https://lecocooningclub.fr/" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="apple-touch-icon" href="/favicon.png" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.json" />
 
-    <!-- Open Graph -->
-    <meta property="og:title" content="Cocooning Club" />
-    <meta property="og:description" content="on se parle, on papote, et les connexions se font toutes seules" />
+    <!-- Open Graph (Facebook, WhatsApp, LinkedIn…) -->
+    <meta property="og:site_name" content="Cocooning Club" />
+    <meta property="og:locale" content="fr_FR" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="/favicon.png" />
+    <meta property="og:url" content="https://lecocooningclub.fr/" />
+    <meta property="og:title" content="Cocooning Club · Ateliers à Gagny, Chelles et Le Raincy" />
+    <meta property="og:description" content="On se parle, on papote, et les connexions se font toutes seules. Ateliers à Gagny, Chelles et Le Raincy." />
+    <meta property="og:image" content="https://lecocooningclub.fr/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Cocooning Club : bougies, aquarelle et laine sur une table d'atelier" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Cocooning Club · Ateliers à Gagny, Chelles et Le Raincy" />
+    <meta name="twitter:description" content="On se parle, on papote, et les connexions se font toutes seules. Ateliers à Gagny, Chelles et Le Raincy." />
+    <meta name="twitter:image" content="https://lecocooningclub.fr/og-image.jpg" />
+
+    <!-- Données structurées (Google) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Cocooning Club",
+        "url": "https://lecocooningclub.fr/",
+        "logo": "https://lecocooningclub.fr/icon-512.png",
+        "email": "le.cocooning.club@gmail.com",
+        "description": "Ateliers Papotages, Créatifs et Business à Gagny, Chelles et Le Raincy.",
+        "areaServed": ["Gagny", "Chelles", "Le Raincy"],
+        "sameAs": ["https://www.instagram.com/cocooningclub"]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
