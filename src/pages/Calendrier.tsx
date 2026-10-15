@@ -12,6 +12,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { googleCalendarUrl, downloadIcsFile } from "@/utils/calendarLinks";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { trackVisit } from "@/utils/trackVisit";
+import { useAntiSpam } from "@/hooks/useAntiSpam";
+import { messageErreurServeur } from "@/utils/messageErreurServeur";
 import { usePublicAteliers } from "@/hooks/usePublicAteliers";
 
 const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription";
@@ -23,7 +25,8 @@ const PIERRE_ORACLE = "Atelier Créatif — Pierre & Oracle";
 const inscriptionSchema = z.object({
   name: z.string().trim().min(2, "Le nom doit contenir au moins 2 caractères.").max(100),
   email: z.string().trim().email("Veuillez entrer un email valide.").max(255),
-  phone: z.string().trim().max(20).optional().or(z.literal("")),
+  // Même règle que private.telephone_valide() côté base.
+  phone: z.string().trim().regex(/^[0-9 +().-]{6,20}$/, "Numéro de téléphone invalide.").optional().or(z.literal("")),
   workshop: z.string().min(1, "Veuillez choisir un atelier."),
   birthdate: z.string().optional(),
   cgu: z.boolean().refine(v => v, "Merci d'accepter les CGU et la politique de confidentialité."),
@@ -68,8 +71,10 @@ const Calendrier = () => {
   });
 
   const selectedWorkshop = watch("workshop");
+  const antiSpam = useAntiSpam();
 
   const openReserve = (ws: Workshop) => {
+    antiSpam.reset();
     reset({ name: "", email: "", phone: "", workshop: ws.titre, birthdate: "", cgu: false });
     setConfirmedWorkshop(null);
     setReserveOpen(true);
@@ -85,7 +90,8 @@ const Calendrier = () => {
     // (utilisateur_id) pour qu'elle apparaisse correctement dans son
     // espace membre et avec le bon rôle côté admin. On garde quand même
     // les champs invité au cas où le formulaire a été modifié.
-    const { error } = await supabase.from("inscriptions").insert({
+    // Robot repéré : on simule une pré-inscription réussie sans rien enregistrer.
+    const { error } = antiSpam.isBot() ? { error: null } : await supabase.from("inscriptions").insert({
       atelier_id: atelier?.id ?? null,
       utilisateur_id: profile?.id ?? null,
       prenom_invite: prenom,
@@ -96,7 +102,7 @@ const Calendrier = () => {
       ...(data.phone ? { telephone_invite: data.phone } : {}),
       ...(data.birthdate ? { date_naissance: data.birthdate } : {}),
     });
-    if (error) { toast.error("Une erreur est survenue. Veuillez réessayer."); return; }
+    if (error) { toast.error(messageErreurServeur(error)); return; }
     if (atelier) {
       setConfirmedWorkshop(atelier);
     } else {
@@ -438,7 +444,8 @@ const Calendrier = () => {
               <>
                 <h3 className="font-display text-2xl font-bold text-foreground mb-2">Pré-inscription</h3>
                 <p className="text-muted-foreground text-sm mb-6">Votre demande sera validée par l'équipe et vous serez notifié(e) par email ou WhatsApp.</p>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={handleSubmit(onSubmit)} className="relative space-y-4">
+                  {antiSpam.honeypot}
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-1">Nom complet</label>
                     <input {...register("name")} className="w-full border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Votre nom" />

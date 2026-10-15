@@ -18,6 +18,8 @@ import { ANTENNES_THEME } from "@/data/antennesTheme";
 import { googleCalendarUrl, downloadIcsFile } from "@/utils/calendarLinks";
 import { trackVisit } from "@/utils/trackVisit";
 import { usePublicAteliers } from "@/hooks/usePublicAteliers";
+import { useAntiSpam } from "@/hooks/useAntiSpam";
+import { messageErreurServeur } from "@/utils/messageErreurServeur";
 
 const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, description_courte, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription";
 
@@ -26,7 +28,8 @@ const PIERRE_ORACLE = "Atelier Créatif — Pierre & Oracle";
 const inscriptionSchema = z.object({
   name: z.string().trim().min(2, "Le nom doit contenir au moins 2 caractères.").max(100),
   email: z.string().trim().email("Veuillez entrer un email valide.").max(255),
-  phone: z.string().trim().max(20).optional().or(z.literal("")),
+  // Même règle que private.telephone_valide() côté base.
+  phone: z.string().trim().regex(/^[0-9 +().-]{6,20}$/, "Numéro de téléphone invalide.").optional().or(z.literal("")),
   workshop: z.string().min(1, "Veuillez choisir un atelier."),
   birthdate: z.string().optional(),
   cgu: z.boolean().refine(v => v, "Merci d'accepter les CGU et la politique de confidentialité."),
@@ -52,6 +55,7 @@ const ContactForm = () => {
   const [values, setValues] = useState<Record<string, string>>({});
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const antiSpam = useAntiSpam();
   const [error, setError] = useState("");
   const [loadingFields, setLoadingFields] = useState(true);
 
@@ -96,14 +100,17 @@ const ContactForm = () => {
     const emailField = fields.find(f => f.field_type === "email");
     const telField = fields.find(f => f.field_type === "tel");
 
-    const { error: dbError } = await supabase.from("contact_messages").insert({
-      email: emailField ? values[emailField.id] || null : null,
-      telephone: telField ? values[telField.id] || null : null,
-      reponses,
-    });
+    // Robot repéré : on simule un envoi réussi sans rien enregistrer.
+    const { error: dbError } = antiSpam.isBot()
+      ? { error: null }
+      : await supabase.from("contact_messages").insert({
+          email: emailField ? values[emailField.id] || null : null,
+          telephone: telField ? values[telField.id] || null : null,
+          reponses,
+        });
 
     if (dbError) {
-      setError("Une erreur est survenue. Veuillez réessayer.");
+      setError(messageErreurServeur(dbError));
     } else {
       setSent(true);
     }
@@ -132,7 +139,8 @@ const ContactForm = () => {
   );
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="relative space-y-4">
+      {antiSpam.honeypot}
       {fields.map(field => (
         <div key={field.id}>
           <label className="block text-sm font-medium text-foreground mb-1.5">
@@ -225,8 +233,10 @@ const Index = () => {
   });
 
   const selectedWorkshop = watch("workshop");
+  const inscriptionAntiSpam = useAntiSpam();
 
   const openModal = (workshopTitle?: string) => {
+    inscriptionAntiSpam.reset();
     reset({ name: "", email: "", phone: "", workshop: workshopTitle || "", birthdate: "", cgu: false });
     setConfirmedWorkshop(null);
     setModalOpen(true);
@@ -238,7 +248,8 @@ const Index = () => {
     const prenom = nameParts[0] || "";
     const nom = nameParts.slice(1).join(" ") || prenom;
 
-    const { error } = await supabase.from("inscriptions").insert({
+    // Robot repéré : on simule une pré-inscription réussie sans rien enregistrer.
+    const { error } = inscriptionAntiSpam.isBot() ? { error: null } : await supabase.from("inscriptions").insert({
       atelier_id: atelier?.id ?? null,
       prenom_invite: prenom,
       nom_invite: nom,
@@ -250,7 +261,7 @@ const Index = () => {
     });
 
     if (error) {
-      toast.error("Une erreur est survenue. Veuillez réessayer.");
+      toast.error(messageErreurServeur(error));
       return;
     }
 
@@ -538,7 +549,8 @@ const Index = () => {
                 <h3 className="font-display text-2xl font-bold text-foreground mb-1">Pré-inscription</h3>
                 <p className="text-sm text-muted-foreground mb-6">Votre demande sera validée par l'équipe et vous serez notifié(e) par email ou WhatsApp.</p>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={handleSubmit(onSubmit)} className="relative space-y-4">
+                  {inscriptionAntiSpam.honeypot}
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-1.5">Nom complet</label>
                     <input
