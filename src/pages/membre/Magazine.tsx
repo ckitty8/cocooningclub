@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import MembreLayout from "@/components/membre/MembreLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { messageErreurServeur } from "@/utils/messageErreurServeur";
 import {
   Newspaper, BookOpen, ExternalLink, Loader2, X, Download, type LucideIcon,
 } from "lucide-react";
@@ -48,7 +49,7 @@ const Magazine = () => {
         .select("id, titre, description, type, fichier_chemin, lien_externe, url_image, acces, created_at")
         .order("created_at", { ascending: false });
 
-      if (error) toast.error(`Erreur : ${error.message}`);
+      if (error) toast.error(messageErreurServeur(error));
       else setItems((data ?? []) as Doc[]);
       setLoading(false);
     };

@@ -3,6 +3,7 @@ import MembreLayout from "@/components/membre/MembreLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { messageErreurServeur } from "@/utils/messageErreurServeur";
 import {
   Lightbulb, Plus, X, Loader2, Check, XCircle, MessageCircle, Trash2, Pencil, Sparkles,
 } from "lucide-react";
@@ -128,7 +129,7 @@ const BoiteAIdees = () => {
       });
       if (error) {
         console.error(error);
-        toast.error(`Erreur : ${error.message}`);
+        toast.error(messageErreurServeur(error));
       } else {
         toast.success("Idée envoyée ✨");
         fetchAll();

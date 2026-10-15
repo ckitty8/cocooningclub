@@ -9,18 +9,28 @@ import type { Profile } from "@/contexts/AuthContext";
 // Seul atelier qui demande la date de naissance (thème astrologique).
 export const ATELIER_AVEC_DATE_NAISSANCE = "Atelier Créatif — Pierre & Oracle";
 
-export const preInscriptionSchema = z.object({
-  name: z.string().trim().min(2, "Le nom doit contenir au moins 2 caractères.").max(100),
-  email: z.string().trim().email("Veuillez entrer un email valide.").max(255),
-  // Même règle que private.telephone_valide() côté base.
-  phone: z.string().trim().regex(/^[0-9 +().-]{6,20}$/, "Numéro de téléphone invalide.").optional().or(z.literal("")),
-  workshop: z.string().min(1, "Veuillez choisir un atelier."),
-  birthdate: z.string().optional(),
-  cgu: z.boolean().refine(v => v, "Merci d'accepter les CGU et la politique de confidentialité."),
-}).refine(d => d.workshop !== ATELIER_AVEC_DATE_NAISSANCE || !!d.birthdate?.trim(), {
-  message: "La date de naissance est requise pour cet atelier.",
-  path: ["birthdate"],
-});
+const schemaAvecIdentite = (name: z.ZodString, email: z.ZodString) =>
+  z.object({
+    name,
+    email,
+    // Même règle que private.telephone_valide() côté base.
+    phone: z.string().trim().regex(/^[0-9 +().-]{6,20}$/, "Numéro de téléphone invalide.").optional().or(z.literal("")),
+    workshop: z.string().min(1, "Veuillez choisir un atelier."),
+    birthdate: z.string().optional(),
+    cgu: z.boolean().refine(v => v, "Merci d'accepter les CGU et la politique de confidentialité."),
+  }).refine(d => d.workshop !== ATELIER_AVEC_DATE_NAISSANCE || !!d.birthdate?.trim(), {
+    message: "La date de naissance est requise pour cet atelier.",
+    path: ["birthdate"],
+  });
+
+/** Visiteur : nom et email obligatoires. */
+export const preInscriptionSchema = schemaAvecIdentite(
+  z.string().trim().min(2, "Le nom doit contenir au moins 2 caractères.").max(100),
+  z.string().trim().email("Veuillez entrer un email valide.").max(255),
+);
+
+/** Membre connecté : l'identité vient du compte, les champs ne sont qu'affichés. */
+export const preInscriptionMembreSchema = schemaAvecIdentite(z.string(), z.string());
 
 export type PreInscriptionData = z.infer<typeof preInscriptionSchema>;
 

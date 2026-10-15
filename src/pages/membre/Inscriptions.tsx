@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { toast } from "sonner";
+import { messageErreurServeur } from "@/utils/messageErreurServeur";
 import {
   CalendarDays, Clock, MapPin, Loader2, Ticket, X,
   CheckCircle2, AlertCircle, ExternalLink, Star, MessageSquare,
@@ -75,7 +76,7 @@ const Inscriptions = () => {
     const { data, error } = inscRes;
 
     if (error) {
-      toast.error(`Erreur : ${error.message}`);
+      toast.error(messageErreurServeur(error));
       setLoading(false);
       return;
     }
@@ -100,7 +101,7 @@ const Inscriptions = () => {
       .update({ statut: "annule", annule_le: new Date().toISOString() })
       .eq("id", insId);
     if (error) {
-      toast.error(`Erreur : ${error.message}`);
+      toast.error(messageErreurServeur(error));
     } else {
       toast.success("Inscription annulée.");
       await fetchInscriptions();
@@ -123,7 +124,7 @@ const Inscriptions = () => {
       moderation: "en_attente",
     });
     if (error) {
-      toast.error(`Erreur : ${error.message}`, { duration: 8000 });
+      toast.error(messageErreurServeur(error), { duration: 8000 });
     } else {
       toast.success("Merci ! Ton avis sera publié après modération.");
       setAvisDeposes(prev => new Set(prev).add(avisModal.id));

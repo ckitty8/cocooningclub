@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { TablesUpdate } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { messageErreurServeur } from "@/utils/messageErreurServeur";
 import { compressImage } from "@/utils/compressImage";
 import {
   User, Mail, Phone, Image as ImageIcon, Save, Upload, Trash2, Loader2,
@@ -117,7 +118,7 @@ const MonCompte = () => {
 
     const { error } = await supabase.from("utilisateurs").update(payload).eq("id", profile.id);
     if (error) {
-      toast.error(`Erreur : ${error.message}`, { duration: 8000 });
+      toast.error(messageErreurServeur(error), { duration: 8000 });
       setSaving(false);
       return;
     }
@@ -151,7 +152,7 @@ const MonCompte = () => {
       contentType: file.type,
     });
     if (upErr) {
-      toast.error(`Erreur upload : ${upErr.message}`, { duration: 8000 });
+      toast.error(messageErreurServeur(upErr), { duration: 8000 });
       setUploadingAvatar(false);
       return;
     }
@@ -159,7 +160,7 @@ const MonCompte = () => {
     const url = `${urlData.publicUrl}?v=${Date.now()}`;
     const { error: updErr } = await supabase.from("utilisateurs").update({ url_avatar: url }).eq("id", profile.id);
     if (updErr) {
-      toast.error(`Erreur : ${updErr.message}`);
+      toast.error(messageErreurServeur(updErr));
     } else {
       toast.success("Avatar mis à jour ✨");
       await refreshProfile();
@@ -172,7 +173,7 @@ const MonCompte = () => {
     if (!profile.url_avatar) return;
     if (!confirm("Supprimer votre avatar ?")) return;
     const { error } = await supabase.from("utilisateurs").update({ url_avatar: null }).eq("id", profile.id);
-    if (error) toast.error(`Erreur : ${error.message}`);
+    if (error) toast.error(messageErreurServeur(error));
     else { toast.success("Avatar supprimé"); await refreshProfile(); }
   };
 
@@ -188,6 +189,7 @@ const MonCompte = () => {
     setPwdSaving(true);
     const { error } = await supabase.auth.updateUser({ password: pwd.next });
     if (error) {
+      // Erreur d'authentification (mot de passe trop faible, identique…) : message utile.
       toast.error(`Erreur : ${error.message}`);
     } else {
       toast.success("Mot de passe mis à jour");

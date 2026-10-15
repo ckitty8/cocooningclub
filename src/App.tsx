@@ -31,6 +31,15 @@ import MembreMonCompte from "./pages/membre/MonCompte.tsx";
 import MembreBoiteAIdees from "./pages/membre/BoiteAIdees.tsx";
 
 
+// Une ancre mal encodée (ex. « #100% ») ne doit pas faire planter la page.
+const decoderAncre = (ancre: string) => {
+  try {
+    return decodeURIComponent(ancre);
+  } catch {
+    return ancre;
+  }
+};
+
 // Remonte en haut à chaque changement de page, sauf si l'URL vise une ancre
 // (ex. /#contact depuis le footer du calendrier) : on fait alors défiler
 // jusqu'à la section. La section peut ne pas encore exister au premier rendu
@@ -39,7 +48,7 @@ const ScrollToTop = () => {
   const { pathname, hash } = useLocation();
   useEffect(() => {
     // Les fragments de Supabase (#access_token=...) ne sont pas des ancres.
-    const id = hash.length > 1 && !hash.includes("=") ? decodeURIComponent(hash.slice(1)) : "";
+    const id = hash.length > 1 && !hash.includes("=") ? decoderAncre(hash.slice(1)) : "";
     if (!id) {
       window.scrollTo(0, 0);
       return;

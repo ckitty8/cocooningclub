@@ -1,33 +1,20 @@
 import { useState, useEffect, FormEvent } from "react";
-import { Sparkles, Heart, Users, X, CalendarPlus, Download, CheckCircle2 } from "lucide-react";
+import { Sparkles, Heart, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import WorkshopCarousel from "@/components/WorkshopCarousel";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import JournalSection from "@/components/JournalSection";
 import Footer from "@/components/Footer";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
+import PreInscriptionModal from "@/components/PreInscriptionModal";
 import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/hero-workshop-1920.webp";
 import heroImageSmall from "@/assets/hero-workshop-960.webp";
 import logoPapotages from "@/assets/espaces/papotages.webp";
 import logoCreatifs from "@/assets/espaces/creatifs.webp";
 import logoBusiness from "@/assets/espaces/business.webp";
-import type { Workshop } from "@/data/workshops";
-import { formatDateFr, formatTimeFr } from "@/data/workshops";
-import { googleCalendarUrl, downloadIcsFile } from "@/utils/calendarLinks";
 import { trackVisit } from "@/utils/trackVisit";
 import { usePublicAteliers } from "@/hooks/usePublicAteliers";
 import { useAntiSpam } from "@/hooks/useAntiSpam";
-import { useAuth } from "@/contexts/AuthContext";
-import {
-  ATELIER_AVEC_DATE_NAISSANCE,
-  envoyerPreInscription,
-  preInscriptionSchema,
-  valeursInitiales,
-  type PreInscriptionData,
-} from "@/lib/preInscription";
 import { messageErreurServeur } from "@/utils/messageErreurServeur";
 
 const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, description_courte, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription";
@@ -185,11 +172,11 @@ const ContactForm = () => {
 };
 
 const Index = () => {
-  const { profile } = useAuth();
   const { ateliers, setAteliers, loading: ateliersLoading, error: ateliersError, reload: reloadAteliers } =
     usePublicAteliers(ATELIERS_COLUMNS);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [confirmedWorkshop, setConfirmedWorkshop] = useState<Workshop | null>(null);
+  // Titre de l'atelier présélectionné dans la fenêtre de pré-inscription
+  // ("" = aucun), ou null quand la fenêtre est fermée.
+  const [preInscription, setPreInscription] = useState<string | null>(null);
   // Sur mobile/tactile il n'y a pas de :hover : on permet aussi de retourner
   // un espace au tap, en plus du survol souris sur desktop.
   const [flippedAntenne, setFlippedAntenne] = useState<number | null>(null);
@@ -215,47 +202,7 @@ const Index = () => {
     return () => { supabase.removeChannel(channel); };
   }, [setAteliers]);
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    watch,
-    formState: { errors, isSubmitting },
-  } = useForm<PreInscriptionData>({
-    resolver: zodResolver(preInscriptionSchema),
-    defaultValues: valeursInitiales(),
-  });
-
-  const selectedWorkshop = watch("workshop");
-  const inscriptionAntiSpam = useAntiSpam();
-
-  const openModal = (workshopTitle?: string) => {
-    inscriptionAntiSpam.reset();
-    reset(valeursInitiales(workshopTitle, profile));
-    setConfirmedWorkshop(null);
-    setModalOpen(true);
-  };
-
-  const onSubmit = async (data: PreInscriptionData) => {
-    const atelier = ateliers.find(a => a.titre === data.workshop);
-    if (!atelier) {
-      toast.error("Cet atelier n'est plus disponible. Merci d'en choisir un autre.");
-      return;
-    }
-
-    // Robot repéré : on simule une pré-inscription réussie sans rien enregistrer.
-    const { error } = inscriptionAntiSpam.isBot()
-      ? { error: null }
-      : await envoyerPreInscription(data, atelier.id, profile);
-    if (error) {
-      toast.error(messageErreurServeur(error));
-      return;
-    }
-
-    // Les places ne sont décomptées qu'à la validation par l'admin (trigger en base).
-    setConfirmedWorkshop(atelier);
-    reset(valeursInitiales());
-  };
+  const openModal = (workshopTitle = "") => setPreInscription(workshopTitle);
 
   return (
     <div className="min-h-screen bg-background">
@@ -473,159 +420,12 @@ const Index = () => {
       {/* Footer */}
       <Footer />
 
-      {/* Modal d'inscription */}
-      {modalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-foreground/40 backdrop-blur-sm" onClick={() => setModalOpen(false)}>
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label="Pré-inscription"
-            className="bg-background rounded-2xl md:rounded-3xl border shadow-2xl w-full max-w-xl mx-3 p-5 md:p-8 relative animate-in fade-in zoom-in-95 duration-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button onClick={() => setModalOpen(false)} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors">
-              <X className="w-5 h-5" />
-            </button>
-
-            {confirmedWorkshop ? (
-              <div className="text-center space-y-5">
-                <div className="flex justify-center">
-                  <CheckCircle2 className="w-14 h-14 text-green-500" />
-                </div>
-                <div>
-                  <h3 className="font-display text-2xl font-bold text-foreground mb-1">Pré-inscription enregistrée !</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Votre demande pour <span className="font-medium text-foreground">"{confirmedWorkshop.titre}"</span> le {formatDateFr(confirmedWorkshop.date_atelier)} à {formatTimeFr(confirmedWorkshop.heure_debut)} a été envoyée.
-                    <br />
-                    <span className="text-xs mt-2 block">Vous recevrez une confirmation par email ou WhatsApp après validation par l'équipe.</span>
-                  </p>
-                </div>
-                <div className="space-y-3 pt-2">
-                  <p className="text-sm font-medium text-foreground">Gardez la date dans votre calendrier</p>
-                  <a
-                    href={googleCalendarUrl(confirmedWorkshop)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-full font-medium text-sm hover:opacity-90 transition-opacity"
-                  >
-                    <CalendarPlus className="w-4 h-4" />
-                    Google Calendar
-                  </a>
-                  <button
-                    onClick={() => downloadIcsFile(confirmedWorkshop)}
-                    className="w-full flex items-center justify-center gap-2 border border-foreground/20 text-foreground py-3 rounded-full font-medium text-sm hover:bg-muted transition-colors"
-                  >
-                    <Download className="w-4 h-4" />
-                    Apple Calendar / Outlook (.ics)
-                  </button>
-                </div>
-                <button
-                  onClick={() => setModalOpen(false)}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors pt-2"
-                >
-                  Fermer
-                </button>
-              </div>
-            ) : (
-              <>
-                <h3 className="font-display text-2xl font-bold text-foreground mb-1">Pré-inscription</h3>
-                <p className="text-sm text-muted-foreground mb-6">Votre demande sera validée par l'équipe et vous serez notifié(e) par email ou WhatsApp.</p>
-
-                <form onSubmit={handleSubmit(onSubmit)} className="relative space-y-4">
-                  {inscriptionAntiSpam.honeypot}
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-1.5">Nom complet</label>
-                    <input
-                      {...register("name")}
-                      readOnly={!!profile}
-                      placeholder="Marie Dupont"
-                      className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
-                    {errors.name && <p className="text-destructive text-xs mt-1">{errors.name.message}</p>}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-1.5">Email</label>
-                    <input
-                      {...register("email")}
-                      readOnly={!!profile}
-                      type="email"
-                      placeholder="marie@email.com"
-                      className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
-                    {errors.email && <p className="text-destructive text-xs mt-1">{errors.email.message}</p>}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-1.5">
-                      Téléphone <span className="text-muted-foreground font-normal">(optionnel — pour WhatsApp)</span>
-                    </label>
-                    <input
-                      {...register("phone")}
-                      type="tel"
-                      placeholder="06 12 34 56 78"
-                      className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
-                    {errors.phone && <p className="text-destructive text-xs mt-1">{errors.phone.message}</p>}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-1.5">Atelier</label>
-                    <select
-                      {...register("workshop")}
-                      className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                    >
-                      <option value="">Choisir un atelier…</option>
-                      {ateliers.map((ws) => (
-                        <option key={ws.id} value={ws.titre}>
-                          {ws.titre} — {formatDateFr(ws.date_atelier)}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.workshop && <p className="text-destructive text-xs mt-1">{errors.workshop.message}</p>}
-                  </div>
-
-                  {selectedWorkshop === ATELIER_AVEC_DATE_NAISSANCE && (
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-1.5">Date de naissance</label>
-                      <input
-                        {...register("birthdate")}
-                        type="date"
-                        className="w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                      />
-                      {errors.birthdate && <p className="text-destructive text-xs mt-1">{errors.birthdate.message}</p>}
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="flex items-start gap-2.5 text-xs text-muted-foreground leading-relaxed cursor-pointer">
-                      <input
-                        {...register("cgu")}
-                        type="checkbox"
-                        className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
-                      />
-                      <span>
-                        J'accepte les{" "}
-                        <Link to="/cgu" target="_blank" className="text-primary underline underline-offset-2">conditions générales d'utilisation</Link>
-                        {" "}et la{" "}
-                        <Link to="/confidentialite" target="_blank" className="text-primary underline underline-offset-2">politique de confidentialité</Link>.
-                      </span>
-                    </label>
-                    {errors.cgu && <p className="text-destructive text-xs mt-1">{errors.cgu.message}</p>}
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full bg-primary text-primary-foreground py-3 rounded-full font-medium text-sm hover:opacity-90 transition-opacity mt-2 disabled:opacity-50"
-                  >
-                    Envoyer ma pré-inscription
-                  </button>
-                </form>
-              </>
-            )}
-          </div>
-        </div>
+      {preInscription !== null && (
+        <PreInscriptionModal
+          ateliers={ateliers}
+          atelierInitial={preInscription}
+          onFermer={() => setPreInscription(null)}
+        />
       )}
     </div>
   );
