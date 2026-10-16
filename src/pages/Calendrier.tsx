@@ -6,6 +6,9 @@ import type { Workshop } from "@/data/workshops";
 import { toast } from "sonner";
 import PreInscriptionModal from "@/components/PreInscriptionModal";
 import SiteHeader from "@/components/SiteHeader";
+import Footer from "@/components/Footer";
+import { Bouton, Surtitre, TitreSection } from "@/components/vitrine";
+import photoAtelier from "@/assets/hero-workshop-960.webp";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { trackVisit } from "@/utils/trackVisit";
 import { usePublicAteliers } from "@/hooks/usePublicAteliers";
@@ -59,25 +62,36 @@ const Calendrier = () => {
   const moisOrdonnes = Object.keys(ateliersParMois).sort();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="theme-creme min-h-screen bg-background text-foreground">
       <SiteHeader actif="Nos événements" />
 
-      {/* Page content */}
-      <main className="pt-28 pb-24">
-        <div className="container mx-auto px-6 max-w-3xl">
-          <div className="text-center mb-12">
-            <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-3">
-              Calendrier des ateliers
-            </h1>
-            <p className="text-muted-foreground">
-              Tous les rendez-vous à venir, regroupés par mois. Cliquez sur un atelier pour le détail.
+      <main className="pt-16">
+        {/* En-tête de page */}
+        <section className="container mx-auto grid items-center gap-10 px-6 py-12 md:grid-cols-2 md:py-16">
+          <div className="space-y-5">
+            <Surtitre>Nos événements</Surtitre>
+            <h1 className="font-brand text-4xl leading-[1.1] text-foreground sm:text-5xl">Calendrier des ateliers</h1>
+            <span className="block h-0.5 w-10 bg-primary" aria-hidden="true" />
+            <p className="text-sm leading-relaxed text-muted-foreground md:text-base">
+              Papotages, ateliers créatifs ou rencontres business : tous nos rendez-vous à venir, regroupés par
+              mois. Choisissez un atelier pour voir le détail et vous pré-inscrire.
             </p>
           </div>
+          <img
+            src={photoAtelier}
+            width={960}
+            height={540}
+            alt="Table d'atelier créatif avec bougies allumées, palette d'aquarelle, ciseaux et pelote de laine"
+            className="h-56 w-full rounded-2xl object-cover shadow-md sm:h-72"
+          />
+        </section>
+
+        <div className="container mx-auto max-w-3xl px-6 pb-16">
 
           {/* Liste chronologique des ateliers groupés par mois */}
           {ateliers.length === 0 ? (
-            <div className="text-center py-16 border rounded-2xl bg-card">
-              <Calendar className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
+            <div className="rounded-2xl bg-card py-16 text-center">
+              <Calendar className="mx-auto mb-3 h-10 w-10 text-terracotta/40" aria-hidden="true" />
               {ateliersLoading ? (
                 <p className="text-muted-foreground">Chargement des ateliers…</p>
               ) : ateliersError ? (
@@ -87,7 +101,7 @@ const Calendrier = () => {
                   </p>
                   <button
                     onClick={reloadAteliers}
-                    className="bg-primary text-primary-foreground px-6 py-2.5 rounded-full text-sm font-medium hover:opacity-90 transition-opacity"
+                    className="rounded-full bg-primary px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary/90"
                   >
                     Réessayer
                   </button>
@@ -104,11 +118,11 @@ const Calendrier = () => {
                 return (
                   <section key={moisKey}>
                     {/* Bandeau mois */}
-                    <div className="flex items-baseline gap-3 mb-5 border-b pb-3">
-                      <h2 className="font-display text-2xl font-semibold text-foreground capitalize">
+                    <div className="mb-5 flex items-baseline gap-3 border-b pb-3">
+                      <h2 className="font-brand text-3xl capitalize text-foreground">
                         {FRENCH_MONTHS[monthIdx]}
                       </h2>
-                      <span className="text-sm tracking-[0.15em] uppercase text-muted-foreground">
+                      <span className="text-xs font-semibold uppercase tracking-[0.2em] text-terracotta">
                         {year}
                       </span>
                       <span className="ml-auto text-xs text-muted-foreground">
@@ -128,16 +142,16 @@ const Calendrier = () => {
                           <button
                             key={ws.id}
                             onClick={() => openPopin(ws)}
-                            className={`w-full text-left flex items-stretch gap-4 rounded-2xl border bg-card p-4 hover:shadow-md transition-all ${
+                            className={`flex w-full items-stretch gap-4 rounded-2xl border bg-white/70 p-4 text-left shadow-[0_12px_32px_-24px_rgba(99,59,50,0.45)] transition-all hover:shadow-md ${
                               isSelected ? "ring-2 ring-primary" : "hover:ring-1 hover:ring-primary/30"
                             }`}
                           >
                             {/* Bloc date à gauche */}
-                            <div className="shrink-0 w-16 md:w-20 rounded-xl bg-primary/10 text-primary flex flex-col items-center justify-center py-2">
+                            <div className="flex w-16 shrink-0 flex-col items-center justify-center rounded-xl bg-card py-2 text-terracotta md:w-20">
                               <span className="text-xs font-semibold tracking-[0.1em] uppercase">
                                 {FRENCH_DAYS[(d.getDay() + 6) % 7]}
                               </span>
-                              <span className="text-2xl md:text-3xl font-display font-bold leading-none mt-1">
+                              <span className="mt-1 font-brand text-2xl leading-none md:text-3xl">
                                 {d.getDate()}
                               </span>
                               <span className="text-[10px] tracking-[0.1em] uppercase mt-0.5">
@@ -148,11 +162,11 @@ const Calendrier = () => {
                             {/* Contenu */}
                             <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <h3 className="font-display text-lg font-semibold text-foreground">
+                                <h3 className="font-brand text-lg text-foreground">
                                   {ws.titre}
                                 </h3>
                                 {full && (
-                                  <span className="text-[10px] tracking-[0.1em] uppercase bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-semibold">
+                                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-terracotta">
                                     Complet
                                   </span>
                                 )}
@@ -200,7 +214,25 @@ const Calendrier = () => {
             </div>
           )}
         </div>
+
+        {/* Appel au contact */}
+        <section className="container mx-auto px-6 pb-20">
+          <div className="mx-auto flex max-w-4xl flex-col items-start gap-6 rounded-3xl bg-card p-8 shadow-md md:flex-row md:items-center md:justify-between md:p-12">
+            <div className="space-y-3">
+              <TitreSection className="text-left md:text-4xl">Une question sur un atelier{"\u00a0"}?</TitreSection>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Écrivez-nous, on vous répond avec plaisir. Et pour mieux nous connaître, découvrez notre histoire.
+              </p>
+            </div>
+            <div className="flex shrink-0 flex-wrap gap-3">
+              <Bouton to="/#contact">Nous écrire</Bouton>
+              <Bouton to="/notre-histoire" variante="contour">Notre histoire</Bouton>
+            </div>
+          </div>
+        </section>
       </main>
+
+      <Footer />
 
       {/* Workshop detail pop-in */}
       {popinWorkshop && preInscription === null && (
@@ -211,12 +243,12 @@ const Calendrier = () => {
           />
           <div role="dialog" aria-modal="true" aria-label={popinWorkshop.titre} className="relative bg-background rounded-2xl shadow-2xl w-full max-w-md border overflow-hidden">
             {/* Header */}
-            <div className="bg-primary/8 px-6 py-5 border-b flex items-start justify-between gap-3">
+            <div className="flex items-start justify-between gap-3 border-b bg-card px-6 py-5">
               <div>
-                <p className="text-xs tracking-[0.15em] uppercase text-primary font-medium mb-1">
+                <p className="mb-1 text-xs font-semibold uppercase tracking-[0.15em] text-terracotta">
                   {formatDateFr(popinWorkshop.date_atelier)} · {formatTimeFr(popinWorkshop.heure_debut)}
                 </p>
-                <h3 className="font-display text-xl font-bold text-foreground">
+                <h3 className="font-brand text-2xl text-foreground">
                   {popinWorkshop.titre}
                 </h3>
               </div>
@@ -236,7 +268,7 @@ const Calendrier = () => {
               </p>
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex items-center gap-2 text-sm text-foreground">
-                  <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
+                  <MapPin className="w-4 h-4 text-terracotta flex-shrink-0" />
                   {popinWorkshop.adresse ? (
                     <a
                       href={googleMapsSearchUrl(popinWorkshop.adresse)}
@@ -251,32 +283,32 @@ const Calendrier = () => {
                   )}
                 </div>
                 <div className="flex items-center gap-2 text-sm text-foreground">
-                  <Clock className="w-4 h-4 text-primary flex-shrink-0" />
+                  <Clock className="w-4 h-4 text-terracotta flex-shrink-0" />
                   <span>{formatTimeFr(popinWorkshop.heure_debut)}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-foreground">
-                  <Users className="w-4 h-4 text-primary flex-shrink-0" />
+                  <Users className="w-4 h-4 text-terracotta flex-shrink-0" />
                   <span>{popinWorkshop.places_disponibles} places restantes</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-foreground">
-                  <Euro className="w-4 h-4 text-primary flex-shrink-0" />
+                  <Euro className="w-4 h-4 text-terracotta flex-shrink-0" />
                   <span>{popinWorkshop.tarif_affichage}</span>
                 </div>
                 {popinWorkshop.date_fin_inscription && (
                   <div className="flex items-center gap-2 text-sm text-foreground col-span-2">
-                    <CalendarPlus className="w-4 h-4 text-primary flex-shrink-0" />
+                    <CalendarPlus className="w-4 h-4 text-terracotta flex-shrink-0" />
                     <span>Inscriptions jusqu'au {formatDateFr(popinWorkshop.date_fin_inscription)}</span>
                   </div>
                 )}
               </div>
               {popinWorkshop.date_fin_inscription && new Date(popinWorkshop.date_fin_inscription + "T23:59:59") < new Date() ? (
-                <button disabled className="w-full bg-muted text-muted-foreground py-3 rounded-xl text-sm font-medium cursor-not-allowed">
+                <button disabled className="w-full cursor-not-allowed rounded-full bg-muted py-3 text-sm font-medium text-muted-foreground">
                   Inscriptions closes
                 </button>
               ) : (
                 <button
                   onClick={() => setPreInscription(popinWorkshop.titre)}
-                  className="w-full bg-primary text-primary-foreground py-3 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
+                  className="w-full rounded-full bg-primary py-3 text-sm font-medium text-white transition-colors hover:bg-primary/90"
                 >
                   Pré-inscription
                 </button>
