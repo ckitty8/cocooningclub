@@ -20,10 +20,10 @@ const SOUVENIRS = [
 
 const FONDATRICES = [
   { prenom: "Maëlle", role: "L'initiatrice du projet", description: "Celle qui a lancé l'aventure et rassemble les femmes autour d'une envie commune." },
-  { prenom: "Christelle", role: "La magicienne du web", description: "Celle qui donne vie à nos idées et met en place les outils qui font grandir le club." },
-  { prenom: "Aurélie", role: "La boîte à idées", description: "La créative du groupe, qui imagine et concrétise de nouveaux projets comme notre magazine." },
   { prenom: "Coraline", role: "La voix du club", description: "Celle qui fait parler de nous et fait rayonner notre aventure." },
+  { prenom: "Aurélie", role: "La boîte à idées", description: "La créative du groupe, qui imagine et concrétise de nouveaux projets comme notre magazine." },
   { prenom: "Fabienne", role: "Les mains créatives", description: "Celle qui nous fait créer et partage son savoir-faire au travers des ateliers." },
+  { prenom: "Christelle", role: "La magicienne du web", description: "Celle qui donne vie à nos idées et met en place les outils qui font grandir le club." },
 ];
 
 const VALEURS: Valeur[] = [
