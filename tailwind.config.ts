@@ -23,12 +23,6 @@ export default {
         body: ['DM Sans', 'sans-serif'],
       },
       colors: {
-        // Couleurs des trois espaces (charte graphique) : accent et fond teinté.
-        espace: {
-          papotages: { DEFAULT: "#ce8f7e", fond: "#fbeee7" },
-          creatifs: { DEFAULT: "#82947a", fond: "#eff1ea" },
-          business: { DEFAULT: "#9e6678", fond: "#f6ebee" },
-        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
