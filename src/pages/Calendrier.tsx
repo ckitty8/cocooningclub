@@ -13,6 +13,7 @@ import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { trackVisit } from "@/utils/trackVisit";
 import { usePublicAteliers } from "@/hooks/usePublicAteliers";
 import { espaceDe } from "@/lib/espaces";
+import AjouterAgenda from "@/components/AjouterAgenda";
 
 const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription, antennes(slug)";
 
@@ -325,6 +326,7 @@ const Calendrier = () => {
                   Pré-inscription
                 </button>
               )}
+              <AjouterAgenda atelier={popinWorkshop} />
               <button
                 onClick={() => copyWorkshopLink(popinWorkshop)}
                 className="w-full flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"

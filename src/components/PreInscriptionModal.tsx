@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { CalendarPlus, CheckCircle2, Download, X } from "lucide-react";
+import { CheckCircle2, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAntiSpam } from "@/hooks/useAntiSpam";
 import { formatDateFr, formatTimeFr, type Workshop } from "@/data/workshops";
@@ -15,7 +15,7 @@ import {
   valeursInitiales,
   type PreInscriptionData,
 } from "@/lib/preInscription";
-import { downloadIcsFile, googleCalendarUrl } from "@/utils/calendarLinks";
+import AjouterAgenda from "@/components/AjouterAgenda";
 import { messageErreurServeur } from "@/utils/messageErreurServeur";
 
 interface PreInscriptionModalProps {
@@ -95,22 +95,7 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer }: PreInscript
             </div>
             <div className="space-y-3 pt-2">
               <p className="text-sm font-medium text-foreground">Gardez la date dans votre calendrier</p>
-              <a
-                href={googleCalendarUrl(atelierConfirme)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-full font-medium text-sm hover:opacity-90 transition-opacity"
-              >
-                <CalendarPlus className="w-4 h-4" />
-                Google Calendar
-              </a>
-              <button
-                onClick={() => downloadIcsFile(atelierConfirme)}
-                className="w-full flex items-center justify-center gap-2 border border-foreground/20 text-foreground py-3 rounded-full font-medium text-sm hover:bg-muted transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                Apple Calendar / Outlook (.ics)
-              </button>
+              <AjouterAgenda atelier={atelierConfirme} />
             </div>
             <button onClick={onFermer} className="text-sm text-muted-foreground hover:text-foreground transition-colors pt-2">
               Fermer

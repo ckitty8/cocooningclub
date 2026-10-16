@@ -95,6 +95,21 @@ test("le lien Contact du pied de page mène à la section contact depuis une aut
   await expect(page.locator("#contact")).toBeInViewport();
 });
 
+test("un atelier s'ajoute à l'agenda depuis l'accueil et depuis sa fiche", async ({ page }) => {
+  await page.goto("/");
+  const carte = page.locator("#ateliers");
+  await carte.getByRole("button", { name: "Ajouter à mon agenda" }).first().click();
+  const google = carte.getByRole("link", { name: "Google Agenda" });
+  await expect(google).toHaveAttribute("href", /calendar\.google\.com.*20\d{6}T140000/);
+  // Le choix d'agenda n'ouvre pas la fiche de l'atelier.
+  await expect(page).toHaveURL(/\/$/);
+
+  await page.goto(`/calendrier?atelier=${ATELIER_TEST.id}`);
+  const telechargement = page.waitForEvent("download");
+  await page.getByRole("dialog").getByRole("button", { name: /Apple \/ Outlook/ }).click();
+  expect((await telechargement).suggestedFilename()).toMatch(/\.ics$/);
+});
+
 test("une adresse inconnue affiche la page 404, exclue de Google", async ({ page }) => {
   await page.goto("/page-qui-n-existe-pas");
   await expect(page.getByText("404")).toBeVisible();

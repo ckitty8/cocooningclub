@@ -5,6 +5,7 @@ import type { Workshop } from "@/data/workshops";
 import { formatDateFr, formatTimeFr } from "@/data/workshops";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { espaceDe } from "@/lib/espaces";
+import AjouterAgenda from "@/components/AjouterAgenda";
 
 interface WorkshopCarouselProps {
   workshops: Workshop[];
@@ -99,11 +100,11 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
                   </div>
                 )}
 
-                <div className="pt-2 mt-auto">
+                <div className="mt-auto space-y-1 pt-2">
                   {closed ? (
                     <button
                       disabled
-                      className="w-full bg-muted text-muted-foreground py-3 rounded-xl text-sm font-medium cursor-not-allowed"
+                      className="w-full cursor-not-allowed rounded-full bg-muted py-3 text-sm font-medium text-muted-foreground"
                       onClick={(e) => e.stopPropagation()}
                     >
                       Inscriptions closes
@@ -111,11 +112,12 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
                   ) : (
                     <button
                       onClick={(e) => { e.stopPropagation(); onReserve(ws.titre); }}
-                      className="w-full bg-primary text-primary-foreground py-3 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
+                      className="w-full rounded-full bg-primary py-3 text-sm font-medium text-white transition-colors hover:bg-primary/90"
                     >
                       Pré-inscription
                     </button>
                   )}
+                  <AjouterAgenda atelier={ws} variante="menu" />
                 </div>
               </div>
             </div>
