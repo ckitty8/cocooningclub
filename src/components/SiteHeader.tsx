@@ -6,7 +6,7 @@ const LIENS = [
   { libelle: "Accueil", to: "/" },
   { libelle: "Nos espaces", to: "/#espaces" },
   { libelle: "Nos événements", to: "/calendrier" },
-  { libelle: "À propos", to: "/#apropos" },
+  { libelle: "À propos", to: "/notre-histoire" },
   { libelle: "Contact", to: "/#contact" },
 ] as const;
 
@@ -17,7 +17,7 @@ interface SiteHeaderProps {
   actif: LienActif;
 }
 
-// En-tête fixe des pages publiques (accueil et calendrier). Sous 768 px,
+// En-tête fixe des pages vitrine et du calendrier. Sous 768 px,
 // les liens passent dans un menu déroulant.
 const SiteHeader = ({ actif }: SiteHeaderProps) => {
   const [menuOuvert, setMenuOuvert] = useState(false);

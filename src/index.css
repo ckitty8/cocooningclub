@@ -68,9 +68,9 @@
 }
 
 @layer base {
-  /* Page d'accueil : fond crème plus clair que la pêche de la charte, et
+  /* Pages vitrine (accueil, notre histoire) : fond crème plus clair que la pêche de la charte, et
      texte secondaire assombri pour rester lisible (contraste AA). */
-  .theme-accueil {
+  .theme-creme {
     --background: 27 100% 98%;
     --card: 24 50% 95%;
     --muted-foreground: 11 18% 38%;

@@ -72,6 +72,14 @@ test("sur téléphone, le menu de l'en-tête mène au calendrier", async ({ page
   await expect(page.locator("#menu-mobile")).toBeHidden();
 });
 
+test("le bouton « Notre histoire » de l'accueil mène à la page dédiée", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Notre histoire", exact: true }).first().click();
+  await expect(page).toHaveTitle("Notre histoire · Cocooning Club");
+  await expect(page.getByRole("heading", { level: 1, name: "Notre histoire" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Cinq femmes, une même envie" })).toBeVisible();
+});
+
 test("le lien partagé d'un atelier ouvre directement sa fiche dans le calendrier", async ({ page }) => {
   await page.goto(`/calendrier?atelier=${ATELIER_TEST.id}`);
   await expect(page).toHaveTitle("Calendrier des ateliers · Cocooning Club");

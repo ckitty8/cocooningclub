@@ -26,6 +26,12 @@ const PUBLIC_PAGES: Record<string, PageMeta> = {
       "Tous les prochains ateliers Papotages, Créatifs et Business du Cocooning Club à Gagny, Chelles et Le Raincy : dates, lieux, places restantes et pré-inscription en ligne.",
     index: true,
   },
+  "/notre-histoire": {
+    title: "Notre histoire · Cocooning Club",
+    description:
+      "Comment le Cocooning Club est né d'une envie simple : créer du lien entre femmes. Découvrez notre histoire, les cinq fondatrices et ce qui nous unit.",
+    index: true,
+  },
   "/confidentialite": {
     title: "Politique de confidentialité · Cocooning Club",
     description:

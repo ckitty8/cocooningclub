@@ -8,6 +8,7 @@ import Index from "./pages/Index.tsx";
 import Calendrier from "./pages/Calendrier.tsx";
 import Confidentialite from "./pages/Confidentialite.tsx";
 import Cgu from "./pages/Cgu.tsx";
+import NotreHistoire from "./pages/NotreHistoire.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Login from "./pages/auth/Login.tsx";
 import ForgotPassword from "./pages/auth/ForgotPassword.tsx";
@@ -95,6 +96,7 @@ const App = () => (
           {/* Routes publiques */}
           <Route path="/" element={<Index />} />
           <Route path="/calendrier" element={<Calendrier />} />
+          <Route path="/notre-histoire" element={<NotreHistoire />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />

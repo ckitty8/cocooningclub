@@ -1,7 +1,8 @@
-import { useState, useEffect, FormEvent, type ReactNode } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { ArrowRight, Feather, HandHeart, Heart, MessagesSquare, Pencil, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import SiteHeader from "@/components/SiteHeader";
+import { Bouton, GrilleValeurs, Surtitre, TitreSection, type Valeur } from "@/components/vitrine";
 import WorkshopCarousel from "@/components/WorkshopCarousel";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import JournalSection from "@/components/JournalSection";
@@ -205,26 +206,13 @@ const ESPACES = [
   },
 ];
 
-const VALEURS = [
+const VALEURS: Valeur[] = [
   { icone: Users, titre: "Convivialité", description: "Se retrouver et partager de bons moments en toute simplicité." },
   { icone: Feather, titre: "Bienveillance", description: "Accueillir chacune telle qu'elle est, sans jugement ni pression." },
   { icone: MessagesSquare, titre: "Partage", description: "Nos expériences, nos passions et nos différences sont une vraie richesse." },
   { icone: Pencil, titre: "Créativité", description: "Oser découvrir, expérimenter et imaginer ensemble." },
   { icone: HandHeart, titre: "Entraide", description: "Un conseil, un encouragement ou un coup de main peuvent faire toute la différence." },
 ];
-
-/** Petit intitulé en capitales au-dessus des titres de section. */
-const Surtitre = ({ children }: { children: ReactNode }) => (
-  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-terracotta">{children}</p>
-);
-
-/** Titre de section de l'accueil (serif, centré par défaut). */
-const TitreSection = ({ children, className = "text-center" }: { children: ReactNode; className?: string }) => (
-  <h2 className={`font-brand text-3xl leading-tight text-foreground md:text-5xl ${className}`}>{children}</h2>
-);
-
-const boutonPrincipal =
-  "inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-7 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90";
 
 const Index = () => {
   const { ateliers, setAteliers, loading: ateliersLoading, error: ateliersError, reload: reloadAteliers } =
@@ -257,8 +245,8 @@ const Index = () => {
   const openModal = (workshopTitle = "") => setPreInscription(workshopTitle);
 
   return (
-    // Thème crème propre à l'accueil (variables dans index.css).
-    <div className="theme-accueil min-h-screen bg-background text-foreground">
+    // Thème crème des pages vitrine (variables dans index.css).
+    <div className="theme-creme min-h-screen bg-background text-foreground">
       <SiteHeader actif="Accueil" />
 
       {/* Hero */}
@@ -292,10 +280,10 @@ const Index = () => {
               Un club où chacune peut trouver sa place, qu'elle ait envie de papoter autour d'un café, de découvrir
               une activité créative ou de faire grandir son projet professionnel.
             </p>
-            <a href="#espaces" className={boutonPrincipal}>
-              Découvrir nos espaces
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </a>
+            <div className="flex flex-wrap gap-3">
+              <Bouton to="/#espaces">Découvrir nos espaces</Bouton>
+              <Bouton to="/notre-histoire" variante="contour">Notre histoire</Bouton>
+            </div>
           </div>
         </div>
       </section>
@@ -353,7 +341,7 @@ const Index = () => {
       </section>
 
       {/* Notre histoire */}
-      <section className="grid scroll-mt-16 bg-card md:grid-cols-2" id="apropos">
+      <section className="grid bg-card md:grid-cols-2">
         <img
           src={photoGroupe}
           alt="Cinq femmes de dos, bras dessus bras dessous, face à un coucher de soleil"
@@ -376,6 +364,7 @@ const Index = () => {
             Cinq parcours différents, une même envie : imaginer des moments qui rassemblent et faire grandir une
             communauté féminine locale.
           </p>
+          <Bouton to="/notre-histoire">Lire notre histoire</Bouton>
         </div>
       </section>
 
@@ -386,17 +375,7 @@ const Index = () => {
             <Surtitre>Nos valeurs</Surtitre>
             <TitreSection>Ce qui nous anime au quotidien</TitreSection>
           </div>
-          <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-5">
-            {VALEURS.map(({ icone: Icone, titre, description }) => (
-              <div key={titre} className="mx-auto max-w-xs space-y-3 text-center">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-card text-terracotta">
-                  <Icone className="h-7 w-7" strokeWidth={1.5} aria-hidden="true" />
-                </div>
-                <h3 className="font-brand text-xl text-foreground">{titre}</h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">{description}</p>
-              </div>
-            ))}
-          </div>
+          <GrilleValeurs valeurs={VALEURS} />
         </div>
       </section>
 
