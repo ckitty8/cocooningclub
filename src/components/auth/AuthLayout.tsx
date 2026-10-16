@@ -15,7 +15,7 @@ interface AuthLayoutProps {
 // Mise en page des pages de connexion (connexion, mot de passe oublié,
 // nouveau mot de passe) : photo à gauche sur grand écran, carte à droite.
 const AuthLayout = ({ titre, sousTitre, retour = { to: "/", libelle: "Retour au site" }, children }: AuthLayoutProps) => (
-  <div className="theme-creme grid min-h-screen bg-background text-foreground lg:grid-cols-2">
+  <div className="theme-vitrine grid min-h-screen bg-background text-foreground lg:grid-cols-2">
     <div className="relative hidden lg:block">
       <img
         src={photoAtelier}
@@ -32,12 +32,12 @@ const AuthLayout = ({ titre, sousTitre, retour = { to: "/", libelle: "Retour au 
         </Link>
         <div className="mb-8 mt-10 space-y-3">
           <Surtitre>Espace membre</Surtitre>
-          <h1 className="font-brand text-4xl leading-tight text-foreground">{titre}</h1>
+          <h1 className="font-display text-5xl leading-tight text-foreground md:text-6xl">{titre}</h1>
           <span className="block h-0.5 w-10 bg-primary" aria-hidden="true" />
           {sousTitre && <p className="text-sm leading-relaxed text-muted-foreground">{sousTitre}</p>}
         </div>
 
-        <div className="rounded-2xl border bg-white/70 p-8 shadow-[0_12px_32px_-24px_rgba(99,59,50,0.45)]">
+        <div className="rounded-2xl border bg-card p-8 shadow-[0_12px_32px_-24px_rgba(99,59,50,0.45)]">
           {children}
         </div>
 

@@ -16,7 +16,7 @@ Quand l'utilisateur demande ce qu'il reste à faire, lui rappeler en premier les
 - **Analytics** : Google Analytics 4 (mise en place reportée). Implique une vraie bannière cookie (Accepter / Refuser / Personnaliser), avec Google Consent Mode v2 : rien n'est chargé avant consentement.
 - **Domaine** : le domaine principal configuré dans Vercel est `www.lecocooningclub.fr` (Vercel redirige déjà le domaine nu vers `www`). NE JAMAIS ajouter de redirection `www` ↔ domaine nu dans `vercel.json` : le 15/10 une règle `www` → nu a créé une boucle (ERR_TOO_MANY_REDIRECTS, site KO). Les URL canoniques, le sitemap, robots.txt et og:image utilisent `https://www.lecocooningclub.fr`. Exception : le lien de réinitialisation du mot de passe (`src/pages/auth/ForgotPassword.tsx`) reste sur le domaine nu tant que `www` n'est pas ajouté aux URL de redirection autorisées dans Supabase Auth.
 
-- **Accueil (16/10)** : refait d'après la maquette fournie par l'utilisateur (fond crème `.theme-creme`, titres en Playfair Display `font-brand`, briques communes dans `src/components/vitrine.tsx`, en-tête partagé `SiteHeader`). Page `/notre-histoire` faite d'après la 2e maquette ; le lien « À propos » du menu y mène.
+- **Accueil (16/10)** : refait d'après la maquette fournie par l'utilisateur (16/10 : passé à la charte — fond pêche `.theme-vitrine`, grands titres en Great Vibes `font-display`, sous-titres en Playfair Display `font-brand` faute de la police Marta, briques communes dans `src/components/vitrine.tsx`, en-tête partagé `SiteHeader`). Page `/notre-histoire` faite d'après la 2e maquette ; le lien « À propos » du menu y mène.
 
 ## Plan de mise en conformité (octobre 2026)
 

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, type LucideIcon } from "lucide-react";
 
 // Briques de mise en page partagées par les pages vitrine (accueil, notre
-// histoire), sur le thème crème `.theme-creme`.
+// histoire), sur le thème crème `.theme-vitrine`.
 
 /** Petit intitulé en capitales au-dessus des titres de section. */
 export const Surtitre = ({ children }: { children: ReactNode }) => (
@@ -12,7 +12,7 @@ export const Surtitre = ({ children }: { children: ReactNode }) => (
 
 /** Titre de section (serif, centré par défaut). */
 export const TitreSection = ({ children, className = "text-center" }: { children: ReactNode; className?: string }) => (
-  <h2 className={`font-brand text-3xl leading-tight text-foreground md:text-5xl ${className}`}>{children}</h2>
+  <h2 className={`font-display text-5xl leading-tight text-foreground md:text-6xl ${className}`}>{children}</h2>
 );
 
 interface BoutonProps {
@@ -43,12 +43,15 @@ export interface Valeur {
   description: string;
 }
 
+// Couleurs primaires de la charte, en alternance autour des pictogrammes.
+const BORDURES_CHARTE = ["border-espace-papotages", "border-espace-creatifs", "border-espace-business"];
+
 /** Valeurs du club : pictogramme rond, titre et phrase courte. */
 export const GrilleValeurs = ({ valeurs }: { valeurs: Valeur[] }) => (
   <div className={`grid gap-x-6 gap-y-10 sm:grid-cols-2 ${valeurs.length === 4 ? "lg:grid-cols-4" : "lg:grid-cols-5"}`}>
-    {valeurs.map(({ icone: Icone, titre, description }) => (
+    {valeurs.map(({ icone: Icone, titre, description }, i) => (
       <div key={titre} className="mx-auto max-w-xs space-y-3 text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-card text-terracotta">
+        <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full border-2 bg-card text-terracotta ${BORDURES_CHARTE[i % BORDURES_CHARTE.length]}`}>
           <Icone className="h-7 w-7" strokeWidth={1.5} aria-hidden="true" />
         </div>
         <h3 className="font-brand text-xl text-foreground">{titre}</h3>

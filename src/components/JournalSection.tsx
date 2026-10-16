@@ -10,7 +10,7 @@ const JournalSection = () => (
             <Lock className="w-3.5 h-3.5" />
             Réservé aux membres
           </div>
-          <h2 className="font-brand text-3xl md:text-4xl text-foreground leading-tight">
+          <h2 className="font-display text-5xl md:text-6xl text-foreground leading-tight">
             Le Journal du Club
           </h2>
           <p className="text-muted-foreground leading-relaxed">
