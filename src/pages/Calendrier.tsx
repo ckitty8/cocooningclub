@@ -67,7 +67,7 @@ const Calendrier = () => {
     <div className="theme-creme min-h-screen bg-background text-foreground">
       <SiteHeader actif="Nos événements" />
 
-      <main className="pt-16">
+      <main className="pt-20">
         {/* En-tête de page */}
         <section className="container mx-auto grid items-center gap-10 px-6 py-12 md:grid-cols-2 md:py-16">
           <div className="space-y-5">

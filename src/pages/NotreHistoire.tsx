@@ -64,7 +64,7 @@ const NotreHistoire = () => {
 
       <main>
         {/* Hero : photo de groupe et carte titre */}
-        <section className="relative pt-16">
+        <section className="relative pt-20">
           <img
             src={photoGroupe}
             width={548}
@@ -72,7 +72,7 @@ const NotreHistoire = () => {
             alt="Cinq femmes de dos, bras dessus bras dessous, face à un coucher de soleil"
             className="h-64 w-full object-cover object-left sm:h-80 md:h-[26rem] md:w-[68%]"
           />
-          <div className="relative mx-6 -mt-12 rounded-2xl bg-background p-8 shadow-lg md:absolute md:bottom-12 md:right-10 md:top-28 md:mx-0 md:mt-0 md:flex md:w-[40%] md:flex-col md:justify-center lg:p-12">
+          <div className="relative mx-6 -mt-12 rounded-2xl bg-background p-8 shadow-lg md:absolute md:bottom-12 md:right-10 md:top-32 md:mx-0 md:mt-0 md:flex md:w-[40%] md:flex-col md:justify-center lg:p-12">
             <Surtitre>À propos</Surtitre>
             <h1 className="mt-3 font-brand text-4xl text-foreground md:text-6xl">Notre histoire</h1>
             <span className="my-5 block h-0.5 w-10 bg-primary" aria-hidden="true" />

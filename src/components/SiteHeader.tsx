@@ -39,8 +39,9 @@ const SiteHeader = ({ actif }: SiteHeaderProps) => {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b bg-background/95 backdrop-blur-md">
-      <div className="container mx-auto flex h-16 items-center justify-between px-6">
-        <Link to="/" onClick={fermerMenu} className="font-brand text-2xl text-primary md:text-[1.7rem]">
+      <div className="container mx-auto flex h-20 items-center justify-between px-6">
+        <Link to="/" onClick={fermerMenu} className="flex items-center gap-3 font-brand text-2xl text-primary md:text-[1.7rem]">
+          <img src="/logo-160.webp" alt="" width={64} height={64} className="h-16 w-16" />
           Le Cocooning Club
         </Link>
 

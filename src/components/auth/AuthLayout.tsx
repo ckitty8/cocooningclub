@@ -26,7 +26,8 @@ const AuthLayout = ({ titre, sousTitre, retour = { to: "/", libelle: "Retour au 
 
     <main className="flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-md">
-        <Link to="/" className="font-brand text-2xl text-primary">
+        <Link to="/" className="inline-flex items-center gap-3 font-brand text-2xl text-primary">
+          <img src="/logo-160.webp" alt="" width={56} height={56} className="h-14 w-14" />
           Le Cocooning Club
         </Link>
         <div className="mb-8 mt-10 space-y-3">

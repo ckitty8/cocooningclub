@@ -248,8 +248,8 @@ const Index = () => {
       <SiteHeader actif="Accueil" />
 
       {/* Hero */}
-      <section className="relative overflow-hidden pt-16">
-        <div className="relative md:absolute md:bottom-0 md:right-0 md:top-16 md:w-[55%]">
+      <section className="relative overflow-hidden pt-20">
+        <div className="relative md:absolute md:bottom-0 md:right-0 md:top-20 md:w-[55%]">
           <img
             src={photoRencontre}
             width={497}
@@ -287,7 +287,7 @@ const Index = () => {
       </section>
 
       {/* Nos espaces */}
-      <section className="scroll-mt-16 py-20 md:py-24" id="espaces">
+      <section className="scroll-mt-20 py-20 md:py-24" id="espaces">
         <div className="container mx-auto px-6">
           <div className="mx-auto mb-12 max-w-2xl space-y-4 text-center">
             <Surtitre>Notre univers</Surtitre>
@@ -409,7 +409,7 @@ const Index = () => {
       </section>
 
       {/* Prochains ateliers */}
-      <section className="scroll-mt-16 py-20 md:py-24" id="ateliers">
+      <section className="scroll-mt-20 py-20 md:py-24" id="ateliers">
         <div className="container mx-auto px-6">
           <div className="mx-auto mb-12 max-w-lg space-y-4 text-center">
             <Surtitre>Nos événements</Surtitre>
@@ -455,7 +455,7 @@ const Index = () => {
       <JournalSection />
 
       {/* Contact */}
-      <section className="scroll-mt-16 bg-card py-20 md:py-24" id="contact">
+      <section className="scroll-mt-20 bg-card py-20 md:py-24" id="contact">
         <div className="container mx-auto px-6 max-w-xl">
           <div className="mb-10 space-y-4 text-center">
             <Surtitre>Contact</Surtitre>
