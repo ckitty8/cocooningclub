@@ -104,5 +104,8 @@ test("une adresse inconnue affiche la page 404, exclue de Google", async ({ page
 test("la page de connexion est exclue de Google", async ({ page }) => {
   await page.goto("/login");
   await expect(page).toHaveTitle("Connexion à l'espace membre · Cocooning Club");
+  await expect(page.getByRole("heading", { level: 1, name: "Bon retour parmi nous" })).toBeVisible();
+  await expect(page.getByLabel("Email")).toBeVisible();
+  await expect(page.getByLabel("Mot de passe", { exact: true })).toBeVisible();
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex, nofollow");
 });

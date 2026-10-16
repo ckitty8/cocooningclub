@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import AuthLayout from "@/components/auth/AuthLayout";
+import { boutonEnvoi, champ, libelle } from "@/components/auth/classes";
 
 // Filet de sécurité : si fetchProfile reste en attente plus longtemps
 // que ça après un signIn réussi, on débloque l'UI avec un message clair.
@@ -78,80 +80,68 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-10">
-          <Link to="/" className="font-brand text-3xl font-bold text-foreground tracking-[0.08em] uppercase hover:opacity-80 transition-opacity">
-            Cocooning Club
-          </Link>
-          <p className="text-muted-foreground mt-2 text-sm">Connexion à votre espace</p>
+    <AuthLayout titre="Bon retour parmi nous" sousTitre="Connectez-vous pour retrouver vos ateliers, vos inscriptions et le magazine du club.">
+      {isInactive && (
+        <div className="mb-6 rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          Votre compte est désactivé. Contactez l'administrateur.
         </div>
+      )}
 
-        <div className="bg-card rounded-2xl border p-8 shadow-sm">
-          {isInactive && (
-            <div className="bg-destructive/10 text-destructive text-sm rounded-xl px-4 py-3 mb-6">
-              Votre compte est désactivé. Contactez l'administrateur.
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium mb-1.5">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-                className="w-full border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="votre@email.com"
-              />
-            </div>
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-sm font-medium">Mot de passe</label>
-                <Link to="/forgot-password" className="text-xs text-muted-foreground hover:text-primary transition-colors">
-                  Mot de passe oublié ?
-                </Link>
-              </div>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  required
-                  autoComplete="current-password"
-                  className="w-full border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary pr-12"
-                  placeholder="••••••••"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  tabIndex={-1}
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            {error && <p className="text-destructive text-sm">{error}</p>}
-
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div>
+          <label htmlFor="email" className={libelle}>Email</label>
+          <input
+            id="email"
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+            className={champ}
+            placeholder="votre@email.com"
+          />
+        </div>
+        <div>
+          <div className="mb-1.5 flex items-center justify-between">
+            <label htmlFor="mot-de-passe" className="text-sm font-medium text-foreground">Mot de passe</label>
+            <Link to="/forgot-password" className="text-xs text-terracotta transition-colors hover:text-foreground">
+              Mot de passe oublié ?
+            </Link>
+          </div>
+          <div className="relative">
+            <input
+              id="mot-de-passe"
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+              className={`${champ} pr-12`}
+              placeholder="••••••••"
+            />
             <button
-              type="submit"
-              disabled={submitting}
-              className="w-full bg-primary text-primary-foreground py-3 rounded-full font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
             >
-              {submitting ? "Connexion en cours..." : "Se connecter"}
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
-          </form>
+          </div>
         </div>
 
-        <p className="text-center text-sm text-muted-foreground mt-6">
-          <Link to="/" className="hover:text-primary transition-colors">← Retour au site</Link>
-        </p>
-      </div>
-    </div>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+
+        <button type="submit" disabled={submitting} className={boutonEnvoi}>
+          {submitting ? "Connexion en cours…" : "Se connecter"}
+        </button>
+      </form>
+
+      <p className="mt-6 border-t pt-5 text-center text-sm text-muted-foreground">
+        Pas encore membre ?{" "}
+        <Link to="/#contact" className="font-medium text-terracotta hover:text-foreground">Écrivez-nous</Link>
+      </p>
+    </AuthLayout>
   );
 };
 
