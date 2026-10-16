@@ -317,7 +317,7 @@ const Index = () => {
                     alt=""
                     loading="lazy"
                     decoding="async"
-                    className="absolute -bottom-7 right-6 h-14 w-14 rounded-full bg-white object-contain p-1.5 shadow-md"
+                    className="absolute -bottom-8 right-6 h-16 w-28 rounded-xl bg-white object-contain p-1.5 shadow-md"
                   />
                 </div>
                 <div className="flex flex-1 flex-col gap-3 px-7 pb-7 pt-8">

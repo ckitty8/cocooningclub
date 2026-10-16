@@ -51,7 +51,7 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
                     alt={`Espace ${espace.nom}`}
                     loading="lazy"
                     decoding="async"
-                    className="h-14 w-14 shrink-0 rounded-full bg-white object-contain p-1 shadow-sm"
+                    className="h-16 w-24 shrink-0 rounded-xl bg-white object-contain p-1 shadow-sm"
                   />
                 )}
                 <h3 className="font-brand text-xl text-foreground">{ws.titre}</h3>

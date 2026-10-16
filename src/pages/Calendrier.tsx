@@ -164,6 +164,16 @@ const Calendrier = () => {
 
                             {/* Contenu */}
                             <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
+                              {/* Sur téléphone, le logo passe au-dessus du titre pour lui laisser la largeur. */}
+                              {espace && (
+                                <img
+                                  src={espace.logo}
+                                  alt={`Espace ${espace.nom}`}
+                                  loading="lazy"
+                                  decoding="async"
+                                  className="h-10 w-16 self-start rounded-lg bg-white object-contain p-0.5 shadow-sm sm:hidden"
+                                />
+                              )}
                               <div className="flex items-center gap-2 flex-wrap">
                                 <h3 className="font-brand text-lg text-foreground">
                                   {ws.titre}
@@ -211,7 +221,7 @@ const Calendrier = () => {
                                 alt={`Espace ${espace.nom}`}
                                 loading="lazy"
                                 decoding="async"
-                                className="hidden h-12 w-12 shrink-0 self-center rounded-full bg-white object-contain p-1 shadow-sm sm:block"
+                                className="hidden h-20 w-32 shrink-0 self-center rounded-xl bg-white object-contain p-1 shadow-sm sm:block"
                               />
                             )}
 
