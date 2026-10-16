@@ -4,6 +4,7 @@ import { Calendar, ChevronLeft, ChevronRight, MapPin, Users, Euro, AlarmClock } 
 import type { Workshop } from "@/data/workshops";
 import { formatDateFr, formatTimeFr } from "@/data/workshops";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
+import { espaceDe } from "@/lib/espaces";
 
 interface WorkshopCarouselProps {
   workshops: Workshop[];
@@ -32,6 +33,7 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
       <div className="grid md:grid-cols-3 gap-8">
         {visible.map((ws, visibleIdx) => {
           const actualIndex = page * ITEMS_PER_PAGE + visibleIdx;
+          const espace = espaceDe(ws);
           const closed = !!ws.date_fin_inscription
             && new Date(ws.date_fin_inscription + "T23:59:59") < new Date();
 
@@ -41,7 +43,16 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
               onClick={() => navigate(`/calendrier?atelier=${ws.id}`)}
               className="bg-card rounded-2xl border overflow-hidden flex flex-col cursor-pointer transition-all hover:shadow-lg hover:ring-2 hover:ring-primary/30"
             >
-              <div className="p-6 border-b bg-primary/5">
+              <div className="flex items-center gap-4 p-6 border-b bg-primary/5">
+                {espace && (
+                  <img
+                    src={espace.logo}
+                    alt={`Espace ${espace.nom}`}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-14 w-14 shrink-0 rounded-full bg-white object-contain p-1 shadow-sm"
+                  />
+                )}
                 <h3 className="font-brand text-xl text-foreground">{ws.titre}</h3>
               </div>
               <div className="p-6 space-y-3 flex-1 flex flex-col">
@@ -52,22 +63,24 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
                   <span>{formatDateFr(ws.date_atelier)} · {formatTimeFr(ws.heure_debut)}</span>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm text-foreground">
-                  <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
-                  {ws.adresse ? (
-                    <a
-                      href={googleMapsSearchUrl(ws.adresse)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={e => e.stopPropagation()}
-                      className="hover:underline"
-                    >
-                      {ws.lieu}
-                    </a>
-                  ) : (
-                    <span>{ws.lieu}</span>
-                  )}
-                </div>
+                {ws.lieu && (
+                  <div className="flex items-center gap-2 text-sm text-foreground">
+                    <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
+                    {ws.adresse ? (
+                      <a
+                        href={googleMapsSearchUrl(ws.adresse)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={e => e.stopPropagation()}
+                        className="hover:underline"
+                      >
+                        {ws.lieu}
+                      </a>
+                    ) : (
+                      <span>{ws.lieu}</span>
+                    )}
+                  </div>
+                )}
 
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <Users className="w-4 h-4 text-primary flex-shrink-0" />

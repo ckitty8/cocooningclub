@@ -25,6 +25,7 @@ export const ATELIER_TEST = {
   tarif_standard: 15,
   statut: "publie",
   date_fin_inscription: null,
+  antennes: { slug: "papotages" },
 };
 
 const FORMULAIRE_CONTACT = {

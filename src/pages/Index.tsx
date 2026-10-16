@@ -15,15 +15,13 @@ import photoPapotages from "@/assets/accueil/papotages.webp";
 import photoCreatif from "@/assets/accueil/creatif.webp";
 import photoBusiness from "@/assets/accueil/business.webp";
 import photoAtelier from "@/assets/hero-workshop-960.webp";
-import logoPapotages from "@/assets/espaces/papotages.webp";
-import logoCreatifs from "@/assets/espaces/creatifs.webp";
-import logoBusiness from "@/assets/espaces/business.webp";
+import { ESPACES_PAR_SLUG } from "@/lib/espaces";
 import { trackVisit } from "@/utils/trackVisit";
 import { usePublicAteliers } from "@/hooks/usePublicAteliers";
 import { useAntiSpam } from "@/hooks/useAntiSpam";
 import { messageErreurServeur } from "@/utils/messageErreurServeur";
 
-const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, description_courte, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription";
+const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, description_courte, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription, antennes(slug)";
 
 
 // ── Formulaire de contact dynamique ──────────────────────
@@ -184,7 +182,7 @@ const ESPACES = [
     titre: "L'Espace Papotages",
     photo: photoPapotages,
     alt: "Trois femmes discutent en souriant autour d'un café",
-    logo: logoPapotages,
+    logo: ESPACES_PAR_SLUG.papotages.logo,
     description: "Des rencontres en toute simplicité pour échanger, partager et créer de nouveaux liens autour d'un café.",
     couleur: "bg-espace-papotages",
   },
@@ -192,7 +190,7 @@ const ESPACES = [
     titre: "L'Espace Créatif",
     photo: photoCreatif,
     alt: "Mains qui assemblent fleurs séchées et papier lors d'un atelier créatif",
-    logo: logoCreatifs,
+    logo: ESPACES_PAR_SLUG.creatifs.logo,
     description: "Des ateliers pour découvrir, créer et laisser parler son imagination, débutante ou passionnée.",
     couleur: "bg-espace-creatifs",
   },
@@ -200,7 +198,7 @@ const ESPACES = [
     titre: "L'Espace Business",
     photo: photoBusiness,
     alt: "Table de coworking avec ordinateur portable, carnets et tasses",
-    logo: logoBusiness,
+    logo: ESPACES_PAR_SLUG.business.logo,
     description: "Un espace dédié aux entrepreneures pour échanger, s'entraider et faire avancer leurs projets ensemble.",
     couleur: "bg-espace-business",
   },

@@ -12,8 +12,9 @@ import photoAtelier from "@/assets/hero-workshop-960.webp";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { trackVisit } from "@/utils/trackVisit";
 import { usePublicAteliers } from "@/hooks/usePublicAteliers";
+import { espaceDe } from "@/lib/espaces";
 
-const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription";
+const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription, antennes(slug)";
 
 const FRENCH_DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
@@ -138,6 +139,7 @@ const Calendrier = () => {
                           selectedDate.getTime() === d.getTime() &&
                           popinWorkshop?.id === ws.id;
                         const full = ws.statut === "complet" || ws.places_disponibles <= 0;
+                        const espace = espaceDe(ws);
                         return (
                           <button
                             key={ws.id}
@@ -201,6 +203,16 @@ const Calendrier = () => {
                                 )}
                               </div>
                             </div>
+
+                            {espace && (
+                              <img
+                                src={espace.logo}
+                                alt={`Espace ${espace.nom}`}
+                                loading="lazy"
+                                decoding="async"
+                                className="hidden h-12 w-12 shrink-0 self-center rounded-full bg-white object-contain p-1 shadow-sm sm:block"
+                              />
+                            )}
 
                             {/* Flèche */}
                             <ChevronRight className="w-4 h-4 self-center text-muted-foreground shrink-0" />

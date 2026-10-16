@@ -17,6 +17,7 @@ test("l'accueil affiche les espaces et les ateliers à venir", async ({ page }) 
     await expect(page.getByRole("heading", { name: espace, exact: true })).toBeAttached();
   }
   await expect(page.getByText(ATELIER_TEST.titre).first()).toBeVisible();
+  await expect(page.locator("#ateliers").getByRole("img", { name: "Espace Papotages" })).toBeVisible();
 });
 
 test("la pré-inscription valide les champs puis envoie uniquement l'identité", async ({ page }) => {
