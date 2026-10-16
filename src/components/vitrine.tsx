@@ -45,7 +45,7 @@ export interface Valeur {
 
 /** Valeurs du club : pictogramme rond, titre et phrase courte. */
 export const GrilleValeurs = ({ valeurs }: { valeurs: Valeur[] }) => (
-  <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-5">
+  <div className={`grid gap-x-6 gap-y-10 sm:grid-cols-2 ${valeurs.length === 4 ? "lg:grid-cols-4" : "lg:grid-cols-5"}`}>
     {valeurs.map(({ icone: Icone, titre, description }) => (
       <div key={titre} className="mx-auto max-w-xs space-y-3 text-center">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-card text-terracotta">

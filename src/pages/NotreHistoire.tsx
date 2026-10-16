@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode } from "react";
-import { Heart, MessagesSquare, Pencil, Sprout, Users } from "lucide-react";
+import { MessagesSquare, Pencil, Sprout, Users } from "lucide-react";
 import SiteHeader from "@/components/SiteHeader";
 import Footer from "@/components/Footer";
 import { Bouton, GrilleValeurs, Surtitre, TitreSection, type Valeur } from "@/components/vitrine";
@@ -28,7 +28,6 @@ const FONDATRICES = [
 
 const VALEURS: Valeur[] = [
   { icone: Users, titre: "La convivialité", description: "Se retrouver et partager de bons moments." },
-  { icone: Heart, titre: "La bienveillance", description: "Accueillir chacune telle qu'elle est." },
   { icone: MessagesSquare, titre: "Le partage", description: "Des expériences qui nous enrichissent." },
   { icone: Pencil, titre: "La créativité", description: "Oser découvrir et imaginer ensemble." },
   { icone: Sprout, titre: "L'entraide", description: "Un coup de main peut faire la différence." },
