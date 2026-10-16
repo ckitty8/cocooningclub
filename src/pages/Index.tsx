@@ -1,14 +1,19 @@
-import { useState, useEffect, FormEvent } from "react";
-import { ArrowRight, Sparkles, Heart, Users } from "lucide-react";
+import { useState, useEffect, FormEvent, type ReactNode } from "react";
+import { ArrowRight, Feather, HandHeart, Heart, MessagesSquare, Pencil, Users } from "lucide-react";
 import { Link } from "react-router-dom";
+import SiteHeader from "@/components/SiteHeader";
 import WorkshopCarousel from "@/components/WorkshopCarousel";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import JournalSection from "@/components/JournalSection";
 import Footer from "@/components/Footer";
 import PreInscriptionModal from "@/components/PreInscriptionModal";
 import { supabase } from "@/integrations/supabase/client";
-import heroImage from "@/assets/hero-workshop-1920.webp";
-import heroImageSmall from "@/assets/hero-workshop-960.webp";
+import photoRencontre from "@/assets/accueil/rencontre.webp";
+import photoGroupe from "@/assets/accueil/groupe.webp";
+import photoPapotages from "@/assets/accueil/papotages.webp";
+import photoCreatif from "@/assets/accueil/creatif.webp";
+import photoBusiness from "@/assets/accueil/business.webp";
+import photoAtelier from "@/assets/hero-workshop-960.webp";
 import logoPapotages from "@/assets/espaces/papotages.webp";
 import logoCreatifs from "@/assets/espaces/creatifs.webp";
 import logoBusiness from "@/assets/espaces/business.webp";
@@ -175,27 +180,51 @@ const ContactForm = () => {
 // le compilateur les détecte (pas de classes construites dynamiquement).
 const ESPACES = [
   {
-    titre: "Papotages",
+    titre: "L'Espace Papotages",
+    photo: photoPapotages,
+    alt: "Trois femmes discutent en souriant autour d'un café",
     logo: logoPapotages,
-    description: "Des rencontres informelles pour échanger, se confier et créer du lien autour d'un café.",
-    liseret: "bg-espace-papotages",
-    fond: "bg-espace-papotages-fond",
+    description: "Des rencontres en toute simplicité pour échanger, partager et créer de nouveaux liens autour d'un café.",
+    couleur: "bg-espace-papotages",
   },
   {
-    titre: "Créatifs",
+    titre: "L'Espace Créatif",
+    photo: photoCreatif,
+    alt: "Mains qui assemblent fleurs séchées et papier lors d'un atelier créatif",
     logo: logoCreatifs,
-    description: "Peinture, bougie, macramé, poterie… des ateliers manuels pour se reconnecter à soi.",
-    liseret: "bg-espace-creatifs",
-    fond: "bg-espace-creatifs-fond",
+    description: "Des ateliers pour découvrir, créer et laisser parler son imagination, débutante ou passionnée.",
+    couleur: "bg-espace-creatifs",
   },
   {
-    titre: "Business",
+    titre: "L'Espace Business",
+    photo: photoBusiness,
+    alt: "Table de coworking avec ordinateur portable, carnets et tasses",
     logo: logoBusiness,
-    description: "Entrepreneuriat, développement pro et perso : des ateliers pour avancer entourée.",
-    liseret: "bg-espace-business",
-    fond: "bg-espace-business-fond",
+    description: "Un espace dédié aux entrepreneures pour échanger, s'entraider et faire avancer leurs projets ensemble.",
+    couleur: "bg-espace-business",
   },
 ];
+
+const VALEURS = [
+  { icone: Users, titre: "Convivialité", description: "Se retrouver et partager de bons moments en toute simplicité." },
+  { icone: Feather, titre: "Bienveillance", description: "Accueillir chacune telle qu'elle est, sans jugement ni pression." },
+  { icone: MessagesSquare, titre: "Partage", description: "Nos expériences, nos passions et nos différences sont une vraie richesse." },
+  { icone: Pencil, titre: "Créativité", description: "Oser découvrir, expérimenter et imaginer ensemble." },
+  { icone: HandHeart, titre: "Entraide", description: "Un conseil, un encouragement ou un coup de main peuvent faire toute la différence." },
+];
+
+/** Petit intitulé en capitales au-dessus des titres de section. */
+const Surtitre = ({ children }: { children: ReactNode }) => (
+  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-terracotta">{children}</p>
+);
+
+/** Titre de section de l'accueil (serif, centré par défaut). */
+const TitreSection = ({ children, className = "text-center" }: { children: ReactNode; className?: string }) => (
+  <h2 className={`font-brand text-3xl leading-tight text-foreground md:text-5xl ${className}`}>{children}</h2>
+);
+
+const boutonPrincipal =
+  "inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-7 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90";
 
 const Index = () => {
   const { ateliers, setAteliers, loading: ateliersLoading, error: ateliersError, reload: reloadAteliers } =
@@ -228,136 +257,92 @@ const Index = () => {
   const openModal = (workshopTitle = "") => setPreInscription(workshopTitle);
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b">
-        <div className="container mx-auto flex flex-col items-center py-6 px-6 relative">
-          <Link
-            to="/login"
-            className="absolute right-6 top-1/2 -translate-y-1/2 hidden md:inline-flex border border-foreground/40 px-5 py-2 text-xs tracking-[0.2em] uppercase text-foreground hover:bg-foreground hover:text-background transition-colors"
-          >
-            Espace Membre
-          </Link>
-
-          <img src="/logo-160.webp" alt="Logo Cocooning Club" width={80} height={80} className="mx-auto mb-2 w-16 md:w-20 h-auto" />
-          <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-            <h2 className="font-brand text-3xl md:text-5xl font-bold text-foreground tracking-[0.08em] uppercase leading-tight text-center hover:opacity-80 transition-opacity">
-              Cocooning Club
-            </h2>
-          </Link>
-          <span className="text-xs tracking-[0.35em] uppercase text-muted-foreground mt-1">Club</span>
-
-          <div className="flex flex-wrap justify-center gap-4 md:gap-8 mt-4 font-body text-xs md:text-sm tracking-[0.12em] uppercase text-foreground/80">
-            <a href="#apropos" className="hover:text-primary transition-colors">À propos</a>
-            <a href="#ateliers" className="hover:text-primary transition-colors">Nos Ateliers</a>
-            <Link to="/calendrier" className="hover:text-primary transition-colors">Calendrier</Link>
-            <a href="#contact" className="hover:text-primary transition-colors">Contact</a>
-            <Link to="/login" className="md:hidden hover:text-primary transition-colors">Espace Membre</Link>
-          </div>
-        </div>
-      </nav>
+    // Thème crème propre à l'accueil (variables dans index.css).
+    <div className="theme-accueil min-h-screen bg-background text-foreground">
+      <SiteHeader actif="Accueil" />
 
       {/* Hero */}
-      <section className="relative min-h-[90vh] flex items-center pt-80 sm:pt-64 md:pt-52">
-        <div className="container mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium">
-              <Sparkles className="w-4 h-4" />
-              Papotages, Créatifs & Business, à taille humaine
-            </div>
-            <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-bold text-foreground leading-tight">
-              Sortez de la routine,{" "}
-              <span className="italic text-primary">connectez.</span>
-            </h1>
-            <p className="text-base md:text-lg text-muted-foreground max-w-md leading-relaxed">
-              Cocooning Club propose des ateliers autour de 3 espaces — Papotages, Créatifs et Business — 1 à 2 fois par mois dans une ambiance chaleureuse et bienveillante. Pas besoin d'être experte, juste d'avoir envie de déconnecter.
-            </p>
-            <button
-              onClick={() => openModal()}
-              className="inline-block bg-primary text-primary-foreground px-8 py-4 rounded-full font-medium text-sm hover:opacity-90 transition-opacity"
-            >
-              Découvrir les prochains ateliers
-            </button>
-          </div>
-          <div className="relative">
-            <div className="rounded-3xl overflow-hidden shadow-2xl">
-              <img
-                src={heroImage}
-                srcSet={`${heroImageSmall} 960w, ${heroImage} 1920w`}
-                sizes="(min-width: 768px) 50vw, 100vw"
-                width={1920}
-                height={1080}
-                // React 18 ne connaît pas encore fetchPriority : on passe l'attribut HTML brut.
-                {...{ fetchpriority: "high" }}
-                alt="Table d'atelier créatif avec bougies allumées, palette d'aquarelle, ciseaux et pelote de laine"
-                className="w-full h-[280px] sm:h-[380px] md:h-[500px] object-cover" />
-            </div>
-          </div>
+      <section className="relative overflow-hidden pt-16">
+        <div className="relative md:absolute md:bottom-0 md:right-0 md:top-16 md:w-[55%]">
+          <img
+            src={photoRencontre}
+            width={497}
+            height={405}
+            // React 18 ne connaît pas encore fetchPriority : on passe l'attribut HTML brut.
+            {...{ fetchpriority: "high" }}
+            alt="Quatre femmes discutent en riant autour d'un café. En surimpression : « Plus qu'un club, une communauté de femmes inspirantes. »"
+            className="h-64 w-full object-cover object-right-bottom sm:h-80 md:h-full"
+          />
+          <div className="absolute inset-y-0 left-0 hidden w-1/3 bg-gradient-to-r from-background to-transparent md:block" />
         </div>
-      </section>
-
-      {/* Values */}
-      <section className="py-24 bg-card scroll-mt-80 sm:scroll-mt-56 md:scroll-mt-64" id="apropos">
-        <div className="container mx-auto px-6">
-          <h2 className="text-3xl md:text-4xl font-display font-bold text-center text-foreground mb-4">
-            Un moment pour soi
-          </h2>
-          <p className="text-center text-muted-foreground max-w-lg mx-auto mb-16">
-            Nos ateliers sont pensés comme des bulles de douceur. On se retrouve, on échange, on avance.
-          </p>
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              { icon: Sparkles, title: "Diversité", desc: "Papotages, ateliers créatifs, sessions business : une palette large pour se retrouver autrement." },
-              { icon: Users, title: "Convivialité", desc: "Petits groupes pour un moment chaleureux et des échanges authentiques." },
-              { icon: Heart, title: "Bienveillance", desc: "Aucun niveau requis. On vient comme on est, on repart le cœur léger." },
-            ].map((item) => (
-              <div key={item.title} className="bg-background rounded-2xl p-8 text-center space-y-4 border hover:shadow-lg transition-shadow">
-                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10">
-                  <item.icon className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="font-display text-xl font-semibold text-foreground">{item.title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
-              </div>
-            ))}
+        <div className="container relative mx-auto px-6 py-12 md:py-24 lg:py-28">
+          <div className="space-y-5 md:w-[48%]">
+            <Surtitre>À propos</Surtitre>
+            <h1 className="font-brand text-4xl leading-[1.1] text-foreground sm:text-5xl lg:text-6xl">
+              À propos du Cocooning Club
+            </h1>
+            <p className="text-lg leading-snug text-terracotta md:text-xl">
+              Des rencontres, de la créativité, de l'entraide et surtout, de belles aventures entre femmes !
+            </p>
+            <p className="text-sm leading-relaxed text-muted-foreground md:text-base">
+              Le Cocooning Club est une association née en Seine-Saint-Denis (93) d'une envie simple : rassembler
+              les femmes autour de moments de partage, de créativité et de convivialité.
+            </p>
+            <p className="text-sm leading-relaxed text-muted-foreground md:text-base">
+              Un club où chacune peut trouver sa place, qu'elle ait envie de papoter autour d'un café, de découvrir
+              une activité créative ou de faire grandir son projet professionnel.
+            </p>
+            <a href="#espaces" className={boutonPrincipal}>
+              Découvrir nos espaces
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </a>
           </div>
         </div>
       </section>
 
       {/* Nos espaces */}
-      <section className="py-24 scroll-mt-80 sm:scroll-mt-56 md:scroll-mt-64" id="espaces">
+      <section className="scroll-mt-16 py-20 md:py-24" id="espaces">
         <div className="container mx-auto px-6">
-          <h2 className="text-5xl md:text-6xl font-display text-center text-foreground mb-3">
-            Nos espaces
-          </h2>
-          <p className="text-center text-muted-foreground max-w-lg mx-auto mb-14">
-            Trois grands espaces d'ateliers pour répondre à toutes vos envies du moment.
-          </p>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="mx-auto mb-12 max-w-2xl space-y-4 text-center">
+            <Surtitre>Notre univers</Surtitre>
+            <TitreSection>Trois univers pour se retrouver</TitreSection>
+            <span className="mx-auto block h-0.5 w-10 bg-primary" aria-hidden="true" />
+            <p className="text-sm leading-relaxed text-muted-foreground md:text-base">
+              Trois espaces complémentaires, pensés pour répondre à toutes vos envies : se rencontrer, créer et
+              entreprendre. Toujours dans la même ambiance : bienveillante, conviviale et sans pression.
+            </p>
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
             {ESPACES.map(espace => (
               <article
                 key={espace.titre}
-                className="flex flex-col overflow-hidden rounded-3xl bg-[#fffaf6] shadow-[0_1px_0_rgba(99,59,50,0.06),0_12px_32px_-18px_rgba(99,59,50,0.35)]"
+                className="flex flex-col overflow-hidden rounded-2xl border bg-white/70 shadow-[0_12px_32px_-22px_rgba(99,59,50,0.45)]"
               >
-                <div className={`h-1.5 ${espace.liseret}`} />
-                <div className={`flex h-48 items-center justify-center px-8 py-6 ${espace.fond}`}>
+                <div className="relative">
                   <img
-                    src={espace.logo}
-                    alt={`Logo de l'espace ${espace.titre}`}
+                    src={espace.photo}
+                    alt={espace.alt}
                     loading="lazy"
                     decoding="async"
-                    className="max-h-36 max-w-full object-contain"
+                    className="h-48 w-full object-cover"
+                  />
+                  <img
+                    src={espace.logo}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    className="absolute -bottom-7 right-6 h-14 w-14 rounded-full bg-white object-contain p-1.5 shadow-md"
                   />
                 </div>
-                <div className="flex flex-1 flex-col gap-3 px-8 pb-8 pt-7">
-                  <h3 className="font-body text-xs font-semibold uppercase tracking-[0.18em] text-foreground">
-                    {espace.titre}
-                  </h3>
-                  <p className="flex-1 text-base leading-relaxed text-muted-foreground">{espace.description}</p>
+                <div className="flex flex-1 flex-col gap-3 px-7 pb-7 pt-8">
+                  <h3 className="font-brand text-2xl text-foreground">{espace.titre}</h3>
+                  <span className={`block h-0.5 w-8 ${espace.couleur}`} aria-hidden="true" />
+                  <p className="flex-1 text-sm leading-relaxed text-muted-foreground">{espace.description}</p>
                   <Link
                     to="/calendrier"
-                    className="inline-flex min-h-11 items-center gap-2 self-start text-sm font-semibold text-foreground transition-colors hover:text-primary"
+                    className="inline-flex min-h-11 items-center gap-2 self-start text-sm font-medium text-terracotta transition-colors hover:text-foreground"
                   >
-                    Voir les prochains ateliers
+                    Voir les ateliers
                     <ArrowRight className="h-4 w-4" aria-hidden="true" />
                   </Link>
                 </div>
@@ -367,15 +352,95 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Workshops */}
-      <section className="py-24 scroll-mt-80 sm:scroll-mt-56 md:scroll-mt-64" id="ateliers">
-        <div className="container mx-auto px-6">
-          <h2 className="text-3xl md:text-4xl font-display font-bold text-center text-foreground mb-4">
-            Prochains ateliers
-          </h2>
-          <p className="text-center text-muted-foreground max-w-lg mx-auto mb-16">
-            Réservez votre place, quel que soit l'espace qui vous attire.
+      {/* Notre histoire */}
+      <section className="grid scroll-mt-16 bg-card md:grid-cols-2" id="apropos">
+        <img
+          src={photoGroupe}
+          alt="Cinq femmes de dos, bras dessus bras dessous, face à un coucher de soleil"
+          loading="lazy"
+          decoding="async"
+          className="h-72 w-full object-cover sm:h-96 md:h-full"
+        />
+        <div className="max-w-xl space-y-5 px-6 py-14 md:px-12 md:py-20 lg:px-16">
+          <Surtitre>Notre histoire</Surtitre>
+          <TitreSection className="text-left">Une idée devenue une belle aventure collective</TitreSection>
+          <p className="text-sm leading-relaxed text-muted-foreground md:text-base">
+            Tout a commencé avec Maëlle et une envie toute simple : retrouver du contact humain, faire de nouvelles
+            rencontres et créer un espace où les femmes pourraient se retrouver.
           </p>
+          <p className="text-sm leading-relaxed text-muted-foreground md:text-base">
+            De cette idée est née une aventure collective, portée aujourd'hui par cinq femmes aux personnalités et
+            aux talents complémentaires : Maëlle, Christelle, Aurélie, Coraline et Fabienne.
+          </p>
+          <p className="text-sm leading-relaxed text-muted-foreground md:text-base">
+            Cinq parcours différents, une même envie : imaginer des moments qui rassemblent et faire grandir une
+            communauté féminine locale.
+          </p>
+        </div>
+      </section>
+
+      {/* Nos valeurs */}
+      <section className="py-20 md:py-24">
+        <div className="container mx-auto px-6">
+          <div className="mb-12 space-y-4 text-center">
+            <Surtitre>Nos valeurs</Surtitre>
+            <TitreSection>Ce qui nous anime au quotidien</TitreSection>
+          </div>
+          <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-5">
+            {VALEURS.map(({ icone: Icone, titre, description }) => (
+              <div key={titre} className="mx-auto max-w-xs space-y-3 text-center">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-card text-terracotta">
+                  <Icone className="h-7 w-7" strokeWidth={1.5} aria-hidden="true" />
+                </div>
+                <h3 className="font-brand text-xl text-foreground">{titre}</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">{description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Appel à rejoindre le club */}
+      <section className="container mx-auto px-6">
+        <div className="relative overflow-hidden rounded-3xl bg-card">
+          <img
+            src={photoAtelier}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-y-0 right-0 hidden h-full w-1/2 object-cover md:block"
+          />
+          <div className="absolute inset-y-0 right-0 hidden w-1/2 bg-gradient-to-r from-card via-card/60 to-transparent md:block" />
+          <div className="relative flex flex-col gap-6 p-8 md:flex-row md:items-center md:justify-between md:p-12">
+            <div className="max-w-xl space-y-3">
+              <Surtitre>Et si la prochaine belle rencontre, c'était toi ?</Surtitre>
+              <TitreSection className="text-left">Rejoins l'aventure</TitreSection>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Que tu viennes pour un café, un atelier ou un projet professionnel, tu trouveras au Cocooning Club
+                des femmes qui partagent cette envie de se rencontrer, de créer et d'avancer ensemble.
+              </p>
+            </div>
+            <Link
+              to="/calendrier"
+              className="inline-flex min-h-11 shrink-0 items-center gap-2 self-start rounded-full bg-white px-7 py-3 text-sm font-medium text-foreground shadow-md transition-colors hover:text-primary md:self-center"
+            >
+              Découvrir nos événements
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Prochains ateliers */}
+      <section className="scroll-mt-16 py-20 md:py-24" id="ateliers">
+        <div className="container mx-auto px-6">
+          <div className="mx-auto mb-12 max-w-lg space-y-4 text-center">
+            <Surtitre>Nos événements</Surtitre>
+            <TitreSection>Prochains ateliers</TitreSection>
+            <p className="text-muted-foreground">
+              Réservez votre place, quel que soit l'espace qui vous attire.
+            </p>
+          </div>
           {ateliers.length === 0 ? (
             <div className="text-center py-12 border rounded-2xl bg-card max-w-2xl mx-auto">
               {ateliersLoading ? (
@@ -413,12 +478,11 @@ const Index = () => {
       <JournalSection />
 
       {/* Contact */}
-      <section className="py-24 bg-card scroll-mt-80 sm:scroll-mt-56 md:scroll-mt-64" id="contact">
+      <section className="scroll-mt-16 bg-card py-20 md:py-24" id="contact">
         <div className="container mx-auto px-6 max-w-xl">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-4">
-              Envie de nous rejoindre ?
-            </h2>
+          <div className="mb-10 space-y-4 text-center">
+            <Surtitre>Contact</Surtitre>
+            <TitreSection>Envie de nous rejoindre{"\u00a0"}?</TitreSection>
             <p className="text-muted-foreground">
               Suivez-nous sur les réseaux ou écrivez-nous pour ne rien manquer des prochains ateliers.
             </p>

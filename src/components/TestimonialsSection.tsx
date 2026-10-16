@@ -47,7 +47,7 @@ const TestimonialsSection = () => {
   return (
     <section className="py-24 bg-card">
       <div className="container mx-auto px-6">
-        <h2 className="text-3xl md:text-4xl font-display font-bold text-center text-foreground mb-4">
+        <h2 className="font-brand text-3xl md:text-5xl leading-tight text-center text-foreground mb-4">
           Ce qu'elles en disent
         </h2>
         <p className="text-center text-muted-foreground max-w-lg mx-auto mb-16">
@@ -76,7 +76,7 @@ const TestimonialsSection = () => {
                 </div>
                 <p className="text-foreground leading-relaxed italic">"{t.texte}"</p>
                 <div>
-                  <p className="font-display font-semibold text-foreground">{t.auteur}</p>
+                  <p className="font-brand font-semibold text-foreground">{t.auteur}</p>
                   {t.atelier && <p className="text-xs text-muted-foreground">{t.atelier}</p>}
                 </div>
               </div>

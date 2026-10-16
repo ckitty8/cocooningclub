@@ -8,12 +8,15 @@ Quand l'utilisateur demande ce qu'il reste à faire, lui rappeler en premier les
 
 
 - **Mentions légales** (obligatoires, loi LCEN) : page à créer avec éditeur (nom, adresse, statut juridique du club), directeur de publication et hébergeur (Vercel). L'utilisateur a toutes les infos mais veut traiter ce point plus tard.
+- **Photos de l'accueil** : provisoires (découpées dans la maquette, basse définition), à remplacer par les vraies photos du club, cf. `src/assets/accueil/README.md`.
 - **Google Analytics 4 + bannière cookie** : reporté à plus tard par l'utilisateur. Il faudra son identifiant de mesure `G-XXXXXXXXXX`.
 
 ## Décisions prises
 
 - **Analytics** : Google Analytics 4 (mise en place reportée). Implique une vraie bannière cookie (Accepter / Refuser / Personnaliser), avec Google Consent Mode v2 : rien n'est chargé avant consentement.
 - **Domaine** : le domaine principal configuré dans Vercel est `www.lecocooningclub.fr` (Vercel redirige déjà le domaine nu vers `www`). NE JAMAIS ajouter de redirection `www` ↔ domaine nu dans `vercel.json` : le 15/10 une règle `www` → nu a créé une boucle (ERR_TOO_MANY_REDIRECTS, site KO). Les URL canoniques, le sitemap, robots.txt et og:image utilisent `https://www.lecocooningclub.fr`. Exception : le lien de réinitialisation du mot de passe (`src/pages/auth/ForgotPassword.tsx`) reste sur le domaine nu tant que `www` n'est pas ajouté aux URL de redirection autorisées dans Supabase Auth.
+
+- **Accueil (16/10)** : refait d'après la maquette fournie par l'utilisateur (fond crème `.theme-accueil`, titres en Playfair Display `font-brand`, en-tête partagé `SiteHeader` avec l'accueil et le calendrier). Le texte complet « À propos » fourni par l'utilisateur pourra servir à une future page dédiée.
 
 ## Plan de mise en conformité (octobre 2026)
 

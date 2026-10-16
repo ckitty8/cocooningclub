@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { ChevronRight, MapPin, Clock, Users, Euro, X, Calendar, CalendarPlus, Link2 } from "lucide-react";
 import { FRENCH_MONTHS, formatDateFr, formatTimeFr, parseDateAtelier } from "@/data/workshops";
 import type { Workshop } from "@/data/workshops";
 import { toast } from "sonner";
 import PreInscriptionModal from "@/components/PreInscriptionModal";
+import SiteHeader from "@/components/SiteHeader";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { trackVisit } from "@/utils/trackVisit";
 import { usePublicAteliers } from "@/hooks/usePublicAteliers";
@@ -59,33 +60,10 @@ const Calendrier = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b">
-        <div className="container mx-auto flex flex-col items-center py-6 px-6 relative">
-          <Link
-            to="/login"
-            className="absolute right-6 top-1/2 -translate-y-1/2 hidden md:inline-flex border border-foreground/40 px-5 py-2 text-xs tracking-[0.2em] uppercase text-foreground hover:bg-foreground hover:text-background transition-colors"
-          >
-            Espace Membre
-          </Link>
-          <Link to="/">
-            <h2 className="font-brand text-3xl md:text-5xl font-bold text-foreground tracking-[0.08em] uppercase leading-tight text-center hover:opacity-80 transition-opacity">
-              Cocooning Club
-            </h2>
-          </Link>
-          <span className="text-xs tracking-[0.35em] uppercase text-muted-foreground mt-1">Club</span>
-          <div className="flex flex-wrap justify-center gap-4 md:gap-8 mt-4 font-body text-xs md:text-sm tracking-[0.12em] uppercase text-foreground/80">
-            <Link to="/#apropos" className="hover:text-primary transition-colors">À propos</Link>
-            <Link to="/#ateliers" className="hover:text-primary transition-colors">Nos Ateliers</Link>
-            <Link to="/calendrier" className="text-primary font-medium">Calendrier</Link>
-            <Link to="/#contact" className="hover:text-primary transition-colors">Contact</Link>
-            <Link to="/login" className="md:hidden hover:text-primary transition-colors">Espace Membre</Link>
-          </div>
-        </div>
-      </nav>
+      <SiteHeader actif="Nos événements" />
 
       {/* Page content */}
-      <main className="pt-40 pb-24">
+      <main className="pt-28 pb-24">
         <div className="container mx-auto px-6 max-w-3xl">
           <div className="text-center mb-12">
             <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-3">

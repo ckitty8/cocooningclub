@@ -42,7 +42,7 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
               className="bg-card rounded-2xl border overflow-hidden flex flex-col cursor-pointer transition-all hover:shadow-lg hover:ring-2 hover:ring-primary/30"
             >
               <div className="p-6 border-b bg-primary/5">
-                <h3 className="font-display text-xl font-semibold text-foreground">{ws.titre}</h3>
+                <h3 className="font-brand text-xl text-foreground">{ws.titre}</h3>
               </div>
               <div className="p-6 space-y-3 flex-1 flex flex-col">
                 <p className="text-muted-foreground text-sm leading-relaxed mb-2">{ws.description_courte || ws.description}</p>

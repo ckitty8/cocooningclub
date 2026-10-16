@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@400;500;700&family=DM+Sans:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -64,5 +64,15 @@
   }
   h1, h2, h3, h4 {
     font-family: var(--font-display);
+  }
+}
+
+@layer base {
+  /* Page d'accueil : fond crème plus clair que la pêche de la charte, et
+     texte secondaire assombri pour rester lisible (contraste AA). */
+  .theme-accueil {
+    --background: 27 100% 98%;
+    --card: 24 50% 95%;
+    --muted-foreground: 11 18% 38%;
   }
 }

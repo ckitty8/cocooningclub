@@ -12,8 +12,8 @@ test.beforeEach(async ({ page }) => {
 test("l'accueil affiche les espaces et les ateliers à venir", async ({ page }) => {
   await page.goto("/");
   await expect(page).toHaveTitle(/Cocooning Club/);
-  await expect(page.getByRole("heading", { name: "Nos espaces" })).toBeVisible();
-  for (const espace of ["Papotages", "Créatifs", "Business"]) {
+  await expect(page.getByRole("heading", { level: 1, name: "À propos du Cocooning Club" })).toBeVisible();
+  for (const espace of ["L'Espace Papotages", "L'Espace Créatif", "L'Espace Business"]) {
     await expect(page.getByRole("heading", { name: espace, exact: true })).toBeAttached();
   }
   await expect(page.getByText(ATELIER_TEST.titre).first()).toBeVisible();
@@ -22,7 +22,7 @@ test("l'accueil affiche les espaces et les ateliers à venir", async ({ page }) 
 test("la pré-inscription valide les champs puis envoie uniquement l'identité", async ({ page }) => {
   const mock = await mockSupabase(page);
   await page.goto("/");
-  await page.getByRole("button", { name: "Découvrir les prochains ateliers" }).click();
+  await page.getByRole("button", { name: "Pré-inscription" }).first().click();
 
   const envoyer = page.getByRole("button", { name: /Envoyer ma pré-inscription/ });
   await envoyer.click();
@@ -50,7 +50,7 @@ test("la pré-inscription valide les champs puis envoie uniquement l'identité",
 test("un robot qui remplit le champ piège ne crée aucune pré-inscription", async ({ page }) => {
   const mock = await mockSupabase(page);
   await page.goto("/");
-  await page.getByRole("button", { name: "Découvrir les prochains ateliers" }).click();
+  await page.getByRole("button", { name: "Pré-inscription" }).first().click();
   await page.getByPlaceholder("Marie Dupont").fill("Robot Spam");
   await page.getByPlaceholder("marie@email.com").fill("robot@spam.fr");
   await page.getByRole("dialog").locator("select").selectOption(ATELIER_TEST.titre);
@@ -61,6 +61,15 @@ test("un robot qui remplit le champ piège ne crée aucune pré-inscription", as
 
   await expect(page.getByRole("heading", { name: "Pré-inscription enregistrée !" })).toBeVisible();
   expect(mock.inserts.inscriptions).toBeUndefined();
+});
+
+test("sur téléphone, le menu de l'en-tête mène au calendrier", async ({ page, isMobile }) => {
+  test.skip(!isMobile, "menu réservé aux petits écrans");
+  await page.goto("/");
+  await page.getByRole("button", { name: "Ouvrir le menu" }).click();
+  await page.locator("#menu-mobile").getByRole("link", { name: "Nos événements" }).click();
+  await expect(page).toHaveTitle("Calendrier des ateliers · Cocooning Club");
+  await expect(page.locator("#menu-mobile")).toBeHidden();
 });
 
 test("le lien partagé d'un atelier ouvre directement sa fiche dans le calendrier", async ({ page }) => {

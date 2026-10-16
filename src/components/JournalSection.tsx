@@ -10,7 +10,7 @@ const JournalSection = () => (
             <Lock className="w-3.5 h-3.5" />
             Réservé aux membres
           </div>
-          <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground leading-tight">
+          <h2 className="font-brand text-3xl md:text-4xl text-foreground leading-tight">
             Le Journal du Club
           </h2>
           <p className="text-muted-foreground leading-relaxed">
@@ -29,7 +29,7 @@ const JournalSection = () => (
               <div key={item.title} className="flex gap-3">
                 <BookOpen className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-display font-semibold text-foreground text-sm">{item.title}</p>
+                  <p className="font-brand font-semibold text-foreground text-sm">{item.title}</p>
                   <p className="text-muted-foreground text-xs leading-relaxed">{item.desc}</p>
                 </div>
               </div>
