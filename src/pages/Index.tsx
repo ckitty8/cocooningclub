@@ -9,7 +9,7 @@ import JournalSection from "@/components/JournalSection";
 import Footer from "@/components/Footer";
 import PreInscriptionModal from "@/components/PreInscriptionModal";
 import { supabase } from "@/integrations/supabase/client";
-import photoRencontre from "@/assets/accueil/rencontre.webp";
+import photoFondatrices from "@/assets/accueil/fondatrices.webp";
 import photoGroupe from "@/assets/accueil/groupe.webp";
 import photoPapotages from "@/assets/accueil/papotages.webp";
 import photoCreatif from "@/assets/accueil/creatif.webp";
@@ -248,21 +248,9 @@ const Index = () => {
       <SiteHeader actif="Accueil" />
 
       {/* Hero */}
-      <section className="relative overflow-hidden pt-20">
-        <div className="relative md:absolute md:bottom-0 md:right-0 md:top-20 md:w-[55%]">
-          <img
-            src={photoRencontre}
-            width={497}
-            height={405}
-            // React 18 ne connaît pas encore fetchPriority : on passe l'attribut HTML brut.
-            {...{ fetchpriority: "high" }}
-            alt="Quatre femmes discutent en riant autour d'un café. En surimpression : « Plus qu'un club, une communauté de femmes inspirantes. »"
-            className="h-64 w-full object-cover object-right-bottom sm:h-80 md:h-full"
-          />
-          <div className="absolute inset-y-0 left-0 hidden w-1/3 bg-gradient-to-r from-background to-transparent md:block" />
-        </div>
-        <div className="container relative mx-auto px-6 py-12 md:py-24 lg:py-28">
-          <div className="space-y-5 md:w-[48%]">
+      <section className="pt-20">
+        <div className="container mx-auto grid items-center gap-10 px-6 py-12 lg:grid-cols-2 lg:gap-14 lg:py-20">
+          <div className="space-y-5">
             <Surtitre>À propos</Surtitre>
             <h1 className="font-display text-5xl leading-[1.1] text-foreground sm:text-6xl lg:text-7xl">
               À propos du Cocooning Club
@@ -282,6 +270,20 @@ const Index = () => {
               <Bouton to="/#espaces">Découvrir nos espaces</Bouton>
               <Bouton to="/notre-histoire" variante="contour">Notre histoire</Bouton>
             </div>
+          </div>
+          <div className="relative order-first overflow-hidden rounded-3xl shadow-md lg:order-none">
+            <img
+              src={photoFondatrices}
+              width={1400}
+              height={1000}
+              // React 18 ne connaît pas encore fetchPriority : on passe l'attribut HTML brut.
+              {...{ fetchpriority: "high" }}
+              alt="Cinq femmes du Cocooning Club, souriantes, serrées les unes contre les autres"
+              className="aspect-[7/5] w-full object-cover"
+            />
+            <p className="absolute inset-x-[16%] top-[13%] text-center font-display text-xl leading-tight text-foreground sm:inset-x-[20%] sm:top-[18%] sm:text-4xl">
+              Plus qu’un club, une communauté de femmes inspirantes
+            </p>
           </div>
         </div>
       </section>
