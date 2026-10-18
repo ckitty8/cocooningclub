@@ -340,13 +340,17 @@ const Index = () => {
 
       {/* Notre histoire */}
       <section className="grid bg-card md:grid-cols-2">
-        <img
-          src={photoGroupe}
-          alt="Cinq femmes de dos, bras dessus bras dessous, face à un coucher de soleil"
-          loading="lazy"
-          decoding="async"
-          className="h-72 w-full object-cover sm:h-96 md:h-full"
-        />
+        <div className="flex items-center px-6 pt-10 md:p-10">
+          <img
+            src={photoGroupe}
+            width={1400}
+            height={1050}
+            alt="Les cinq fondatrices du Cocooning Club souriantes, autour d'un bouquet de fleurs, avec le logo du club sur une tablette"
+            loading="lazy"
+            decoding="async"
+            className="aspect-[4/3] w-full rounded-2xl object-cover shadow-md"
+          />
+        </div>
         <div className="max-w-xl space-y-5 px-6 py-14 md:px-12 md:py-20 lg:px-16">
           <Surtitre>Notre histoire</Surtitre>
           <TitreSection className="text-left">Une idée devenue une belle aventure collective</TitreSection>
