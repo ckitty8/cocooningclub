@@ -18,11 +18,6 @@ export interface Workshop {
   antennes?: { slug: string } | null;
 }
 
-export const MONTH_MAP: Record<string, number> = {
-  Janvier: 0, Février: 1, Mars: 2, Avril: 3, Mai: 4, Juin: 5,
-  Juillet: 6, Août: 7, Septembre: 8, Octobre: 9, Novembre: 10, Décembre: 11,
-};
-
 export const FRENCH_MONTHS = [
   "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
   "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre",
