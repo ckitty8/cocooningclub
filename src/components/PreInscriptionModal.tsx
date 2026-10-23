@@ -87,7 +87,7 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer }: PreInscript
               <CheckCircle2 className="w-14 h-14 text-green-500" />
             </div>
             <div>
-              <h3 className="font-display text-2xl font-bold text-foreground mb-1">Pré-inscription enregistrée !</h3>
+              <h3 className="font-brand text-2xl text-foreground mb-1">Pré-inscription enregistrée !</h3>
               <p className="text-sm text-muted-foreground">
                 Votre demande pour <span className="font-medium text-foreground">"{atelierConfirme.titre}"</span> le {formatDateFr(atelierConfirme.date_atelier)} à {formatTimeFr(atelierConfirme.heure_debut)} a été envoyée.
                 <span className="text-xs mt-2 block">Vous recevrez une confirmation par email ou WhatsApp après validation par l'équipe.</span>
@@ -103,7 +103,7 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer }: PreInscript
           </div>
         ) : (
           <>
-            <h3 className="font-display text-2xl font-bold text-foreground mb-1">Pré-inscription</h3>
+            <h3 className="font-brand text-2xl text-foreground mb-1">Pré-inscription</h3>
             <p className="text-sm text-muted-foreground mb-6">
               Votre demande sera validée par l'équipe et vous serez notifié(e) par email ou WhatsApp.
             </p>

@@ -8,9 +8,10 @@ const Footer = () => {
         <div className="grid md:grid-cols-3 gap-8 md:gap-12 mb-8 md:mb-12">
           {/* Brand */}
           <div className="space-y-4">
-            <h3 className="font-brand text-2xl font-bold text-foreground tracking-[0.08em] uppercase">
-              Cocooning Club
-            </h3>
+            <Link to="/" className="flex items-center gap-3 font-brand text-2xl text-primary">
+              <img src="/logo-160.webp" alt="" width={56} height={56} className="h-14 w-14 shrink-0" loading="lazy" />
+              Le Cocooning Club
+            </Link>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
               Papotages, ateliers créatifs et business : des rendez-vous pour déconnecter, échanger et grandir ensemble dans une ambiance douce et bienveillante.
             </p>

@@ -1,31 +1,20 @@
-import { Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
 import Footer from "@/components/Footer";
+import SiteHeader from "@/components/SiteHeader";
 
 const Confidentialite = () => {
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-6 py-6">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Retour à l'accueil
-          </Link>
-        </div>
-      </header>
+    <div className="theme-creme flex min-h-screen flex-col bg-background text-foreground">
+      <SiteHeader />
 
-      <main className="flex-1 container mx-auto px-6 py-10 md:py-16 max-w-3xl">
-        <h1 className="font-brand text-3xl md:text-4xl font-bold text-foreground tracking-[0.04em] mb-2">
+      <main className="container mx-auto max-w-3xl flex-1 px-6 pb-16 pt-32 md:pb-20 md:pt-36">
+        <h1 className="mb-2 font-brand text-3xl text-foreground md:text-5xl">
           Politique de confidentialité
         </h1>
         <p className="text-sm text-muted-foreground mb-10">Dernière mise à jour : 9 septembre 2026</p>
 
         <div className="space-y-8 text-sm md:text-base text-muted-foreground leading-relaxed">
           <section className="space-y-2">
-            <h2 className="text-lg font-semibold text-foreground">1. Responsable du traitement</h2>
+            <h2 className="font-brand text-xl text-foreground">1. Responsable du traitement</h2>
             <p>
               Cocooning Club, association basée en Seine-et-Marne (Gagny · Chelles · Le Raincy), est responsable
               du traitement des données personnelles collectées sur ce site. Pour toute question, vous pouvez
@@ -38,7 +27,7 @@ const Confidentialite = () => {
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-lg font-semibold text-foreground">2. Données que nous collectons</h2>
+            <h2 className="font-brand text-xl text-foreground">2. Données que nous collectons</h2>
             <ul className="list-disc pl-5 space-y-1">
               <li>
                 <span className="text-foreground font-medium">Formulaire d'inscription aux ateliers :</span> nom,
@@ -61,7 +50,7 @@ const Confidentialite = () => {
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-lg font-semibold text-foreground">3. Pourquoi nous utilisons ces données</h2>
+            <h2 className="font-brand text-xl text-foreground">3. Pourquoi nous utilisons ces données</h2>
             <p>
               Vos données sont utilisées pour gérer les inscriptions aux ateliers, répondre à vos demandes de
               contact, administrer votre espace membre et comprendre la fréquentation du site afin de
@@ -70,7 +59,7 @@ const Confidentialite = () => {
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-lg font-semibold text-foreground">4. Durée de conservation</h2>
+            <h2 className="font-brand text-xl text-foreground">4. Durée de conservation</h2>
             <p>
               Vos données sont conservées le temps nécessaire à la gestion de votre relation avec l'association
               (inscriptions, adhésion) et supprimées ou anonymisées au-delà, sauf obligation légale contraire.
@@ -78,7 +67,7 @@ const Confidentialite = () => {
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-lg font-semibold text-foreground">5. Vos droits</h2>
+            <h2 className="font-brand text-xl text-foreground">5. Vos droits</h2>
             <p>
               Conformément au Règlement Général sur la Protection des Données (RGPD) et à la loi Informatique et
               Libertés, vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation et
@@ -91,7 +80,7 @@ const Confidentialite = () => {
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-lg font-semibold text-foreground">6. Hébergement et sécurité</h2>
+            <h2 className="font-brand text-xl text-foreground">6. Hébergement et sécurité</h2>
             <p>
               Les données sont hébergées et sécurisées via Supabase. L'accès à l'espace d'administration est
               restreint aux membres autorisés de l'association.

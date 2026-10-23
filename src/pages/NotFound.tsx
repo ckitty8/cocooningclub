@@ -1,25 +1,16 @@
 import { Link, useLocation } from "react-router-dom";
-import { ArrowLeft, CalendarDays, Home, Mail } from "lucide-react";
+import { CalendarDays, Home, Mail } from "lucide-react";
 import Footer from "@/components/Footer";
+import SiteHeader from "@/components/SiteHeader";
 
 const NotFound = () => {
   const { pathname } = useLocation();
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-6 py-6">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Retour à l'accueil
-          </Link>
-        </div>
-      </header>
+    <div className="theme-creme flex min-h-screen flex-col bg-background text-foreground">
+      <SiteHeader />
 
-      <main className="flex-1 container mx-auto px-6 py-16 md:py-24 max-w-2xl text-center">
+      <main className="container mx-auto max-w-2xl flex-1 px-6 pb-16 pt-32 text-center md:pb-24 md:pt-40">
         <img
           src="/logo-160.webp"
           alt="Logo Cocooning Club"
@@ -27,8 +18,8 @@ const NotFound = () => {
           height={80}
           className="mx-auto mb-6 w-20 h-auto"
         />
-        <p className="font-brand text-6xl md:text-7xl font-bold text-primary mb-4">404</p>
-        <h1 className="font-display text-4xl md:text-5xl text-foreground mb-6">
+        <p className="mb-4 font-brand text-6xl text-primary md:text-7xl">404</p>
+        <h1 className="mb-6 font-brand text-3xl text-foreground md:text-5xl">
           Oups, cette page s'est envolée…
         </h1>
         <p className="text-base md:text-lg text-muted-foreground leading-relaxed mb-2">

@@ -13,8 +13,8 @@ const LIENS = [
 export type LienActif = (typeof LIENS)[number]["libelle"];
 
 interface SiteHeaderProps {
-  /** Lien mis en avant comme page courante. */
-  actif: LienActif;
+  /** Lien mis en avant comme page courante (aucun pour les pages hors menu). */
+  actif?: LienActif;
 }
 
 // En-tête fixe des pages vitrine et du calendrier. Sous 768 px,
