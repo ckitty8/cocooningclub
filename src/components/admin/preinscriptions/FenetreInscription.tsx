@@ -12,6 +12,7 @@ import { clesModele, remplirModele, telephonePourWhatsApp } from "@/lib/messages
 import {
   ROLES_BADGE, STATUT_BADGE, STATUT_LABEL, type AtelierListe, type InfoDroit, type Inscription, type StatutInscription, type StatutPaiement,
 } from "./types";
+import { dateLongue } from "@/lib/dates";
 
 type Onglet = "infos" | "paiement" | "messages" | "historique";
 type Canal = "mail" | "whatsapp";
@@ -54,8 +55,6 @@ const LIBELLES_ACTION: Record<string, string> = {
 const dateHeure = (iso: string) =>
   new Date(iso).toLocaleString("fr-FR", { day: "2-digit", month: "long", hour: "2-digit", minute: "2-digit" });
 
-const dateLongue = (iso: string) =>
-  new Date(iso + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
 const champ = "w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary";
 

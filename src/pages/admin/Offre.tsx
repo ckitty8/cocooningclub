@@ -14,6 +14,7 @@ import {
   aujourdhuiIso, estEnCours, formaterNumero, fondFormule, LIBELLES_STATUT, MODES_REGLEMENT,
   statutAdhesion, type StatutAffiche,
 } from "@/lib/adhesions";
+import { dateFr } from "@/lib/dates";
 
 type Onglet = "formules" | "adhesions";
 type Filtre = "a_valider" | "en_cours" | "expire_bientot" | "expiree" | "toutes";
@@ -34,7 +35,6 @@ const BADGE_STATUT: Record<StatutAffiche, string> = {
   refusee: "bg-red-100 text-red-600",
 };
 
-const dateFr = (iso: string | null) => (iso ? new Date(iso + "T00:00:00").toLocaleDateString("fr-FR") : "—");
 
 // La migration n'est pas encore appliquée : les tables n'existent pas.
 const tableAbsente = (err: unknown) => {

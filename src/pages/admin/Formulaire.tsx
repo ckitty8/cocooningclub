@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { withTimeout } from "@/utils/withTimeout";
 import { Plus, Pencil, Trash2, X, GripVertical, Copy, ArrowLeft, Check, Mail, MailOpen, ChevronDown, ChevronUp } from "lucide-react";
 
@@ -179,7 +180,8 @@ const Formulaire = () => {
   useEffect(() => { if (tab === "messages") fetchMessages(); }, [tab]);
 
   const toggleLu = async (msg: ContactMessage) => {
-    await supabase.from("contact_messages").update({ lu: !msg.lu }).eq("id", msg.id);
+    const { error } = await supabase.from("contact_messages").update({ lu: !msg.lu }).eq("id", msg.id);
+    if (error) { toast.error(`Erreur : ${error.message}`); return; }
     setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, lu: !m.lu } : m));
   };
 
@@ -197,34 +199,38 @@ const Formulaire = () => {
   };
 
   const handleDuplicate = async (f: FormulaireRow) => {
-    const { data: newForm } = await supabase.from("formulaires").insert({
+    const { data: newForm, error } = await supabase.from("formulaires").insert({
       nom: `${f.nom} (copie)`,
       description: f.description,
       est_actif: false,
     }).select().single();
-    if (!newForm) return;
+    if (!newForm) { toast.error(`Duplication impossible : ${error?.message ?? "formulaire non créé"}`); return; }
     const { data: origFields } = await supabase.from("form_fields").select("*").eq("formulaire_id", f.id).order("position");
     if (origFields && origFields.length > 0) {
-      await supabase.from("form_fields").insert(origFields.map(({ id: _id, cree_le: _c, ...rest }: FormField & { cree_le: string }) => ({ ...rest, formulaire_id: newForm.id })));
+      const { error: errChamps } = await supabase.from("form_fields").insert(origFields.map(({ id: _id, cree_le: _c, ...rest }: FormField & { cree_le: string }) => ({ ...rest, formulaire_id: newForm.id })));
+      if (errChamps) toast.error(`Les champs n'ont pas été copiés : ${errChamps.message}`);
     }
     fetchFormulaires();
   };
 
   const handleDelete = async (f: FormulaireRow) => {
     if (!confirm(`Supprimer le formulaire "${f.nom}" et tous ses champs ?`)) return;
-    await supabase.from("formulaires").delete().eq("id", f.id);
+    const { error } = await supabase.from("formulaires").delete().eq("id", f.id);
+    if (error) { toast.error(`Suppression impossible : ${error.message}`); return; }
     fetchFormulaires();
   };
 
   const handleToggleActive = async (f: FormulaireRow) => {
-    await supabase.from("formulaires").update({ est_actif: !f.est_actif }).eq("id", f.id);
+    const { error } = await supabase.from("formulaires").update({ est_actif: !f.est_actif }).eq("id", f.id);
+    if (error) { toast.error(`Erreur : ${error.message}`); return; }
     fetchFormulaires();
   };
 
   const handleCreate = async () => {
     if (!newName.trim()) return;
     setCreating(true);
-    await supabase.from("formulaires").insert({ nom: newName.trim(), description: newDesc.trim() || null, est_actif: false });
+    const { error } = await supabase.from("formulaires").insert({ nom: newName.trim(), description: newDesc.trim() || null, est_actif: false });
+    if (error) { toast.error(`Création impossible : ${error.message}`); setCreating(false); return; }
     setNewModal(false);
     setNewName("");
     setNewDesc("");

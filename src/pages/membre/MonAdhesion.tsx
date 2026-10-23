@@ -10,6 +10,7 @@ import {
 } from "@/lib/adhesions";
 import { supportsLisibles } from "@/lib/autorisationImage";
 import { autorisationDepuisChamps } from "@/lib/bulletin";
+import { dateFr } from "@/lib/dates";
 
 interface MonAdhesionLigne {
   id: string;
@@ -37,7 +38,6 @@ interface MonAdhesionLigne {
   } | null;
 }
 
-const dateFr = (iso: string | null) => (iso ? new Date(iso + "T00:00:00").toLocaleDateString("fr-FR") : "—");
 
 const Rangee = ({ libelle, children }: { libelle: string; children: React.ReactNode }) => (
   <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1 py-2.5 border-b last:border-b-0 text-sm">

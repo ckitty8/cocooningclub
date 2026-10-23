@@ -12,6 +12,7 @@ import {
   CalendarDays, Clock, MapPin, Users, Euro, Loader2, CheckCircle2,
   ExternalLink, X, AlarmClock,
 } from "lucide-react";
+import { dateLongue } from "@/lib/dates";
 
 interface Atelier {
   id: string;
@@ -37,8 +38,6 @@ interface Atelier {
 const isInscriptionsCloses = (a: { date_fin_inscription: string | null }) =>
   !!a.date_fin_inscription && new Date(a.date_fin_inscription + "T23:59:59") < new Date();
 
-const formatDate = (iso: string) =>
-  new Date(iso + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
 const formatTime = (t: string) => t.slice(0, 5);
 
@@ -173,7 +172,7 @@ const Ateliers = () => {
                   )}
 
                   <div className="space-y-1.5 text-xs text-muted-foreground mt-3">
-                    <div className="flex items-center gap-2 capitalize"><CalendarDays className="w-3.5 h-3.5" />{formatDate(a.date_atelier)}</div>
+                    <div className="flex items-center gap-2 capitalize"><CalendarDays className="w-3.5 h-3.5" />{dateLongue(a.date_atelier)}</div>
                     <div className="flex items-center gap-2"><Clock className="w-3.5 h-3.5" />{formatTime(a.heure_debut)} · {a.duree}</div>
                     {a.lieu && (
                       <div className="flex items-center gap-2">
@@ -188,7 +187,7 @@ const Ateliers = () => {
                     <div className="flex items-center gap-2"><Users className="w-3.5 h-3.5" />{a.places_disponibles} / {a.places_max} places</div>
                     {a.tarif_affichage && <div className="flex items-center gap-2"><Euro className="w-3.5 h-3.5" />{a.tarif_affichage}</div>}
                     {a.date_fin_inscription && (
-                      <div className="flex items-center gap-2"><AlarmClock className="w-3.5 h-3.5" />Inscriptions jusqu'au {formatDate(a.date_fin_inscription)}</div>
+                      <div className="flex items-center gap-2"><AlarmClock className="w-3.5 h-3.5" />Inscriptions jusqu'au {dateLongue(a.date_fin_inscription)}</div>
                     )}
                   </div>
 
@@ -251,7 +250,7 @@ const Ateliers = () => {
               <div className="grid grid-cols-2 gap-3 text-sm mb-5">
                 <div className="bg-muted/40 rounded-xl p-3">
                   <p className="text-xs text-muted-foreground">Date</p>
-                  <p className="font-medium capitalize mt-0.5">{formatDate(popin.date_atelier)}</p>
+                  <p className="font-medium capitalize mt-0.5">{dateLongue(popin.date_atelier)}</p>
                 </div>
                 <div className="bg-muted/40 rounded-xl p-3">
                   <p className="text-xs text-muted-foreground">Horaire</p>

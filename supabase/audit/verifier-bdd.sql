@@ -12,15 +12,22 @@ FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
 WHERE n.nspname = 'public' AND c.relkind = 'r' AND c.relrowsecurity
   AND NOT EXISTS (SELECT 1 FROM pg_policies p WHERE p.schemaname = 'public' AND p.tablename = c.relname)
 UNION ALL
+SELECT 'Table de sauvegarde oubliée', 'avertissement', c.relname, 'à supprimer une fois la sauvegarde inutile (accord de l''utilisatrice)'
+FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE n.nspname = 'public' AND c.relkind = 'r' AND c.relname ~ '_backup_'
+UNION ALL
 SELECT 'Table sans clé primaire', 'erreur', c.relname, ''
 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
 WHERE n.nspname = 'public' AND c.relkind = 'r'
   AND NOT EXISTS (SELECT 1 FROM pg_constraint k WHERE k.conrelid = c.oid AND k.contype = 'p')
 UNION ALL
-SELECT 'Droit d''écriture donné au rôle anon', 'erreur', table_name, string_agg(privilege_type, ', ')
-FROM information_schema.role_table_grants
-WHERE table_schema = 'public' AND grantee = 'anon' AND privilege_type IN ('INSERT', 'UPDATE', 'DELETE')
-GROUP BY table_name
+-- Les droits (GRANT) d'écriture de anon existent par défaut sur Supabase : c'est la RLS qui protège.
+-- On liste donc les POLITIQUES qui laissent un visiteur écrire : seules les écritures voulues
+-- (pré-inscription, message de contact, visite) doivent apparaître.
+SELECT 'Politique d''écriture ouverte aux visiteurs', 'avertissement', tablename || ' · ' || policyname, cmd
+FROM pg_policies
+WHERE schemaname = 'public' AND roles::text ~ '(anon|public)' AND cmd IN ('INSERT', 'UPDATE', 'DELETE', 'ALL')
+  AND tablename NOT IN ('inscriptions', 'contact_messages', 'visites_site')
 UNION ALL
 SELECT 'Fonction SECURITY DEFINER sans search_path', 'erreur', p.proname, ''
 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
@@ -42,7 +49,7 @@ UNION ALL
 SELECT 'Vue sans security_invoker', 'erreur', c.relname, 'une vue contourne la RLS de l''appelant'
 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
 WHERE n.nspname = 'public' AND c.relkind = 'v'
-  AND NOT coalesce('security_invoker=true' = ANY (c.reloptions), false)
+  AND NOT coalesce(c.reloptions::text[] && ARRAY['security_invoker=true', 'security_invoker=on'], false)
 
 -- ─── Données (nécessitent les tables du site) ────────────────────
 UNION ALL

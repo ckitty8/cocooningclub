@@ -400,7 +400,8 @@ const Ateliers = () => {
   const handleDelete = async (id: string) => {
     const atelier = ateliers.find(a => a.id === id);
     if (!confirm("Supprimer cet atelier définitivement ?")) return;
-    await supabase.from("ateliers").delete().eq("id", id);
+    const { error } = await supabase.from("ateliers").delete().eq("id", id);
+    if (error) { toast.error(`Suppression impossible : ${error.message}`); return; }
     logAction("atelier.delete", "ateliers", id, { titre: atelier?.titre, date_atelier: atelier?.date_atelier });
     fetchAteliers();
   };

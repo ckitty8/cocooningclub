@@ -8,6 +8,7 @@ import {
   CalendarDays, Ticket, BookOpen, ArrowRight, Loader2, Sparkles,
   Clock, MapPin, Newspaper,
 } from "lucide-react";
+import { dateLongue } from "@/lib/dates";
 
 interface AtelierResume {
   id: string;
@@ -38,8 +39,6 @@ interface DocResume {
   created_at: string;
 }
 
-const formatDate = (iso: string) =>
-  new Date(iso + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
 const formatTime = (t: string) => t.slice(0, 5);
 
@@ -208,7 +207,7 @@ const Dashboard = () => {
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-foreground truncate">{ins.atelier.titre}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5 capitalize">{formatDate(ins.atelier.date_atelier)}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 capitalize">{dateLongue(ins.atelier.date_atelier)}</p>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
                       <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{formatTime(ins.atelier.heure_debut)}</span>
                       {ins.atelier.lieu && (

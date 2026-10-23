@@ -15,7 +15,7 @@ WITH controles(controle, ok) AS (
     ('RLS activée sur formule_espaces',       COALESCE((SELECT relrowsecurity FROM pg_class WHERE oid = to_regclass('public.formule_espaces')), false)),
     ('RLS activée sur adhesions',             COALESCE((SELECT relrowsecurity FROM pg_class WHERE oid = to_regclass('public.adhesions')), false)),
     ('Politiques sur adhesions (2 attendues)', (SELECT count(*) FROM pg_policies WHERE schemaname = 'public' AND tablename = 'adhesions') = 2),
-    ('Vue en security_invoker',               COALESCE((SELECT 'security_invoker=true' = ANY (reloptions) FROM pg_class WHERE oid = to_regclass('public.vue_autorisation_image')), false)),
+    ('Vue en security_invoker',               COALESCE((SELECT reloptions::text[] && ARRAY['security_invoker=true', 'security_invoker=on'] FROM pg_class WHERE oid = to_regclass('public.vue_autorisation_image')), false)),
     ('Rôle membre premium interdit (contrainte)', EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'utilisateurs_sans_role_premium' AND conrelid = 'public.utilisateurs'::regclass)),
     ('Colonne antennes.gratuit_pour_tous',   EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'antennes' AND column_name = 'gratuit_pour_tous')),
     ('Fonction atelier_inclus',               to_regprocedure('public.atelier_inclus(uuid,uuid)') IS NOT NULL),

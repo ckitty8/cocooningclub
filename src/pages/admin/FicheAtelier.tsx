@@ -11,6 +11,7 @@ import { csvInscrites, resumeInscrites } from "@/lib/ficheAtelier";
 import { LIBELLES_PHOTOS, etatPhotos } from "@/lib/autorisationImage";
 import { inscIdentite } from "@/lib/inscriptionIdentite";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
+import { dateLongue } from "@/lib/dates";
 
 interface AtelierFiche {
   id: string;
@@ -52,8 +53,6 @@ const STATUTS = { en_attente: "En attente", confirme: "Validée", annule: "Refus
 const BADGE_STATUT = { en_attente: "bg-amber-100 text-amber-700", confirme: "bg-green-100 text-green-700", annule: "bg-red-100 text-red-700" } as const;
 const STATUT_ATELIER: Record<string, string> = { brouillon: "Brouillon", publie: "Publié", complet: "Complet", annule: "Annulé", termine: "Terminé" };
 
-const dateLongue = (iso: string) =>
-  new Date(iso + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
 type Onglet = "infos" | "inscrites";
 type Filtre = "toutes" | "en_attente" | "confirme";

@@ -12,6 +12,7 @@ import { autorisationDepuisChamps, bulletinDepuisChamps, champsDepuisBulletin, t
 import BadgePhotos from "@/components/BadgePhotos";
 import AutorisationsForm from "./AutorisationsForm";
 import { champ, type Adhesion } from "./types";
+import { dateFr } from "@/lib/dates";
 
 interface Props {
   adhesion: Adhesion;
@@ -19,7 +20,6 @@ interface Props {
   onDone: () => void;
 }
 
-const dateFr = (iso: string | null) => (iso ? new Date(iso + "T00:00:00").toLocaleDateString("fr-FR") : "—");
 
 /** Fiche d'une adhésion : reprend le « cadre réservé à l'association » du bulletin. */
 const AdhesionDrawer = ({ adhesion, onClose, onDone }: Props) => {

@@ -1,6 +1,7 @@
 import { MODES_REGLEMENT, formaterNumero, type ModeReglement } from "@/lib/adhesions";
 import { SUPPORTS_IMAGE, type SupportImage } from "@/lib/autorisationImage";
 import { autorisationDepuisChamps } from "@/lib/bulletin";
+import { dateFr } from "@/lib/dates";
 
 export interface DonneesBulletin {
   personne: {
@@ -28,7 +29,6 @@ export interface DonneesBulletin {
   formule: { nom: string; description: string | null; prix: number; duree_mois: number } | null;
 }
 
-const dateFr = (iso: string | null) => (iso ? new Date(iso + "T00:00:00").toLocaleDateString("fr-FR") : "—");
 const case_ = (cochee: boolean) => (cochee ? "☑" : "☐");
 const Ligne = ({ libelle, valeur }: { libelle: string; valeur: string | null }) => (
   <p><span className="text-muted-foreground">{libelle} : </span><span className="font-medium">{valeur || "—"}</span></p>
