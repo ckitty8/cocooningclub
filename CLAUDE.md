@@ -4,6 +4,10 @@
 
 Quand l'utilisateur demande ce qu'il reste à faire, lui rappeler en premier les points en attente ci-dessous.
 
+## Après chaque commit
+
+Terminer le message à l'utilisatrice par ces deux phrases (avec le vrai hash du dernier commit) : « C'est la branche de la preview Vercel : le dernier commit dessus est `<hash>`. Rien n'a été poussé sur `main`. » Si quelque chose a été poussé sur `main` à sa demande, le dire à la place de la 2e phrase.
+
 ## Points en attente
 
 
