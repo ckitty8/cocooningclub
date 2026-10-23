@@ -75,4 +75,14 @@
     --card: 24 50% 95%;
     --muted-foreground: 11 18% 38%;
   }
+
+  /* Administration : même fond crème que le site. Les titres passent en
+     Playfair Display (Great Vibes est trop fin pour des écrans de gestion). */
+  .admin-shell h1,
+  .admin-shell h2,
+  .admin-shell h3,
+  .admin-shell h4,
+  .admin-shell .font-display {
+    font-family: 'Playfair Display', serif;
+  }
 }
