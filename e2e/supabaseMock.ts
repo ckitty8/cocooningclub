@@ -38,6 +38,46 @@ const FORMULAIRE_CONTACT = {
   ],
 };
 
+export const ATELIER_ORACLE = {
+  ...ATELIER_TEST,
+  id: "aaaaaaaa-0000-4000-8000-000000000002",
+  titre: "Atelier Créatif — Pierre & Oracle",
+  date_atelier: dansJours(21),
+};
+
+export const MEMBRE_TEST = {
+  id: "bbbbbbbb-0000-4000-8000-000000000001",
+  prenom: "Marie",
+  nom: "Dupont",
+  email: "marie@exemple.fr",
+  telephone: null,
+  date_naissance: null,
+  url_avatar: null,
+  debut_abonnement: null,
+  fin_abonnement: null,
+  role: "membre",
+  est_actif: true,
+  cree_le: "2026-01-01T00:00:00Z",
+};
+
+export interface OptionsMock {
+  /** Connecte ce membre : session stockée dans le navigateur + profil renvoyé par la base. */
+  membre?: typeof MEMBRE_TEST;
+  /** Ateliers renvoyés par la base (par défaut : ATELIER_TEST seul). */
+  ateliers?: object[];
+}
+
+// Session Supabase telle que le client la relit depuis localStorage au
+// chargement. La clé dépend du nom d'hôte de VITE_SUPABASE_URL (127.0.0.1).
+const sessionStockee = (membre: typeof MEMBRE_TEST) => ({
+  access_token: "e2e.access.token",
+  refresh_token: "e2e-refresh-token",
+  token_type: "bearer",
+  expires_in: 3600,
+  expires_at: Math.floor(Date.now() / 1000) + 3600,
+  user: { id: membre.id, aud: "authenticated", role: "authenticated", email: membre.email, app_metadata: {}, user_metadata: {}, created_at: membre.cree_le },
+});
+
 export interface MockSupabase {
   /** Corps JSON des INSERT reçus, par table. */
   inserts: Record<string, unknown[]>;
@@ -48,8 +88,16 @@ const corpsJson = (req: Request) => {
   return brut ? JSON.parse(brut) : null;
 };
 
-export const mockSupabase = async (page: Page): Promise<MockSupabase> => {
+export const mockSupabase = async (page: Page, options: OptionsMock = {}): Promise<MockSupabase> => {
   const mock: MockSupabase = { inserts: {} };
+  const { membre, ateliers = [ATELIER_TEST] } = options;
+
+  if (membre) {
+    await page.addInitScript(
+      ([cle, valeur]) => localStorage.setItem(cle, valeur),
+      ["sb-127-auth-token", JSON.stringify(sessionStockee(membre))],
+    );
+  }
 
   await page.route("**/__supabase/**", async route => {
     const req = route.request();
@@ -64,7 +112,8 @@ export const mockSupabase = async (page: Page): Promise<MockSupabase> => {
       (mock.inserts[table] ??= []).push(corpsJson(req));
       return route.fulfill({ status: 201, body: "" });
     }
-    if (table === "ateliers") return route.fulfill({ json: [ATELIER_TEST] });
+    if (table === "ateliers") return route.fulfill({ json: ateliers });
+    if (table === "utilisateurs" && membre) return route.fulfill({ json: veutUnObjet ? membre : [membre] });
     if (table === "formulaires") return route.fulfill({ json: veutUnObjet ? FORMULAIRE_CONTACT : [FORMULAIRE_CONTACT] });
     return route.fulfill({ json: veutUnObjet ? null : [] });
   });
