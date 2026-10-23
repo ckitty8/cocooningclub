@@ -57,7 +57,7 @@ export function googleCalendarUrl(ws: AtelierAgenda): string {
 /** Contenu du fichier .ics de l'atelier (RFC 5545). */
 export function contenuIcs(ws: AtelierAgenda, maintenant = new Date()): string {
   const [debut, fin] = debutEtFin(ws);
-  const esc = (s: string) => s.replace(/[\;,]/g, (c) => `\\${c}`).replace(/\n/g, "\\n");
+  const esc = (s: string) => s.replace(/[\\;,]/g, (c) => `\\${c}`).replace(/\n/g, "\\n");
   const horodatage = maintenant.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 
   return [

@@ -9,6 +9,7 @@ Quand l'utilisateur demande ce qu'il reste à faire, lui rappeler en premier les
 
 - **Mentions légales** (obligatoires, loi LCEN) : page à créer avec éditeur (nom, adresse, statut juridique du club), directeur de publication et hébergeur (Vercel). L'utilisateur a toutes les infos mais veut traiter ce point plus tard.
 - **Photos de l'accueil et de « Notre histoire »** : provisoires (découpées dans les maquettes, basse définition), à remplacer par les vraies photos du club, cf. `src/assets/accueil/README.md` et `src/assets/histoire/README.md`. Portraits des 5 fondatrices à fournir (initiales en attendant).
+- **Migration `20261023000000_role_createur.sql`** : à coller dans le SQL Editor Supabase (idempotente). Tant qu'elle n'est pas appliquée en prod, le rôle créateur est invisible sur le site (colonne `utilisateurs.est_createur` absente).
 - **Google Analytics 4 + bannière cookie** : reporté à plus tard par l'utilisateur. Il faudra son identifiant de mesure `G-XXXXXXXXXX`.
 
 ## Décisions prises
@@ -17,6 +18,8 @@ Quand l'utilisateur demande ce qu'il reste à faire, lui rappeler en premier les
 - **Domaine** : le domaine principal configuré dans Vercel est `www.lecocooningclub.fr` (Vercel redirige déjà le domaine nu vers `www`). NE JAMAIS ajouter de redirection `www` ↔ domaine nu dans `vercel.json` : le 15/10 une règle `www` → nu a créé une boucle (ERR_TOO_MANY_REDIRECTS, site KO). Les URL canoniques, le sitemap, robots.txt et og:image utilisent `https://www.lecocooningclub.fr`. Exception : le lien de réinitialisation du mot de passe (`src/pages/auth/ForgotPassword.tsx`) reste sur le domaine nu tant que `www` n'est pas ajouté aux URL de redirection autorisées dans Supabase Auth.
 
 - **Accueil (16/10)** : refait d'après la maquette fournie par l'utilisateur (16/10 : passé à la charte — fond pêche `.theme-vitrine`, grands titres en Great Vibes `font-display`, sous-titres en Playfair Display `font-brand` faute de la police Marta, briques communes dans `src/components/vitrine.tsx`, en-tête partagé `SiteHeader`). Page `/notre-histoire` faite d'après la 2e maquette ; le lien « À propos » du menu y mène.
+
+- **Rôle créateur (23/10)** : réservé à `christellelab@gmail.com`. C'est une administratrice (role `administrateur`, donc toutes les policies RLS d'admin continuent de s'appliquer) marquée `utilisateurs.est_createur = true` ; PAS une nouvelle valeur de l'enum `role_utilisateur` (une quinzaine de policies/fonctions testent `role = 'administrateur'` en dur). La base garantit : seul cet email peut avoir le drapeau (CHECK), et personne ne peut l'attribuer, le retirer ou toucher au rôle/état/email/suppression du compte depuis le site (trigger `private.proteger_createur`, seul le SQL editor le peut). Côté site : `src/lib/roles.ts` est la source unique des rôles, des listes d'accès `ACCES` (utilisées par les `RoleGuard` de `App.tsx`) et de la matrice des rôles ; pages `/admin/createur/simulateur` et `/admin/createur/matrice` (menu « Espace créateur » de `AdminLayout`) ; la simulation est uniquement visuelle (menus et gardes de pages, stockée en sessionStorage), elle ne change ni les données ni la RLS. `membre_premium` (enum en base, aucun compte) a désormais accès à l'espace membre.
 
 ## Plan de mise en conformité (octobre 2026)
 

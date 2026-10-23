@@ -1,11 +1,12 @@
 import { createContext } from "react";
 import type { User, Session } from "@supabase/supabase-js";
+import type { RoleSimulable, RoleSite } from "@/lib/roles";
 
 // Contexte d'authentification et ses types, séparés du composant
 // AuthProvider (Fast Refresh ne gère que les fichiers qui n'exportent que
 // des composants).
 
-export type UserRole = "administrateur" | "inscrit" | "membre";
+export type UserRole = "administrateur" | "inscrit" | "membre" | "membre_premium";
 
 export interface Profile {
   id: string;
@@ -18,6 +19,8 @@ export interface Profile {
   debut_abonnement: string | null;
   fin_abonnement: string | null;
   role: UserRole;
+  /** Compte créateur du site. Absent tant que la migration role_createur n'est pas appliquée. */
+  est_createur?: boolean;
   est_actif: boolean;
   cree_le: string;
 }
@@ -26,6 +29,14 @@ export interface AuthContextType {
   user: User | null;
   session: Session | null;
   profile: Profile | null;
+  /** Rôle réel du compte (le créateur est distinct de l'administrateur). */
+  roleReel: RoleSite | null;
+  /** Rôle avec lequel le site se comporte : celui simulé par le créateur, sinon le rôle réel. */
+  role: RoleSite | null;
+  /** Rôle simulé par le créateur, ou null. */
+  simulation: RoleSimulable | null;
+  /** Démarre (rôle) ou arrête (null) la simulation. Sans effet pour un autre compte que le créateur. */
+  simuler: (role: RoleSimulable | null) => void;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;

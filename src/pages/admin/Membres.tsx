@@ -28,12 +28,14 @@ const roleBadgeClass: Record<UserRole, string> = {
   administrateur: "bg-purple-100 text-purple-700",
   inscrit:        "bg-gray-100 text-gray-600",
   membre:         "bg-blue-100 text-blue-700",
+  membre_premium: "bg-amber-100 text-amber-700",
 };
 
 const roleLabel: Record<UserRole, string> = {
   administrateur: "Admin",
   inscrit:        "Inscrit",
   membre:         "Membre",
+  membre_premium: "Premium",
 };
 
 const emptyEditForm = {

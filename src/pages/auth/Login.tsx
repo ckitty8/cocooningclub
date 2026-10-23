@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import AuthLayout from "@/components/auth/AuthLayout";
+import { pageAccueilDuRole } from "@/lib/roles";
 import { boutonEnvoi, champ, libelle } from "@/components/auth/classes";
 
 // Filet de sécurité : si fetchProfile reste en attente plus longtemps
@@ -10,7 +11,7 @@ import { boutonEnvoi, champ, libelle } from "@/components/auth/classes";
 const PROFILE_LOAD_TIMEOUT_MS = 10000;
 
 const Login = () => {
-  const { signIn, user, profile, loading: authLoading } = useAuth();
+  const { signIn, user, profile, role, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [email, setEmail] = useState("");
@@ -46,15 +47,14 @@ const Login = () => {
   useEffect(() => {
     if (profile) {
       stopAwaiting();
-      if (profile.role === "administrateur") navigate("/admin/dashboard", { replace: true });
-      else navigate("/espace-membre", { replace: true });
+      navigate(pageAccueilDuRole(role), { replace: true });
       return;
     }
     if (awaitingProfileRef.current && user && !authLoading && !profile) {
       stopAwaiting();
       setError("Profil introuvable pour ce compte. Contacte l'administrateur.");
     }
-  }, [profile, user, authLoading, navigate, stopAwaiting]);
+  }, [profile, role, user, authLoading, navigate, stopAwaiting]);
 
   useEffect(() => () => clearStuckTimer(), [clearStuckTimer]);
 

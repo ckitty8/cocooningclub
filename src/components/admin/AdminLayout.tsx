@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import {
   LayoutDashboard, Users, CalendarDays, FileText,
-  FormInput, LogOut, Menu, ChevronRight, UserCheck, MessageSquare, CalendarClock, Lightbulb, Star
+  FormInput, LogOut, Menu, ChevronRight, UserCheck, MessageSquare, CalendarClock, Lightbulb, Star, Eye, Table2
 } from "lucide-react";
 
 const navItems = [
@@ -20,10 +20,18 @@ const navItems = [
   { href: "/admin/messages-templates", label: "Modèles de messages",      icon: MessageSquare },
 ];
 
+// Outils du créateur du site : affichés en bas du menu, pour le créateur seulement.
+const createurItems = [
+  { href: "/admin/createur/simulateur", label: "Simulateur de rôle", icon: Eye },
+  { href: "/admin/createur/matrice",    label: "Matrice des rôles",  icon: Table2 },
+];
+
 const ideesLastSeenKey = (id: string | undefined) => `admin.idees.lastSeen.${id ?? "anon"}`;
 
 const AdminLayout = ({ children }: { children: ReactNode }) => {
-  const { profile, signOut } = useAuth();
+  const { profile, roleReel, simulation, signOut } = useAuth();
+  // Pendant une simulation, le menu est celui du rôle simulé : pas d'outils du créateur.
+  const afficherOutilsCreateur = roleReel === "createur" && !simulation;
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -130,6 +138,33 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
             </Link>
           );
         })}
+
+        {afficherOutilsCreateur && (
+          <>
+            <p className="px-3 pb-1 pt-5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Espace créateur
+            </p>
+            {createurItems.map(({ href, label, icon: Icon }) => {
+              const active = location.pathname === href;
+              return (
+                <Link
+                  key={href}
+                  to={href}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                    active
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  }`}
+                >
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span className="flex-1">{label}</span>
+                  {active && <ChevronRight className="w-3 h-3 opacity-70" />}
+                </Link>
+              );
+            })}
+          </>
+        )}
       </nav>
 
       <div className="p-4 border-t">

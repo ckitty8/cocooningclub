@@ -3,12 +3,46 @@ import type { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { withTimeout } from "@/utils/withTimeout";
 import { AuthContext, type Profile } from "@/contexts/auth";
+import { estRoleSimulable, roleEffectif, roleReelDe, type RoleSimulable } from "@/lib/roles";
+
+// La simulation est propre à l'onglet (elle s'efface en le fermant).
+const CLE_SIMULATION = "createur.simulation";
+
+const lireSimulation = (): RoleSimulable | null => {
+  try {
+    const valeur = sessionStorage.getItem(CLE_SIMULATION);
+    return estRoleSimulable(valeur) ? valeur : null;
+  } catch {
+    return null;
+  }
+};
+
+const ecrireSimulation = (role: RoleSimulable | null) => {
+  try {
+    if (role) sessionStorage.setItem(CLE_SIMULATION, role);
+    else sessionStorage.removeItem(CLE_SIMULATION);
+  } catch {
+    // Stockage indisponible (navigation privée stricte) : la simulation reste en mémoire.
+  }
+};
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [simulationDemandee, setSimulationDemandee] = useState<RoleSimulable | null>(lireSimulation);
+
+  // Seul le créateur peut simuler : pour tout autre compte, la valeur est ignorée.
+  const roleReel = profile ? roleReelDe(profile) : null;
+  const simulation = roleReel === "createur" ? simulationDemandee : null;
+  const role = roleEffectif(roleReel, simulation);
+
+  const simuler = (nouveauRole: RoleSimulable | null) => {
+    if (roleReel !== "createur") return;
+    setSimulationDemandee(nouveauRole);
+    ecrireSimulation(nouveauRole);
+  };
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -76,10 +110,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     await supabase.auth.signOut();
     setProfile(null);
+    setSimulationDemandee(null);
+    ecrireSimulation(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, loading, signIn, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, session, profile, roleReel, role, simulation, simuler, loading, signIn, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

@@ -49,7 +49,12 @@ const corpsJson = (req: Request) => {
   return brut ? JSON.parse(brut) : null;
 };
 
-export const mockSupabase = async (page: Page): Promise<MockSupabase> => {
+interface OptionsMock {
+  /** Ligne `utilisateurs` renvoyée à la personne connectée (voir e2e/session.ts). */
+  profil?: Record<string, unknown>;
+}
+
+export const mockSupabase = async (page: Page, options: OptionsMock = {}): Promise<MockSupabase> => {
   const mock: MockSupabase = { inserts: {} };
 
   await page.route("**/__supabase/**", async route => {
@@ -64,6 +69,9 @@ export const mockSupabase = async (page: Page): Promise<MockSupabase> => {
     if (req.method() === "POST" && table) {
       (mock.inserts[table] ??= []).push(corpsJson(req));
       return route.fulfill({ status: 201, body: "" });
+    }
+    if (table === "utilisateurs" && options.profil) {
+      return route.fulfill({ json: veutUnObjet ? options.profil : [options.profil] });
     }
     if (table === "ateliers") return route.fulfill({ json: [ATELIER_TEST] });
     if (table === "formulaires") return route.fulfill({ json: veutUnObjet ? FORMULAIRE_CONTACT : [FORMULAIRE_CONTACT] });

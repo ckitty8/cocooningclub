@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { messageErreurServeur } from "@/utils/messageErreurServeur";
 import { compressImage } from "@/utils/compressImage";
+import { ROLES } from "@/lib/roles";
 import {
   User, Mail, Phone, Image as ImageIcon, Save, Upload, Trash2, Loader2,
   Info, Lock, CalendarRange, Receipt, KeyRound, Cake,
@@ -25,7 +26,7 @@ interface PaiementHistorique {
 }
 
 const MonCompte = () => {
-  const { profile, user, refreshProfile } = useAuth();
+  const { profile, user, roleReel, refreshProfile } = useAuth();
   const [form, setForm] = useState({ prenom: "", nom: "", email: "", telephone: "", date_naissance: "" });
   const [originalEmail, setOriginalEmail] = useState("");
   const [saving, setSaving] = useState(false);
@@ -204,12 +205,6 @@ const MonCompte = () => {
   const subscriptionEnd = profile.fin_abonnement ? new Date(profile.fin_abonnement) : null;
   const subscriptionActive = subscriptionEnd && subscriptionEnd >= new Date();
 
-  const roleLabel: Record<string, string> = {
-    administrateur: "Administrateur",
-    inscrit: "Inscrit",
-    membre: "Membre",
-  };
-
   return (
     <MembreLayout>
       <div className="mb-6">
@@ -343,7 +338,7 @@ const MonCompte = () => {
             <div className="flex items-center justify-between py-2 border-b">
               <span className="text-muted-foreground">Statut</span>
               <span className="inline-flex items-center gap-1 font-medium">
-                {roleLabel[profile.role] ?? profile.role}
+                {ROLES[roleReel ?? profile.role].libelle}
               </span>
             </div>
             <div className="flex items-center justify-between py-2 border-b">
