@@ -627,58 +627,6 @@ export type Database = {
           },
         ]
       }
-      inscriptions_backup_20260430: {
-        Row: {
-          annule_le: string | null
-          atelier_id: string | null
-          date_naissance: string | null
-          email_invite: string | null
-          id: string | null
-          inscrit_le: string | null
-          nom_invite: string | null
-          prenom_invite: string | null
-          present: boolean | null
-          statut: Database["public"]["Enums"]["statut_inscription"] | null
-          statut_paiement: Database["public"]["Enums"]["statut_paiement"] | null
-          telephone_invite: string | null
-          utilisateur_id: string | null
-        }
-        Insert: {
-          annule_le?: string | null
-          atelier_id?: string | null
-          date_naissance?: string | null
-          email_invite?: string | null
-          id?: string | null
-          inscrit_le?: string | null
-          nom_invite?: string | null
-          prenom_invite?: string | null
-          present?: boolean | null
-          statut?: Database["public"]["Enums"]["statut_inscription"] | null
-          statut_paiement?:
-            | Database["public"]["Enums"]["statut_paiement"]
-            | null
-          telephone_invite?: string | null
-          utilisateur_id?: string | null
-        }
-        Update: {
-          annule_le?: string | null
-          atelier_id?: string | null
-          date_naissance?: string | null
-          email_invite?: string | null
-          id?: string | null
-          inscrit_le?: string | null
-          nom_invite?: string | null
-          prenom_invite?: string | null
-          present?: boolean | null
-          statut?: Database["public"]["Enums"]["statut_inscription"] | null
-          statut_paiement?:
-            | Database["public"]["Enums"]["statut_paiement"]
-            | null
-          telephone_invite?: string | null
-          utilisateur_id?: string | null
-        }
-        Relationships: []
-      }
       jours_feries: {
         Row: {
           annee: number
@@ -855,51 +803,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      transactions_paypal_backup_20260430: {
-        Row: {
-          devise: string | null
-          donnees_brutes: Json | null
-          email_payeur: string | null
-          enregistre_le: string | null
-          id: string | null
-          inscription_id: string | null
-          montant: number | null
-          paypal_cree_le: string | null
-          paypal_transaction_id: string | null
-          statut:
-            | Database["public"]["Enums"]["statut_transaction_paypal"]
-            | null
-        }
-        Insert: {
-          devise?: string | null
-          donnees_brutes?: Json | null
-          email_payeur?: string | null
-          enregistre_le?: string | null
-          id?: string | null
-          inscription_id?: string | null
-          montant?: number | null
-          paypal_cree_le?: string | null
-          paypal_transaction_id?: string | null
-          statut?:
-            | Database["public"]["Enums"]["statut_transaction_paypal"]
-            | null
-        }
-        Update: {
-          devise?: string | null
-          donnees_brutes?: Json | null
-          email_payeur?: string | null
-          enregistre_le?: string | null
-          id?: string | null
-          inscription_id?: string | null
-          montant?: number | null
-          paypal_cree_le?: string | null
-          paypal_transaction_id?: string | null
-          statut?:
-            | Database["public"]["Enums"]["statut_transaction_paypal"]
-            | null
-        }
-        Relationships: []
       }
       utilisateurs: {
         Row: {
