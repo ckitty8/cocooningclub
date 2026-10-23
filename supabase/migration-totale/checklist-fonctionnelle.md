@@ -51,6 +51,7 @@ Comptes utiles : une administratrice, une membre, une inscrite (rôle `inscrit`)
 - [ ] Boîte à idées : idées avec prénom de l'auteur ; Témoignages, Documents, Formulaire de contact, Modèles de messages : aucune régression.
 
 - [ ] Les tables `inscriptions_backup_20260430` et `transactions_paypal_backup_20260430` n'existent plus (`verifications.sql`) ; rien d'autre ne change à l'écran.
+- [ ] Admin → Ateliers : créer un atelier à une date où aucune administratrice n'est disponible affiche toujours l'avertissement ; un visiteur ne peut pas appeler `admin_dispo_le` (erreur de droits).
 
 ## Après : créateur (`christellelab@gmail.com`)
 

@@ -158,3 +158,30 @@ ROLLBACK;
 
 \echo '--- 17. Le tarif adhérente ne peut pas être négatif (attendu : erreur 23514)'
 UPDATE ateliers SET tarif_adherent = -1 WHERE id = 'a3333333-3333-3333-3333-333333333333';
+
+-- ─────────────────────────────────────────────
+-- 20261023000009_reserve_admin_dispo_aux_admins.sql
+-- ─────────────────────────────────────────────
+\echo '=== Disponibilité des administratrices ==='
+BEGIN;
+\echo '--- 18. Un visiteur ne peut pas appeler admin_dispo_le (attendu : erreur 42501)'
+SET LOCAL ROLE anon;
+SELECT admin_dispo_le(current_date);
+RESET ROLE;
+ROLLBACK;
+
+BEGIN;
+\echo '--- 19. Une inscrite non plus (attendu : erreur 42501 « réservée aux administrateurs »)'
+SELECT set_config('request.jwt.claim.sub', '11111111-1111-1111-1111-111111111111', true);
+SET LOCAL ROLE authenticated;
+SELECT admin_dispo_le(current_date);
+RESET ROLE;
+ROLLBACK;
+
+BEGIN;
+\echo '--- 20. Un administrateur la lit (attendu : t aujourd''hui, car 22222222… est disponible ce jour)'
+SELECT set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222', true);
+SET LOCAL ROLE authenticated;
+SELECT admin_dispo_le(current_date);
+RESET ROLE;
+ROLLBACK;

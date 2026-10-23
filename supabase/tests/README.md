@@ -11,6 +11,7 @@ Scénarios qui vérifient les triggers de sécurité sur une base Postgres jetab
 - `20261023000005_droits_par_offre.sql` : droits par offre (`atelier_inclus`, colonne `antennes.gratuit_pour_tous`, déclencheur des inscriptions : paiement « non requis » si atelier gratuit ou inclus dans l'adhésion).
 - `20261023000006_bloque_validation_impayee.sql` : une inscription ne peut pas être validée tant que son paiement est « en attente » ; dérogation motivée et journalisée par `valider_sans_paiement` (administrateurs).
 - `20261023000007_tarif_adherente.sql` : colonne `ateliers.tarif_adherent` (prix adhérente) et `atelier_inclus` mise à jour.
+- `20261023000009_reserve_admin_dispo_aux_admins.sql` : `admin_dispo_le` réservée aux administrateurs (droit retiré aux visiteurs + contrôle dans la fonction).
 
 ```bash
 createdb t
@@ -41,6 +42,7 @@ psql -d d -v ON_ERROR_STOP=1 -f supabase/tests/droits_par_offre.setup.sql
 psql -d d -v ON_ERROR_STOP=1 -f supabase/migrations/20261023000005_droits_par_offre.sql
 psql -d d -v ON_ERROR_STOP=1 -f supabase/migrations/20261023000006_bloque_validation_impayee.sql
 psql -d d -v ON_ERROR_STOP=1 -f supabase/migrations/20261023000007_tarif_adherente.sql
+psql -d d -v ON_ERROR_STOP=1 -f supabase/migrations/20261023000009_reserve_admin_dispo_aux_admins.sql
 psql -d d -f supabase/tests/droits_par_offre.test.sql
 ```
 

@@ -2,6 +2,7 @@
 -- ATTENTION : supprime les formules, les adhésions et les bulletins enregistrés, ainsi que les
 -- colonnes « commune » et « activité » des fiches. Les rôles déjà passés de « inscrit » à « membre »
 -- par une validation d'adhésion ne sont pas remis en arrière. Faire une sauvegarde avant.
+-- admin_dispo_le (20261023000009) reste réservée aux administrateurs : ce verrou n'est pas levé par le retour arrière.
 -- Les tables de sauvegarde supprimées par 20261023000008 (6 inscriptions de test d'avril) ne sont PAS recréées.
 -- Sans la fonction supprimer_membre, le bouton « Supprimer » de l'admin échoue : revenir aussi au code précédent.
 BEGIN;

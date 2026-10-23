@@ -23,3 +23,10 @@ SELECT g.id, g.titre, a.id, g.tarif FROM (VALUES
 -- Journal et déclenchement de la migration 000006.
 CREATE TABLE logs (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), utilisateur_id uuid, action varchar(100) NOT NULL, table_cible varchar(100), enregistrement_cible_id uuid, details jsonb, user_agent varchar(500), horodatage timestamptz NOT NULL DEFAULT now());
 GRANT SELECT, INSERT ON logs TO authenticated;
+
+-- Disponibilités des administratrices (migration 000009) : tables minimales et fonction d'origine.
+CREATE TABLE disponibilites (utilisateur_id uuid, jour_semaine smallint);
+CREATE TABLE indisponibilites (utilisateur_id uuid, date_debut date, date_fin date);
+CREATE FUNCTION public.admin_dispo_le(p_date date) RETURNS boolean LANGUAGE sql STABLE AS $$ SELECT true $$;
+INSERT INTO disponibilites VALUES ('22222222-2222-2222-2222-222222222222', EXTRACT(DOW FROM current_date)::smallint);
+GRANT SELECT ON disponibilites, indisponibilites TO authenticated;

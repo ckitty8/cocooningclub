@@ -24,6 +24,7 @@ WITH controles(controle, ok) AS (
     ('Déclencheur de blocage des validations impayées', EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_verifier_validation_impayee' AND tgrelid = 'public.inscriptions'::regclass)),
     ('Colonne ateliers.tarif_adherent',       EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'ateliers' AND column_name = 'tarif_adherent')),
     ('Tables de sauvegarde d''avril supprimées', to_regclass('public.inscriptions_backup_20260430') IS NULL AND to_regclass('public.transactions_paypal_backup_20260430') IS NULL),
+    ('admin_dispo_le fermée aux visiteurs',   to_regprocedure('public.admin_dispo_le(date)') IS NULL OR NOT has_function_privilege('anon', 'public.admin_dispo_le(date)', 'EXECUTE')),
     ('Au moins les 3 formules du bulletin',   CASE WHEN to_regclass('public.formules') IS NULL THEN false ELSE ((xpath('/row/c/text()', query_to_xml('SELECT count(*) AS c FROM public.formules', false, true, '')))[1]::text)::int >= 3 END),
     ('Formules rattachées à des espaces',     CASE WHEN to_regclass('public.formule_espaces') IS NULL THEN false ELSE ((xpath('/row/c/text()', query_to_xml('SELECT count(*) AS c FROM public.formule_espaces', false, true, '')))[1]::text)::int >= 4 END)
 )
