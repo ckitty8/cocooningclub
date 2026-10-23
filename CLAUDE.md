@@ -15,6 +15,7 @@ Terminer le message à l'utilisatrice par ces deux phrases (avec le vrai hash du
 - **Photos de l'accueil et de « Notre histoire »** : provisoires (découpées dans les maquettes, basse définition), à remplacer par les vraies photos du club, cf. `src/assets/accueil/README.md` et `src/assets/histoire/README.md`. Portraits des 5 fondatrices à fournir (initiales en attendant).
 - **Google Analytics 4 + bannière cookie** : reporté à plus tard par l'utilisateur. Il faudra son identifiant de mesure `G-XXXXXXXXXX`.
 
+- **Refonte de la page Pré-inscriptions (backlog, à faire plus tard)** : au clic sur « Inscrits » d'un atelier (écran admin Ateliers, vues cartes et liste), arriver sur la page Pré-inscriptions, filtrée sur cet atelier, au lieu de la fenêtre « Inscrits » actuelle. À traiter avec la refonte de la page Pré-inscriptions ; rien n'est codé pour l'instant. Maquette de fiche atelier déjà proposée (04 dans les maquettes de l'écran Ateliers).
 - **SQL à lancer lors de la migration (pas encore appliqué)** : (1) `supabase/migrations/20261023000002_supprime_membre_et_compte.sql` (le bouton « Supprimer » de l'admin appelle `supprimer_membre`, qui supprime aussi le compte de connexion ; tant qu'elle n'est pas appliquée, la suppression échoue) ; (2) puis `supabase/manuel/20261023_supprimer_ciritecgrp.sql` (suppression du compte `ciritecgrp@gmail.com`, qui existe encore dans `auth.users`, à lancer à la main).
 
 ## Décisions prises
