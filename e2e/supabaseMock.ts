@@ -52,6 +52,8 @@ const corpsJson = (req: Request) => {
 interface OptionsMock {
   /** Ligne `utilisateurs` renvoyée à la personne connectée (voir e2e/session.ts). */
   profil?: Record<string, unknown>;
+  /** Lignes renvoyées à la lecture de la table `inscriptions` (page admin). */
+  inscriptions?: Record<string, unknown>[];
 }
 
 export const mockSupabase = async (page: Page, options: OptionsMock = {}): Promise<MockSupabase> => {
@@ -73,6 +75,7 @@ export const mockSupabase = async (page: Page, options: OptionsMock = {}): Promi
     if (table === "utilisateurs" && options.profil) {
       return route.fulfill({ json: veutUnObjet ? options.profil : [options.profil] });
     }
+    if (table === "inscriptions" && options.inscriptions) return route.fulfill({ json: options.inscriptions });
     if (table === "ateliers") return route.fulfill({ json: [ATELIER_TEST] });
     if (table === "formulaires") return route.fulfill({ json: veutUnObjet ? FORMULAIRE_CONTACT : [FORMULAIRE_CONTACT] });
     return route.fulfill({ json: veutUnObjet ? null : [] });

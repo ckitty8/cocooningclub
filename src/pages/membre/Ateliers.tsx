@@ -3,8 +3,7 @@ import MembreLayout from "@/components/membre/MembreLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
-import { toast } from "sonner";
-import { messageErreurServeur } from "@/utils/messageErreurServeur";
+import PreInscriptionModal from "@/components/PreInscriptionModal";
 import {
   CalendarDays, Clock, MapPin, Users, Euro, Loader2, CheckCircle2,
   ExternalLink, X, AlarmClock,
@@ -41,10 +40,12 @@ const formatTime = (t: string) => t.slice(0, 5);
 const Ateliers = () => {
   const { profile } = useAuth();
   const [ateliers, setAteliers] = useState<Atelier[]>([]);
-  const [myInscriptions, setMyInscriptions] = useState<Set<string>>(new Set());
+  // Statut de mes pré-inscriptions actives, par atelier.
+  const [myInscriptions, setMyInscriptions] = useState<Map<string, "en_attente" | "confirme">>(new Map());
   const [loading, setLoading] = useState(true);
-  const [registering, setRegistering] = useState<string | null>(null);
   const [popin, setPopin] = useState<Atelier | null>(null);
+  // Titre de l'atelier en cours de pré-inscription, ou null si la fenêtre est fermée.
+  const [preInscription, setPreInscription] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     if (!profile) return;
@@ -65,37 +66,24 @@ const Ateliers = () => {
     ]);
 
     setAteliers((aRes.data as Atelier[]) ?? []);
-    setMyInscriptions(new Set(((iRes.data ?? []) as { atelier_id: string }[]).map(i => i.atelier_id)));
+    setMyInscriptions(new Map(
+      ((iRes.data ?? []) as { atelier_id: string; statut: "en_attente" | "confirme" }[]).map(i => [i.atelier_id, i.statut]),
+    ));
     setLoading(false);
   }, [profile]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const handleRegister = async (atelier: Atelier) => {
-    if (!profile) return;
-    setRegistering(atelier.id);
-
-    // Statuts d'inscription et de paiement fixés par la base (trigger).
-    const { error } = await supabase.from("inscriptions").insert({
-      atelier_id: atelier.id,
-      utilisateur_id: profile.id,
-    });
-
-    if (error) {
-      toast.error(messageErreurServeur(error), { duration: 6000 });
-      setRegistering(null);
-      return;
-    }
-
-    toast.success(
-      atelier.tarif_standard > 0
-        ? "Inscription enregistrée. Pensez à régler votre paiement via PayPal pour la confirmer."
-        : "Inscription enregistrée — confirmation à venir.",
-      { duration: 6000 }
-    );
-    setRegistering(null);
+  // La pré-inscription passe par la même fenêtre que sur l'accueil (identité
+  // du compte pré-remplie, CGU, date de naissance si l'atelier la demande).
+  const ouvrirPreInscription = (atelier: Atelier) => {
     setPopin(null);
-    await fetchData();
+    setPreInscription(atelier.titre);
+  };
+
+  const fermerPreInscription = () => {
+    setPreInscription(null);
+    fetchData();
   };
 
   if (loading) {
@@ -113,7 +101,7 @@ const Ateliers = () => {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">Ateliers</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Tous les ateliers proposés par le club. Cliquez pour vous inscrire.
+          Tous les ateliers proposés par le club. Cliquez sur « Pré-inscription » pour réserver votre place.
         </p>
       </div>
 
@@ -125,7 +113,7 @@ const Ateliers = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {ateliers.map(a => {
-            const inscribed = myInscriptions.has(a.id);
+            const statutInscription = myInscriptions.get(a.id);
             const full = a.statut === "complet" || a.places_disponibles <= 0;
             const closed = isInscriptionsCloses(a);
             return (
@@ -164,9 +152,10 @@ const Ateliers = () => {
                   </div>
 
                   <div className="mt-auto pt-4 flex items-center gap-2">
-                    {inscribed ? (
+                    {statutInscription ? (
                       <div className="flex-1 inline-flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-2 rounded-full text-sm font-medium">
-                        <CheckCircle2 className="w-4 h-4" /> Inscrit·e
+                        <CheckCircle2 className="w-4 h-4" />
+                        {statutInscription === "confirme" ? "Inscrit·e" : "Pré-inscription envoyée"}
                       </div>
                     ) : full ? (
                       <button disabled className="flex-1 bg-muted text-muted-foreground px-4 py-2 rounded-full text-sm font-medium cursor-not-allowed">
@@ -181,7 +170,7 @@ const Ateliers = () => {
                         onClick={() => setPopin(a)}
                         className="flex-1 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium hover:opacity-90 transition-opacity"
                       >
-                        S'inscrire
+                        Pré-inscription
                       </button>
                     )}
                   </div>
@@ -245,12 +234,10 @@ const Ateliers = () => {
 
               <div className="flex flex-col gap-2">
                 <button
-                  onClick={() => handleRegister(popin)}
-                  disabled={registering === popin.id}
-                  className="w-full bg-primary text-primary-foreground px-5 py-3 rounded-full text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+                  onClick={() => ouvrirPreInscription(popin)}
+                  className="w-full bg-primary text-primary-foreground px-5 py-3 rounded-full text-sm font-medium hover:opacity-90 transition-opacity"
                 >
-                  {registering === popin.id ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                  Confirmer mon inscription
+                  Pré-inscription
                 </button>
                 {popin.tarif_standard > 0 && popin.lien_paypal && (
                   <a
@@ -266,6 +253,10 @@ const Ateliers = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {preInscription !== null && (
+        <PreInscriptionModal ateliers={ateliers} atelierInitial={preInscription} onFermer={fermerPreInscription} />
       )}
     </MembreLayout>
   );

@@ -3,6 +3,7 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import type { TablesUpdate } from "@/integrations/supabase/types";
 import { logAction } from "@/utils/logAction";
+import { inscIdentite } from "@/lib/inscriptionIdentite";
 import { withTimeout } from "@/utils/withTimeout";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { toast } from "sonner";
@@ -36,19 +37,10 @@ interface Inscription {
     nom: string | null;
     email: string | null;
     telephone: string | null;
-    role: "administrateur" | "inscrit" | "membre" | null;
+    date_naissance: string | null;
+    role: "administrateur" | "inscrit" | "membre" | "membre_premium" | null;
   } | null;
 }
-
-// Récupère prénom / nom / email / téléphone effectifs d'une inscription :
-// pour une inscription faite depuis l'espace membre, les champs invite sont
-// vides ; on retombe alors sur la fiche utilisateurs liée via utilisateur_id.
-const inscIdentite = (insc: Inscription) => ({
-  prenom: insc.prenom_invite ?? insc.utilisateurs?.prenom ?? "",
-  nom: insc.nom_invite ?? insc.utilisateurs?.nom ?? "",
-  email: insc.email_invite ?? insc.utilisateurs?.email ?? null,
-  telephone: insc.telephone_invite ?? insc.utilisateurs?.telephone ?? null,
-});
 
 interface Template {
   cle: string;
@@ -143,7 +135,7 @@ const PreInscriptions = () => {
       const [inscRes, tplRes, atelRes] = await withTimeout(Promise.all([
         supabase
           .from("inscriptions")
-          .select("*, ateliers(id, titre, date_atelier, heure_debut, lieu, adresse), utilisateurs(prenom, nom, email, telephone, role)")
+          .select("*, ateliers(id, titre, date_atelier, heure_debut, lieu, adresse), utilisateurs(prenom, nom, email, telephone, date_naissance, role)")
           .order("inscrit_le", { ascending: false }),
         supabase
           .from("parametres_messages")
@@ -174,7 +166,7 @@ const PreInscriptions = () => {
         if (guestEmails.length) {
           const { data: matched } = await supabase
             .from("utilisateurs")
-            .select("prenom, nom, email, telephone, role")
+            .select("prenom, nom, email, telephone, date_naissance, role")
             .in("email", guestEmails);
           const byEmail = new Map<string, NonNullable<Inscription["utilisateurs"]>>(
             (matched ?? []).map(u => [String(u.email).toLowerCase(), u as NonNullable<Inscription["utilisateurs"]>])
@@ -504,6 +496,7 @@ const PreInscriptions = () => {
                       const map: Record<string, { label: string; cls: string }> = {
                         administrateur: { label: "Admin",   cls: "bg-purple-100 text-purple-700" },
                         membre:         { label: "Membre",  cls: "bg-primary/10 text-primary" },
+                        membre_premium: { label: "Premium", cls: "bg-amber-100 text-amber-700" },
                         inscrit:        { label: "Inscrit", cls: "bg-gray-100 text-gray-600" },
                       };
                       const r = map[role];
@@ -558,9 +551,9 @@ const PreInscriptions = () => {
                         )}
                       </>
                     )}
-                    {insc.date_naissance && (
+                    {identite.dateNaissance && (
                       <div className="text-xs text-muted-foreground sm:col-span-2 mt-1">
-                        Date de naissance : {formatDate(insc.date_naissance)}
+                        Date de naissance : {formatDate(identite.dateNaissance)}
                       </div>
                     )}
                   </div>
