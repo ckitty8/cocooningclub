@@ -4,13 +4,14 @@ import { Eye, Info } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { MATRICE, ROLES, ROLES_SIMULABLES, pageAccueilDuRole, type RoleSimulable } from "@/lib/roles";
+import { OFFRES_SIMULABLES, type OffreSimulee } from "@/lib/droits";
 
 // Zones du site que voit chaque rôle, déduites de la matrice des rôles.
 const zonesDuRole = (role: RoleSimulable) =>
   MATRICE.filter(section => section.lignes.some(l => l.acces.includes(role))).map(section => section.titre);
 
 const Simulateur = () => {
-  const { simulation, simuler, profile } = useAuth();
+  const { simulation, simuler, simulerOffre, offreSimulee, profile } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,6 +21,13 @@ const Simulateur = () => {
   const commencer = (role: RoleSimulable) => {
     simuler(role);
     navigate(pageAccueilDuRole(role));
+  };
+
+  // Adhérente d'une offre précise : on arrive sur les ateliers, où l'on voit ce qui est inclus ou à régler.
+  const commencerAvecOffre = (offre: OffreSimulee) => {
+    simuler("membre");
+    simulerOffre(offre);
+    navigate("/espace-membre/ateliers");
   };
 
   return (
@@ -69,6 +77,30 @@ const Simulateur = () => {
                 <Eye className="h-4 w-4" aria-hidden="true" />
                 {actif ? "Simulation en cours" : `Voir le site comme ${ROLES[role].libelle.toLowerCase()}`}
               </button>
+              {role === "membre" && (
+                <div className="mt-3 border-t pt-3">
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Selon l'offre</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {OFFRES_SIMULABLES.map(o => (
+                      <button
+                        key={o.code}
+                        onClick={() => commencerAvecOffre(o.code)}
+                        aria-pressed={actif && offreSimulee === o.code}
+                        className={`min-h-9 rounded-full border px-3 text-xs font-medium transition-colors hover:bg-muted ${actif && offreSimulee === o.code ? "border-primary bg-primary/10" : ""}`}
+                      >
+                        {o.libelle}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => commencerAvecOffre("aucune")}
+                      aria-pressed={actif && offreSimulee === "aucune"}
+                      className={`min-h-9 rounded-full border px-3 text-xs font-medium transition-colors hover:bg-muted ${actif && offreSimulee === "aucune" ? "border-primary bg-primary/10" : ""}`}
+                    >
+                      Sans adhésion
+                    </button>
+                  </div>
+                </div>
+              )}
             </section>
           );
         })}

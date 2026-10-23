@@ -1,3 +1,5 @@
+import type { DroitAtelier, OffreEnCours } from "@/lib/droits";
+
 export type StatutInscription = "en_attente" | "confirme" | "annule";
 export type StatutPaiement = "en_attente" | "paye" | "non_requis";
 
@@ -42,6 +44,13 @@ export interface AtelierListe {
   tarif_standard: number | null;
   places_max: number;
   places_disponibles: number;
+  antenne_id: string | null;
+}
+
+/** Offre de la personne et droit de l'atelier qui en découle (gratuit, inclus ou à payer). */
+export interface InfoDroit {
+  droit: DroitAtelier;
+  offres: OffreEnCours[];
 }
 
 export const ROLES_BADGE: Record<string, { label: string; cls: string }> = {

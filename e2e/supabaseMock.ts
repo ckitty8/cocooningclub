@@ -62,6 +62,8 @@ interface OptionsMock {
   formules?: Record<string, unknown>[];
   adhesions?: Record<string, unknown>[];
   antennes?: Record<string, unknown>[];
+  /** Ateliers renvoyés à la lecture de la table `ateliers` (par défaut : un atelier Papotages). */
+  ateliers?: Record<string, unknown>[];
   /** Lignes de la vue `vue_autorisation_image` (consentement photo par personne). */
   autorisationsImage?: Record<string, unknown>[];
   /** Lignes de `vue_logs` (journal des actions de l'équipe). */
@@ -110,6 +112,7 @@ export const mockSupabase = async (page: Page, options: OptionsMock = {}): Promi
     if (table === "vue_logs") return route.fulfill({ json: options.logs ?? [] });
     if (table === "vue_autorisation_image") return route.fulfill({ json: options.autorisationsImage ?? [] });
     if (table === "antennes" && options.antennes) return route.fulfill({ json: options.antennes });
+    if (table === "ateliers" && options.ateliers && !veutUnObjet) return route.fulfill({ json: options.ateliers });
     if (table === "ateliers") return route.fulfill({ json: veutUnObjet ? ATELIER_TEST : [ATELIER_TEST] });
     if (table === "formulaires") return route.fulfill({ json: veutUnObjet ? FORMULAIRE_CONTACT : [FORMULAIRE_CONTACT] });
     return route.fulfill({ json: veutUnObjet ? null : [] });

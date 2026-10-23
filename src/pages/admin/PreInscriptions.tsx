@@ -3,8 +3,10 @@ import { useSearchParams } from "react-router-dom";
 import AdminLayout from "@/components/admin/AdminLayout";
 import ListeParAtelier from "@/components/admin/preinscriptions/ListeParAtelier";
 import FenetreInscription from "@/components/admin/preinscriptions/FenetreInscription";
-import type { AtelierListe, Inscription, StatutInscription, StatutPaiement } from "@/components/admin/preinscriptions/types";
+import type { AtelierListe, InfoDroit, Inscription, StatutInscription, StatutPaiement } from "@/components/admin/preinscriptions/types";
 import { useAutorisationsImage } from "@/hooks/useAutorisationsImage";
+import { useEspaces, useOffresParPersonne } from "@/hooks/useOffres";
+import { droitAtelier, euros } from "@/lib/droits";
 import { supabase } from "@/integrations/supabase/client";
 import type { TablesUpdate } from "@/integrations/supabase/types";
 import { logAction } from "@/utils/logAction";
@@ -50,6 +52,9 @@ const PreInscriptions = () => {
   const [inscriptions, setInscriptions] = useState<Inscription[]>([]);
   // Consentement photo de chaque personne connectée : lu par relation (dernier bulletin d'adhésion).
   const autorisations = useAutorisationsImage(inscriptions.map(i => i.utilisateur_id));
+  // Offre de chaque personne et droit de l'atelier (gratuit / inclus / à payer) : visibles après la migration des offres.
+  const espaces = useEspaces();
+  const { parPersonne: offres, disponible: offresDisponibles } = useOffresParPersonne(null);
   const [templates, setTemplates] = useState<Record<string, string>>({});
   const [ateliersDispo, setAteliersDispo] = useState<AtelierMinimal[]>([]);
   const [ateliersListe, setAteliersListe] = useState<AtelierListe[]>([]);
@@ -97,7 +102,7 @@ const PreInscriptions = () => {
         // Tous les ateliers : un bloc par atelier dans l'accordéon.
         supabase
           .from("ateliers")
-          .select("id, titre, date_atelier, heure_debut, lieu, statut, tarif_standard, places_max, places_disponibles")
+          .select("id, titre, date_atelier, heure_debut, lieu, statut, tarif_standard, places_max, places_disponibles, antenne_id")
           .order("date_atelier"),
       ]));
 
@@ -179,6 +184,18 @@ const PreInscriptions = () => {
     tous:       inscriptions.length,
   }), [inscriptions]);
 
+  const droits = useMemo(() => {
+    if (!offresDisponibles || espaces.length === 0) return undefined;
+    const carte = new Map<string, InfoDroit>();
+    for (const i of inscriptions) {
+      const atelier = ateliersListe.find(a => a.id === i.atelier_id);
+      if (!atelier) continue;
+      const offresPersonne = i.utilisateur_id ? offres.get(i.utilisateur_id) ?? [] : [];
+      carte.set(i.id, { droit: droitAtelier(atelier, espaces, offresPersonne), offres: offresPersonne });
+    }
+    return carte;
+  }, [inscriptions, ateliersListe, espaces, offres, offresDisponibles]);
+
   const lignesVisibles = useMemo(() => groupes.flatMap(g => g.items), [groupes]);
   const fenetre = inscriptions.find(i => i.id === fenetreId) ?? null;
 
@@ -186,6 +203,10 @@ const PreInscriptions = () => {
     if (insc.statut === next) return false;
     const id = inscIdentite(insc);
     if (next === "annule" && !confirm(`Refuser la pré-inscription de ${id.prenom} ${id.nom} ?`)) return false;
+    // Atelier à payer et règlement non enregistré : simple avertissement, la décision reste à l'équipe.
+    const info = droits?.get(insc.id);
+    if (next === "confirme" && info?.droit.etat === "a_payer" && insc.statut_paiement !== "paye"
+      && !confirm(`${info.droit.montant > 0 ? euros(info.droit.montant) : "Le tarif"} non réglé pour ${id.prenom} ${id.nom}. Valider quand même ?`)) return false;
 
     setActingOn(insc.id);
     const payload: TablesUpdate<"inscriptions"> = { statut: next };
@@ -464,6 +485,7 @@ const PreInscriptions = () => {
           ouverts={ouverts}
           onBasculer={atelierId => setOuvertsManuels(prev => ({ ...prev, [atelierId]: !ouverts[atelierId] }))}
           autorisations={autorisations}
+          droits={droits}
           actingOn={actingOn}
           onOuvrir={insc => setFenetreId(insc.id)}
           onStatut={handleChangeStatut}
@@ -476,6 +498,7 @@ const PreInscriptions = () => {
           liste={lignesVisibles}
           atelier={ateliersListe.find(a => a.id === fenetre.atelier_id)}
           autorisation={fenetre.utilisateur_id ? autorisations.get(fenetre.utilisateur_id) : undefined}
+          info={droits?.get(fenetre.id)}
           templates={templates}
           occupe={actingOn === fenetre.id}
           onClose={() => setFenetreId(null)}

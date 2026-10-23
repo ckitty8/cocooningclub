@@ -17,6 +17,9 @@ WITH controles(controle, ok) AS (
     ('Politiques sur adhesions (2 attendues)', (SELECT count(*) FROM pg_policies WHERE schemaname = 'public' AND tablename = 'adhesions') = 2),
     ('Vue en security_invoker',               COALESCE((SELECT 'security_invoker=true' = ANY (reloptions) FROM pg_class WHERE oid = to_regclass('public.vue_autorisation_image')), false)),
     ('Rôle membre premium interdit (contrainte)', EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'utilisateurs_sans_role_premium' AND conrelid = 'public.utilisateurs'::regclass)),
+    ('Colonne antennes.gratuit_pour_tous',   EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'antennes' AND column_name = 'gratuit_pour_tous')),
+    ('Fonction atelier_inclus',               to_regprocedure('public.atelier_inclus(uuid,uuid)') IS NOT NULL),
+    ('Fonction mon_droit_atelier',            to_regprocedure('public.mon_droit_atelier(uuid)') IS NOT NULL),
     ('Au moins les 3 formules du bulletin',   CASE WHEN to_regclass('public.formules') IS NULL THEN false ELSE ((xpath('/row/c/text()', query_to_xml('SELECT count(*) AS c FROM public.formules', false, true, '')))[1]::text)::int >= 3 END),
     ('Formules rattachées à des espaces',     CASE WHEN to_regclass('public.formule_espaces') IS NULL THEN false ELSE ((xpath('/row/c/text()', query_to_xml('SELECT count(*) AS c FROM public.formule_espaces', false, true, '')))[1]::text)::int >= 4 END)
 )

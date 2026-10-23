@@ -5,10 +5,12 @@ import BadgePhotos from "@/components/BadgePhotos";
 import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
 import { detailPhotos, type AutorisationImage } from "@/lib/autorisationImage";
+import { OffrePastille } from "@/components/OffrePastille";
+import { euros, nomCourtOffre } from "@/lib/droits";
 import { inscIdentite } from "@/lib/inscriptionIdentite";
 import { clesModele, remplirModele, telephonePourWhatsApp } from "@/lib/messagesInscription";
 import {
-  ROLES_BADGE, STATUT_BADGE, STATUT_LABEL, type AtelierListe, type Inscription, type StatutInscription, type StatutPaiement,
+  ROLES_BADGE, STATUT_BADGE, STATUT_LABEL, type AtelierListe, type InfoDroit, type Inscription, type StatutInscription, type StatutPaiement,
 } from "./types";
 
 type Onglet = "infos" | "paiement" | "messages" | "historique";
@@ -20,6 +22,8 @@ interface Props {
   liste: Inscription[];
   atelier?: AtelierListe;
   autorisation?: AutorisationImage;
+  /** Offre de la personne et droit de l'atelier ; absent avant la migration des offres. */
+  info?: InfoDroit;
   templates: Record<string, string>;
   occupe: boolean;
   onClose: () => void;
@@ -56,7 +60,7 @@ const dateLongue = (iso: string) =>
 const champ = "w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary";
 
 const FenetreInscription = ({
-  insc, liste, atelier, autorisation, templates, occupe, onClose, onNavigate, onStatut, onPaiement, onModifier,
+  insc, liste, atelier, autorisation, info, templates, occupe, onClose, onNavigate, onStatut, onPaiement, onModifier,
 }: Props) => {
   const [onglet, setOnglet] = useState<Onglet>("infos");
   const [canal, setCanal] = useState<Canal>("mail");
@@ -204,6 +208,20 @@ const FenetreInscription = ({
               <p className="text-muted-foreground">
                 Tarif de l'atelier : {atelier?.tarif_standard ? `${atelier.tarif_standard} €` : "gratuit"}.
               </p>
+              {info && (
+                <div className={`rounded-xl border px-4 py-3 ${info.droit.etat === "a_payer" ? "border-amber-200 bg-amber-50 text-amber-800" : "border-green-200 bg-green-50 text-green-800"}`}>
+                  <p className="font-medium flex flex-wrap items-center gap-2">
+                    {info.droit.etat === "a_payer" ? `À payer${info.droit.montant > 0 ? ` : ${euros(info.droit.montant)}` : ""}` : info.droit.etat === "inclus" ? "Inclus dans l'adhésion" : "Gratuit pour tous"}
+                    {info.offres.map(o => <OffrePastille key={o.formule_id} offre={o} />)}
+                  </p>
+                  <p className="text-xs mt-1">
+                    {info.offres.length === 0
+                      ? "Aucune adhésion en cours pour cette personne."
+                      : `Adhésion ${info.offres.map(o => nomCourtOffre(o.nom)).join(" + ")} en cours.`}
+                    {info.droit.etat === "a_payer" && insc.statut_paiement !== "paye" && " Le règlement n'est pas encore enregistré."}
+                  </p>
+                </div>
+              )}
             </div>
           )}
 

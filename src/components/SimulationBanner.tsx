@@ -2,11 +2,12 @@ import { useNavigate } from "react-router-dom";
 import { Eye } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { ROLES } from "@/lib/roles";
+import { OFFRES_SIMULABLES } from "@/lib/droits";
 
 // Bandeau affiché sur toutes les pages tant que le créateur simule un autre
 // rôle, pour qu'il ne l'oublie pas et puisse en sortir en un clic.
 const SimulationBanner = () => {
-  const { simulation, simuler } = useAuth();
+  const { simulation, simuler, offreSimulee } = useAuth();
   const navigate = useNavigate();
 
   if (!simulation) return null;
@@ -23,7 +24,8 @@ const SimulationBanner = () => {
     >
       <Eye className="h-4 w-4 shrink-0" aria-hidden="true" />
       <p className="flex-1">
-        Simulation : vous voyez le site comme <strong>{ROLES[simulation].libelle}</strong>.
+        Simulation : vous voyez le site comme <strong>{ROLES[simulation].libelle}</strong>
+        {offreSimulee && <> · <strong>{OFFRES_SIMULABLES.find(o => o.code === offreSimulee)?.libelle ?? "sans adhésion"}</strong></>}.
       </p>
       <button
         onClick={quitter}

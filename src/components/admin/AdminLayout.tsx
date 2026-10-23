@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import {
   LayoutDashboard, Users, CalendarDays, FileText,
-  FormInput, LogOut, Menu, ChevronRight, UserCheck, MessageSquare, CalendarClock, Lightbulb, Star, Eye, Table2, BadgeEuro
+  FormInput, LogOut, Menu, ChevronRight, UserCheck, MessageSquare, CalendarClock, Lightbulb, Star, Eye, Table2, BadgeEuro, Scale
 } from "lucide-react";
 
 const navItems = [
@@ -25,6 +25,7 @@ const navItems = [
 const createurItems = [
   { href: "/admin/createur/simulateur", label: "Simulateur de rôle", icon: Eye },
   { href: "/admin/createur/matrice",    label: "Matrice des rôles",  icon: Table2 },
+  { href: "/admin/createur/droits",     label: "Droits par offre",   icon: Scale },
 ];
 
 const ideesLastSeenKey = (id: string | undefined) => `admin.idees.lastSeen.${id ?? "anon"}`;

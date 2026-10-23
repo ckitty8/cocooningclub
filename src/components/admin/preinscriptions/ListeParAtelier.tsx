@@ -3,13 +3,17 @@ import BadgePhotos from "@/components/BadgePhotos";
 import type { AutorisationImage } from "@/lib/autorisationImage";
 import { inscIdentite } from "@/lib/inscriptionIdentite";
 import type { GroupeAtelier } from "@/lib/preInscriptions";
-import { ROLES_BADGE, STATUT_BADGE, STATUT_LABEL, type AtelierListe, type Inscription, type StatutInscription } from "./types";
+import { OffrePastille } from "@/components/OffrePastille";
+import { euros } from "@/lib/droits";
+import { ROLES_BADGE, STATUT_BADGE, STATUT_LABEL, type AtelierListe, type InfoDroit, type Inscription, type StatutInscription } from "./types";
 
 interface Props {
   groupes: GroupeAtelier<AtelierListe, Inscription>[];
   ouverts: Record<string, boolean>;
   onBasculer: (atelierId: string) => void;
   autorisations: Map<string, AutorisationImage>;
+  /** Droit de chaque pré-inscription (par identifiant) ; absent tant que la migration des offres n'est pas appliquée. */
+  droits?: Map<string, InfoDroit>;
   actingOn: string | null;
   onOuvrir: (insc: Inscription) => void;
   onStatut: (insc: Inscription, statut: StatutInscription) => void;
@@ -26,7 +30,7 @@ const bouton = "flex h-8 w-8 items-center justify-center rounded-full border tra
 const boutonLarge = "hidden sm:flex h-8 w-8 items-center justify-center rounded-full border transition-colors disabled:opacity-40";
 
 /** Accordéon : un bloc par atelier, avec ses pré-inscriptions et des actions rapides. */
-const ListeParAtelier = ({ groupes, ouverts, onBasculer, autorisations, actingOn, onOuvrir, onStatut }: Props) => (
+const ListeParAtelier = ({ groupes, ouverts, onBasculer, autorisations, droits, actingOn, onOuvrir, onStatut }: Props) => (
   <div className="space-y-3">
     {groupes.map(({ atelier, items, aTraiter, total }) => {
       const ouvert = !!ouverts[atelier.id];
@@ -73,10 +77,21 @@ const ListeParAtelier = ({ groupes, ouverts, onBasculer, autorisations, actingOn
                         <span className="flex flex-wrap items-center gap-2">
                           <span className="font-medium">{nom}</span>
                           {role && <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-medium ${role.cls}`}>{role.label}</span>}
+                          {droits?.get(insc.id)?.offres.map(o => <OffrePastille key={o.formule_id} offre={o} />)}
                         </span>
                         <span className="block text-xs text-muted-foreground truncate">{id.email ?? id.telephone ?? "—"} · reçue le {depuis(insc.inscrit_le)}</span>
                       </span>
                     </button>
+
+                    {droits?.get(insc.id) && (
+                      <span className={`hidden sm:inline shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        droits.get(insc.id)!.droit.etat === "a_payer" ? "bg-amber-100 text-amber-700"
+                        : droits.get(insc.id)!.droit.etat === "inclus" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"
+                      }`}>
+                        {droits.get(insc.id)!.droit.etat === "a_payer" ? `À payer${droits.get(insc.id)!.droit.montant > 0 ? ` · ${euros(droits.get(insc.id)!.droit.montant)}` : ""}`
+                          : droits.get(insc.id)!.droit.etat === "inclus" ? "Inclus" : "Gratuit"}
+                      </span>
+                    )}
 
                     <span className="hidden lg:block shrink-0">
                       <BadgePhotos autorisation={insc.utilisateur_id ? autorisations.get(insc.utilisateur_id) : undefined} />

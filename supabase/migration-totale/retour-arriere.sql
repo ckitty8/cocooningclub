@@ -4,6 +4,44 @@
 -- par une validation d'adhésion ne sont pas remis en arrière. Faire une sauvegarde avant.
 -- Sans la fonction supprimer_membre, le bouton « Supprimer » de l'admin échoue : revenir aussi au code précédent.
 BEGIN;
+-- Droits par offre : retour à la définition d'avant du déclencheur des inscriptions
+-- (20261015000000 : « non_requis » seulement si le tarif est <= 0).
+CREATE OR REPLACE FUNCTION private.proteger_inscriptions()
+RETURNS TRIGGER LANGUAGE plpgsql SET search_path = public, pg_catalog
+AS $$
+DECLARE
+  v_tarif NUMERIC;
+BEGIN
+  IF NOT private.est_client_non_admin() THEN RETURN NEW; END IF;
+  IF TG_OP = 'INSERT' THEN
+    IF NEW.utilisateur_id IS NOT NULL AND NEW.utilisateur_id IS DISTINCT FROM auth.uid() THEN
+      RAISE EXCEPTION 'Inscription non autorisée pour un autre compte.' USING ERRCODE = '42501';
+    END IF;
+    SELECT a.tarif_standard INTO v_tarif FROM public.ateliers a WHERE a.id = NEW.atelier_id;
+    NEW.statut          := 'en_attente';
+    NEW.statut_paiement := CASE WHEN v_tarif IS NOT NULL AND v_tarif <= 0 THEN 'non_requis' ELSE 'en_attente' END;
+    NEW.present         := FALSE;
+    NEW.annule_le       := NULL;
+    NEW.inscrit_le      := now();
+    RETURN NEW;
+  END IF;
+  IF NEW.statut <> 'annule'
+  OR NEW.id              IS DISTINCT FROM OLD.id
+  OR NEW.utilisateur_id  IS DISTINCT FROM OLD.utilisateur_id
+  OR NEW.atelier_id      IS DISTINCT FROM OLD.atelier_id
+  OR NEW.statut_paiement IS DISTINCT FROM OLD.statut_paiement
+  OR NEW.present         IS DISTINCT FROM OLD.present
+  OR NEW.inscrit_le      IS DISTINCT FROM OLD.inscrit_le
+  THEN
+    RAISE EXCEPTION 'Modification non autorisée : vous pouvez seulement annuler votre inscription.' USING ERRCODE = '42501';
+  END IF;
+  NEW.annule_le := COALESCE(OLD.annule_le, now());
+  RETURN NEW;
+END;
+$$;
+DROP FUNCTION IF EXISTS public.mon_droit_atelier(uuid);
+DROP FUNCTION IF EXISTS public.atelier_inclus(uuid, uuid);
+ALTER TABLE public.antennes DROP COLUMN IF EXISTS gratuit_pour_tous;
 DROP POLICY   IF EXISTS formules_lecture_adherente ON public.formules;
 DROP VIEW     IF EXISTS public.vue_autorisation_image;
 DROP FUNCTION IF EXISTS public.valider_adhesion(uuid, text, date, date);

@@ -10,6 +10,7 @@ import Confidentialite from "./pages/Confidentialite.tsx";
 import Cgu from "./pages/Cgu.tsx";
 import NotreHistoire from "./pages/NotreHistoire.tsx";
 import Simulateur from "./pages/createur/Simulateur.tsx";
+import DroitsParOffre from "./pages/createur/DroitsParOffre.tsx";
 import MatriceRoles from "./pages/createur/MatriceRoles.tsx";
 import SimulationBanner from "@/components/SimulationBanner";
 import { ACCES } from "@/lib/roles";
@@ -137,6 +138,7 @@ const App = () => (
 
           {/* Outils du créateur : rôle réel testé, pour rester accessibles pendant une simulation */}
           <Route path="/admin/createur/simulateur" element={<RoleGuard allowedRoles={ACCES.createur} reel><Simulateur /></RoleGuard>} />
+          <Route path="/admin/createur/droits"     element={<RoleGuard allowedRoles={ACCES.createur} reel><DroitsParOffre /></RoleGuard>} />
           <Route path="/admin/createur/matrice"    element={<RoleGuard allowedRoles={ACCES.createur} reel><MatriceRoles /></RoleGuard>} />
 
 
