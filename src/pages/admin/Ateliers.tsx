@@ -587,71 +587,48 @@ const Ateliers = () => {
         </div>
       </div>
 
-      {/* Onglets espaces */}
-      <div className="flex flex-wrap gap-2 mb-4 border-b pb-3">
-        <button
-          onClick={() => setFilterAntenne("toutes")}
-          className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-            filterAntenne === "toutes"
-              ? "bg-primary text-primary-foreground"
-              : "bg-card border text-foreground hover:bg-muted"
-          }`}
-        >
-          Tous
-          <span className="ml-2 text-xs opacity-70">({countByAntenne("toutes")})</span>
-        </button>
-        {antennes.map(c => (
-          <button
-            key={c.id}
-            onClick={() => setFilterAntenne(c.id)}
-            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-              filterAntenne === c.id
-                ? "bg-primary text-primary-foreground"
-                : "bg-card border text-foreground hover:bg-muted"
-            }`}
-          >
-            {c.nom}
-            <span className="ml-2 text-xs opacity-70">({countByAntenne(c.id)})</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Onglets statut */}
-      <div className="flex flex-wrap gap-2 mb-4">
-        {([
-          ["", "Tous"],
-          ["brouillon", "Brouillon"],
-          ["publie", "Publié"],
-          ["complet", "Complet"],
-          ["termine", "Terminé"],
-          ["annule", "Annulé"],
-        ] as Array<[Statut | "", string]>).map(([val, label]) => (
-          <button
-            key={val || "tous"}
-            onClick={() => setFilterStatut(val)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-              filterStatut === val
-                ? "bg-foreground text-background"
-                : "bg-card border text-foreground hover:bg-muted"
-            }`}
-          >
-            {label}
-            <span className="ml-1.5 opacity-70">({countByStatut(val)})</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Recherche */}
-      <div className="mb-6">
-        <div className="relative">
+      {/* Recherche et filtres */}
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-[220px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Rechercher un atelier..."
+            aria-label="Rechercher un atelier"
             className="w-full pl-9 pr-4 py-2.5 border rounded-xl text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
+        <select
+          value={filterAntenne}
+          onChange={e => setFilterAntenne(e.target.value)}
+          aria-label="Filtrer par espace"
+          className="border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+        >
+          <option value="toutes">Tous les espaces ({countByAntenne("toutes")})</option>
+          {antennes.map(c => (
+            <option key={c.id} value={c.id}>{c.nom} ({countByAntenne(c.id)})</option>
+          ))}
+        </select>
+        <select
+          value={filterStatut}
+          onChange={e => setFilterStatut(e.target.value as Statut | "")}
+          aria-label="Filtrer par statut"
+          className="border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+        >
+          <option value="">Tous les statuts ({countByStatut("")})</option>
+          {(Object.keys(statutLabels) as Statut[]).map(st => (
+            <option key={st} value={st}>{statutLabels[st]} ({countByStatut(st)})</option>
+          ))}
+        </select>
+        {(search || filterAntenne !== "toutes" || filterStatut !== "") && (
+          <button
+            onClick={() => { setSearch(""); setFilterAntenne("toutes"); setFilterStatut(""); }}
+            className="flex items-center gap-1 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <X className="w-4 h-4" /> Réinitialiser
+          </button>
+        )}
       </div>
 
       {loading ? (
