@@ -31,6 +31,11 @@ export interface Adhesion {
   cotisation_recue_le: string | null;
   date_validation: string | null;
   valable_jusqu_au: string | null;
+  engagement_accepte_le: string | null;
+  whatsapp: boolean;
+  autorisation_image: boolean;
+  image_supports: string[];
+  image_signee_le: string | null;
   cree_le: string;
   utilisateurs: {
     prenom: string | null;
@@ -38,6 +43,8 @@ export interface Adhesion {
     email: string | null;
     telephone: string | null;
     role: string | null;
+    commune: string | null;
+    activite: string | null;
   } | null;
   formules: { nom: string; couleur: string; duree_mois: number } | null;
 }

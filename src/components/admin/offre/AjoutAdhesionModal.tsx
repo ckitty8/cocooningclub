@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
 import { MODES_REGLEMENT, type ModeReglement } from "@/lib/adhesions";
+import { bulletinVierge, champsDepuisBulletin, type ValeursBulletin } from "@/lib/bulletin";
+import AutorisationsForm from "./AutorisationsForm";
 import { champ, type Formule, type MembreChoix } from "./types";
 
 interface Props {
@@ -19,6 +21,9 @@ const AjoutAdhesionModal = ({ formules, onClose, onSaved }: Props) => {
   const [membreId, setMembreId] = useState("");
   const [formuleId, setFormuleId] = useState(formules.find(f => f.est_active)?.id ?? "");
   const [mode, setMode] = useState<ModeReglement>("virement");
+  const [bulletin, setBulletin] = useState<ValeursBulletin>(bulletinVierge());
+  const [commune, setCommune] = useState("");
+  const [activite, setActivite] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -36,19 +41,26 @@ const AjoutAdhesionModal = ({ formules, onClose, onSaved }: Props) => {
     setSaving(true);
     const { data, error } = await supabase
       .from("adhesions")
-      .insert({ utilisateur_id: membreId, formule_id: formuleId, mode_reglement: mode })
+      .insert({ utilisateur_id: membreId, formule_id: formuleId, mode_reglement: mode, ...champsDepuisBulletin(bulletin) })
       .select("id")
       .single();
+    if (error) { setSaving(false); console.error("[AjoutAdhesionModal]", error); toast.error("L'enregistrement a échoué."); return; }
+    // Commune et activité sont des coordonnées de la personne : elles vont sur sa fiche, pas sur l'adhésion.
+    if (commune.trim() || activite.trim()) {
+      const { error: errFiche } = await supabase.from("utilisateurs")
+        .update({ ...(commune.trim() && { commune: commune.trim() }), ...(activite.trim() && { activite: activite.trim() }) })
+        .eq("id", membreId);
+      if (errFiche) toast.error("L'adhésion est enregistrée, mais pas la commune ni l'activité.");
+    }
     setSaving(false);
-    if (error) { console.error("[AjoutAdhesionModal]", error); toast.error("L'enregistrement a échoué."); return; }
     logAction("adhesion.create", "adhesions", data.id, { utilisateur_id: membreId, formule_id: formuleId });
     toast.success("Adhésion ajoutée, à valider");
     onSaved();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-label="Ajouter une adhésion">
-      <div className="bg-background rounded-2xl w-full max-w-lg shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4" role="dialog" aria-modal="true" aria-label="Ajouter une adhésion">
+      <div className="bg-background rounded-2xl w-full max-w-lg shadow-xl my-6">
         <div className="flex items-center justify-between px-6 py-4 border-b">
           <h2 className="font-semibold text-lg">Ajouter une adhésion</h2>
           <button onClick={onClose} aria-label="Fermer" className="p-1.5 rounded-lg hover:bg-muted"><X className="w-4 h-4" /></button>
@@ -73,6 +85,20 @@ const AjoutAdhesionModal = ({ formules, onClose, onSaved }: Props) => {
             <select id="aj-mode" value={mode} onChange={e => setMode(e.target.value as ModeReglement)} className={champ}>
               {(Object.keys(MODES_REGLEMENT) as ModeReglement[]).map(m => <option key={m} value={m}>{MODES_REGLEMENT[m]}</option>)}
             </select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label htmlFor="aj-commune" className="block text-sm font-medium mb-1.5">Commune</label>
+              <input id="aj-commune" value={commune} onChange={e => setCommune(e.target.value)} maxLength={100} className={champ} />
+            </div>
+            <div>
+              <label htmlFor="aj-activite" className="block text-sm font-medium mb-1.5">Activité</label>
+              <input id="aj-activite" value={activite} onChange={e => setActivite(e.target.value)} maxLength={150} placeholder="facultatif" className={champ} />
+            </div>
+          </div>
+          <div className="border-t pt-4">
+            <p className="text-sm font-medium mb-2">Bulletin signé</p>
+            <AutorisationsForm valeurs={bulletin} onChange={setBulletin} />
           </div>
         </div>
         <div className="flex justify-end gap-2 px-6 py-4 border-t">

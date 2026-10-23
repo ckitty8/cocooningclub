@@ -10,6 +10,13 @@
 --     (fonction valider_adhesion) ; à l'échéance elle redevient `inscrit`
 --     (fonction expirer_adhesions).
 --
+-- Le bulletin d'adhésion (engagement, WhatsApp, autorisation photo et vidéo) est
+-- enregistré UNE SEULE FOIS, sur l'adhésion. Les coordonnées restent sur la fiche
+-- de la personne (utilisateurs) et les inscriptions aux ateliers pointent vers elle :
+-- le consentement photo d'une personne s'obtient par relation
+-- (inscriptions -> utilisateurs -> adhesions), jamais par recopie. La vue
+-- vue_autorisation_image donne le dernier bulletin de chaque personne.
+--
 -- Les droits d'accès par adhésion sont gérés côté site. Les membres existants
 -- (rôle `membre` sans adhésion enregistrée) ne sont JAMAIS rétrogradés : seule
 -- une personne qui a eu une adhésion active, aujourd'hui entièrement échue,
@@ -18,6 +25,13 @@
 
 CREATE SCHEMA IF NOT EXISTS private;
 GRANT USAGE ON SCHEMA private TO authenticated;
+
+-- ─────────────────────────────────────────────
+-- 0. Coordonnées du bulletin absentes de la fiche (facultatives)
+-- ─────────────────────────────────────────────
+ALTER TABLE public.utilisateurs
+  ADD COLUMN IF NOT EXISTS commune  TEXT CHECK (commune  IS NULL OR length(commune)  <= 100),
+  ADD COLUMN IF NOT EXISTS activite TEXT CHECK (activite IS NULL OR length(activite) <= 150);
 
 -- ─────────────────────────────────────────────
 -- 1. Formules
@@ -68,9 +82,17 @@ CREATE TABLE IF NOT EXISTS public.adhesions (
   cotisation_recue_le DATE,
   date_validation    DATE,
   valable_jusqu_au   DATE,
+  -- Bulletin : engagement (statuts et règlement intérieur), WhatsApp, autorisation photo et vidéo.
+  engagement_accepte_le DATE,
+  whatsapp           BOOLEAN NOT NULL DEFAULT FALSE,
+  autorisation_image BOOLEAN NOT NULL DEFAULT FALSE,
+  image_supports     TEXT[] NOT NULL DEFAULT '{}'
+                       CHECK (image_supports <@ ARRAY['reseaux', 'site', 'imprimes', 'interne']),
+  image_signee_le    DATE,
   cree_le            TIMESTAMPTZ NOT NULL DEFAULT now(),
   modifie_le         TIMESTAMPTZ NOT NULL DEFAULT now(),
-  CHECK (statut <> 'active' OR (date_validation IS NOT NULL AND valable_jusqu_au IS NOT NULL))
+  CHECK (statut <> 'active' OR (date_validation IS NOT NULL AND valable_jusqu_au IS NOT NULL)),
+  CHECK (NOT autorisation_image OR image_signee_le IS NOT NULL)
 );
 
 CREATE INDEX IF NOT EXISTS idx_adhesions_utilisateur ON public.adhesions(utilisateur_id);
@@ -112,6 +134,13 @@ DROP POLICY IF EXISTS formules_lecture_publique ON public.formules;
 CREATE POLICY formules_lecture_publique ON public.formules
   FOR SELECT TO anon, authenticated USING (est_active);
 
+-- Une adhérente garde accès à la formule de ses adhésions, même si elle n'est plus proposée.
+DROP POLICY IF EXISTS formules_lecture_adherente ON public.formules;
+CREATE POLICY formules_lecture_adherente ON public.formules
+  FOR SELECT TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.adhesions a
+                  WHERE a.formule_id = formules.id AND a.utilisateur_id = (SELECT auth.uid())));
+
 DROP POLICY IF EXISTS formules_admin ON public.formules;
 CREATE POLICY formules_admin ON public.formules
   FOR ALL TO authenticated
@@ -139,6 +168,30 @@ CREATE POLICY adhesions_admin ON public.adhesions
 GRANT SELECT ON public.formules, public.formule_espaces TO anon;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.formules, public.formule_espaces, public.adhesions TO authenticated;
 GRANT USAGE ON SEQUENCE public.adhesions_numero_seq TO authenticated;
+
+-- ─────────────────────────────────────────────
+-- 3 bis. Autorisation photo et vidéo en vigueur, par personne
+-- ─────────────────────────────────────────────
+-- Dernier bulletin non refusé de chaque personne. L'autorisation vaut 3 ans à compter
+-- de la signature (bulletin). Vue en security_invoker : les droits de la table
+-- adhesions s'appliquent (une adhérente ne voit que la sienne, les admins voient tout).
+CREATE OR REPLACE VIEW public.vue_autorisation_image
+WITH (security_invoker = true) AS
+SELECT DISTINCT ON (a.utilisateur_id)
+  a.utilisateur_id,
+  a.id AS adhesion_id,
+  a.autorisation_image,
+  a.image_supports,
+  a.image_signee_le,
+  (a.image_signee_le + INTERVAL '3 years')::DATE AS image_valable_jusqu_au,
+  (a.autorisation_image
+     AND a.image_signee_le IS NOT NULL
+     AND (a.image_signee_le + INTERVAL '3 years')::DATE >= CURRENT_DATE) AS image_valide
+FROM public.adhesions a
+WHERE a.statut <> 'refusee'
+ORDER BY a.utilisateur_id, a.cree_le DESC;
+
+GRANT SELECT ON public.vue_autorisation_image TO authenticated;
 
 -- ─────────────────────────────────────────────
 -- 4. Validation d'une adhésion (réservée aux admins)

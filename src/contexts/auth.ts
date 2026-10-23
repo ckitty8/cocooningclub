@@ -15,6 +15,8 @@ export interface Profile {
   email: string | null;
   telephone: string | null;
   date_naissance: string | null;
+  commune?: string | null;
+  activite?: string | null;
   url_avatar: string | null;
   debut_abonnement: string | null;
   fin_abonnement: string | null;

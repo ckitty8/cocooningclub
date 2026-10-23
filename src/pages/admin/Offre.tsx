@@ -75,7 +75,7 @@ const Offre = () => {
         supabase.from("formules").select("*, formule_espaces(antenne_id)").order("ordre"),
         supabase.from("antennes").select("id, nom, slug").order("ordre_affichage"),
         supabase.from("adhesions")
-          .select("*, utilisateurs(prenom, nom, email, telephone, role), formules(nom, couleur, duree_mois)")
+          .select("*, utilisateurs(prenom, nom, email, telephone, role, commune, activite), formules(nom, couleur, duree_mois)")
           .order("cree_le", { ascending: false }),
       ]));
       const erreur = fRes.error ?? aRes.error;

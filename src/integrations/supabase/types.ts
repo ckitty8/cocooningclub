@@ -16,11 +16,15 @@ export type Database = {
     Tables: {
       adhesions: {
         Row: {
+          autorisation_image: boolean
           cotisation_recue_le: string | null
           cree_le: string
           date_validation: string | null
+          engagement_accepte_le: string | null
           formule_id: string
           id: string
+          image_signee_le: string | null
+          image_supports: string[]
           mode_reglement: string
           modifie_le: string
           montant: number
@@ -28,13 +32,18 @@ export type Database = {
           statut: string
           utilisateur_id: string
           valable_jusqu_au: string | null
+          whatsapp: boolean
         }
         Insert: {
+          autorisation_image?: boolean
           cotisation_recue_le?: string | null
           cree_le?: string
           date_validation?: string | null
+          engagement_accepte_le?: string | null
           formule_id: string
           id?: string
+          image_signee_le?: string | null
+          image_supports?: string[]
           mode_reglement?: string
           modifie_le?: string
           montant?: number
@@ -42,13 +51,18 @@ export type Database = {
           statut?: string
           utilisateur_id: string
           valable_jusqu_au?: string | null
+          whatsapp?: boolean
         }
         Update: {
+          autorisation_image?: boolean
           cotisation_recue_le?: string | null
           cree_le?: string
           date_validation?: string | null
+          engagement_accepte_le?: string | null
           formule_id?: string
           id?: string
+          image_signee_le?: string | null
+          image_supports?: string[]
           mode_reglement?: string
           modifie_le?: string
           montant?: number
@@ -56,6 +70,7 @@ export type Database = {
           statut?: string
           utilisateur_id?: string
           valable_jusqu_au?: string | null
+          whatsapp?: boolean
         }
         Relationships: [
           {
@@ -1038,7 +1053,9 @@ export type Database = {
       }
       utilisateurs: {
         Row: {
+          activite: string | null
           code_couleur_conges: string | null
+          commune: string | null
           couleur_conges: string | null
           cree_le: string
           date_naissance: string | null
@@ -1056,7 +1073,9 @@ export type Database = {
           url_avatar: string | null
         }
         Insert: {
+          activite?: string | null
           code_couleur_conges?: string | null
+          commune?: string | null
           couleur_conges?: string | null
           cree_le?: string
           date_naissance?: string | null
@@ -1074,7 +1093,9 @@ export type Database = {
           url_avatar?: string | null
         }
         Update: {
+          activite?: string | null
           code_couleur_conges?: string | null
+          commune?: string | null
           couleur_conges?: string | null
           cree_le?: string
           date_naissance?: string | null
@@ -1149,6 +1170,18 @@ export type Database = {
       }
     }
     Views: {
+      vue_autorisation_image: {
+        Row: {
+          adhesion_id: string | null
+          autorisation_image: boolean | null
+          image_signee_le: string | null
+          image_supports: string[] | null
+          image_valable_jusqu_au: string | null
+          image_valide: boolean | null
+          utilisateur_id: string | null
+        }
+        Relationships: []
+      }
       vue_logs: {
         Row: {
           action: string | null

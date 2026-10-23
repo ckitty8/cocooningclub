@@ -66,3 +66,52 @@ BEGIN;
 INSERT INTO adhesions (utilisateur_id, formule_id) SELECT '44444444-4444-4444-4444-444444444444', id FROM formules WHERE nom = 'Cocooning Créatif';
 DELETE FROM formules WHERE nom = 'Cocooning Créatif';
 ROLLBACK;
+
+BEGIN;
+\echo '--- 8. Autorisation photo : on retient le dernier bulletin non refusé ; accord valable 3 ans (attendu : refus puis accord valide, jusqu au 2029-09-01 ; l ancien accord 2022 est expiré ; le bulletin refusé est ignoré)'
+INSERT INTO adhesions (utilisateur_id, formule_id, statut, date_validation, valable_jusqu_au, autorisation_image, image_supports, image_signee_le, cree_le)
+  SELECT '11111111-1111-1111-1111-111111111111', id, 'active', '2022-09-01', '2023-09-01', true, '{site}', '2022-09-01', '2022-09-01' FROM formules WHERE nom = 'Cocooning Créatif';
+SELECT utilisateur_id::text, autorisation_image, image_valable_jusqu_au, image_valide FROM vue_autorisation_image WHERE utilisateur_id = '11111111-1111-1111-1111-111111111111';
+INSERT INTO adhesions (utilisateur_id, formule_id, statut, autorisation_image, image_supports, image_signee_le, cree_le)
+  SELECT '11111111-1111-1111-1111-111111111111', id, 'en_attente', true, '{site,reseaux}', current_date, now() FROM formules WHERE nom = 'Cocooning Créatif';
+INSERT INTO adhesions (utilisateur_id, formule_id, statut, autorisation_image, image_signee_le, cree_le)
+  SELECT '11111111-1111-1111-1111-111111111111', id, 'refusee', false, NULL, now() + interval '1 minute' FROM formules WHERE nom = 'Cocooning Créatif';
+SELECT autorisation_image, image_supports, image_valide FROM vue_autorisation_image WHERE utilisateur_id = '11111111-1111-1111-1111-111111111111';
+ROLLBACK;
+
+BEGIN;
+\echo '--- 8b. Un refus enregistré reste un refus (attendu : autorisation_image false, image_valide false)'
+INSERT INTO adhesions (utilisateur_id, formule_id, autorisation_image)
+  SELECT '44444444-4444-4444-4444-444444444444', id, false FROM formules WHERE nom = 'Cocooning Créatif';
+SELECT autorisation_image, image_valide FROM vue_autorisation_image WHERE utilisateur_id = '44444444-4444-4444-4444-444444444444';
+ROLLBACK;
+
+BEGIN;
+\echo '--- 8c. Un accord sans date de signature est refusé (attendu : erreur 23514)'
+INSERT INTO adhesions (utilisateur_id, formule_id, autorisation_image)
+  SELECT '44444444-4444-4444-4444-444444444444', id, true FROM formules WHERE nom = 'Cocooning Créatif';
+ROLLBACK;
+
+BEGIN;
+\echo '--- 8d. Droits : une adhérente voit son propre consentement, pas celui des autres ; l admin voit tout (attendu : 1, puis 2)'
+INSERT INTO adhesions (utilisateur_id, formule_id, autorisation_image, image_signee_le)
+  SELECT u, id, true, current_date FROM formules, (VALUES ('11111111-1111-1111-1111-111111111111'::uuid), ('44444444-4444-4444-4444-444444444444'::uuid)) v(u) WHERE nom = 'Cocooning Créatif';
+SELECT set_config('request.jwt.claim.sub', '11111111-1111-1111-1111-111111111111', true);
+SET LOCAL ROLE authenticated;
+SELECT count(*) AS vues_par_elle FROM vue_autorisation_image;
+RESET ROLE;
+SELECT set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222', true);
+SET LOCAL ROLE authenticated;
+SELECT count(*) AS vues_par_admin FROM vue_autorisation_image;
+RESET ROLE;
+ROLLBACK;
+
+BEGIN;
+\echo '--- 8e. Une adhérente lit la formule de son adhésion même désactivée, pas les autres formules inactives (attendu : 1 nom)'
+INSERT INTO adhesions (utilisateur_id, formule_id) SELECT '11111111-1111-1111-1111-111111111111', id FROM formules WHERE nom = 'Cocooning Créatif';
+UPDATE formules SET est_active = false;
+SELECT set_config('request.jwt.claim.sub', '11111111-1111-1111-1111-111111111111', true);
+SET LOCAL ROLE authenticated;
+SELECT nom FROM formules;
+RESET ROLE;
+ROLLBACK;

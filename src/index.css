@@ -86,3 +86,11 @@
     font-family: 'Playfair Display', serif;
   }
 }
+
+/* Impression du bulletin d'adhésion (espace membre) : seul le bulletin sort sur papier ou en PDF. */
+@media print {
+  body * { visibility: hidden; }
+  .bulletin-imprimable, .bulletin-imprimable * { visibility: visible; }
+  .bulletin-imprimable { position: absolute; left: 0; top: 0; width: 100%; }
+  .bulletin-imprimable article { box-shadow: none; border: 0; }
+}

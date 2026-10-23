@@ -1,3 +1,5 @@
+import BadgePhotos from "@/components/BadgePhotos";
+import { useAutorisationsImage } from "@/hooks/useAutorisationsImage";
 import { useEffect, useMemo, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
@@ -108,6 +110,8 @@ const statutLabel: Record<string, string> = {
 
 const PreInscriptions = () => {
   const [inscriptions, setInscriptions] = useState<Inscription[]>([]);
+  // Consentement photo de chaque personne connectée : lu par relation (dernier bulletin d'adhésion).
+  const autorisations = useAutorisationsImage(inscriptions.map(i => i.utilisateur_id));
   const [templates, setTemplates] = useState<Record<string, string>>({});
   const [ateliersDispo, setAteliersDispo] = useState<AtelierMinimal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -509,6 +513,7 @@ const PreInscriptions = () => {
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statutBadge[insc.statut]}`}>
                       {statutLabel[insc.statut]}
                     </span>
+                    <BadgePhotos autorisation={insc.utilisateur_id ? autorisations.get(insc.utilisateur_id) : undefined} />
                     <span className="text-xs text-muted-foreground">
                       Reçu le {formatDateTime(insc.inscrit_le)}
                     </span>

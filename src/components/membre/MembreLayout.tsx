@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import {
   LayoutDashboard, CalendarDays, Ticket, BookOpen, User, Lightbulb,
-  LogOut, Menu, ChevronRight,
+  LogOut, Menu, ChevronRight, BadgeCheck,
 } from "lucide-react";
 
 const navItems = [
@@ -12,6 +12,7 @@ const navItems = [
   { href: "/espace-membre/inscriptions", label: "Mes inscriptions",  icon: Ticket },
   { href: "/espace-membre/magazine",     label: "Documents",         icon: BookOpen },
   { href: "/espace-membre/boite-a-idees", label: "Boîte à idées",    icon: Lightbulb },
+  { href: "/espace-membre/mon-adhesion", label: "Mon adhésion",    icon: BadgeCheck },
   { href: "/espace-membre/mon-compte",   label: "Mon compte",        icon: User },
 ];
 

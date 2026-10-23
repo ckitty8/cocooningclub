@@ -35,6 +35,7 @@ import MembreInscriptions from "./pages/membre/Inscriptions.tsx";
 import MembreMagazine from "./pages/membre/Magazine.tsx";
 import MembreMonCompte from "./pages/membre/MonCompte.tsx";
 import MembreBoiteAIdees from "./pages/membre/BoiteAIdees.tsx";
+import MembreMonAdhesion from "./pages/membre/MonAdhesion.tsx";
 
 
 // Une ancre mal encodée (ex. « #100% ») ne doit pas faire planter la page.
@@ -114,6 +115,7 @@ const App = () => (
           <Route path="/espace-membre/ateliers"      element={<RoleGuard allowedRoles={ACCES.espaceMembre}><MembreAteliers /></RoleGuard>} />
           <Route path="/espace-membre/inscriptions"  element={<RoleGuard allowedRoles={ACCES.espaceMembre}><MembreInscriptions /></RoleGuard>} />
           <Route path="/espace-membre/magazine"      element={<RoleGuard allowedRoles={ACCES.espaceMembre}><MembreMagazine /></RoleGuard>} />
+          <Route path="/espace-membre/mon-adhesion"  element={<RoleGuard allowedRoles={ACCES.espaceMembre}><MembreMonAdhesion /></RoleGuard>} />
           <Route path="/espace-membre/mon-compte"    element={<RoleGuard allowedRoles={ACCES.espaceMembre}><MembreMonCompte /></RoleGuard>} />
           <Route path="/espace-membre/boite-a-idees" element={<RoleGuard allowedRoles={ACCES.espaceMembre}><MembreBoiteAIdees /></RoleGuard>} />
 

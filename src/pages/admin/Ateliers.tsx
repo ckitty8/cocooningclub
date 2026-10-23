@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { enregistrerAffichage, lireAffichage, type AffichageAteliers } from "@/lib/affichageAteliers";
 import { ESPACES_PAR_SLUG } from "@/lib/espaces";
+import BadgePhotos from "@/components/BadgePhotos";
+import { useAutorisationsImage } from "@/hooks/useAutorisationsImage";
 import { compressImage } from "@/utils/compressImage";
 import { Plus, Pencil, Trash2, Copy, X, MapPin, Clock, Users, Euro, Search, UserCheck, UserX, Image as ImageIcon, CircleDashed, LayoutGrid, List } from "lucide-react";
 
@@ -137,6 +139,7 @@ const Ateliers = () => {
   const [inscritPanel, setInscritPanel] = useState<{ open: boolean; atelier: Atelier | null }>({ open: false, atelier: null });
   const [inscriptions, setInscriptions] = useState<Inscription[]>([]);
   const [inscLoading, setInscLoading] = useState(false);
+  const autorisations = useAutorisationsImage(inscriptions.map(i => i.utilisateur_id));
 
   const fetchAteliers = async () => {
     // Marque comme "termine" les ateliers publiés/complets dont la date est passée.
@@ -882,6 +885,7 @@ const Ateliers = () => {
                           <span className="text-xs px-1.5 py-0.5 rounded-full bg-foreground/5 text-foreground font-medium">
                             {atelierIsPaid ? `${montant.toFixed(2)} €` : "Gratuit"}
                           </span>
+                          <BadgePhotos autorisation={insc.utilisateur_id ? autorisations.get(insc.utilisateur_id) : undefined} />
                         </div>
                       </div>
                       <div className="flex flex-col gap-1.5 shrink-0">

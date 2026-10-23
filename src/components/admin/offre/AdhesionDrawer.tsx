@@ -7,6 +7,10 @@ import {
   aujourdhuiIso, finDeValidite, formaterNumero, fondFormule, LIBELLES_STATUT, MODES_REGLEMENT,
   statutAdhesion, type ModeReglement,
 } from "@/lib/adhesions";
+
+import { autorisationDepuisChamps, bulletinDepuisChamps, champsDepuisBulletin, type ValeursBulletin } from "@/lib/bulletin";
+import BadgePhotos from "@/components/BadgePhotos";
+import AutorisationsForm from "./AutorisationsForm";
 import { champ, type Adhesion } from "./types";
 
 interface Props {
@@ -24,6 +28,18 @@ const AdhesionDrawer = ({ adhesion, onClose, onDone }: Props) => {
   const [recueLe, setRecueLe] = useState(adhesion.cotisation_recue_le ?? "");
   const [validation, setValidation] = useState(adhesion.date_validation ?? aujourdhuiIso());
   const [saving, setSaving] = useState(false);
+  const [edition, setEdition] = useState(false);
+  const [bulletin, setBulletin] = useState<ValeursBulletin>(() => bulletinDepuisChamps(adhesion));
+
+  const enregistrerBulletin = async () => {
+    setSaving(true);
+    const { error } = await supabase.from("adhesions").update(champsDepuisBulletin(bulletin)).eq("id", adhesion.id);
+    setSaving(false);
+    if (error) { console.error("[AdhesionDrawer.bulletin]", error); toast.error("L'enregistrement a échoué."); return; }
+    logAction("adhesion.bulletin", "adhesions", adhesion.id, { numero: adhesion.numero, photos: bulletin.photos });
+    toast.success("Bulletin mis à jour");
+    onDone();
+  };
 
   const personne = adhesion.utilisateurs;
   const nomComplet = `${personne?.prenom ?? ""} ${personne?.nom ?? ""}`.trim() || "—";
@@ -116,6 +132,35 @@ const AdhesionDrawer = ({ adhesion, onClose, onDone }: Props) => {
               {aValider && <span className="text-green-700">{duree} mois · calculée</span>}
             </div>
           </div>
+        </div>
+
+        <div className="rounded-2xl p-4 bg-card border mt-4 space-y-2 text-sm">
+          <div className="flex items-center justify-between">
+            <p className="font-medium text-primary text-sm">Bulletin</p>
+            {!edition && (
+              <button onClick={() => setEdition(true)} className="text-xs underline text-muted-foreground hover:text-foreground">Modifier</button>
+            )}
+          </div>
+          {edition ? (
+            <>
+              <AutorisationsForm valeurs={bulletin} onChange={setBulletin} />
+              <div className="flex gap-2 pt-1">
+                <button onClick={enregistrerBulletin} disabled={saving}
+                  className="px-4 py-2 rounded-full text-xs font-medium bg-primary text-primary-foreground disabled:opacity-50">Enregistrer</button>
+                <button onClick={() => { setEdition(false); setBulletin(bulletinDepuisChamps(adhesion)); }}
+                  className="px-4 py-2 rounded-full text-xs border hover:bg-muted">Annuler</button>
+              </div>
+            </>
+          ) : (
+            <ul className="space-y-1 text-muted-foreground">
+              <li>Statuts et règlement : {adhesion.engagement_accepte_le ? `acceptés le ${dateFr(adhesion.engagement_accepte_le)}` : "non renseigné"}</li>
+              <li>Groupe WhatsApp : {adhesion.whatsapp ? "oui" : "non"}</li>
+              <li><BadgePhotos autorisation={autorisationDepuisChamps(adhesion, adhesion.utilisateur_id)} /></li>
+              {(personne?.commune || personne?.activite) && (
+                <li>{[personne?.commune, personne?.activite].filter(Boolean).join(" · ")}</li>
+              )}
+            </ul>
+          )}
         </div>
 
         {aValider && (
