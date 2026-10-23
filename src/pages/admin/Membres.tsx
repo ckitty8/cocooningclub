@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { logAction } from "@/utils/logAction";
 import { withTimeout } from "@/utils/withTimeout";
 import { toast } from "sonner";
+import { formaterDateNaissance } from "@/lib/anniversaires";
 import { Plus, Search, Pencil, Trash2, UserX, UserCheck2, X, Eye, EyeOff } from "lucide-react";
 import type { UserRole } from "@/contexts/auth";
 
@@ -359,15 +360,16 @@ const Membres = () => {
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground">Membre</th>
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground">Rôle</th>
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground">Statut</th>
+                <th className="text-left px-5 py-3 font-medium text-muted-foreground hidden md:table-cell">Naissance</th>
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground hidden lg:table-cell">Abonnement</th>
                 <th className="px-5 py-3" />
               </tr>
             </thead>
             <tbody className="divide-y">
               {loading ? (
-                <tr><td colSpan={5} className="text-center py-12 text-muted-foreground">Chargement...</td></tr>
+                <tr><td colSpan={6} className="text-center py-12 text-muted-foreground">Chargement...</td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={5} className="text-center py-12 text-muted-foreground">Aucun résultat</td></tr>
+                <tr><td colSpan={6} className="text-center py-12 text-muted-foreground">Aucun résultat</td></tr>
               ) : filtered.map(m => (
                 <tr key={m.id} className="hover:bg-muted/20 transition-colors">
                   <td className="px-5 py-3.5">
@@ -383,6 +385,9 @@ const Membres = () => {
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${m.est_actif ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}>
                       {m.est_actif ? "Actif" : "Inactif"}
                     </span>
+                  </td>
+                  <td className="px-5 py-3.5 hidden md:table-cell text-xs text-muted-foreground">
+                    {formaterDateNaissance(m.date_naissance)}
                   </td>
                   <td className="px-5 py-3.5 hidden lg:table-cell text-xs text-muted-foreground">
                     {m.debut_abonnement
