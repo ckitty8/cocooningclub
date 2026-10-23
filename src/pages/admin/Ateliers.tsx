@@ -3,6 +3,7 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
 import { dureeEntre, heureDeFin } from "@/lib/dureeAtelier";
+import { placesRestantes } from "@/lib/placesAtelier";
 import { withTimeout } from "@/utils/withTimeout";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { searchAdresse, type AdresseSuggestion } from "@/utils/adresseAutocomplete";
@@ -411,7 +412,23 @@ const Ateliers = () => {
     };
     if (modal.atelier) {
       const before = modal.atelier;
-      const { error } = await supabase.from("ateliers").update(payload).eq("id", modal.atelier.id);
+      // Changer la capacité doit recalculer les places libres : capacité - inscriptions confirmées.
+      // Sinon augmenter « places » laissait l'ancien nombre de places libres et l'atelier
+      // affichait des inscrits qui n'existent pas.
+      const { count: confirmees, error: errCount } = await supabase
+        .from("inscriptions")
+        .select("id", { count: "exact", head: true })
+        .eq("atelier_id", modal.atelier.id)
+        .eq("statut", "confirme");
+      if (errCount) {
+        toast.error(`Erreur : ${errCount.message}`, { duration: 8000 });
+        setSaving(false);
+        return;
+      }
+      const { error } = await supabase
+        .from("ateliers")
+        .update({ ...payload, places_disponibles: placesRestantes(payload.places_max, confirmees ?? 0) })
+        .eq("id", modal.atelier.id);
       if (error) {
         console.error("[Ateliers.handleSave update]", error);
         toast.error(`Erreur : ${error.message}`, { duration: 8000 });
