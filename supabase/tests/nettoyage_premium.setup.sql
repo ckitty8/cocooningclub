@@ -21,6 +21,9 @@ CREATE TABLE ateliers (id uuid PRIMARY KEY, titre text);
 CREATE TABLE avis (id uuid PRIMARY KEY, utilisateur_id uuid, note int);
 CREATE TABLE storage.objects (id uuid PRIMARY KEY, bucket_id text);
 CREATE VIEW vue_membres AS SELECT id, email FROM utilisateurs;   -- ne dépend pas de la colonne role
+-- Comme vue_suivi_inscriptions en prod : lit utilisateurs.role, security_invoker, droits larges.
+CREATE VIEW vue_suivi_inscriptions WITH (security_invoker = true) AS SELECT u.email, u.role FROM utilisateurs u ORDER BY u.email;
+GRANT ALL ON vue_suivi_inscriptions TO anon, authenticated;
 
 ALTER TABLE utilisateurs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE documents ENABLE ROW LEVEL SECURITY;

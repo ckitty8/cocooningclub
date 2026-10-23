@@ -12,6 +12,10 @@
 -- 2. Supprime utilisateurs.mot_de_passe_hash : l'authentification passe par
 --    Supabase Auth, la colonne n'est lue ni écrite par le site.
 --
+-- Les vues qui exposent ces colonnes (en prod : vue_suivi_inscriptions, qui
+-- sélectionne utilisateurs.role) sont supprimées puis recréées avec la même
+-- définition, les mêmes options (security_invoker) et les mêmes droits.
+--
 -- Tout est dans un seul bloc : en cas d'erreur (valeur encore utilisée,
 -- vue ou règle dépendante non gérée, colonne non vide), RIEN n'est modifié
 -- et le message dit pourquoi.
@@ -27,6 +31,8 @@ DECLARE
   v_oid_tab OID;
   v_attnum  INT;
   v_policies JSONB := '[]';
+  v_vues    JSONB := '[]';
+  v_vue     RECORD;
   v_n       INT;
 BEGIN
   -- Les types dans les définitions de policy doivent s'écrire sans schéma.
@@ -50,6 +56,32 @@ BEGIN
       RAISE EXCEPTION 'Abandon : % compte(s) ont une valeur dans mot_de_passe_hash. Vérifier avant de supprimer la colonne.', v_n;
     END IF;
   END IF;
+
+  -- ── Relevé puis suppression des vues qui lisent role / acces ──
+  FOR v_vue IN
+    SELECT DISTINCT n.nspname AS schema_nom, c.relname AS vue_nom, c.oid AS vue_oid,
+           pg_get_viewdef(c.oid) AS def, c.reloptions AS options,
+           pg_get_userbyid(c.relowner) AS proprietaire,
+           (SELECT COALESCE(jsonb_agg(jsonb_build_object(
+                     'grantee', CASE WHEN x.grantee = 0 THEN 'PUBLIC' ELSE pg_get_userbyid(x.grantee) END,
+                     'priv', x.privilege_type)), '[]'::jsonb)
+              FROM aclexplode(c.relacl) x) AS droits
+    FROM pg_depend d
+    JOIN pg_rewrite r ON d.classid = 'pg_rewrite'::regclass AND d.objid = r.oid
+    JOIN pg_class c ON c.oid = r.ev_class AND c.relkind = 'v'
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    JOIN pg_attribute a ON a.attrelid = d.refobjid AND a.attnum = d.refobjsubid
+    WHERE d.refclassid = 'pg_class'::regclass
+      AND ((a.attrelid = 'public.utilisateurs'::regclass AND a.attname = 'role')
+        OR (a.attrelid = 'public.documents'::regclass    AND a.attname = 'acces'))
+  LOOP
+    v_vues := v_vues || jsonb_build_object(
+      'schema', v_vue.schema_nom, 'name', v_vue.vue_nom,
+      'def', rtrim(v_vue.def, E'; \n'), 'opts', to_jsonb(v_vue.options),
+      'owner', v_vue.proprietaire, 'acl', v_vue.droits);
+    -- Sans CASCADE : une vue construite sur cette vue fait échouer (donc annule) la migration.
+    EXECUTE format('DROP VIEW %I.%I', v_vue.schema_nom, v_vue.vue_nom);
+  END LOOP;
 
   -- ── Relevé puis suppression des policies qui dépendent des deux types ──
   FOR v_cible IN
@@ -122,6 +154,28 @@ BEGIN
     END IF;
   END LOOP;
 
+  -- ── Recréation des vues, à l'identique (définition, options, droits) ──
+  FOR v_pol IN SELECT * FROM jsonb_array_elements(v_vues) AS j(p) LOOP
+    EXECUTE format('CREATE VIEW %I.%I %s AS %s',
+      v_pol.p ->> 'schema', v_pol.p ->> 'name',
+      CASE WHEN jsonb_typeof(v_pol.p -> 'opts') = 'array'
+           THEN 'WITH (' || (SELECT string_agg(o, ', ') FROM jsonb_array_elements_text(v_pol.p -> 'opts') o) || ')'
+           ELSE '' END,
+      v_pol.p ->> 'def');
+    -- Une vue neuve reçoit les droits par défaut du schéma : on repart de zéro.
+    FOR v_cible IN SELECT rolname FROM pg_roles WHERE rolname IN ('anon', 'authenticated', 'service_role') LOOP
+      EXECUTE format('REVOKE ALL ON %I.%I FROM %I', v_pol.p ->> 'schema', v_pol.p ->> 'name', v_cible.rolname);
+    END LOOP;
+    FOR v_cible IN
+      SELECT g ->> 'grantee' AS grantee, g ->> 'priv' AS priv
+      FROM jsonb_array_elements(v_pol.p -> 'acl') g
+      WHERE g ->> 'grantee' <> (v_pol.p ->> 'owner')
+    LOOP
+      EXECUTE format('GRANT %s ON %I.%I TO %s', v_cible.priv, v_pol.p ->> 'schema', v_pol.p ->> 'name',
+                     CASE WHEN v_cible.grantee = 'PUBLIC' THEN 'PUBLIC' ELSE quote_ident(v_cible.grantee) END);
+    END LOOP;
+  END LOOP;
+
   -- ── Recréation des policies, à l'identique ──
   FOR v_pol IN SELECT * FROM jsonb_array_elements(v_policies) AS j(p) LOOP
     EXECUTE format(
@@ -141,6 +195,6 @@ BEGIN
   -- ── mot_de_passe_hash (sans CASCADE : échoue si une vue ou une règle l'utilise) ──
   ALTER TABLE public.utilisateurs DROP COLUMN IF EXISTS mot_de_passe_hash;
 
-  RAISE NOTICE '% policy(ies) recréée(s) après changement des enums.', jsonb_array_length(v_policies);
+  RAISE NOTICE '% vue(s) et % policy(ies) recréée(s) après changement des enums.', jsonb_array_length(v_vues), jsonb_array_length(v_policies);
 END
 $$;

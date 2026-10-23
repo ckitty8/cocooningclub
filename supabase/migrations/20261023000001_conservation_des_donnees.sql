@@ -97,5 +97,15 @@ BEGIN
       '30 3 * * *',
       $cron$SELECT private.purger_donnees_anciennes();$cron$
     );
+
+    -- Constaté en prod le 23/10/2026 : pg_cron n'était pas installé, donc le job
+    -- de 20260411000000 (passage des ateliers passés à « terminé ») n'a jamais
+    -- été planifié ; seule la page admin Ateliers le faisait à l'ouverture.
+    PERFORM cron.unschedule(jobid) FROM cron.job WHERE jobname = 'depublier_ateliers_passes_daily';
+    PERFORM cron.schedule(
+      'depublier_ateliers_passes_daily',
+      '0 3 * * *',
+      $cron$SELECT public.depublier_ateliers_passes();$cron$
+    );
   END IF;
 END $$;

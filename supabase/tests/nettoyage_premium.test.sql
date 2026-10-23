@@ -4,6 +4,7 @@
 \set VERBOSITY terse
 CREATE TABLE _avant AS SELECT schemaname, tablename, policyname, permissive, roles::text AS roles, cmd, qual, with_check FROM pg_policies;
 SELECT count(*) AS policies_avant FROM _avant;
+CREATE TABLE _vue_avant AS SELECT pg_get_viewdef('vue_suivi_inscriptions'::regclass) AS def, reloptions::text AS options, relacl::text AS acl FROM pg_class WHERE oid = 'vue_suivi_inscriptions'::regclass;
 
 \echo '== 1. Un compte membre_premium subsiste (doit échouer, rien n''est modifié)'
 BEGIN;
@@ -40,6 +41,10 @@ SELECT (SELECT count(*) FROM pg_type WHERE typname LIKE '%\_ancien') AS types_re
 (SELECT * FROM _avant EXCEPT SELECT schemaname, tablename, policyname, permissive, roles::text, cmd, qual, with_check FROM pg_policies)
 UNION ALL
 (SELECT schemaname, tablename, policyname, permissive, roles::text, cmd, qual, with_check FROM pg_policies EXCEPT SELECT * FROM _avant);
+
+\echo '== 7b. La vue vue_suivi_inscriptions est identique (définition, options, droits) (attendu : 0 ligne de différence)'
+SELECT * FROM _vue_avant EXCEPT SELECT pg_get_viewdef('vue_suivi_inscriptions'::regclass), reloptions::text, relacl::text FROM pg_class WHERE oid = 'vue_suivi_inscriptions'::regclass;
+SELECT count(*) AS vues_recreees FROM pg_views WHERE viewname = 'vue_suivi_inscriptions';
 
 \echo '== 8. Valeur par défaut du rôle conservée (attendu : inscrit) et index recréé'
 SELECT pg_get_expr(adbin, adrelid) AS defaut FROM pg_attrdef WHERE adrelid = 'utilisateurs'::regclass;
