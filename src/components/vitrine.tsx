@@ -29,7 +29,7 @@ export const Bouton = ({ to, children, variante = "plein" }: BoutonProps) => (
     className={`inline-flex min-h-11 items-center gap-2 rounded-full px-7 py-3 text-sm font-medium transition-colors ${
       variante === "plein"
         ? "bg-primary text-white hover:bg-primary/90"
-        : "border border-foreground/30 text-foreground hover:border-primary hover:text-primary"
+        : "border border-foreground/30 text-foreground hover:border-primary hover:text-terracotta"
     }`}
   >
     {children}

@@ -101,7 +101,7 @@ const MonAdhesion = () => {
           <div role="tablist" className="flex gap-6 border-b mb-6">
             {([["recap", "Récapitulatif"], ["bulletin", "Mon bulletin"]] as const).map(([cle, libelle]) => (
               <button key={cle} role="tab" aria-selected={vue === cle} onClick={() => setVue(cle)}
-                className={`pb-2.5 text-sm font-medium border-b-2 -mb-px ${vue === cle ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
+                className={`pb-2.5 text-sm font-medium border-b-2 -mb-px ${vue === cle ? "border-primary text-terracotta" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
                 {libelle}
               </button>
             ))}

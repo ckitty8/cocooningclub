@@ -33,7 +33,7 @@ const MembreLayout = ({ children }: { children: ReactNode }) => {
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       <div className="p-6 border-b">
-        <Link to="/" className="flex items-center gap-3 font-brand text-xl text-primary transition-opacity hover:opacity-80">
+        <Link to="/" className="flex items-center gap-3 font-brand text-xl text-terracotta transition-opacity hover:opacity-80">
           <img src="/logo-160.webp" alt="" width={48} height={48} className="h-12 w-12 shrink-0" />
           <span className="leading-tight">Le Cocooning Club</span>
         </Link>
@@ -77,7 +77,7 @@ const MembreLayout = ({ children }: { children: ReactNode }) => {
               onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
             />
           ) : (
-            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold text-sm shrink-0">
+            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-foreground font-semibold text-sm shrink-0">
               {(profile?.prenom?.[0] ?? profile?.email?.[0] ?? "M").toUpperCase()}
             </div>
           )}
@@ -120,7 +120,7 @@ const MembreLayout = ({ children }: { children: ReactNode }) => {
             <Menu className="w-5 h-5" />
           </button>
           <img src="/logo-160.webp" alt="" width={32} height={32} className="h-8 w-8" />
-          <span className="font-brand text-base text-primary">Le Cocooning Club</span>
+          <span className="font-brand text-base text-terracotta">Le Cocooning Club</span>
         </header>
 
         <main className="flex-1 p-6 lg:p-8 max-w-7xl w-full mx-auto">

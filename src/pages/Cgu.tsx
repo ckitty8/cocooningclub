@@ -5,7 +5,7 @@ import SiteHeader from "@/components/SiteHeader";
 const CONTACT_EMAIL = "le.cocooning.club@gmail.com";
 
 const Mail = () => (
-  <a href={`mailto:${CONTACT_EMAIL}`} className="text-primary underline underline-offset-2">
+  <a href={`mailto:${CONTACT_EMAIL}`} className="text-terracotta underline underline-offset-2">
     {CONTACT_EMAIL}
   </a>
 );
@@ -136,7 +136,7 @@ const Cgu = () => {
             <h2 className="font-brand text-xl text-foreground">10. Données personnelles</h2>
             <p>
               Le traitement de vos données personnelles est décrit dans notre{" "}
-              <Link to="/confidentialite" className="text-primary underline underline-offset-2">
+              <Link to="/confidentialite" className="text-terracotta underline underline-offset-2">
                 politique de confidentialité
               </Link>
               .

@@ -405,7 +405,7 @@ const Index = () => {
             </div>
             <Link
               to="/calendrier"
-              className="inline-flex min-h-11 shrink-0 items-center gap-2 self-start rounded-full bg-white px-7 py-3 text-sm font-medium text-foreground shadow-md transition-colors hover:text-primary md:self-center"
+              className="inline-flex min-h-11 shrink-0 items-center gap-2 self-start rounded-full bg-white px-7 py-3 text-sm font-medium text-foreground shadow-md transition-colors hover:text-terracotta md:self-center"
             >
               Découvrir nos événements
               <ArrowRight className="h-4 w-4" aria-hidden="true" />

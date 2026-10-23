@@ -73,7 +73,7 @@ const MonCompte = () => {
     return (
       <MembreLayout>
         <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <Loader2 className="w-8 h-8 animate-spin text-terracotta" />
         </div>
       </MembreLayout>
     );
@@ -218,7 +218,7 @@ const MonCompte = () => {
         {/* Avatar */}
         <div className="bg-card border rounded-2xl p-5">
           <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <ImageIcon className="w-4 h-4 text-primary" />
+            <ImageIcon className="w-4 h-4 text-terracotta" />
             Photo de profil
           </h2>
           <div className="flex items-center gap-5 flex-wrap">
@@ -226,7 +226,7 @@ const MonCompte = () => {
               {profile.url_avatar ? (
                 <img src={profile.url_avatar} alt="Ma photo de profil" className="w-24 h-24 rounded-full object-cover border-2 border-muted" onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
               ) : (
-                <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center text-primary text-3xl font-bold">{initials}</div>
+                <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center text-foreground text-3xl font-bold">{initials}</div>
               )}
               {uploadingAvatar && (
                 <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center">
@@ -253,7 +253,7 @@ const MonCompte = () => {
         {/* Infos perso */}
         <div className="bg-card border rounded-2xl p-5">
           <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <User className="w-4 h-4 text-primary" />
+            <User className="w-4 h-4 text-terracotta" />
             Informations personnelles
           </h2>
           <div className="space-y-4">
@@ -307,7 +307,7 @@ const MonCompte = () => {
         {/* Mot de passe */}
         <div className="bg-card border rounded-2xl p-5">
           <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <KeyRound className="w-4 h-4 text-primary" />
+            <KeyRound className="w-4 h-4 text-terracotta" />
             Mot de passe
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -331,7 +331,7 @@ const MonCompte = () => {
         {/* Abonnement */}
         <div className="bg-card border rounded-2xl p-5">
           <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <CalendarRange className="w-4 h-4 text-primary" />
+            <CalendarRange className="w-4 h-4 text-terracotta" />
             Mon abonnement
           </h2>
           <div className="space-y-3 text-sm">
@@ -364,7 +364,7 @@ const MonCompte = () => {
         {/* Historique paiements */}
         <div className="bg-card border rounded-2xl p-5">
           <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Receipt className="w-4 h-4 text-primary" />
+            <Receipt className="w-4 h-4 text-terracotta" />
             Historique des paiements
           </h2>
           {loadingPaiements ? (

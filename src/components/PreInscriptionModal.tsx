@@ -157,9 +157,9 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer }: PreInscript
                   <input {...register("cgu")} type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 accent-primary" />
                   <span>
                     J'accepte les{" "}
-                    <Link to="/cgu" target="_blank" className="text-primary underline underline-offset-2">conditions générales d'utilisation</Link>
+                    <Link to="/cgu" target="_blank" className="text-terracotta underline underline-offset-2">conditions générales d'utilisation</Link>
                     {" "}et la{" "}
-                    <Link to="/confidentialite" target="_blank" className="text-primary underline underline-offset-2">politique de confidentialité</Link>.
+                    <Link to="/confidentialite" target="_blank" className="text-terracotta underline underline-offset-2">politique de confidentialité</Link>.
                   </span>
                 </label>
                 {errors.cgu && <p className={erreur}>{errors.cgu.message}</p>}

@@ -97,7 +97,7 @@ const VueCalendrier = ({ ateliers, slugDe, onCreer }: Props) => {
                 </li>
               ))}
             </ul>
-            <button onClick={() => onCreer(choisi)} className="mt-3 flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
+            <button onClick={() => onCreer(choisi)} className="mt-3 flex items-center gap-1.5 text-sm font-medium text-terracotta hover:underline">
               <Plus className="w-4 h-4" /> Créer un atelier ce jour-là
             </button>
           </>

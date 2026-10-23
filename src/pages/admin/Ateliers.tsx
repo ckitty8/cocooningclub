@@ -504,14 +504,14 @@ const Ateliers = () => {
   return (
     <AdminLayout>
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
           <h1 className="text-2xl font-bold">Ateliers</h1>
           <p className="text-muted-foreground text-sm mt-1">
             {filtered.length} / {ateliers.length} atelier(s)
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <div role="group" aria-label="Affichage des ateliers" className="inline-flex rounded-full border bg-card p-0.5">
             {([["cartes", "Cartes", LayoutGrid], ["liste", "Liste", List], ["calendrier", "Calendrier", CalendarDays]] as const).map(([valeur, libelle, Icone]) => (
               <button
@@ -546,7 +546,7 @@ const Ateliers = () => {
             ] as [number, string, string | null][]).map(([valeur, libelle, lien]) => {
               const contenu = (
                 <>
-                  <p className="font-display text-2xl text-primary">{valeur}</p>
+                  <p className="font-display text-2xl text-terracotta">{valeur}</p>
                   <p className="text-xs text-muted-foreground">{libelle}</p>
                 </>
               );
@@ -647,7 +647,7 @@ const Ateliers = () => {
                   <Fragment key={a.id}>
                     {mois !== moisPrecedent && (
                       <tr className="bg-background">
-                        <td colSpan={7} className="px-4 py-2 font-display text-base capitalize text-primary">{mois}</td>
+                        <td colSpan={7} className="px-4 py-2 font-display text-base capitalize text-terracotta">{mois}</td>
                       </tr>
                     )}
                     <tr className="border-t hover:bg-muted/20 transition-colors">
@@ -721,7 +721,7 @@ const Ateliers = () => {
                 <div className="p-5 flex flex-col flex-1">
                 <div className="flex items-start justify-between mb-3">
                   <h3 className="font-semibold text-foreground leading-snug flex-1 pr-2">
-                    <Link to={`/admin/ateliers/${a.id}`} className="hover:underline">{a.titre}</Link>
+                    <Link to={`/admin/ateliers/${a.id}`} className="inline-block py-0.5 hover:underline">{a.titre}</Link>
                   </h3>
                   <span className={`shrink-0 px-2.5 py-0.5 rounded-full text-xs font-medium ${statutColors[a.statut]}`}>
                     {statutLabels[a.statut]}
@@ -750,7 +750,7 @@ const Ateliers = () => {
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={e => e.stopPropagation()}
-                          className="hover:underline"
+                          className="inline-block py-1 hover:underline"
                         >
                           {a.lieu}
                         </a>

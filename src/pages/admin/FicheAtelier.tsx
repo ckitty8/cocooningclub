@@ -150,7 +150,7 @@ const FicheAtelier = () => {
   if (!atelier) {
     return (
       <AdminLayout>
-        <Link to="/admin/ateliers" className="text-sm text-muted-foreground hover:text-foreground">‹ Ateliers</Link>
+        <Link to="/admin/ateliers" className="inline-block py-1 text-sm text-muted-foreground hover:text-foreground">‹ Ateliers</Link>
         <p className="mt-6 text-muted-foreground">Cet atelier n'existe plus.</p>
       </AdminLayout>
     );
@@ -165,7 +165,7 @@ const FicheAtelier = () => {
 
   return (
     <AdminLayout>
-      <Link to="/admin/ateliers" className="text-sm text-muted-foreground hover:text-foreground">‹ Ateliers</Link>
+      <Link to="/admin/ateliers" className="inline-block py-1 text-sm text-muted-foreground hover:text-foreground">‹ Ateliers</Link>
 
       <div className="flex flex-wrap items-start justify-between gap-4 mt-3 mb-5">
         <div className="flex items-center gap-4 min-w-0">
@@ -190,7 +190,7 @@ const FicheAtelier = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         {kpis.map(([valeur, libelle]) => (
           <div key={libelle} className="bg-card border rounded-2xl px-4 py-3">
-            <p className="font-display text-2xl text-primary">{valeur}</p>
+            <p className="font-display text-2xl text-terracotta">{valeur}</p>
             <p className="text-xs text-muted-foreground">{libelle}</p>
           </div>
         ))}
@@ -199,7 +199,7 @@ const FicheAtelier = () => {
       <div role="tablist" className="flex gap-6 border-b mb-5">
         {([["inscrites", `Inscrites (${resume.total})`], ["infos", "Infos"]] as [Onglet, string][]).map(([cle, libelle]) => (
           <button key={cle} role="tab" aria-selected={onglet === cle} onClick={() => setOnglet(cle)}
-            className={`pb-2.5 text-sm font-medium border-b-2 -mb-px ${onglet === cle ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
+            className={`pb-2.5 text-sm font-medium border-b-2 -mb-px ${onglet === cle ? "border-primary text-terracotta" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
             {libelle}
           </button>
         ))}

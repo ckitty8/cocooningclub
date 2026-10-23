@@ -133,7 +133,7 @@ const FenetreInscription = ({
       <div className="bg-background border rounded-2xl shadow-2xl w-full max-w-3xl my-6" onClick={e => e.stopPropagation()}>
         <div className="flex items-start justify-between gap-4 px-6 pt-5">
           <div className="flex items-center gap-4 min-w-0">
-            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary/10 font-display text-2xl text-primary" aria-hidden="true">
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary/10 font-display text-2xl text-terracotta" aria-hidden="true">
               {(id.prenom || id.nom || "?")[0]?.toUpperCase()}
             </span>
             <div className="min-w-0">
@@ -156,7 +156,7 @@ const FenetreInscription = ({
         <div role="tablist" className="flex gap-6 border-b px-6 mt-4">
           {ongletsDef.map(([cle, libelle]) => (
             <button key={cle} role="tab" aria-selected={onglet === cle} onClick={() => setOnglet(cle)}
-              className={`pb-2.5 text-sm font-medium border-b-2 -mb-px ${onglet === cle ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
+              className={`pb-2.5 text-sm font-medium border-b-2 -mb-px ${onglet === cle ? "border-primary text-terracotta" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
               {libelle}
             </button>
           ))}

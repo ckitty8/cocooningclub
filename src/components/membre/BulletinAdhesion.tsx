@@ -44,7 +44,7 @@ const BulletinAdhesion = ({ personne, adhesion, formule }: DonneesBulletin) => {
       <article className="rounded-2xl border bg-white p-6 sm:p-8 text-sm shadow-sm">
         <header className="flex items-start justify-between gap-4 border-b pb-4 mb-5">
           <div>
-            <p className="font-display text-2xl text-primary">Le Cocooning Club</p>
+            <p className="font-display text-2xl text-terracotta">Le Cocooning Club</p>
             <p className="text-xs italic text-muted-foreground">Une bulle de douceur pour créer, partager et avancer</p>
           </div>
           <div className="text-right">
@@ -54,7 +54,7 @@ const BulletinAdhesion = ({ personne, adhesion, formule }: DonneesBulletin) => {
         </header>
 
         <section className="mb-5">
-          <h3 className="font-semibold mb-2"><span className="text-primary">01</span> · Mes coordonnées</h3>
+          <h3 className="font-semibold mb-2"><span className="text-terracotta">01</span> · Mes coordonnées</h3>
           <div className="grid gap-1 sm:grid-cols-2">
             <Ligne libelle="Nom" valeur={personne.nom} />
             <Ligne libelle="Prénom" valeur={personne.prenom} />
@@ -66,7 +66,7 @@ const BulletinAdhesion = ({ personne, adhesion, formule }: DonneesBulletin) => {
         </section>
 
         <section className="mb-5">
-          <h3 className="font-semibold mb-2"><span className="text-primary">02</span> · Ma formule</h3>
+          <h3 className="font-semibold mb-2"><span className="text-terracotta">02</span> · Ma formule</h3>
           {formule ? (
             <p>
               <span className="font-medium">☑ {formule.nom}</span> — {Number(formule.prix)} € / {formule.duree_mois} mois
@@ -79,7 +79,7 @@ const BulletinAdhesion = ({ personne, adhesion, formule }: DonneesBulletin) => {
         </section>
 
         <section className="mb-5">
-          <h3 className="font-semibold mb-2"><span className="text-primary">03</span> · Cotisation et durée</h3>
+          <h3 className="font-semibold mb-2"><span className="text-terracotta">03</span> · Cotisation et durée</h3>
           <p><span className="text-muted-foreground">Cotisation versée : </span><span className="font-medium">{Number(adhesion.montant)} €</span></p>
           <p>
             <span className="text-muted-foreground">Mode de règlement : </span>
@@ -93,14 +93,14 @@ const BulletinAdhesion = ({ personne, adhesion, formule }: DonneesBulletin) => {
         </section>
 
         <section className="mb-5">
-          <h3 className="font-semibold mb-2"><span className="text-primary">04</span> · Mon engagement</h3>
+          <h3 className="font-semibold mb-2"><span className="text-terracotta">04</span> · Mon engagement</h3>
           <p>{case_(adhesion.engagement_accepte_le !== null)} Je demande mon adhésion au Cocooning Club et reconnais avoir pu consulter les statuts et le règlement intérieur de l'association, que je m'engage à respecter.</p>
           <p>{case_(adhesion.whatsapp)} Je souhaite rejoindre le groupe WhatsApp du club (facultatif). Mon numéro de téléphone sera visible par les autres membres du groupe.</p>
           <p className="mt-2 text-muted-foreground">Signé le {dateFr(adhesion.engagement_accepte_le ?? adhesion.image_signee_le)}</p>
         </section>
 
         <section className="rounded-xl bg-[#fde4d4] p-4">
-          <h3 className="font-semibold text-primary mb-2">Cadre réservé à l'association</h3>
+          <h3 className="font-semibold text-terracotta mb-2">Cadre réservé à l'association</h3>
           <div className="grid gap-1 sm:grid-cols-2">
             <Ligne libelle="N° d'adhérente" valeur={formaterNumero(adhesion.numero)} />
             <Ligne libelle="Date de validation" valeur={dateFr(adhesion.date_validation)} />
@@ -112,11 +112,11 @@ const BulletinAdhesion = ({ personne, adhesion, formule }: DonneesBulletin) => {
 
       <article className="rounded-2xl border bg-white p-6 sm:p-8 text-sm shadow-sm break-before-page">
         <header className="mb-5 border-b pb-4">
-          <h2 className="font-display text-xl text-primary">Autorisation photo &amp; vidéo</h2>
+          <h2 className="font-display text-xl text-terracotta">Autorisation photo &amp; vidéo</h2>
           <p className="text-xs italic text-muted-foreground">Parce que les jolis moments méritent parfois d'être partagés…</p>
         </header>
         <section className="mb-4">
-          <h3 className="font-semibold mb-2"><span className="text-primary">01</span> · Coordonnées</h3>
+          <h3 className="font-semibold mb-2"><span className="text-terracotta">01</span> · Coordonnées</h3>
           <div className="grid gap-1 sm:grid-cols-3">
             <Ligne libelle="Nom" valeur={personne.nom} />
             <Ligne libelle="Prénom" valeur={personne.prenom} />
@@ -124,18 +124,18 @@ const BulletinAdhesion = ({ personne, adhesion, formule }: DonneesBulletin) => {
           </div>
         </section>
         <section className="mb-4">
-          <h3 className="font-semibold mb-2"><span className="text-primary">02</span> · Prises de vue</h3>
+          <h3 className="font-semibold mb-2"><span className="text-terracotta">02</span> · Prises de vue</h3>
           <p>J'accepte d'être photographiée et/ou filmée : <span className="font-medium">{case_(adhesion.autorisation_image)} Oui &nbsp; {case_(!adhesion.autorisation_image)} Non</span></p>
         </section>
         <section className="mb-4">
-          <h3 className="font-semibold mb-2"><span className="text-primary">03</span> · Utilisation de mon image</h3>
+          <h3 className="font-semibold mb-2"><span className="text-terracotta">03</span> · Utilisation de mon image</h3>
           {(Object.keys(SUPPORTS_IMAGE) as SupportImage[]).map(s => (
             <p key={s}>{case_(adhesion.autorisation_image && adhesion.image_supports.includes(s))} {SUPPORTS_IMAGE[s].libelle}</p>
           ))}
           <p className="mt-1 text-xs italic text-muted-foreground">Seules les cases cochées valent autorisation. Les images ne seront pas vendues ni utilisées pour une campagne publicitaire sponsorisée sans accord complémentaire.</p>
         </section>
         <section>
-          <h3 className="font-semibold mb-2"><span className="text-primary">04</span> · Mon consentement</h3>
+          <h3 className="font-semibold mb-2"><span className="text-terracotta">04</span> · Mon consentement</h3>
           <p className="text-xs text-muted-foreground">
             Autorisation accordée pour une durée de 3 ans à compter de la signature. Vous pouvez la retirer à tout moment en contactant l'association. Votre choix est entièrement facultatif et n'a aucune conséquence sur votre adhésion ou votre participation aux activités du club.
           </p>

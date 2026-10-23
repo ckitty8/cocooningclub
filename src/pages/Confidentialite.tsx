@@ -19,7 +19,7 @@ const Confidentialite = () => {
               Cocooning Club, association basée en Seine-et-Marne (Gagny · Chelles · Le Raincy), est responsable
               du traitement des données personnelles collectées sur ce site. Pour toute question, vous pouvez
               nous contacter à l'adresse{" "}
-              <a href="mailto:le.cocooning.club@gmail.com" className="text-primary underline underline-offset-2">
+              <a href="mailto:le.cocooning.club@gmail.com" className="text-terracotta underline underline-offset-2">
                 le.cocooning.club@gmail.com
               </a>
               .
@@ -72,7 +72,7 @@ const Confidentialite = () => {
               Conformément au Règlement Général sur la Protection des Données (RGPD) et à la loi Informatique et
               Libertés, vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation et
               d'opposition concernant vos données personnelles. Pour exercer ces droits, contactez-nous à{" "}
-              <a href="mailto:le.cocooning.club@gmail.com" className="text-primary underline underline-offset-2">
+              <a href="mailto:le.cocooning.club@gmail.com" className="text-terracotta underline underline-offset-2">
                 le.cocooning.club@gmail.com
               </a>
               . Vous pouvez également introduire une réclamation auprès de la CNIL (www.cnil.fr).

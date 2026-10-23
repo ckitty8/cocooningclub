@@ -47,7 +47,7 @@ Ordre prévu :
 1. ✅ Fait (commit aab2b35). Reste hors code : soumettre le sitemap dans Google Search Console. Contenu : Rapide et sans risque : HSTS / en-têtes de sécurité, sitemap + robots.txt, page 404, liens cassés, compression images (favicon de 783 Ko), meta title par page, image de partage 1200×630, favicon multi-tailles, textes alternatifs.
 2. Juridique et analytics : ✅ CGU (page `/cgu` + case à cocher obligatoire sur les formulaires de pré-inscription ; textes « annulation / remboursement » à faire valider par l'utilisateur) ; bannière cookie, GA4, mise à jour de `/confidentialite` (GA, durée de conservation), mentions légales quand l'utilisateur fournit les infos.
 3. Sécurité : ✅ migrations `20261015000000_verrouille_colonnes_sensibles.sql` et `20261015000001_validation_et_limite_envois.sql` (appliquées en prod le 16/10) ; ✅ `20261016000000_coherence_fonctionnelle.sql` appliquée en prod (journal admin, annulation par un membre, places rendues, témoignages, durcissement anti-spam). Note : l'outil `apply_migration` expire depuis la session, les migrations se collent dans le SQL Editor Supabase ; ✅ piège à robots + délai minimal côté navigateur (`useAntiSpam`). Reste : Cloudflare Turnstile (nécessite un compte Cloudflare de l'utilisateur). ✅ `20261023000001_corrige_inscription_tardive.sql` appliquée en prod le 23/10 (toutes les pré-inscriptions échouaient : le trigger `bloquer_inscription_tardive` appelait `private.is_admin()`, absent en prod ; ne pas utiliser `private.is_admin()` dans de nouvelles migrations, utiliser `private.utilisateur_est_admin()`).
-4. Contraste (AA) et responsive (360 → 1280 px).
+4. ✅ Contraste (AA) et responsive (360 → 1280 px) : fait le 23/10, audit automatique `npm run audit:visuel` (31 pages × 5 largeurs, doit rester à 0 contraste insuffisant, 0 défilement horizontal, 0 cible < 24 px). Règles : le texte en terracotta utilise `text-terracotta` (#9a4936), jamais `text-primary` (réservé aux fonds et icônes : #b95b43 ne passe pas AA en petit texte) ; boutons `bg-primary` avec texte blanc (`--primary-foreground`) ; pas d'opacité sur du texte coloré ; boutons et liens d'au moins 24 px de côté ; une barre d'outils doit pouvoir passer à la ligne (`flex-wrap`) et un contenu large défiler dans son propre bloc (`overflow-x-auto`).
 
 ## Qualité du code
 
@@ -58,5 +58,6 @@ Ordre prévu :
 ## Tests
 
 - `npm test` : tests unitaires (Vitest).
+- `npm run audit:visuel` : contraste AA, débordements et cibles tactiles de toutes les pages de 360 à 1280 px (long, ~2 min ; rapport dans `test-results/audit-visuel.json`).
 - `npm run test:e2e` : site public de bout en bout (Playwright, Supabase simulé, `CHROMIUM_PATH` optionnel).
 - `supabase/tests/README.md` : scénarios SQL des migrations de sécurité sur une base Postgres jetable.

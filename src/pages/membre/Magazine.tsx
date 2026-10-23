@@ -91,7 +91,7 @@ const Magazine = () => {
     return (
       <MembreLayout>
         <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <Loader2 className="w-8 h-8 animate-spin text-terracotta" />
         </div>
       </MembreLayout>
     );
@@ -122,7 +122,7 @@ const Magazine = () => {
                   {d.url_image ? (
                     <img src={d.url_image} alt={d.titre} loading="lazy" decoding="async" className="w-full h-full object-contain group-hover:scale-105 transition-transform" />
                   ) : (
-                    <Icon className="w-10 h-10 text-primary/50 group-hover:scale-110 transition-transform" />
+                    <Icon className="w-10 h-10 text-terracotta/50 group-hover:scale-110 transition-transform" />
                   )}
                   <span className="absolute top-3 left-3 text-xs bg-background/80 text-foreground px-2 py-0.5 rounded-full">
                     {typeLabel[d.type]}

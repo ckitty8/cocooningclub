@@ -23,7 +23,7 @@ export default {
       colors: {
         // Terracotta assombri pour du petit texte sur fond clair (contraste
         // AA), le terracotta de la charte (#b95b43) restant pour les boutons.
-        terracotta: "#a34f3a",
+        terracotta: "#9a4936",
         // Couleur de chacun des trois espaces (charte graphique).
         espace: {
           papotages: "#ce8f7e",

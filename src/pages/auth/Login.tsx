@@ -104,7 +104,7 @@ const Login = () => {
         <div>
           <div className="mb-1.5 flex items-center justify-between">
             <label htmlFor="mot-de-passe" className="text-sm font-medium text-foreground">Mot de passe</label>
-            <Link to="/forgot-password" className="text-xs text-terracotta transition-colors hover:text-foreground">
+            <Link to="/forgot-password" className="inline-block py-1 text-xs text-terracotta transition-colors hover:text-foreground">
               Mot de passe oublié ?
             </Link>
           </div>
@@ -123,7 +123,7 @@ const Login = () => {
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+              className="absolute right-1.5 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>

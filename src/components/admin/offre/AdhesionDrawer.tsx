@@ -100,7 +100,7 @@ const AdhesionDrawer = ({ adhesion, onClose, onDone }: Props) => {
         </div>
 
         <div className="rounded-2xl p-4 bg-card border space-y-4">
-          <p className="font-medium text-primary text-sm">Cadre réservé à l'association</p>
+          <p className="font-medium text-terracotta text-sm">Cadre réservé à l'association</p>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium mb-1">N° d'adhérente</label>
@@ -136,7 +136,7 @@ const AdhesionDrawer = ({ adhesion, onClose, onDone }: Props) => {
 
         <div className="rounded-2xl p-4 bg-card border mt-4 space-y-2 text-sm">
           <div className="flex items-center justify-between">
-            <p className="font-medium text-primary text-sm">Bulletin</p>
+            <p className="font-medium text-terracotta text-sm">Bulletin</p>
             {!edition && (
               <button onClick={() => setEdition(true)} className="text-xs underline text-muted-foreground hover:text-foreground">Modifier</button>
             )}

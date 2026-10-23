@@ -29,8 +29,8 @@ const SiteHeader = ({ actif }: SiteHeaderProps) => {
       to={to}
       onClick={fermerMenu}
       aria-current={libelle === actif ? "page" : undefined}
-      className={`${classes} transition-colors hover:text-primary ${
-        libelle === actif ? "text-primary" : "text-foreground/80"
+      className={`${classes} transition-colors hover:text-terracotta ${
+        libelle === actif ? "text-terracotta" : "text-foreground/80"
       }`}
     >
       {libelle}
@@ -40,7 +40,7 @@ const SiteHeader = ({ actif }: SiteHeaderProps) => {
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b bg-background/95 backdrop-blur-md">
       <div className="container mx-auto flex h-20 items-center justify-between px-6">
-        <Link to="/" onClick={fermerMenu} className="flex items-center gap-3 font-brand text-2xl text-primary md:text-[1.7rem]">
+        <Link to="/" onClick={fermerMenu} className="flex items-center gap-3 font-brand text-2xl text-terracotta md:text-[1.7rem]">
           <img src="/logo-160.webp" alt="" width={64} height={64} className="h-16 w-16" />
           Le Cocooning Club
         </Link>
@@ -51,7 +51,7 @@ const SiteHeader = ({ actif }: SiteHeaderProps) => {
           )}
           <Link
             to="/login"
-            className="rounded-full border border-foreground/30 px-4 py-1.5 text-foreground/80 transition-colors hover:border-primary hover:text-primary"
+            className="rounded-full border border-foreground/30 px-4 py-1.5 text-foreground/80 transition-colors hover:border-primary hover:text-terracotta"
           >
             Espace membre
           </Link>
@@ -71,7 +71,7 @@ const SiteHeader = ({ actif }: SiteHeaderProps) => {
       {menuOuvert && (
         <nav id="menu-mobile" aria-label="Navigation principale" className="border-t px-6 pb-4 md:hidden">
           {LIENS.map(({ libelle, to }) => lien(libelle, to, "flex min-h-11 items-center"))}
-          <Link to="/login" onClick={fermerMenu} className="flex min-h-11 items-center text-foreground/80 hover:text-primary">
+          <Link to="/login" onClick={fermerMenu} className="flex min-h-11 items-center text-foreground/80 hover:text-terracotta">
             Espace membre
           </Link>
         </nav>

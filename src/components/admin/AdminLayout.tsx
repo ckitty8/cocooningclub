@@ -102,7 +102,7 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       <div className="p-6 border-b">
-        <Link to="/" className="flex items-center gap-3 font-brand text-xl text-primary transition-opacity hover:opacity-80">
+        <Link to="/" className="flex items-center gap-3 font-brand text-xl text-terracotta transition-opacity hover:opacity-80">
           <img src="/logo-160.webp" alt="" width={48} height={48} className="h-12 w-12 shrink-0" />
           <span className="leading-tight">Le Cocooning Club</span>
         </Link>
@@ -132,7 +132,7 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
               <span className="flex-1">{label}</span>
               {badgeCount > 0 && (
                 <span className={`text-[11px] font-semibold rounded-full px-1.5 min-w-[20px] h-5 flex items-center justify-center ${
-                  active ? "bg-primary-foreground text-primary" : "bg-primary text-primary-foreground"
+                  active ? "bg-primary-foreground text-terracotta" : "bg-primary text-primary-foreground"
                 }`}>
                   {badgeCount > 99 ? "99+" : badgeCount}
                 </span>
@@ -185,7 +185,7 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
               onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
             />
           ) : (
-            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold text-sm shrink-0">
+            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-foreground font-semibold text-sm shrink-0">
               {(profile?.prenom?.[0] ?? profile?.email?.[0] ?? "A").toUpperCase()}
             </div>
           )}
@@ -225,14 +225,14 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
       )}
 
       {/* Main content */}
-      <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
+      <div className="flex-1 min-w-0 lg:ml-64 flex flex-col min-h-screen">
         {/* Top bar mobile */}
         <header className="lg:hidden sticky top-0 z-20 bg-card border-b px-4 py-3 flex items-center gap-3">
           <button onClick={() => setSidebarOpen(true)} className="p-1.5 rounded-lg hover:bg-muted">
             <Menu className="w-5 h-5" />
           </button>
           <img src="/logo-160.webp" alt="" width={32} height={32} className="h-8 w-8" />
-          <span className="font-brand text-base text-primary">Le Cocooning Club</span>
+          <span className="font-brand text-base text-terracotta">Le Cocooning Club</span>
         </header>
 
         <main className="flex-1 p-6 lg:p-8 max-w-7xl w-full mx-auto">

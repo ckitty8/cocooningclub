@@ -388,7 +388,7 @@ const Formulaire = () => {
                       <div className="mt-0.5 shrink-0">
                         {msg.lu
                           ? <MailOpen className="w-4 h-4 text-muted-foreground" />
-                          : <Mail className="w-4 h-4 text-primary" />
+                          : <Mail className="w-4 h-4 text-terracotta" />
                         }
                       </div>
                       <div className="flex-1 min-w-0">
@@ -399,7 +399,7 @@ const Formulaire = () => {
                               : `${msg.prenom ?? ""} ${msg.nom ?? ""}`.trim() || "—"}
                           </span>
                           {!msg.lu && (
-                            <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">Non lu</span>
+                            <span className="text-xs bg-primary/10 text-terracotta px-1.5 py-0.5 rounded-full">Non lu</span>
                           )}
                           <span className="text-xs text-muted-foreground ml-auto">
                             {new Date(msg.cree_le).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
@@ -531,7 +531,7 @@ const Formulaire = () => {
                       <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                         <span className="text-xs text-muted-foreground">{typeLabel[f.field_type]}</span>
                         {f.obligatoire && (
-                          <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">Obligatoire</span>
+                          <span className="text-xs bg-primary/10 text-terracotta px-1.5 py-0.5 rounded-full">Obligatoire</span>
                         )}
                         {!f.deletable && (
                           <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">Champ fixe</span>

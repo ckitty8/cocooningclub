@@ -10,7 +10,7 @@ interface AjouterAgendaProps {
 }
 
 const option =
-  "flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-foreground/20 px-4 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary";
+  "flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-foreground/20 px-4 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-terracotta";
 
 // Ajout d'un atelier à l'agenda : Google Agenda, ou fichier .ics pour
 // Apple Calendar et Outlook. Les clics ne remontent pas à la carte parente

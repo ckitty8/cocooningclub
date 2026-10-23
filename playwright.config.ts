@@ -13,6 +13,9 @@ const BASE_URL = `http://127.0.0.1:${PORT}`;
 
 export default defineConfig({
   testDir: "e2e",
+  // L'audit de contraste et de mise en page (long) se lance à part : npm run audit:visuel
+  testIgnore: process.env.AUDIT_VISUEL ? [] : ["**/audit/**"],
+  testMatch: process.env.AUDIT_VISUEL ? "**/audit/*.spec.ts" : "**/*.spec.ts",
   fullyParallel: true,
   reporter: "list",
   use: {

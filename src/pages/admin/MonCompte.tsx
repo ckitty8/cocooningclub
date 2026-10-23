@@ -49,7 +49,7 @@ const MonCompte = () => {
   if (!profile) return (
     <AdminLayout>
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <Loader2 className="w-8 h-8 animate-spin text-terracotta" />
       </div>
     </AdminLayout>
   );
@@ -206,7 +206,7 @@ const MonCompte = () => {
         {/* Avatar */}
         <div className="bg-card border rounded-2xl p-5">
           <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <ImageIcon className="w-4 h-4 text-primary" />
+            <ImageIcon className="w-4 h-4 text-terracotta" />
             Photo de profil
           </h2>
 
@@ -221,7 +221,7 @@ const MonCompte = () => {
                   onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
                 />
               ) : (
-                <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center text-primary text-3xl font-bold">
+                <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center text-foreground text-3xl font-bold">
                   {initials}
                 </div>
               )}
@@ -267,7 +267,7 @@ const MonCompte = () => {
         {/* Infos perso */}
         <div className="bg-card border rounded-2xl p-5">
           <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <User className="w-4 h-4 text-primary" />
+            <User className="w-4 h-4 text-terracotta" />
             Informations personnelles
           </h2>
 

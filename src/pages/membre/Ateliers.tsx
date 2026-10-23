@@ -108,7 +108,7 @@ const Ateliers = () => {
     return (
       <MembreLayout>
         <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <Loader2 className="w-8 h-8 animate-spin text-terracotta" />
         </div>
       </MembreLayout>
     );
@@ -140,7 +140,7 @@ const Ateliers = () => {
               <b>Aucune adhésion en cours.</b> Papotages est gratuit pour tous ; les ateliers des autres espaces se règlent à l'unité.
             </span>
           )}
-          {!simulee && <Link to="/espace-membre/mon-adhesion" className="text-primary hover:underline">Mon adhésion ›</Link>}
+          {!simulee && <Link to="/espace-membre/mon-adhesion" className="inline-block py-1 text-terracotta hover:underline">Mon adhésion ›</Link>}
         </div>
       )}
 
@@ -162,7 +162,7 @@ const Ateliers = () => {
                   <img src={a.url_image} alt={a.titre} loading="lazy" decoding="async" className="w-full aspect-[16/10] object-contain bg-muted/30" />
                 ) : (
                   <div className="w-full aspect-[16/10] bg-gradient-to-br from-primary/15 to-amber-500/15 flex items-center justify-center">
-                    <CalendarDays className="w-10 h-10 text-primary/50" />
+                    <CalendarDays className="w-10 h-10 text-terracotta/50" />
                   </div>
                 )}
                 <div className="p-5 flex-1 flex flex-col">
@@ -178,7 +178,7 @@ const Ateliers = () => {
                       <div className="flex items-center gap-2">
                         <MapPin className="w-3.5 h-3.5" />
                         {a.adresse ? (
-                          <a href={googleMapsSearchUrl(a.adresse)} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                          <a href={googleMapsSearchUrl(a.adresse)} target="_blank" rel="noopener noreferrer" className="inline-block py-1 hover:underline">
                             {a.lieu}
                           </a>
                         ) : a.lieu}

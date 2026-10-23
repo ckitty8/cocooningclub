@@ -197,7 +197,7 @@ const Calendrier = () => {
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         onClick={e => e.stopPropagation()}
-                                        className="hover:underline"
+                                        className="inline-block py-1 hover:underline"
                                       >
                                         {ws.lieu}
                                       </a>
@@ -297,7 +297,7 @@ const Calendrier = () => {
                       href={googleMapsSearchUrl(popinWorkshop.adresse)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="hover:underline"
+                      className="inline-block py-1 hover:underline"
                     >
                       {popinWorkshop.lieu}
                     </a>

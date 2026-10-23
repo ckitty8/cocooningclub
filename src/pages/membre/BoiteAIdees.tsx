@@ -152,7 +152,7 @@ const BoiteAIdees = () => {
   if (loading) return (
     <MembreLayout>
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <Loader2 className="w-8 h-8 animate-spin text-terracotta" />
       </div>
     </MembreLayout>
   );
@@ -162,7 +162,7 @@ const BoiteAIdees = () => {
       <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Lightbulb className="w-6 h-6 text-primary" />
+            <Lightbulb className="w-6 h-6 text-terracotta" />
             Boîte à idées
           </h1>
           <p className="text-muted-foreground text-sm mt-1">

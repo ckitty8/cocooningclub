@@ -70,7 +70,7 @@ const ListeParAtelier = ({ groupes, ouverts, onBasculer, autorisations, droits, 
                 return (
                   <li key={insc.id} className="flex items-center gap-3 px-5 py-3 hover:bg-muted/20 transition-colors">
                     <button onClick={() => onOuvrir(insc)} className="flex min-w-0 flex-1 items-center gap-3 text-left" aria-label={`Ouvrir la pré-inscription de ${nom}`}>
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 font-display text-primary" aria-hidden="true">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 font-display text-terracotta" aria-hidden="true">
                         {(id.prenom || id.nom || "?")[0]?.toUpperCase()}
                       </span>
                       <span className="min-w-0">

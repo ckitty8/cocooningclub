@@ -41,7 +41,7 @@ const Simulateur = () => {
 
       {simulation && (
         <div className="mb-6 flex flex-wrap items-center gap-3 rounded-2xl border border-primary/40 bg-primary/5 px-5 py-4">
-          <Eye className="h-5 w-5 text-primary" aria-hidden="true" />
+          <Eye className="h-5 w-5 text-terracotta" aria-hidden="true" />
           <p className="flex-1 text-sm">
             Simulation en cours : <strong>{ROLES[simulation].libelle}</strong>.
           </p>

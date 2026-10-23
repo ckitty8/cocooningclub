@@ -423,7 +423,7 @@ const PreInscriptions = () => {
   if (loading) return (
     <AdminLayout>
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <Loader2 className="w-8 h-8 animate-spin text-terracotta" />
       </div>
     </AdminLayout>
   );
@@ -469,7 +469,7 @@ const PreInscriptions = () => {
               aria-pressed={filter === f}
               className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${filter === f ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
             >
-              {f === "tous" ? "Toutes" : STATUT_LABELS[f]} <span className="opacity-70">({counts[f]})</span>
+              {f === "tous" ? "Toutes" : STATUT_LABELS[f]} <span>({counts[f]})</span>
             </button>
           ))}
         </div>
@@ -572,7 +572,7 @@ const PreInscriptions = () => {
               <X className="w-5 h-5" />
             </button>
             <h2 className="text-xl font-bold text-foreground mb-1 flex items-center gap-2">
-              {editingInscription ? <Pencil className="w-5 h-5 text-primary" /> : <UserPlus className="w-5 h-5 text-primary" />}
+              {editingInscription ? <Pencil className="w-5 h-5 text-terracotta" /> : <UserPlus className="w-5 h-5 text-terracotta" />}
               {editingInscription ? "Modifier l'inscription" : "Nouvelle inscription"}
             </h2>
             <p className="text-sm text-muted-foreground mb-5">

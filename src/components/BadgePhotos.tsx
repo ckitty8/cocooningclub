@@ -5,7 +5,7 @@ const STYLES: Record<EtatPhotos, string> = {
   accord: "bg-green-100 text-green-700",
   refus: "bg-red-100 text-red-600",
   expire: "bg-orange-100 text-orange-700",
-  inconnu: "bg-gray-100 text-gray-500",
+  inconnu: "bg-gray-100 text-gray-600",
 };
 
 interface Props {

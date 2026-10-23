@@ -100,7 +100,8 @@ unique des droits d'atelier, composants communs de `src/components/vitrine.tsx`,
 2. Un nettoyage ne doit **rien** changer à l'écran : capturer avant / après les pages clés (accueil, calendrier, espace membre,
    admin Ateliers, Pré-inscriptions, Offre) avec Playwright et le faux Supabase, à 360 px et 1280 px, puis comparer ; toute différence est
    expliquée ou corrigée.
-3. Aucun test e2e ne dépend d'une base réelle ni de la date du jour sans l'avoir figée.
+3. `npm run audit:visuel` doit rester à zéro (contraste AA, défilement horizontal, cibles < 24 px, 31 pages de 360 à 1280 px) ; toute nouvelle page est ajoutée à `e2e/audit/pages.ts`.
+4. Aucun test e2e ne dépend d'une base réelle ni de la date du jour sans l'avoir figée.
 
 ## 5. Audit de la base Supabase (lecture seule)
 

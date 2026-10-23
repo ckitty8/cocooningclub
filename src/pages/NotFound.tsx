@@ -18,7 +18,7 @@ const NotFound = () => {
           height={80}
           className="mx-auto mb-6 w-20 h-auto"
         />
-        <p className="mb-4 font-brand text-6xl text-primary md:text-7xl">404</p>
+        <p className="mb-4 font-brand text-6xl text-terracotta md:text-7xl">404</p>
         <h1 className="mb-6 font-brand text-3xl text-foreground md:text-5xl">
           Oups, cette page s'est envolée…
         </h1>

@@ -6,7 +6,7 @@ const JournalSection = () => (
       <div className="max-w-4xl mx-auto bg-card rounded-3xl border overflow-hidden md:grid md:grid-cols-2">
         {/* Left — visual */}
         <div className="bg-primary/5 p-6 md:p-10 lg:p-14 flex flex-col justify-center space-y-6">
-          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-xs font-medium w-fit">
+          <div className="inline-flex items-center gap-2 bg-primary/10 text-terracotta px-4 py-2 rounded-full text-xs font-medium w-fit">
             <Lock className="w-3.5 h-3.5" />
             Réservé aux membres
           </div>
@@ -27,7 +27,7 @@ const JournalSection = () => (
               { title: "Accès anticipé", desc: "Réservez vos places avant l'ouverture au public." },
             ].map((item) => (
               <div key={item.title} className="flex gap-3">
-                <BookOpen className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                <BookOpen className="w-5 h-5 text-terracotta shrink-0 mt-0.5" />
                 <div>
                   <p className="font-brand font-semibold text-foreground text-sm">{item.title}</p>
                   <p className="text-muted-foreground text-xs leading-relaxed">{item.desc}</p>

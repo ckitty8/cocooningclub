@@ -170,7 +170,7 @@ const Offre = () => {
           <div role="tablist" className="flex gap-6 border-b mb-5">
             {([["formules", "Formules"], ["adhesions", "Adhésions"]] as [Onglet, string][]).map(([cle, libelle]) => (
               <button key={cle} role="tab" aria-selected={onglet === cle} onClick={() => setOnglet(cle)}
-                className={`pb-2.5 text-sm font-medium border-b-2 -mb-px ${onglet === cle ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
+                className={`pb-2.5 text-sm font-medium border-b-2 -mb-px ${onglet === cle ? "border-primary text-terracotta" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
                 {libelle}
                 {cle === "adhesions" && nb("a_valider") > 0 && (
                   <span className="ml-2 rounded-full bg-primary px-2 py-0.5 text-[11px] text-primary-foreground">{nb("a_valider")}</span>
@@ -187,7 +187,7 @@ const Offre = () => {
               [`${cotisationsAnnee.toLocaleString("fr-FR")} €`, "cotisations de l'année"],
             ].map(([valeur, libelle]) => (
               <div key={libelle} className="bg-card border rounded-2xl px-4 py-3">
-                <p className="font-display text-2xl text-primary">{valeur}</p>
+                <p className="font-display text-2xl text-terracotta">{valeur}</p>
                 <p className="text-xs text-muted-foreground">{libelle}</p>
               </div>
             ))}
@@ -221,7 +221,7 @@ const Offre = () => {
                   {FILTRES.map(({ cle, libelle }) => (
                     <button key={cle} onClick={() => setFiltre(cle)} aria-pressed={filtre === cle}
                       className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${filtre === cle ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}>
-                      {libelle} <span className="opacity-70">({compteFiltre(cle)})</span>
+                      {libelle} <span>({compteFiltre(cle)})</span>
                     </button>
                   ))}
                 </div>

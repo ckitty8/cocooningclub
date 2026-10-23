@@ -68,7 +68,7 @@ const TestimonialsSection = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
             {visible.map(t => (
               <div key={t.id} className="bg-background rounded-2xl border p-6 md:p-8 space-y-4 relative">
-                <Quote className="w-8 h-8 text-primary/20 absolute top-6 right-6" />
+                <Quote className="w-8 h-8 text-terracotta/20 absolute top-6 right-6" />
                 <div className="flex gap-0.5 text-amber-500">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star key={i} className={`w-3.5 h-3.5 ${i < t.note ? "fill-current" : "opacity-30"}`} />
