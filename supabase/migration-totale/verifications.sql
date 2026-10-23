@@ -20,6 +20,8 @@ WITH controles(controle, ok) AS (
     ('Colonne antennes.gratuit_pour_tous',   EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'antennes' AND column_name = 'gratuit_pour_tous')),
     ('Fonction atelier_inclus',               to_regprocedure('public.atelier_inclus(uuid,uuid)') IS NOT NULL),
     ('Fonction mon_droit_atelier',            to_regprocedure('public.mon_droit_atelier(uuid)') IS NOT NULL),
+    ('Fonction valider_sans_paiement',        to_regprocedure('public.valider_sans_paiement(uuid,text)') IS NOT NULL),
+    ('Déclencheur de blocage des validations impayées', EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_verifier_validation_impayee' AND tgrelid = 'public.inscriptions'::regclass)),
     ('Au moins les 3 formules du bulletin',   CASE WHEN to_regclass('public.formules') IS NULL THEN false ELSE ((xpath('/row/c/text()', query_to_xml('SELECT count(*) AS c FROM public.formules', false, true, '')))[1]::text)::int >= 3 END),
     ('Formules rattachées à des espaces',     CASE WHEN to_regclass('public.formule_espaces') IS NULL THEN false ELSE ((xpath('/row/c/text()', query_to_xml('SELECT count(*) AS c FROM public.formule_espaces', false, true, '')))[1]::text)::int >= 4 END)
 )

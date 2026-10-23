@@ -19,3 +19,7 @@ SELECT g.id, g.titre, a.id, g.tarif FROM (VALUES
  ('a4444444-4444-4444-4444-444444444444', 'Atelier offert',    'business', 0),
  ('a5555555-5555-5555-5555-555555555555', 'Tarif inconnu',    'creatifs', NULL)
 ) g(id, titre, slug, tarif) JOIN antennes a ON a.slug = g.slug;
+
+-- Journal et déclenchement de la migration 000006.
+CREATE TABLE logs (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), utilisateur_id uuid, action varchar(100) NOT NULL, table_cible varchar(100), enregistrement_cible_id uuid, details jsonb, user_agent varchar(500), horodatage timestamptz NOT NULL DEFAULT now());
+GRANT SELECT, INSERT ON logs TO authenticated;

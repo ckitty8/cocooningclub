@@ -4,6 +4,9 @@
 -- par une validation d'adhésion ne sont pas remis en arrière. Faire une sauvegarde avant.
 -- Sans la fonction supprimer_membre, le bouton « Supprimer » de l'admin échoue : revenir aussi au code précédent.
 BEGIN;
+DROP TRIGGER  IF EXISTS trg_verifier_validation_impayee ON public.inscriptions;
+DROP FUNCTION IF EXISTS private.bloquer_validation_impayee();
+DROP FUNCTION IF EXISTS public.valider_sans_paiement(uuid, text);
 -- Droits par offre : retour à la définition d'avant du déclencheur des inscriptions
 -- (20261015000000 : « non_requis » seulement si le tarif est <= 0).
 CREATE OR REPLACE FUNCTION private.proteger_inscriptions()

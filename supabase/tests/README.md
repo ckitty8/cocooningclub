@@ -9,6 +9,7 @@ Scénarios qui vérifient les triggers de sécurité sur une base Postgres jetab
 - `20261023000001_corrige_inscription_tardive.sql` : pré-inscriptions bloquées pour tout le monde par un appel à `private.is_admin()` inexistant en prod (son test rejoue la panne puis le correctif).
 - `20261023000003_offre_et_adhesions.sql` : formules d'adhésion, adhésions, validation (`valider_adhesion`, passage `inscrit` → `membre`) et échéance (`expirer_adhesions`).
 - `20261023000005_droits_par_offre.sql` : droits par offre (`atelier_inclus`, colonne `antennes.gratuit_pour_tous`, déclencheur des inscriptions : paiement « non requis » si atelier gratuit ou inclus dans l'adhésion).
+- `20261023000006_bloque_validation_impayee.sql` : une inscription ne peut pas être validée tant que son paiement est « en attente » ; dérogation motivée et journalisée par `valider_sans_paiement` (administrateurs).
 
 ```bash
 createdb t
@@ -37,6 +38,7 @@ psql -d o -f supabase/tests/offre_et_adhesions.test.sql
 createdb d
 psql -d d -v ON_ERROR_STOP=1 -f supabase/tests/droits_par_offre.setup.sql
 psql -d d -v ON_ERROR_STOP=1 -f supabase/migrations/20261023000005_droits_par_offre.sql
+psql -d d -v ON_ERROR_STOP=1 -f supabase/migrations/20261023000006_bloque_validation_impayee.sql
 psql -d d -f supabase/tests/droits_par_offre.test.sql
 ```
 

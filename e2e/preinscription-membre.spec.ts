@@ -90,8 +90,18 @@ test("depuis « Inscrits » : l'atelier visé est ouvert, validation en un clic,
   await expect(page.getByText(/Vous arrivez depuis/)).toBeVisible();
   await expect(page.getByRole("button", { name: new RegExp(ATELIER_TEST.titre) })).toHaveAttribute("aria-expanded", "true");
 
+  // Paiement non réglé : la validation est bloquée, sauf dérogation motivée (enregistrée par la base).
   await page.getByRole("button", { name: "Valider Marie Dupont" }).click();
-  await expect.poll(() => mock.updates.inscriptions?.[0]).toMatchObject({ statut: "confirme" });
+  const derogation = page.getByRole("dialog", { name: "Valider sans paiement" });
+  await expect(derogation.getByText("Paiement non réglé")).toBeVisible();
+  expect(mock.updates.inscriptions ?? []).toHaveLength(0);
+  await derogation.getByRole("button", { name: "Valider sans paiement" }).click();
+  expect(mock.rpc.valider_sans_paiement ?? []).toHaveLength(0); // motif obligatoire
+  await derogation.getByLabel("Motif").fill("Règlement en espèces sur place");
+  await derogation.getByRole("button", { name: "Valider sans paiement" }).click();
+  await expect.poll(() => mock.rpc.valider_sans_paiement?.[0]).toMatchObject({
+    p_inscription: LIGNE_ADMIN.id, p_motif: "Règlement en espèces sur place",
+  });
 
   await page.getByRole("button", { name: "Détail de Marie Dupont" }).click();
   const fenetre = page.getByRole("dialog", { name: "Pré-inscription de Marie Dupont" });

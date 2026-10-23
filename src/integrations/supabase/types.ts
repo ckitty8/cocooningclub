@@ -1263,6 +1263,7 @@ export type Database = {
       expirer_adhesions: { Args: never; Returns: number }
       is_admin: { Args: never; Returns: boolean }
       supprimer_membre: { Args: { p_id: string }; Returns: undefined }
+      valider_sans_paiement: { Args: { p_inscription: string; p_motif: string }; Returns: undefined }
       valider_adhesion: {
         Args: { p_id: string; p_mode: string; p_recue_le?: string | null; p_validation?: string | null }
         Returns: Database["public"]["Tables"]["adhesions"]["Row"]

@@ -83,3 +83,46 @@ INSERT INTO inscriptions (atelier_id) VALUES ('a1111111-1111-1111-1111-111111111
 RESET ROLE;
 SELECT a.titre, i.statut, i.statut_paiement FROM inscriptions i JOIN ateliers a ON a.id = i.atelier_id ORDER BY a.titre;
 ROLLBACK;
+
+-- ─────────────────────────────────────────────
+-- 20261023000006_bloque_validation_impayee.sql
+-- ─────────────────────────────────────────────
+\echo '=== Blocage de la validation impayée ==='
+BEGIN;
+\echo '--- 12. Un admin ne peut pas valider une inscription dont le paiement est en attente (attendu : erreur 23514), mais peut valider une payée'
+INSERT INTO inscriptions (id, atelier_id, utilisateur_id, statut, statut_paiement) VALUES
+  ('b1111111-1111-1111-1111-111111111111', 'a2222222-2222-2222-2222-222222222222', '11111111-1111-1111-1111-111111111111', 'en_attente', 'en_attente'),
+  ('b2222222-2222-2222-2222-222222222222', 'a2222222-2222-2222-2222-222222222222', '44444444-4444-4444-4444-444444444444', 'en_attente', 'paye');
+SELECT set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222', true);
+SET LOCAL ROLE authenticated;
+SAVEPOINT a;
+UPDATE inscriptions SET statut = 'confirme' WHERE id = 'b1111111-1111-1111-1111-111111111111';
+ROLLBACK TO a;
+UPDATE inscriptions SET statut = 'confirme' WHERE id = 'b2222222-2222-2222-2222-222222222222';
+RESET ROLE;
+ROLLBACK;
+
+BEGIN;
+\echo '--- 13. valider_sans_paiement : motif obligatoire (attendu : erreur 22023), puis succès avec journal (attendu : confirme, 1 ligne de journal avec le motif)'
+INSERT INTO inscriptions (id, atelier_id, utilisateur_id, statut, statut_paiement) VALUES
+  ('b1111111-1111-1111-1111-111111111111', 'a2222222-2222-2222-2222-222222222222', '11111111-1111-1111-1111-111111111111', 'en_attente', 'en_attente');
+SELECT set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222', true);
+SET LOCAL ROLE authenticated;
+SAVEPOINT a;
+SELECT valider_sans_paiement('b1111111-1111-1111-1111-111111111111', '  ');
+ROLLBACK TO a;
+SELECT valider_sans_paiement('b1111111-1111-1111-1111-111111111111', 'Espèces sur place');
+RESET ROLE;
+SELECT statut, statut_paiement FROM inscriptions WHERE id = 'b1111111-1111-1111-1111-111111111111';
+SELECT action, details->>'motif' AS motif FROM logs WHERE enregistrement_cible_id = 'b1111111-1111-1111-1111-111111111111';
+ROLLBACK;
+
+BEGIN;
+\echo '--- 14. Une inscrite ne peut pas appeler valider_sans_paiement (attendu : erreur 42501)'
+INSERT INTO inscriptions (id, atelier_id, utilisateur_id, statut, statut_paiement) VALUES
+  ('b1111111-1111-1111-1111-111111111111', 'a2222222-2222-2222-2222-222222222222', '11111111-1111-1111-1111-111111111111', 'en_attente', 'en_attente');
+SELECT set_config('request.jwt.claim.sub', '11111111-1111-1111-1111-111111111111', true);
+SET LOCAL ROLE authenticated;
+SELECT valider_sans_paiement('b1111111-1111-1111-1111-111111111111', 'je me valide');
+RESET ROLE;
+ROLLBACK;

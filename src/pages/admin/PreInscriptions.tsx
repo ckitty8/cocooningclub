@@ -6,7 +6,7 @@ import FenetreInscription from "@/components/admin/preinscriptions/FenetreInscri
 import type { AtelierListe, InfoDroit, Inscription, StatutInscription, StatutPaiement } from "@/components/admin/preinscriptions/types";
 import { useAutorisationsImage } from "@/hooks/useAutorisationsImage";
 import { useEspaces, useOffresParPersonne } from "@/hooks/useOffres";
-import { droitAtelier, euros } from "@/lib/droits";
+import { droitAtelier } from "@/lib/droits";
 import { supabase } from "@/integrations/supabase/client";
 import type { TablesUpdate } from "@/integrations/supabase/types";
 import { logAction } from "@/utils/logAction";
@@ -80,6 +80,8 @@ const PreInscriptions = () => {
     statut_paiement: "non_requis" as "non_requis" | "en_attente" | "paye",
   });
   const [newSaving, setNewSaving] = useState(false);
+  const [derogation, setDerogation] = useState<Inscription | null>(null);
+  const [motifDerogation, setMotifDerogation] = useState("");
 
   const fetchAll = async () => {
     try {
@@ -203,10 +205,12 @@ const PreInscriptions = () => {
     if (insc.statut === next) return false;
     const id = inscIdentite(insc);
     if (next === "annule" && !confirm(`Refuser la pré-inscription de ${id.prenom} ${id.nom} ?`)) return false;
-    // Atelier à payer et règlement non enregistré : simple avertissement, la décision reste à l'équipe.
-    const info = droits?.get(insc.id);
-    if (next === "confirme" && info?.droit.etat === "a_payer" && insc.statut_paiement !== "paye"
-      && !confirm(`${info.droit.montant > 0 ? euros(info.droit.montant) : "Le tarif"} non réglé pour ${id.prenom} ${id.nom}. Valider quand même ?`)) return false;
+    // Règlement non enregistré : la validation est bloquée (aussi en base), sauf dérogation motivée.
+    if (next === "confirme" && insc.statut_paiement === "en_attente") {
+      setMotifDerogation("");
+      setDerogation(insc);
+      return false;
+    }
 
     setActingOn(insc.id);
     const payload: TablesUpdate<"inscriptions"> = { statut: next };
@@ -235,6 +239,20 @@ const PreInscriptions = () => {
       statut_avant: insc.statut, statut_apres: next,
     });
     return true;
+  };
+
+  const validerSansPaiement = async () => {
+    if (!derogation) return;
+    const motif = motifDerogation.trim();
+    if (motif.length < 3) { toast.error("Indiquez le motif de la dérogation"); return; }
+    const id = inscIdentite(derogation);
+    setActingOn(derogation.id);
+    const { error } = await supabase.rpc("valider_sans_paiement", { p_inscription: derogation.id, p_motif: motif });
+    setActingOn(null);
+    if (error) { toast.error(`Erreur : ${error.message}`); return; }
+    setInscriptions(prev => prev.map(i => i.id === derogation.id ? { ...i, statut: "confirme" } : i));
+    toast.success(`Pré-inscription de ${id.prenom} validée sans paiement`);
+    setDerogation(null);
   };
 
   const handlePaiement = async (insc: Inscription, paiement: StatutPaiement) => {
@@ -279,6 +297,9 @@ const PreInscriptions = () => {
       toast.error("Prénom et nom sont obligatoires"); return;
     }
     if (!newForm.email.trim()) { toast.error("Email obligatoire"); return; }
+    if (newForm.statut === "confirme" && newForm.statut_paiement === "en_attente") {
+      toast.error("Paiement en attente : enregistrez le règlement (ou « Non requis ») avant de valider."); return;
+    }
 
     const atelier = ateliersDispo.find(a => a.id === newForm.atelier_id)
                  ?? (editingInscription?.ateliers ? {
@@ -507,6 +528,30 @@ const PreInscriptions = () => {
           onPaiement={handlePaiement}
           onModifier={insc => openEditModal(insc)}
         />
+      )}
+
+      {derogation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm p-4" onClick={() => setDerogation(null)}>
+          <div role="dialog" aria-modal="true" aria-label="Valider sans paiement" className="bg-background border rounded-2xl shadow-2xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+            <h2 className="text-lg font-bold mb-1">Paiement non réglé</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              {inscIdentite(derogation).prenom} {inscIdentite(derogation).nom} n'a pas réglé « {derogation.ateliers?.titre} ».
+              Enregistrez d'abord le paiement (onglet Paiement), ou validez quand même en indiquant le motif : il sera inscrit au journal.
+            </p>
+            <label htmlFor="motif-derogation" className="block text-sm font-medium mb-1.5">Motif *</label>
+            <textarea
+              id="motif-derogation" value={motifDerogation} onChange={e => setMotifDerogation(e.target.value)} rows={3}
+              placeholder="Ex. règlement en espèces sur place, geste commercial…"
+              className="w-full rounded-xl border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <button onClick={() => setDerogation(null)} className="rounded-xl border px-4 py-2 text-sm hover:bg-muted">Annuler</button>
+              <button onClick={validerSansPaiement} disabled={actingOn === derogation.id} className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60">
+                Valider sans paiement
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Modal nouvelle inscription */}
