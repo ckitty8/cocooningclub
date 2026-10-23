@@ -68,12 +68,11 @@
 }
 
 @layer base {
-  /* Pages vitrine, calendrier et connexion : fond pêche de la charte
-     (#fde4d4), sections alternées et cartes crème (#fffaf6), texte
-     secondaire assombri pour rester lisible sur la pêche (contraste AA). */
-  .theme-vitrine {
-    --background: 23 91% 91%;
-    --card: 27 100% 98%;
-    --muted-foreground: 11 25% 34%;
+  /* Pages vitrine (accueil, notre histoire) : fond crème plus clair que la pêche de la charte, et
+     texte secondaire assombri pour rester lisible (contraste AA). */
+  .theme-creme {
+    --background: 27 100% 98%;
+    --card: 24 50% 95%;
+    --muted-foreground: 11 18% 38%;
   }
 }

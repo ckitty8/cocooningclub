@@ -64,7 +64,7 @@ const Calendrier = () => {
   const moisOrdonnes = Object.keys(ateliersParMois).sort();
 
   return (
-    <div className="theme-vitrine min-h-screen bg-background text-foreground">
+    <div className="theme-creme min-h-screen bg-background text-foreground">
       <SiteHeader actif="Nos événements" />
 
       <main className="pt-20">
@@ -72,7 +72,7 @@ const Calendrier = () => {
         <section className="container mx-auto grid items-center gap-10 px-6 py-12 md:grid-cols-2 md:py-16">
           <div className="space-y-5">
             <Surtitre>Nos événements</Surtitre>
-            <h1 className="font-display text-5xl leading-[1.1] text-foreground sm:text-7xl">Calendrier des ateliers</h1>
+            <h1 className="font-brand text-4xl leading-[1.1] text-foreground sm:text-5xl">Calendrier des ateliers</h1>
             <span className="block h-0.5 w-10 bg-primary" aria-hidden="true" />
             <p className="text-sm leading-relaxed text-muted-foreground md:text-base">
               Papotages, ateliers créatifs ou rencontres business : tous nos rendez-vous à venir, regroupés par
@@ -121,7 +121,7 @@ const Calendrier = () => {
                   <section key={moisKey}>
                     {/* Bandeau mois */}
                     <div className="mb-5 flex items-baseline gap-3 border-b pb-3">
-                      <h2 className="font-display text-5xl capitalize text-foreground">
+                      <h2 className="font-brand text-3xl capitalize text-foreground">
                         {FRENCH_MONTHS[monthIdx]}
                       </h2>
                       <span className="text-xs font-semibold uppercase tracking-[0.2em] text-terracotta">
@@ -145,12 +145,12 @@ const Calendrier = () => {
                           <button
                             key={ws.id}
                             onClick={() => openPopin(ws)}
-                            className={`flex w-full items-stretch gap-4 rounded-2xl border bg-card p-4 text-left shadow-[0_12px_32px_-24px_rgba(99,59,50,0.45)] transition-all hover:shadow-md ${
+                            className={`flex w-full items-stretch gap-4 rounded-2xl border bg-white/70 p-4 text-left shadow-[0_12px_32px_-24px_rgba(99,59,50,0.45)] transition-all hover:shadow-md ${
                               isSelected ? "ring-2 ring-primary" : "hover:ring-1 hover:ring-primary/30"
                             }`}
                           >
                             {/* Bloc date à gauche */}
-                            <div className="flex w-16 shrink-0 flex-col items-center justify-center rounded-xl bg-background py-2 text-terracotta md:w-20">
+                            <div className="flex w-16 shrink-0 flex-col items-center justify-center rounded-xl bg-card py-2 text-terracotta md:w-20">
                               <span className="text-xs font-semibold tracking-[0.1em] uppercase">
                                 {FRENCH_DAYS[(d.getDay() + 6) % 7]}
                               </span>

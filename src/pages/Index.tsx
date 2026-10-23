@@ -244,7 +244,7 @@ const Index = () => {
 
   return (
     // Thème crème des pages vitrine (variables dans index.css).
-    <div className="theme-vitrine min-h-screen bg-background text-foreground">
+    <div className="theme-creme min-h-screen bg-background text-foreground">
       <SiteHeader actif="Accueil" />
 
       {/* Hero */}
@@ -252,7 +252,7 @@ const Index = () => {
         <div className="container mx-auto grid items-center gap-10 px-6 py-12 lg:grid-cols-2 lg:gap-14 lg:py-20">
           <div className="space-y-5">
             <Surtitre>À propos</Surtitre>
-            <h1 className="font-display text-5xl leading-[1.1] text-foreground sm:text-6xl lg:text-7xl">
+            <h1 className="font-brand text-4xl leading-[1.1] text-foreground sm:text-5xl lg:text-6xl">
               À propos du Cocooning Club
             </h1>
             <p className="text-lg leading-snug text-terracotta md:text-xl">
@@ -304,7 +304,7 @@ const Index = () => {
             {ESPACES.map(espace => (
               <article
                 key={espace.titre}
-                className="flex flex-col overflow-hidden rounded-2xl border bg-card shadow-[0_12px_32px_-22px_rgba(99,59,50,0.45)]"
+                className="flex flex-col overflow-hidden rounded-2xl border bg-white/70 shadow-[0_12px_32px_-22px_rgba(99,59,50,0.45)]"
               >
                 <div className="relative">
                   <img
