@@ -61,4 +61,4 @@ Comptes utiles : une administratrice, une membre, une inscrite (rôle `inscrit`)
 
 ## Pas encore dans cette mise en production
 
-- [ ] Page publique d'adhésion en ligne, paiement HelloAsso, retrait de PayPal (champ `lien_paypal`, table `transactions_paypal`, CGU art. 4), mentions légales, bannière cookie et GA4, refonte de la page Pré-inscriptions.
+- [ ] Paiement de la cotisation par HelloAsso (le bulletin reste imprimé, rempli sur papier et saisi par une admin), retrait de PayPal (champ `lien_paypal`, table `transactions_paypal`, CGU art. 4), mentions légales, bannière cookie et GA4, refonte de la page Pré-inscriptions.
