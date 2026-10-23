@@ -2,7 +2,7 @@
 -- MIGRATION TOTALE DU SITE : à coller dans le SQL Editor de Supabase.
 -- Fichier généré par `npm run migration:build` : ne pas le modifier à la main.
 -- Tout est exécuté dans une seule transaction : en cas d'erreur, rien n'est appliqué.
--- Contient : 20261023000002_supprime_membre_et_compte.sql, 20261023000003_offre_et_adhesions.sql, 20261023000004_retire_role_membre_premium.sql, 20261023000005_droits_par_offre.sql, 20261023000006_bloque_validation_impayee.sql, 20261023000007_tarif_adherente.sql, 20261023000008_supprime_tables_de_sauvegarde.sql, 20261023000009_reserve_admin_dispo_aux_admins.sql
+-- Contient : 20261023000002_supprime_membre_et_compte.sql, 20261023000003_offre_et_adhesions.sql, 20261023000004_retire_role_membre_premium.sql, 20261023000005_droits_par_offre.sql, 20261023000006_bloque_validation_impayee.sql, 20261023000007_tarif_adherente.sql, 20261023000008_supprime_tables_de_sauvegarde.sql, 20261023000009_reserve_admin_dispo_aux_admins.sql, 20261023000010_supprime_decrement_atelier_spots.sql
 -- Lancer ensuite verifications.sql (tout doit afficher ok = true).
 -- =====================================================================
 
@@ -682,5 +682,14 @@ $$;
 
 REVOKE EXECUTE ON FUNCTION public.admin_dispo_le(date) FROM PUBLIC, anon;
 GRANT  EXECUTE ON FUNCTION public.admin_dispo_le(date) TO authenticated;
+
+-- ---------------------------------------------------------------------
+-- 20261023000010_supprime_decrement_atelier_spots.sql
+-- ---------------------------------------------------------------------
+-- Supprime public.decrement_atelier_spots(), fonction morte relevée par la revue qualité du 23/10 :
+-- aucun déclencheur, aucune politique ni fonction ne l'utilise (vérifié en production), et elle modifie
+-- une colonne `spots` qui n'existe plus ; decrementer_places() l'a remplacée.
+-- Pas de CASCADE : si un objet en dépendait encore, la suppression échouerait au lieu de le casser.
+DROP FUNCTION IF EXISTS public.decrement_atelier_spots();
 
 COMMIT;
