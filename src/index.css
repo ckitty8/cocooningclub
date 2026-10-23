@@ -76,7 +76,7 @@
     --muted-foreground: 11 18% 38%;
   }
 
-  /* Administration : même fond crème que le site. Les titres passent en
+  /* Espaces connectés (administration et espace membre) : même fond crème que le site. Les titres passent en
      Playfair Display (Great Vibes est trop fin pour des écrans de gestion). */
   .admin-shell h1,
   .admin-shell h2,

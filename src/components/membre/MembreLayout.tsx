@@ -32,10 +32,11 @@ const MembreLayout = ({ children }: { children: ReactNode }) => {
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       <div className="p-6 border-b">
-        <Link to="/" className="font-brand text-xl font-bold tracking-[0.08em] uppercase text-foreground hover:opacity-80 transition-opacity">
-          Cocooning Club
+        <Link to="/" className="flex items-center gap-3 font-brand text-xl text-primary transition-opacity hover:opacity-80">
+          <img src="/logo-160.webp" alt="" width={48} height={48} className="h-12 w-12 shrink-0" />
+          <span className="leading-tight">Le Cocooning Club</span>
         </Link>
-        <p className="text-xs text-muted-foreground mt-1 tracking-wide uppercase">Espace membre</p>
+        <p className="mt-3 text-xs font-semibold uppercase tracking-[0.2em] text-terracotta">Espace membre</p>
       </div>
 
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
@@ -98,7 +99,7 @@ const MembreLayout = ({ children }: { children: ReactNode }) => {
   );
 
   return (
-    <div className="min-h-screen bg-muted/30 flex">
+    <div className="theme-creme admin-shell min-h-screen bg-muted/30 flex">
       <aside className="hidden lg:flex flex-col w-64 bg-card border-r shrink-0 fixed h-full z-30">
         <SidebarContent />
       </aside>
@@ -117,7 +118,8 @@ const MembreLayout = ({ children }: { children: ReactNode }) => {
           <button onClick={() => setSidebarOpen(true)} className="p-1.5 rounded-lg hover:bg-muted">
             <Menu className="w-5 h-5" />
           </button>
-          <span className="font-brand font-bold tracking-[0.08em] uppercase text-sm">Cocooning Club</span>
+          <img src="/logo-160.webp" alt="" width={32} height={32} className="h-8 w-8" />
+          <span className="font-brand text-base text-primary">Le Cocooning Club</span>
         </header>
 
         <main className="flex-1 p-6 lg:p-8 max-w-7xl w-full mx-auto">
