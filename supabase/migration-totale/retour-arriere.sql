@@ -15,4 +15,5 @@ DROP TABLE    IF EXISTS public.formule_espaces;
 DROP TABLE    IF EXISTS public.formules;
 DROP SEQUENCE IF EXISTS public.adhesions_numero_seq;
 ALTER TABLE public.utilisateurs DROP COLUMN IF EXISTS commune, DROP COLUMN IF EXISTS activite;
+ALTER TABLE public.utilisateurs DROP CONSTRAINT IF EXISTS utilisateurs_sans_role_premium;
 COMMIT;

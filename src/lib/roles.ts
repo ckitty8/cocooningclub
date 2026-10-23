@@ -12,8 +12,8 @@ export type RoleSite = UserRole | "createur";
 /** Rôles que le créateur peut simuler (le visiteur non connecté s'obtient en navigation privée). */
 export type RoleSimulable = Exclude<RoleSite, "createur">;
 
-export const ORDRE_ROLES: readonly RoleSite[] = ["inscrit", "membre", "membre_premium", "administrateur", "createur"];
-export const ROLES_SIMULABLES: readonly RoleSimulable[] = ["inscrit", "membre", "membre_premium", "administrateur"];
+export const ORDRE_ROLES: readonly RoleSite[] = ["inscrit", "membre", "administrateur", "createur"];
+export const ROLES_SIMULABLES: readonly RoleSimulable[] = ["inscrit", "membre", "administrateur"];
 
 interface InfosRole {
   libelle: string;
@@ -29,10 +29,6 @@ export const ROLES: Record<RoleSite, InfosRole> = {
     libelle: "Membre",
     description: "Adhérente du club. Accède à l'espace membre et aux documents réservés aux membres.",
   },
-  membre_premium: {
-    libelle: "Membre premium",
-    description: "Niveau premium prévu en base ; aucun compte n'a ce rôle pour l'instant. Mêmes pages que le membre.",
-  },
   administrateur: {
     libelle: "Administrateur",
     description: "Équipe du club : gère les membres, les ateliers, les pré-inscriptions, les documents et le site.",
@@ -45,7 +41,7 @@ export const ROLES: Record<RoleSite, InfosRole> = {
 
 /** Rôles autorisés dans chaque zone protégée du site. */
 export const ACCES = {
-  espaceMembre: ["membre", "membre_premium", "administrateur", "createur"],
+  espaceMembre: ["membre", "administrateur", "createur"],
   admin: ["administrateur", "createur"],
   createur: ["createur"],
 } as const satisfies Record<string, readonly RoleSite[]>;

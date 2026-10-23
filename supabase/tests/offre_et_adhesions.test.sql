@@ -115,3 +115,13 @@ SET LOCAL ROLE authenticated;
 SELECT nom FROM formules;
 RESET ROLE;
 ROLLBACK;
+
+BEGIN;
+\echo '--- 9. Le rôle membre premium ne peut plus être attribué (attendu : erreur 23514)'
+UPDATE utilisateurs SET role = 'membre_premium' WHERE id = '44444444-4444-4444-4444-444444444444';
+ROLLBACK;
+
+BEGIN;
+\echo '--- 9b. Les autres rôles restent possibles (attendu : UPDATE 1)'
+UPDATE utilisateurs SET role = 'membre' WHERE id = '44444444-4444-4444-4444-444444444444';
+ROLLBACK;

@@ -49,7 +49,7 @@ Comptes utiles : une administratrice, une membre, une inscrite (rôle `inscrit`)
 
 ## Après : créateur (`christellelab@gmail.com`)
 
-- [ ] Espace créateur : simulateur de rôle (Inscrit, Membre, Membre premium, Administrateur) et matrice des rôles à jour (ligne « Offre & adhésions », « Mon adhésion »).
+- [ ] Espace créateur : simulateur de rôle (Inscrit, Membre, Administrateur) et matrice des rôles à jour (ligne « Offre & adhésions », « Mon adhésion »).
 
 ## Sécurité (à vérifier à la main)
 

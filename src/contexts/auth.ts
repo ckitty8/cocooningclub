@@ -6,7 +6,7 @@ import type { RoleSimulable, RoleSite } from "@/lib/roles";
 // AuthProvider (Fast Refresh ne gère que les fichiers qui n'exportent que
 // des composants).
 
-export type UserRole = "administrateur" | "inscrit" | "membre" | "membre_premium";
+export type UserRole = "administrateur" | "inscrit" | "membre";
 
 export interface Profile {
   id: string;

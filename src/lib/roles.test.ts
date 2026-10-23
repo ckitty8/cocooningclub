@@ -45,7 +45,8 @@ describe("simulation", () => {
   });
 
   it("n'accepte pas de simuler le créateur ni un rôle inconnu", () => {
-    expect(estRoleSimulable("membre_premium")).toBe(true);
+    expect(estRoleSimulable("membre")).toBe(true);
+    expect(estRoleSimulable("membre_premium")).toBe(false); // rôle supprimé
     expect(estRoleSimulable("createur")).toBe(false);
     expect(estRoleSimulable("root")).toBe(false);
     expect(estRoleSimulable(null)).toBe(false);

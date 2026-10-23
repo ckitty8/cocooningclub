@@ -27,7 +27,7 @@ export interface Inscription {
     email: string | null;
     telephone: string | null;
     date_naissance: string | null;
-    role: "administrateur" | "inscrit" | "membre" | "membre_premium" | null;
+    role: "administrateur" | "inscrit" | "membre" | null;
   } | null;
 }
 
@@ -47,7 +47,6 @@ export interface AtelierListe {
 export const ROLES_BADGE: Record<string, { label: string; cls: string }> = {
   administrateur: { label: "Admin",   cls: "bg-purple-100 text-purple-700" },
   membre:         { label: "Membre",  cls: "bg-primary/10 text-primary" },
-  membre_premium: { label: "Premium", cls: "bg-amber-100 text-amber-700" },
   inscrit:        { label: "Inscrit", cls: "bg-gray-100 text-gray-600" },
 };
 
