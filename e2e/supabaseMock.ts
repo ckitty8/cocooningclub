@@ -110,7 +110,7 @@ export const mockSupabase = async (page: Page, options: OptionsMock = {}): Promi
     if (table === "vue_logs") return route.fulfill({ json: options.logs ?? [] });
     if (table === "vue_autorisation_image") return route.fulfill({ json: options.autorisationsImage ?? [] });
     if (table === "antennes" && options.antennes) return route.fulfill({ json: options.antennes });
-    if (table === "ateliers") return route.fulfill({ json: [ATELIER_TEST] });
+    if (table === "ateliers") return route.fulfill({ json: veutUnObjet ? ATELIER_TEST : [ATELIER_TEST] });
     if (table === "formulaires") return route.fulfill({ json: veutUnObjet ? FORMULAIRE_CONTACT : [FORMULAIRE_CONTACT] });
     return route.fulfill({ json: veutUnObjet ? null : [] });
   });

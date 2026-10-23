@@ -41,11 +41,11 @@ const ListeParAtelier = ({ groupes, ouverts, onBasculer, autorisations, actingOn
               {ouvert ? <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" /> : <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />}
               <span className="min-w-0 flex-1">
                 <span className="font-display text-lg leading-tight block">{atelier.titre}</span>
-                <span className="text-xs text-muted-foreground">
+                <span className="font-body text-xs text-muted-foreground">
                   {dateCourte(atelier.date_atelier)} · {total} pré-inscription{total > 1 ? "s" : ""} · {atelier.places_max - atelier.places_disponibles}/{atelier.places_max} places prises
                 </span>
               </span>
-              <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${aTraiter > 0 ? STATUT_BADGE.en_attente : "bg-green-100 text-green-700"}`}>
+              <span className={`font-body shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${aTraiter > 0 ? STATUT_BADGE.en_attente : "bg-green-100 text-green-700"}`}>
                 {aTraiter > 0 ? `${aTraiter} à traiter` : "Tout est traité"}
               </span>
             </button>

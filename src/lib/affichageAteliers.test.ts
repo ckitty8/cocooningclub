@@ -16,6 +16,12 @@ describe("affichage des ateliers", () => {
     expect(lireAffichage("b", s)).toBe("cartes");
   });
 
+  it("retient aussi la vue calendrier", () => {
+    const s = faux();
+    enregistrerAffichage("a", "calendrier", s);
+    expect(lireAffichage("a", s)).toBe("calendrier");
+  });
+
   it("ignore une valeur inconnue et un stockage indisponible", () => {
     const s = faux();
     s.setItem("admin.ateliers.affichage.a", "n'importe quoi");

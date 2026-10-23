@@ -38,8 +38,9 @@ Comptes utiles : une administratrice, une membre, une inscrite (rôle `inscrit`)
 
 ## Après : administratrice
 
-- [ ] **Ateliers** : bascule Cartes / Liste (le choix est retenu), recherche + filtres espace et statut. Nouvel atelier : l'heure de fin se calcule (début + durée). Modifier la capacité recalcule les places libres (jamais d'inscrits fictifs). « Inscrits » : consentement affiché pour chaque personne.
-- [ ] **Pré-inscriptions** : valider / refuser / remettre en attente, mail et WhatsApp ; consentement affiché.
+- [ ] **Ateliers** : chiffres clés ; bascule Cartes / Liste / Calendrier (le choix est retenu) ; recherche + filtres espace et statut. Calendrier : un atelier à sa date, « Créer un atelier ce jour-là » préremplit la date. Nouvel atelier : l'heure de fin se calcule (début + durée). Modifier la capacité recalcule les places libres (jamais d'inscrits fictifs). Le bouton « Inscrits » ouvre les pré-inscriptions de l'atelier ; le titre ouvre sa fiche.
+- [ ] **Fiche d'un atelier** (`/admin/ateliers/<id>`) : places prises, validées, à traiter, encaissé ; onglet Inscrites (paiement, présence, consentement, export CSV) et onglet Infos ; « Modifier » rouvre le formulaire.
+- [ ] **Pré-inscriptions** : accordéon par atelier (ceux avec des demandes à traiter sont ouverts) ; arrivée depuis « Inscrits » : atelier ouvert + bandeau + « Tout afficher » ; ✓ / ✕ en un clic ; fenêtre à onglets (Infos, Paiement, Messages mail / WhatsApp avec modèle modifiable, Historique) ; « Valider et envoyer » ; flèches personne précédente / suivante ; consentement affiché.
 - [ ] **Membres** : colonne naissance et colonne **Consentement** (Oui / Non / Non renseigné) ; suppression d'un membre de test : sa fiche **et** son compte de connexion disparaissent (`auth.users`).
 - [ ] **Gestion des dispo des admins** : congés, jours fériés, vacances, anniversaires dans le calendrier.
 - [ ] **Offre & adhésions** : les 3 formules (100 / 80 / 150 €) s'affichent ; créer, modifier, dupliquer, activer / désactiver une formule ; ajouter une adhésion (bulletin saisi : engagement, WhatsApp, consentement photo et supports) ; la valider : numéro, date de fin = validation + durée, la personne passe de `inscrit` à `membre` ; refuser une adhésion ; modifier le bulletin (retrait de consentement).
@@ -61,4 +62,4 @@ Comptes utiles : une administratrice, une membre, une inscrite (rôle `inscrit`)
 
 ## Pas encore dans cette mise en production
 
-- [ ] Paiement de la cotisation par HelloAsso (le bulletin reste imprimé, rempli sur papier et saisi par une admin), retrait de PayPal (champ `lien_paypal`, table `transactions_paypal`, CGU art. 4), mentions légales, bannière cookie et GA4, refonte de la page Pré-inscriptions.
+- [ ] Paiement de la cotisation par HelloAsso (le bulletin reste imprimé, rempli sur papier et saisi par une admin), retrait de PayPal (champ `lien_paypal`, table `transactions_paypal`, CGU art. 4), mentions légales, bannière cookie et GA4, import du bulletin signé (PDF scanné).
