@@ -39,6 +39,8 @@ Terminer le message à l'utilisatrice par ces deux phrases (avec le vrai hash du
 
 - **Droits par offre (23/10)** : un atelier est « gratuit », « inclus » ou « à payer » d'après l'adhésion en cours (adhésion active non échue → formule → espaces couverts → espace de l'atelier), jamais d'après le rôle. Papotages est gratuit pour tous (`antennes.gratuit_pour_tous`) ; une adhérente Créatif ne s'inscrit pas gratuitement à un atelier Business et inversement (elle règle l'atelier à l'unité). Règle unique dans `src/lib/droits.ts`, à garder identique à la fonction SQL `atelier_inclus`. Le créateur peut tester chaque offre depuis le simulateur (Adhérente Business / Créatif / Complet / Sans adhésion) et voir la page `/admin/createur/droits`. Validation d'une inscription « à payer » non réglée : simple avertissement (`confirm`), pas de blocage ; à arbitrer.
 
+- **Arbitrages du 23/10 sur les droits par offre (RIEN N'EST CODÉ pour ces points)** : (1) deux tarifs par atelier : prix adhérente et prix non adhérente (aujourd'hui un seul `tarif_standard`) ; (2) Papotages ouvert aux visiteuses sans compte, qui doivent quand même s'inscrire ; (3) passage de Business à Complet en cours d'année : au prorata (formule de calcul à définir) ; (4) valider une pré-inscription « à régler » non payée : BLOCAGE (aujourd'hui seulement un `confirm`) ; seul un admin peut débloquer (mécanisme à préciser) ; (5) bulletin scanné : lien Google Drive (champ sur l'adhésion), et chaque membre doit pouvoir voir son bulletin : solution à trouver, ne rien coder avant validation.
+
 ## Plan de mise en conformité (octobre 2026)
 
 Ordre prévu :
