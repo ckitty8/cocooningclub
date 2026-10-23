@@ -1093,6 +1093,7 @@ export type Database = {
       admin_dispo_le: { Args: { p_date: string }; Returns: boolean }
       depublier_ateliers_passes: { Args: never; Returns: number }
       is_admin: { Args: never; Returns: boolean }
+      supprimer_membre: { Args: { p_id: string }; Returns: undefined }
       temoignages_publics: {
         Args: { p_limite?: number }
         Returns: {

@@ -301,7 +301,12 @@ const Membres = () => {
   const handleDelete = async (m: Utilisateur) => {
     if (m.id === me?.id) return;
     if (!confirm(`Supprimer définitivement ${m.prenom} ${m.nom} ?`)) return;
-    await supabase.from("utilisateurs").delete().eq("id", m.id);
+    // Supprime le profil ET le compte de connexion (fonction SQL réservée aux admins).
+    const { error } = await supabase.rpc("supprimer_membre", { p_id: m.id });
+    if (error) {
+      toast.error("La suppression a échoué.");
+      return;
+    }
     logAction("membre.delete", "utilisateurs", m.id, {
       email: m.email, prenom: m.prenom, nom: m.nom, role: m.role,
     });
