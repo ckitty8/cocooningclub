@@ -23,7 +23,7 @@ interface InfosRole {
 export const ROLES: Record<RoleSite, InfosRole> = {
   inscrit: {
     libelle: "Inscrit",
-    description: "Compte créé (rôle par défaut à l'inscription). Accède à l'espace membre.",
+    description: "Compte créé (rôle par défaut à l'inscription). Se pré-inscrit aux ateliers depuis le site public, mais n'a pas accès à l'espace membre.",
   },
   membre: {
     libelle: "Membre",
@@ -45,7 +45,7 @@ export const ROLES: Record<RoleSite, InfosRole> = {
 
 /** Rôles autorisés dans chaque zone protégée du site. */
 export const ACCES = {
-  espaceMembre: ["inscrit", "membre", "membre_premium", "administrateur", "createur"],
+  espaceMembre: ["membre", "membre_premium", "administrateur", "createur"],
   admin: ["administrateur", "createur"],
   createur: ["createur"],
 } as const satisfies Record<string, readonly RoleSite[]>;
@@ -83,8 +83,12 @@ export const estRoleSimulable = (valeur: unknown): valeur is RoleSimulable =>
   ROLES_SIMULABLES.includes(valeur as RoleSimulable);
 
 /** Page d'arrivée après connexion ou au début d'une simulation. */
-export const pageAccueilDuRole = (role: RoleSite | null): string =>
-  role === "administrateur" || role === "createur" ? "/admin/dashboard" : "/espace-membre";
+export const pageAccueilDuRole = (role: RoleSite | null): string => {
+  if (role === "administrateur" || role === "createur") return "/admin/dashboard";
+  // L'inscrit n'a pas d'espace membre : il retrouve les ateliers du site public.
+  if (role === "inscrit") return "/calendrier";
+  return "/espace-membre";
+};
 
 // ── Matrice des rôles ────────────────────────────────────
 
@@ -115,14 +119,14 @@ export const MATRICE: readonly SectionMatrice[] = [
     description: "Accessible sans compte.",
     lignes: [
       { libelle: "Accueil, Notre histoire, Calendrier", acces: TOUS },
-      { libelle: "Se pré-inscrire à un atelier", detail: "Rattachée au compte quand la personne est connectée.", acces: TOUS },
+      { libelle: "Se pré-inscrire à un atelier", detail: "Rattachée au compte quand la personne est connectée (inscrit compris).", acces: TOUS },
       { libelle: "Ajouter un atelier à son agenda", acces: TOUS },
       { libelle: "Écrire au club (formulaire de contact)", acces: TOUS },
     ],
   },
   {
     titre: "Espace membre",
-    description: "Pages /espace-membre, réservées aux comptes connectés.",
+    description: "Pages /espace-membre, réservées aux membres et à l'équipe (pas aux simples inscrits).",
     lignes: [
       { libelle: "Tableau de bord", acces: ACCES.espaceMembre },
       { libelle: "Ateliers", acces: ACCES.espaceMembre },

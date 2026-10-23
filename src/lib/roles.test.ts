@@ -55,6 +55,7 @@ describe("simulation", () => {
     expect(pageAccueilDuRole("createur")).toBe("/admin/dashboard");
     expect(pageAccueilDuRole("administrateur")).toBe("/admin/dashboard");
     expect(pageAccueilDuRole("membre")).toBe("/espace-membre");
+    expect(pageAccueilDuRole("inscrit")).toBe("/calendrier");
     expect(pageAccueilDuRole(null)).toBe("/espace-membre");
   });
 });
@@ -62,6 +63,11 @@ describe("simulation", () => {
 describe("accès par zone", () => {
   it("réserve les outils du créateur au créateur", () => {
     expect(ACCES.createur).toEqual(["createur"]);
+  });
+
+  it("n'ouvre pas l'espace membre à l'inscrit", () => {
+    expect(ACCES.espaceMembre).not.toContain("inscrit");
+    expect(ACCES.espaceMembre).toContain("membre");
   });
 
   it("donne au créateur tous les accès de l'administrateur", () => {
