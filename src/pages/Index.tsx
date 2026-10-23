@@ -179,7 +179,7 @@ const Index = () => {
   const [preInscription, setPreInscription] = useState<string | null>(null);
   // Sur mobile/tactile il n'y a pas de :hover : on permet aussi de retourner
   // un espace au tap, en plus du survol souris sur desktop.
-  const [flippedAntenne, setFlippedAntenne] = useState<number | null>(null);
+  const [flippedEspace, setFlippedEspace] = useState<number | null>(null);
 
   useEffect(() => {
     trackVisit("/");
@@ -326,29 +326,29 @@ const Index = () => {
                 title: "Business",
                 desc: "Entrepreneuriat, développement pro et perso : des ateliers pour avancer entourée.",
               },
-            ].map((antenne, i) => (
+            ].map((espace, i) => (
               <div
-                key={antenne.title}
+                key={espace.title}
                 className="group h-64 [perspective:1200px] cursor-pointer"
-                onClick={() => setFlippedAntenne(prev => (prev === i ? null : i))}
+                onClick={() => setFlippedEspace(prev => (prev === i ? null : i))}
               >
-                <div className={`relative h-full w-full transition-transform duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)] ${flippedAntenne === i ? "[transform:rotateY(180deg)]" : ""}`}>
+                <div className={`relative h-full w-full transition-transform duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)] ${flippedEspace === i ? "[transform:rotateY(180deg)]" : ""}`}>
                   {/* Face avant */}
                   <div className="absolute inset-0 [backface-visibility:hidden] bg-card rounded-2xl p-6 border flex items-center justify-center">
                     {/* Logo de l'espace (charte graphique) : il contient déjà le nom,
                         le titre reste présent pour les lecteurs d'écran et Google. */}
                     <img
-                      src={antenne.logo}
+                      src={espace.logo}
                       alt=""
                       loading="lazy"
                       decoding="async"
                       className="max-h-full max-w-full object-contain"
                     />
-                    <h3 className="sr-only">{antenne.title}</h3>
+                    <h3 className="sr-only">{espace.title}</h3>
                   </div>
                   {/* Face arrière */}
                   <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-card rounded-2xl p-8 border flex items-center justify-center text-center">
-                    <p className="text-muted-foreground text-sm leading-relaxed">{antenne.desc}</p>
+                    <p className="text-muted-foreground text-sm leading-relaxed">{espace.desc}</p>
                   </div>
                 </div>
               </div>

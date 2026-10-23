@@ -14,7 +14,7 @@ export type Database = {
   }
   public: {
     Tables: {
-      antennes: {
+      espaces: {
         Row: {
           cree_le: string
           description: string | null
@@ -47,7 +47,7 @@ export type Database = {
       ateliers: {
         Row: {
           adresse: string | null
-          antenne_id: string
+          espace_id: string
           cree_le: string
           date_atelier: string
           date_fin_inscription: string | null
@@ -75,7 +75,7 @@ export type Database = {
         }
         Insert: {
           adresse?: string | null
-          antenne_id: string
+          espace_id: string
           cree_le?: string
           date_atelier: string
           date_fin_inscription?: string | null
@@ -103,7 +103,7 @@ export type Database = {
         }
         Update: {
           adresse?: string | null
-          antenne_id?: string
+          espace_id?: string
           cree_le?: string
           date_atelier?: string
           date_fin_inscription?: string | null
@@ -131,10 +131,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "ateliers_antenne_id_fkey"
-            columns: ["antenne_id"]
+            foreignKeyName: "ateliers_espace_id_fkey"
+            columns: ["espace_id"]
             isOneToOne: false
-            referencedRelation: "antennes"
+            referencedRelation: "espaces"
             referencedColumns: ["id"]
           },
           {
@@ -1036,8 +1036,8 @@ export type Database = {
       }
       vue_prochains_ateliers: {
         Row: {
-          antenne: string | null
-          antenne_slug: string | null
+          espace: string | null
+          espace_slug: string | null
           date_atelier: string | null
           description: string | null
           description_courte: string | null
