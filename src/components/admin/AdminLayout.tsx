@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import {
   LayoutDashboard, Users, CalendarDays, FileText,
-  FormInput, LogOut, Menu, ChevronRight, UserCheck, MessageSquare, CalendarClock, Lightbulb, Star, Eye, Table2
+  FormInput, LogOut, Menu, ChevronRight, UserCheck, MessageSquare, CalendarClock, Lightbulb, Star, Eye, Table2, BadgeEuro
 } from "lucide-react";
 
 const navItems = [
@@ -18,6 +18,7 @@ const navItems = [
   { href: "/admin/formulaire",         label: "Formulaire de contact",    icon: FormInput },
   { href: "/admin/messages-templates", label: "Modèles de messages",      icon: MessageSquare },
   { href: "/admin/membres",            label: "Membres",                  icon: Users },
+  { href: "/admin/offre",              label: "Offre & adhésions",        icon: BadgeEuro },
 ];
 
 // Outils du créateur du site : affichés en bas du menu, pour le créateur seulement.

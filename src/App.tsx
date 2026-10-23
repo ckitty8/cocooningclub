@@ -19,6 +19,7 @@ import ForgotPassword from "./pages/auth/ForgotPassword.tsx";
 import ResetPassword from "./pages/auth/ResetPassword.tsx";
 import Dashboard from "./pages/admin/Dashboard.tsx";
 import Membres from "./pages/admin/Membres.tsx";
+import Offre from "./pages/admin/Offre.tsx";
 import AteliersAdmin from "./pages/admin/Ateliers.tsx";
 import Documents from "./pages/admin/Documents.tsx";
 import Formulaire from "./pages/admin/Formulaire.tsx";
@@ -119,6 +120,7 @@ const App = () => (
           {/* Routes admin protégées */}
           <Route path="/admin/dashboard"         element={<RoleGuard allowedRoles={ACCES.admin}><Dashboard /></RoleGuard>} />
           <Route path="/admin/membres"           element={<RoleGuard allowedRoles={ACCES.admin}><Membres /></RoleGuard>} />
+          <Route path="/admin/offre"             element={<RoleGuard allowedRoles={ACCES.admin}><Offre /></RoleGuard>} />
           <Route path="/admin/ateliers"          element={<RoleGuard allowedRoles={ACCES.admin}><AteliersAdmin /></RoleGuard>} />
           <Route path="/admin/pre-inscriptions"  element={<RoleGuard allowedRoles={ACCES.admin}><PreInscriptions /></RoleGuard>} />
           <Route path="/admin/documents"         element={<RoleGuard allowedRoles={ACCES.admin}><Documents /></RoleGuard>} />

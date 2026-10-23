@@ -14,6 +14,141 @@ export type Database = {
   }
   public: {
     Tables: {
+      adhesions: {
+        Row: {
+          cotisation_recue_le: string | null
+          cree_le: string
+          date_validation: string | null
+          formule_id: string
+          id: string
+          mode_reglement: string
+          modifie_le: string
+          montant: number
+          numero: number
+          statut: string
+          utilisateur_id: string
+          valable_jusqu_au: string | null
+        }
+        Insert: {
+          cotisation_recue_le?: string | null
+          cree_le?: string
+          date_validation?: string | null
+          formule_id: string
+          id?: string
+          mode_reglement?: string
+          modifie_le?: string
+          montant?: number
+          numero?: number
+          statut?: string
+          utilisateur_id: string
+          valable_jusqu_au?: string | null
+        }
+        Update: {
+          cotisation_recue_le?: string | null
+          cree_le?: string
+          date_validation?: string | null
+          formule_id?: string
+          id?: string
+          mode_reglement?: string
+          modifie_le?: string
+          montant?: number
+          numero?: number
+          statut?: string
+          utilisateur_id?: string
+          valable_jusqu_au?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "adhesions_formule_id_fkey"
+            columns: ["formule_id"]
+            isOneToOne: false
+            referencedRelation: "formules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "adhesions_utilisateur_id_fkey"
+            columns: ["utilisateur_id"]
+            isOneToOne: false
+            referencedRelation: "utilisateurs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      formules: {
+        Row: {
+          cree_le: string
+          couleur: string
+          description: string | null
+          duree_mois: number
+          est_active: boolean
+          id: string
+          lien_helloasso: string | null
+          modes_reglement: string[]
+          modifie_le: string
+          nom: string
+          ordre: number
+          prix: number
+        }
+        Insert: {
+          cree_le?: string
+          couleur?: string
+          description?: string | null
+          duree_mois?: number
+          est_active?: boolean
+          id?: string
+          lien_helloasso?: string | null
+          modes_reglement?: string[]
+          modifie_le?: string
+          nom: string
+          ordre?: number
+          prix: number
+        }
+        Update: {
+          cree_le?: string
+          couleur?: string
+          description?: string | null
+          duree_mois?: number
+          est_active?: boolean
+          id?: string
+          lien_helloasso?: string | null
+          modes_reglement?: string[]
+          modifie_le?: string
+          nom?: string
+          ordre?: number
+          prix?: number
+        }
+        Relationships: []
+      }
+      formule_espaces: {
+        Row: {
+          antenne_id: string
+          formule_id: string
+        }
+        Insert: {
+          antenne_id: string
+          formule_id: string
+        }
+        Update: {
+          antenne_id?: string
+          formule_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "formule_espaces_antenne_id_fkey"
+            columns: ["antenne_id"]
+            isOneToOne: false
+            referencedRelation: "antennes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "formule_espaces_formule_id_fkey"
+            columns: ["formule_id"]
+            isOneToOne: false
+            referencedRelation: "formules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       antennes: {
         Row: {
           cree_le: string
@@ -1092,8 +1227,13 @@ export type Database = {
     Functions: {
       admin_dispo_le: { Args: { p_date: string }; Returns: boolean }
       depublier_ateliers_passes: { Args: never; Returns: number }
+      expirer_adhesions: { Args: never; Returns: number }
       is_admin: { Args: never; Returns: boolean }
       supprimer_membre: { Args: { p_id: string }; Returns: undefined }
+      valider_adhesion: {
+        Args: { p_id: string; p_mode: string; p_recue_le?: string | null; p_validation?: string | null }
+        Returns: Database["public"]["Tables"]["adhesions"]["Row"]
+      }
       temoignages_publics: {
         Args: { p_limite?: number }
         Returns: {
