@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   ACCES,
   COLONNES_MATRICE,
+  EMAIL_CREATEUR,
   MATRICE,
   ORDRE_ROLES,
   ROLES,
@@ -12,13 +13,22 @@ import {
 } from "./roles";
 
 describe("rôle d'un compte", () => {
-  it("fait du compte marqué est_createur un créateur", () => {
-    expect(roleReelDe({ role: "administrateur", est_createur: true })).toBe("createur");
+  const admin = { role: "administrateur", est_actif: true } as const;
+
+  it("fait de l'administratrice connectée avec l'adresse du créateur un créateur", () => {
+    expect(roleReelDe(admin, EMAIL_CREATEUR)).toBe("createur");
+    expect(roleReelDe(admin, "  ChristelleLab@Gmail.com ")).toBe("createur");
   });
 
-  it("garde le rôle de la base pour les autres, même si la colonne manque", () => {
-    expect(roleReelDe({ role: "administrateur", est_createur: false })).toBe("administrateur");
-    expect(roleReelDe({ role: "membre" })).toBe("membre");
+  it("garde le rôle de la base pour toute autre adresse", () => {
+    expect(roleReelDe(admin, "autre@exemple.fr")).toBe("administrateur");
+    expect(roleReelDe(admin, null)).toBe("administrateur");
+    expect(roleReelDe(admin, undefined)).toBe("administrateur");
+  });
+
+  it("ne donne pas le rôle créateur sans être administratrice active", () => {
+    expect(roleReelDe({ role: "membre", est_actif: true }, EMAIL_CREATEUR)).toBe("membre");
+    expect(roleReelDe({ role: "administrateur", est_actif: false }, EMAIL_CREATEUR)).toBe("administrateur");
   });
 });
 
@@ -87,8 +97,8 @@ describe("matrice des rôles", () => {
     }
   });
 
-  it("ne permet à personne d'attribuer le statut de créateur depuis le site", () => {
-    const ligne = lignes.find(l => l.libelle.startsWith("Attribuer ou retirer le statut de créateur"));
+  it("ne permet à personne de devenir créateur depuis le site", () => {
+    const ligne = lignes.find(l => l.libelle === "Devenir créateur");
     expect(ligne?.acces).toEqual([]);
   });
 });

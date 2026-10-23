@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [simulationDemandee, setSimulationDemandee] = useState<RoleSimulable | null>(lireSimulation);
 
   // Seul le créateur peut simuler : pour tout autre compte, la valeur est ignorée.
-  const roleReel = profile ? roleReelDe(profile) : null;
+  const roleReel = profile ? roleReelDe(profile, user?.email) : null;
   const simulation = roleReel === "createur" ? simulationDemandee : null;
   const role = roleEffectif(roleReel, simulation);
 

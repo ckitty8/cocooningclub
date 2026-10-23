@@ -910,7 +910,6 @@ export type Database = {
           debut_abonnement: string | null
           email: string
           est_actif: boolean
-          est_createur: boolean
           fin_abonnement: string | null
           id: string
           modifie_le: string
@@ -929,7 +928,6 @@ export type Database = {
           debut_abonnement?: string | null
           email: string
           est_actif?: boolean
-          est_createur?: boolean
           fin_abonnement?: string | null
           id?: string
           modifie_le?: string
@@ -948,7 +946,6 @@ export type Database = {
           debut_abonnement?: string | null
           email?: string
           est_actif?: boolean
-          est_createur?: boolean
           fin_abonnement?: string | null
           id?: string
           modifie_le?: string

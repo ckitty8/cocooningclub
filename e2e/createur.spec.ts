@@ -26,12 +26,12 @@ test("la créatrice voit les outils du créateur dans le menu d'administration",
   const ligne = page.getByRole("row", { name: /Membres/ }).first();
   await expect(ligne.getByLabel("Autorisé")).toHaveCount(2);
   // Personne ne peut s'attribuer le statut de créateur depuis le site.
-  const attribuer = page.getByRole("row", { name: /Attribuer ou retirer le statut de créateur/ });
+  const attribuer = page.getByRole("row", { name: /Devenir créateur/ });
   await expect(attribuer.getByLabel("Autorisé")).toHaveCount(0);
 });
 
 test("une administratrice qui n'est pas créatrice n'a ni menu ni accès aux outils", async ({ page }) => {
-  const profil = profilTest({ est_createur: false, email: "admin@exemple.fr" });
+  const profil = profilTest({ email: "admin@exemple.fr" });
   await mockSupabase(page, { profil });
   await connecterEn(page, profil);
   await page.goto("/admin/dashboard");

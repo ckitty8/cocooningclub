@@ -19,7 +19,6 @@ export const profilTest = (surcharge: Record<string, unknown> = {}) => ({
   debut_abonnement: null,
   fin_abonnement: null,
   role: "administrateur",
-  est_createur: true,
   est_actif: true,
   cree_le: "2026-01-01T00:00:00Z",
   ...surcharge,

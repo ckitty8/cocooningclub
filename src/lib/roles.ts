@@ -53,12 +53,27 @@ export const ACCES = {
 // ── Rôle d'un compte ─────────────────────────────────────
 
 /**
- * Rôle réel d'un compte. Le créateur est une administratrice marquée
- * `est_createur` (colonne protégée par la base, voir la migration
- * 20261023000000_role_createur.sql).
+ * Adresse du créateur du site. Le rôle créateur n'existe pour aucune autre
+ * adresse et n'est stocké nulle part : il est déduit de l'email du compte de
+ * connexion.
  */
-export const roleReelDe = (profil: Pick<Profile, "role" | "est_createur">): RoleSite =>
-  profil.est_createur ? "createur" : profil.role;
+export const EMAIL_CREATEUR = "christellelab@gmail.com";
+
+/**
+ * Rôle réel d'un compte. Le créateur est l'administratrice active dont
+ * l'email de connexion est EMAIL_CREATEUR. On teste l'email du compte
+ * d'authentification (`user.email`, vérifié par Supabase), pas celui du
+ * profil, que la personne peut modifier elle-même.
+ * Le créateur reste `administrateur` en base : il garde donc les droits
+ * d'administration que la base lui donne déjà.
+ */
+export const roleReelDe = (
+  profil: Pick<Profile, "role" | "est_actif">,
+  emailConnexion: string | null | undefined,
+): RoleSite =>
+  profil.role === "administrateur" && profil.est_actif && emailConnexion?.trim().toLowerCase() === EMAIL_CREATEUR
+    ? "createur"
+    : profil.role;
 
 /** Rôle avec lequel le site se comporte : la simulation ne vaut que pour le créateur. */
 export const roleEffectif = (roleReel: RoleSite | null, simulation: RoleSimulable | null): RoleSite | null =>
@@ -152,8 +167,8 @@ export const MATRICE: readonly SectionMatrice[] = [
       { libelle: "Modérer les témoignages", acces: ACCES.admin },
       { libelle: "Changer le rôle, l'état ou l'abonnement d'un compte", acces: ACCES.admin },
       {
-        libelle: "Attribuer ou retirer le statut de créateur",
-        detail: "Personne depuis le site : uniquement par le SQL editor de Supabase, et seulement pour christellelab@gmail.com.",
+        libelle: "Devenir créateur",
+        detail: "Réservé à une seule adresse, inscrite dans le code du site : personne ne peut l'obtenir depuis le site.",
         acces: [],
       },
     ],

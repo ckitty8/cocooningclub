@@ -19,8 +19,6 @@ export interface Profile {
   debut_abonnement: string | null;
   fin_abonnement: string | null;
   role: UserRole;
-  /** Compte créateur du site. Absent tant que la migration role_createur n'est pas appliquée. */
-  est_createur?: boolean;
   est_actif: boolean;
   cree_le: string;
 }

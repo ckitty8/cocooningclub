@@ -78,7 +78,7 @@ const MatriceRoles = () => {
 
       <p className="mt-4 text-xs text-muted-foreground">
         Lecture seule : les droits se modifient dans le code et dans les règles de la base de données, pas ici. Le
-        statut de créateur est réservé à une seule adresse et ne peut être attribué que depuis le SQL editor de Supabase.
+        rôle créateur est réservé à une seule adresse, inscrite dans le code du site.
       </p>
     </AdminLayout>
   );
