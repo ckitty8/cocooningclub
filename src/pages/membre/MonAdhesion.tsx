@@ -145,7 +145,7 @@ const MonAdhesion = () => {
                       {courante.engagement_accepte_le ? `acceptés le ${dateFr(courante.engagement_accepte_le)}` : "non renseigné"}
                     </Rangee>
                     <Rangee libelle="Groupe WhatsApp">{courante.whatsapp ? "Oui" : "Non"}</Rangee>
-                    <Rangee libelle="Photos et vidéos">{photos && <BadgePhotos autorisation={photos} />}</Rangee>
+                    <Rangee libelle="Consentement photo et vidéo">{photos && <BadgePhotos autorisation={photos} avecLibelle={false} />}</Rangee>
                     {courante.autorisation_image && (
                       <>
                         <Rangee libelle="Supports autorisés">

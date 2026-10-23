@@ -38,7 +38,8 @@ test("une membre retrouve son récapitulatif et son bulletin d'adhésion", async
   await expect(page.getByText("Créatifs, Business")).toBeVisible();
   await expect(page.getByText("Gagny")).toBeVisible();
   await expect(page.getByText("Graphiste")).toBeVisible();
-  await expect(page.getByText("Photos : accord")).toBeVisible();
+  await expect(page.getByText("Consentement photo et vidéo")).toBeVisible();
+  await expect(page.getByText("Oui", { exact: true })).toHaveCount(2); // WhatsApp et consentement photo
   await expect(page.getByText("Site internet, Réseaux sociaux")).toBeVisible();
 
   // Bulletin : le document rempli, imprimable.
@@ -67,7 +68,9 @@ test("l'admin voit le consentement photo dans la liste des membres", async ({ pa
   });
   await connecterEn(page, admin);
   await page.goto("/admin/membres");
-  await expect(page.getByText("Photos : refus").locator("visible=true")).toBeVisible();
+  // Colonne « Consentement » sur grand écran ; sous le nom sur téléphone.
+  if (test.info().project.name === "desktop") await expect(page.getByRole("columnheader", { name: "Consentement" })).toBeVisible();
+  await expect(page.getByText(/^(Consentement : )?Non$/).locator("visible=true")).toBeVisible();
 });
 
 test("l'admin voit le consentement photo d'une personne pré-inscrite", async ({ page }) => {
@@ -89,5 +92,5 @@ test("l'admin voit le consentement photo d'une personne pré-inscrite", async ({
   await connecterEn(page, admin);
   await page.goto("/admin/pre-inscriptions");
   await expect(page.getByRole("heading", { name: "Marie Dupont" })).toBeVisible();
-  await expect(page.getByText("Photos : accord")).toBeVisible();
+  await expect(page.getByText("Consentement : Oui")).toBeVisible();
 });

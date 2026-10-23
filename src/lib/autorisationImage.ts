@@ -31,11 +31,12 @@ export const etatPhotos = (a: AutorisationImage | null | undefined): EtatPhotos 
   return a.image_valide ? "accord" : "expire";
 };
 
+/** Réponse au consentement photo et vidéo (« expiré » : accord donné il y a plus de 3 ans, à renouveler). */
 export const LIBELLES_PHOTOS: Record<EtatPhotos, string> = {
-  accord: "Photos : accord",
-  refus: "Photos : refus",
-  expire: "Photos : accord expiré",
-  inconnu: "Photos : non renseigné",
+  accord: "Oui",
+  refus: "Non",
+  expire: "Expiré",
+  inconnu: "Non renseigné",
 };
 
 export const supportsLisibles = (supports: string[] | null | undefined): string[] =>

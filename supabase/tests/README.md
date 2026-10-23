@@ -33,4 +33,6 @@ psql -d o -v ON_ERROR_STOP=1 -f supabase/migrations/20261023000003_offre_et_adhe
 psql -d o -f supabase/tests/offre_et_adhesions.test.sql
 ```
 
+Le paquet complet de la migration totale (SQL unique, vérifications, retour arrière) est dans `supabase/migration-totale/` ; il a été rejoué sur une base jetable (première application, deuxième application, retour arrière, réapplication).
+
 Chaque bloc annonce s'il doit réussir ou échouer ; tout est fait dans des transactions annulées.

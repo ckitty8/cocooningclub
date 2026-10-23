@@ -366,7 +366,7 @@ const Membres = () => {
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground">Rôle</th>
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground">Statut</th>
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground hidden md:table-cell">Naissance</th>
-                <th className="text-left px-5 py-3 font-medium text-muted-foreground hidden md:table-cell">Photos</th>
+                <th className="text-left px-5 py-3 font-medium text-muted-foreground hidden md:table-cell">Consentement</th>
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground hidden lg:table-cell">Abonnement</th>
                 <th className="px-5 py-3" />
               </tr>
@@ -397,7 +397,7 @@ const Membres = () => {
                     {formaterDateNaissance(m.date_naissance)}
                   </td>
                   <td className="px-5 py-3.5 hidden md:table-cell">
-                    <BadgePhotos autorisation={autorisations.get(m.id)} />
+                    <BadgePhotos autorisation={autorisations.get(m.id)} avecLibelle={false} />
                   </td>
                   <td className="px-5 py-3.5 hidden lg:table-cell text-xs text-muted-foreground">
                     {m.debut_abonnement

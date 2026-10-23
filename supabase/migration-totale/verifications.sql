@@ -1,0 +1,24 @@
+-- À lancer après migration-totale.sql : chaque ligne doit afficher ok = true.
+-- Lecture seule. Fonctionne même si la migration n'est pas appliquée (les lignes affichent alors ok = false).
+WITH controles(controle, ok) AS (
+  VALUES
+    ('Table formules',                        to_regclass('public.formules') IS NOT NULL),
+    ('Table formule_espaces',                 to_regclass('public.formule_espaces') IS NOT NULL),
+    ('Table adhesions',                       to_regclass('public.adhesions') IS NOT NULL),
+    ('Vue vue_autorisation_image',            to_regclass('public.vue_autorisation_image') IS NOT NULL),
+    ('Fonction valider_adhesion',             to_regprocedure('public.valider_adhesion(uuid,text,date,date)') IS NOT NULL),
+    ('Fonction expirer_adhesions',            to_regprocedure('public.expirer_adhesions()') IS NOT NULL),
+    ('Fonction supprimer_membre',             to_regprocedure('public.supprimer_membre(uuid)') IS NOT NULL),
+    ('Colonne utilisateurs.commune',          EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'utilisateurs' AND column_name = 'commune')),
+    ('Colonne utilisateurs.activite',         EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'utilisateurs' AND column_name = 'activite')),
+    ('RLS activée sur formules',              COALESCE((SELECT relrowsecurity FROM pg_class WHERE oid = to_regclass('public.formules')), false)),
+    ('RLS activée sur formule_espaces',       COALESCE((SELECT relrowsecurity FROM pg_class WHERE oid = to_regclass('public.formule_espaces')), false)),
+    ('RLS activée sur adhesions',             COALESCE((SELECT relrowsecurity FROM pg_class WHERE oid = to_regclass('public.adhesions')), false)),
+    ('Politiques sur adhesions (2 attendues)', (SELECT count(*) FROM pg_policies WHERE schemaname = 'public' AND tablename = 'adhesions') = 2),
+    ('Vue en security_invoker',               COALESCE((SELECT 'security_invoker=true' = ANY (reloptions) FROM pg_class WHERE oid = to_regclass('public.vue_autorisation_image')), false)),
+    ('Au moins les 3 formules du bulletin',   CASE WHEN to_regclass('public.formules') IS NULL THEN false ELSE ((xpath('/row/c/text()', query_to_xml('SELECT count(*) AS c FROM public.formules', false, true, '')))[1]::text)::int >= 3 END),
+    ('Formules rattachées à des espaces',     CASE WHEN to_regclass('public.formule_espaces') IS NULL THEN false ELSE ((xpath('/row/c/text()', query_to_xml('SELECT count(*) AS c FROM public.formule_espaces', false, true, '')))[1]::text)::int >= 4 END)
+)
+SELECT controle, ok FROM controles
+UNION ALL
+SELECT '=> TOUT EST OK', bool_and(ok) FROM controles;

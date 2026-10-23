@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { detailPhotos, etatPhotos, supportsLisibles, type AutorisationImage } from "./autorisationImage";
+import { detailPhotos, etatPhotos, LIBELLES_PHOTOS, supportsLisibles, type AutorisationImage } from "./autorisationImage";
 
 const base: AutorisationImage = {
   utilisateur_id: "u1", autorisation_image: true, image_supports: ["site", "reseaux"],
@@ -24,4 +24,12 @@ describe("supports et précisions", () => {
     expect(d).toContain("Site internet, Réseaux sociaux");
   });
   it("signale l'absence de bulletin", () => expect(detailPhotos(undefined)).toContain("Aucun bulletin"));
+});
+
+describe("libellés du consentement", () => {
+  it("Oui, Non ou Non renseigné", () => {
+    expect(LIBELLES_PHOTOS.accord).toBe("Oui");
+    expect(LIBELLES_PHOTOS.refus).toBe("Non");
+    expect(LIBELLES_PHOTOS.inconnu).toBe("Non renseigné");
+  });
 });
