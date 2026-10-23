@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
@@ -7,8 +7,11 @@ import { withTimeout } from "@/utils/withTimeout";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { searchAdresse, type AdresseSuggestion } from "@/utils/adresseAutocomplete";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { enregistrerAffichage, lireAffichage, type AffichageAteliers } from "@/lib/affichageAteliers";
+import { ESPACES_PAR_SLUG } from "@/lib/espaces";
 import { compressImage } from "@/utils/compressImage";
-import { Plus, Pencil, Trash2, Copy, X, MapPin, Clock, Users, Euro, Search, UserCheck, UserX, Image as ImageIcon, CircleDashed } from "lucide-react";
+import { Plus, Pencil, Trash2, Copy, X, MapPin, Clock, Users, Euro, Search, UserCheck, UserX, Image as ImageIcon, CircleDashed, LayoutGrid, List } from "lucide-react";
 
 type Statut = "brouillon" | "publie" | "complet" | "annule" | "termine";
 type Niveau = "debutant" | "intermediaire" | "avance";
@@ -41,6 +44,7 @@ interface Atelier {
 interface Antenne {
   id: string;
   nom: string;
+  slug: string | null;
 }
 
 interface Inscription {
@@ -106,6 +110,8 @@ const paiementLabel: Record<StatutPaiement, string> = {
 };
 
 const Ateliers = () => {
+  const { profile } = useAuth();
+  const [affichage, setAffichage] = useState<AffichageAteliers>("cartes");
   const [ateliers, setAteliers] = useState<Atelier[]>([]);
   const [antennes, setAntennes] = useState<Antenne[]>([]);
   const [loading, setLoading] = useState(true);
@@ -165,8 +171,18 @@ const Ateliers = () => {
 
   useEffect(() => { fetchAteliers(); }, []);
 
+  // Affichage (cartes / liste) choisi par cette administratrice.
   useEffect(() => {
-    supabase.from("antennes").select("id, nom").order("ordre_affichage").then(({ data }) => {
+    if (profile?.id) setAffichage(lireAffichage(profile.id));
+  }, [profile?.id]);
+
+  const choisirAffichage = (valeur: AffichageAteliers) => {
+    setAffichage(valeur);
+    if (profile?.id) enregistrerAffichage(profile.id, valeur);
+  };
+
+  useEffect(() => {
+    supabase.from("antennes").select("id, nom, slug").order("ordre_affichage").then(({ data }) => {
       setAntennes((data as Antenne[]) ?? []);
     });
   }, []);
@@ -549,10 +565,26 @@ const Ateliers = () => {
             {filtered.length} / {ateliers.length} atelier(s)
           </p>
         </div>
-        <button onClick={openAdd}
-          className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium hover:opacity-90 transition-opacity">
-          <Plus className="w-4 h-4" /> Ajouter
-        </button>
+        <div className="flex items-center gap-3">
+          <div role="group" aria-label="Affichage des ateliers" className="inline-flex rounded-full border bg-card p-0.5">
+            {([["cartes", "Cartes", LayoutGrid], ["liste", "Liste", List]] as const).map(([valeur, libelle, Icone]) => (
+              <button
+                key={valeur}
+                onClick={() => choisirAffichage(valeur)}
+                aria-pressed={affichage === valeur}
+                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                  affichage === valeur ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"
+                }`}
+              >
+                <Icone className="w-3.5 h-3.5" /> {libelle}
+              </button>
+            ))}
+          </div>
+          <button onClick={openAdd}
+            className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium hover:opacity-90 transition-opacity">
+            <Plus className="w-4 h-4" /> Ajouter
+          </button>
+        </div>
       </div>
 
       {/* Onglets espaces */}
@@ -633,6 +665,94 @@ const Ateliers = () => {
             {ateliers.length === 0 ? 'Cliquez sur "+ Ajouter" pour créer votre premier atelier.' : "Modifiez votre recherche ou votre filtre."}
           </p>
         </div>
+      ) : affichage === "liste" ? (
+        <div className="bg-card rounded-2xl border overflow-x-auto">
+          <table className="w-full min-w-[820px] text-sm">
+            <thead className="border-b bg-muted/30">
+              <tr>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Date</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Atelier</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Lieu</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Places</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Tarif</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Statut</th>
+                <th className="px-4 py-3" />
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((a, i) => {
+                const inscrits = a.places_max - a.places_disponibles;
+                const mois = new Date(a.date_atelier).toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+                const moisPrecedent = i > 0
+                  ? new Date(filtered[i - 1].date_atelier).toLocaleDateString("fr-FR", { month: "long", year: "numeric" })
+                  : null;
+                const logo = ESPACES_PAR_SLUG[antennes.find(c => c.id === a.antenne_id)?.slug ?? ""]?.logo;
+                return (
+                  <Fragment key={a.id}>
+                    {mois !== moisPrecedent && (
+                      <tr className="bg-background">
+                        <td colSpan={7} className="px-4 py-2 font-display text-base capitalize text-primary">{mois}</td>
+                      </tr>
+                    )}
+                    <tr className="border-t hover:bg-muted/20 transition-colors">
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <p className="font-medium">
+                          {new Date(a.date_atelier).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(a.date_atelier).toLocaleDateString("fr-FR", { weekday: "long" })}
+                        </p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          {logo && <img src={logo} alt="" className="h-7 w-12 object-contain shrink-0" />}
+                          <div>
+                            <p className="font-medium leading-snug">{a.titre}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {a.heure_debut ? a.heure_debut.slice(0, 5) : ""}
+                              {a.heure_fin ? ` – ${a.heure_fin.slice(0, 5)}` : ""}
+                              {a.duree ? ` · ${a.duree}` : ""}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">{a.lieu ?? "—"}</td>
+                      <td className="px-4 py-3 w-40">
+                        <p className="text-xs mb-1">{inscrits}/{a.places_max}</p>
+                        <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${a.places_disponibles <= 0 ? "bg-amber-600" : "bg-primary"}`}
+                            style={{ width: `${a.places_max > 0 ? Math.min(100, (inscrits / a.places_max) * 100) : 0}%` }}
+                          />
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {a.tarif_affichage ?? (a.tarif_standard != null ? `${a.tarif_standard}€` : "—")}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statutColors[a.statut]}`}>
+                          {statutLabels[a.statut]}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-end gap-1">
+                          <button onClick={() => openInscrits(a)} title="Inscrits"
+                            className="p-2 rounded-full hover:bg-muted"><Users className="w-4 h-4" /></button>
+                          <button onClick={() => openEdit(a)} title="Modifier"
+                            className="p-2 rounded-full hover:bg-muted"><Pencil className="w-4 h-4" /></button>
+                          <button onClick={() => openDuplicate(a)} title="Dupliquer"
+                            className="p-2 rounded-full hover:bg-muted"><Copy className="w-4 h-4" /></button>
+                          <button onClick={() => handleDelete(a.id)} title="Supprimer"
+                            className="p-2 rounded-full text-destructive hover:bg-destructive/10"><Trash2 className="w-4 h-4" /></button>
+                        </div>
+                      </td>
+                    </tr>
+                  </Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filtered.map(a => {
@@ -684,6 +804,12 @@ const Ateliers = () => {
                   <div className="flex items-center gap-1.5">
                     <Users className="w-3.5 h-3.5 shrink-0" />
                     <span>{a.places_disponibles}/{a.places_max} places disponibles</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-muted overflow-hidden" aria-hidden="true">
+                    <div
+                      className={`h-full rounded-full ${a.places_disponibles <= 0 ? "bg-amber-600" : "bg-primary"}`}
+                      style={{ width: `${a.places_max > 0 ? Math.min(100, (inscrits / a.places_max) * 100) : 0}%` }}
+                    />
                   </div>
                   {(a.tarif_affichage || a.tarif_standard != null) && (
                     <div className="flex items-center gap-1.5">
