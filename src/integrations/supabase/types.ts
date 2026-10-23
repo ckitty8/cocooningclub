@@ -913,7 +913,6 @@ export type Database = {
           fin_abonnement: string | null
           id: string
           modifie_le: string
-          mot_de_passe_hash: string | null
           nom: string
           prenom: string
           role: Database["public"]["Enums"]["role_utilisateur"]
@@ -931,7 +930,6 @@ export type Database = {
           fin_abonnement?: string | null
           id?: string
           modifie_le?: string
-          mot_de_passe_hash?: string | null
           nom: string
           prenom: string
           role?: Database["public"]["Enums"]["role_utilisateur"]
@@ -949,7 +947,6 @@ export type Database = {
           fin_abonnement?: string | null
           id?: string
           modifie_le?: string
-          mot_de_passe_hash?: string | null
           nom?: string
           prenom?: string
           role?: Database["public"]["Enums"]["role_utilisateur"]
@@ -1105,7 +1102,7 @@ export type Database = {
       }
     }
     Enums: {
-      acces_document: "membres" | "premium" | "tous"
+      acces_document: "membres" | "tous"
       categorie_idee:
         | "evolution_site"
         | "ateliers"
@@ -1121,7 +1118,6 @@ export type Database = {
         | "administrateur"
         | "inscrit"
         | "membre"
-        | "membre_premium"
       statut_atelier: "brouillon" | "publie" | "complet" | "annule" | "termine"
       statut_inscription: "en_attente" | "confirme" | "annule"
       statut_moderation: "en_attente" | "approuve" | "rejete"
@@ -1260,7 +1256,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      acces_document: ["membres", "premium", "tous"],
+      acces_document: ["membres", "tous"],
       categorie_idee: [
         "evolution_site",
         "ateliers",
@@ -1277,7 +1273,6 @@ export const Constants = {
         "administrateur",
         "inscrit",
         "membre",
-        "membre_premium",
       ],
       statut_atelier: ["brouillon", "publie", "complet", "annule", "termine"],
       statut_inscription: ["en_attente", "confirme", "annule"],

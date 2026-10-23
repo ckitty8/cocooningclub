@@ -1,3 +1,6 @@
+-- Version unique : ce fichier portait la même version que link_auth_users_to_utilisateurs
+-- (20260429000001). Placé juste avant, sans dépendance avec les migrations voisines ;
+-- il reste exécuté avant les migrations 14 à 16 qui réécrivent les policies.
 -- =====================================================
 -- Politiques RLS additionnelles pour l'espace membre
 -- =====================================================
