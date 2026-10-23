@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
+import { dureeEntre, heureDeFin } from "@/lib/dureeAtelier";
 import { withTimeout } from "@/utils/withTimeout";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { searchAdresse, type AdresseSuggestion } from "@/utils/adresseAutocomplete";
@@ -446,25 +447,29 @@ const Ateliers = () => {
   const f = (key: keyof typeof form, val: string | number) =>
     setForm(prev => ({ ...prev, [key]: val }));
 
-  const formatDuree = (minutes: number) => {
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    return m === 0 ? `${h}h` : `${h}h${String(m).padStart(2, "0")}`;
+  // Durée, début et fin sont liés : modifier la durée ou le début recalcule la
+  // fin ; modifier la fin recalcule la durée. Si la durée saisie n'est pas
+  // reconnue, la fin n'est pas touchée.
+  const handleDureeChange = (value: string) => {
+    setForm(prev => {
+      const fin = prev.heure_debut ? heureDeFin(prev.heure_debut, value) : null;
+      return { ...prev, duree: value, heure_fin: fin ?? prev.heure_fin };
+    });
   };
 
-  // Met à jour l'heure de début/fin et pré-remplit la durée calculée à
-  // partir des deux horaires. Le champ durée reste une saisie libre :
-  // l'utilisateur peut toujours la modifier manuellement ensuite.
   const handleHeureChange = (key: "heure_debut" | "heure_fin", value: string) => {
     setForm(prev => {
       const next = { ...prev, [key]: value };
-      const debut = key === "heure_debut" ? value : prev.heure_debut;
-      const fin = key === "heure_fin" ? value : prev.heure_fin;
-      if (debut && fin) {
-        const [h1, m1] = debut.split(":").map(Number);
-        const [h2, m2] = fin.split(":").map(Number);
-        const diff = (h2 * 60 + m2) - (h1 * 60 + m1);
-        if (diff > 0) next.duree = formatDuree(diff);
+      if (key === "heure_debut") {
+        const fin = heureDeFin(value, prev.duree);
+        if (fin) next.heure_fin = fin;
+        else {
+          const duree = prev.heure_fin ? dureeEntre(value, prev.heure_fin) : null;
+          if (duree) next.duree = duree;
+        }
+      } else {
+        const duree = prev.heure_debut ? dureeEntre(prev.heure_debut, value) : null;
+        if (duree) next.duree = duree;
       }
       return next;
     });
@@ -915,7 +920,7 @@ const Ateliers = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1.5">Durée</label>
-                  <input value={form.duree} onChange={e => f("duree", e.target.value)}
+                  <input value={form.duree} onChange={e => handleDureeChange(e.target.value)}
                     placeholder="ex: 2h30" className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>
               </div>
@@ -929,6 +934,9 @@ const Ateliers = () => {
                   <label className="block text-sm font-medium mb-1.5">Heure fin</label>
                   <input type="time" value={form.heure_fin} onChange={e => handleHeureChange("heure_fin", e.target.value)}
                     className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
+                  {form.heure_debut && form.heure_fin && form.heure_fin <= form.heure_debut && (
+                    <p className="text-xs text-destructive mt-1">L'heure de fin doit être après l'heure de début.</p>
+                  )}
                 </div>
               </div>
               <div>
