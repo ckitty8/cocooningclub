@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { compressImage } from "@/utils/compressImage";
 import {
   User, Mail, Image as ImageIcon, Save, Upload, Trash2, Loader2, Info, AlertCircle,
-  Phone, Calendar, CalendarRange,
+  Phone, CalendarRange,
 } from "lucide-react";
 
 const MAX_AVATAR_MB = 2;
@@ -20,7 +20,6 @@ const MonCompte = () => {
     nom: "",
     email: "",
     telephone: "",
-    date_naissance: "",
     debut_abonnement: "",
     fin_abonnement: "",
   });
@@ -37,7 +36,6 @@ const MonCompte = () => {
         nom:              profile.nom ?? "",
         email:            profile.email ?? "",
         telephone:        profile.telephone ?? "",
-        date_naissance:   profile.date_naissance ?? "",
         debut_abonnement: profile.debut_abonnement ?? "",
         fin_abonnement:   profile.fin_abonnement ?? "",
       });
@@ -59,7 +57,6 @@ const MonCompte = () => {
     form.nom !== (profile.nom ?? "") ||
     form.email !== originalEmail ||
     form.telephone !== (profile.telephone ?? "") ||
-    form.date_naissance !== (profile.date_naissance ?? "") ||
     form.debut_abonnement !== (profile.debut_abonnement ?? "") ||
     form.fin_abonnement !== (profile.fin_abonnement ?? "");
 
@@ -94,7 +91,6 @@ const MonCompte = () => {
       prenom:           form.prenom.trim(),
       nom:              form.nom.trim(),
       telephone:        form.telephone.trim() || null,
-      date_naissance:   form.date_naissance || null,
       debut_abonnement: form.debut_abonnement || null,
       fin_abonnement:   form.fin_abonnement || null,
     };
@@ -329,18 +325,6 @@ const MonCompte = () => {
                   value={form.telephone}
                   onChange={e => setForm({ ...form, telephone: e.target.value })}
                   placeholder="06 12 34 56 78"
-                  className="w-full rounded-xl border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1.5 flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5" />
-                  Date de naissance
-                </label>
-                <input
-                  type="date"
-                  value={form.date_naissance}
-                  onChange={e => setForm({ ...form, date_naissance: e.target.value })}
                   className="w-full rounded-xl border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>

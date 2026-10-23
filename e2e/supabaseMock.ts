@@ -51,7 +51,6 @@ export const MEMBRE_TEST = {
   nom: "Dupont",
   email: "marie@exemple.fr",
   telephone: null,
-  date_naissance: null,
   url_avatar: null,
   debut_abonnement: null,
   fin_abonnement: null,

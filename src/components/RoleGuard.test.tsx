@@ -11,7 +11,6 @@ const profilDe = (surcharge: Partial<Profile> = {}): Profile => ({
   prenom: "Marie",
   email: "marie@exemple.fr",
   telephone: null,
-  date_naissance: null,
   url_avatar: null,
   debut_abonnement: null,
   fin_abonnement: null,

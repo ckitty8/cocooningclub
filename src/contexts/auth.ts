@@ -13,7 +13,6 @@ export interface Profile {
   prenom: string | null;
   email: string | null;
   telephone: string | null;
-  date_naissance: string | null;
   url_avatar: string | null;
   debut_abonnement: string | null;
   fin_abonnement: string | null;

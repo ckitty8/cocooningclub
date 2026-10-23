@@ -15,7 +15,6 @@ interface Utilisateur {
   prenom: string;
   email: string;
   telephone: string | null;
-  date_naissance: string | null;
   url_avatar: string | null;
   debut_abonnement: string | null;
   fin_abonnement: string | null;
@@ -38,7 +37,6 @@ const roleLabel: Record<UserRole, string> = {
 
 const emptyEditForm = {
   nom: "", prenom: "", email: "", telephone: "",
-  date_naissance: "",
   debut_abonnement: "", fin_abonnement: "",
   role: "inscrit" as UserRole,
   est_actif: false,
@@ -46,7 +44,6 @@ const emptyEditForm = {
 
 const emptyCreateForm = {
   nom: "", prenom: "", email: "", telephone: "",
-  date_naissance: "",
   mot_de_passe: "", role: "inscrit" as UserRole,
   debut_abonnement: "", fin_abonnement: "",
   est_actif: false, // Inactif par défaut → pas de mail Supabase envoyé
@@ -147,7 +144,6 @@ const Membres = () => {
       nom: createForm.nom,
       prenom: createForm.prenom,
       telephone: createForm.telephone || null,
-      date_naissance: createForm.date_naissance || null,
       role: createForm.role,
       est_actif: createForm.est_actif,
       debut_abonnement: createForm.debut_abonnement || null,
@@ -178,7 +174,7 @@ const Membres = () => {
   const openEdit = (m: Utilisateur) => {
     setEditForm({
       nom: m.nom, prenom: m.prenom, email: m.email,
-      telephone: m.telephone ?? "", date_naissance: m.date_naissance ?? "",
+      telephone: m.telephone ?? "",
       debut_abonnement: m.debut_abonnement ?? "",
       fin_abonnement: m.fin_abonnement ?? "", role: m.role,
       est_actif: m.est_actif,
@@ -211,7 +207,6 @@ const Membres = () => {
     const payload: TablesUpdate<"utilisateurs"> = {
       nom: editForm.nom, prenom: editForm.prenom, email: editForm.email,
       telephone: editForm.telephone || null,
-      date_naissance: editForm.date_naissance || null,
       debut_abonnement: editForm.debut_abonnement || null,
       fin_abonnement: editForm.fin_abonnement || null,
     };
@@ -477,15 +472,9 @@ const Membres = () => {
                   <p className="text-xs text-muted-foreground mt-1">Le membre pourra le changer via "Mot de passe oublié"</p>
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">Téléphone</label>
-                  <input value={createForm.telephone} onChange={e => setCreateForm(f => ({ ...f, telephone: e.target.value }))} className={fieldClass} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">Date de naissance</label>
-                  <input type="date" value={createForm.date_naissance} onChange={e => setCreateForm(f => ({ ...f, date_naissance: e.target.value }))} className={fieldClass} />
-                </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Téléphone</label>
+                <input value={createForm.telephone} onChange={e => setCreateForm(f => ({ ...f, telephone: e.target.value }))} className={fieldClass} />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Rôle</label>
@@ -541,15 +530,9 @@ const Membres = () => {
                 <label className="block text-sm font-medium mb-1.5">Email</label>
                 <input type="email" value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} className={fieldClass} />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">Téléphone</label>
-                  <input value={editForm.telephone} onChange={e => setEditForm(f => ({ ...f, telephone: e.target.value }))} className={fieldClass} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">Date de naissance</label>
-                  <input type="date" value={editForm.date_naissance} onChange={e => setEditForm(f => ({ ...f, date_naissance: e.target.value }))} className={fieldClass} />
-                </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Téléphone</label>
+                <input value={editForm.telephone} onChange={e => setEditForm(f => ({ ...f, telephone: e.target.value }))} className={fieldClass} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>

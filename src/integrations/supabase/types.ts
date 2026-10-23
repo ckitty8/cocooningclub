@@ -906,7 +906,6 @@ export type Database = {
           code_couleur_conges: string | null
           couleur_conges: string | null
           cree_le: string
-          date_naissance: string | null
           debut_abonnement: string | null
           email: string
           est_actif: boolean
@@ -923,7 +922,6 @@ export type Database = {
           code_couleur_conges?: string | null
           couleur_conges?: string | null
           cree_le?: string
-          date_naissance?: string | null
           debut_abonnement?: string | null
           email: string
           est_actif?: boolean
@@ -940,7 +938,6 @@ export type Database = {
           code_couleur_conges?: string | null
           couleur_conges?: string | null
           cree_le?: string
-          date_naissance?: string | null
           debut_abonnement?: string | null
           email?: string
           est_actif?: boolean
