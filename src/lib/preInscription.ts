@@ -9,12 +9,14 @@ import type { Profile } from "@/contexts/auth";
 // Seul atelier qui demande la date de naissance (thème astrologique).
 export const ATELIER_AVEC_DATE_NAISSANCE = "Atelier Créatif — Pierre & Oracle";
 
+// Même règle que private.telephone_valide() côté base (vérifié par un test).
+export const TELEPHONE_REGEX = /^[0-9 +().-]{6,20}$/;
+
 const schemaAvecIdentite = (name: z.ZodString, email: z.ZodString) =>
   z.object({
     name,
     email,
-    // Même règle que private.telephone_valide() côté base.
-    phone: z.string().trim().regex(/^[0-9 +().-]{6,20}$/, "Numéro de téléphone invalide.").optional().or(z.literal("")),
+    phone: z.string().trim().regex(TELEPHONE_REGEX, "Numéro de téléphone invalide.").optional().or(z.literal("")),
     workshop: z.string().min(1, "Veuillez choisir un atelier."),
     birthdate: z.string().optional(),
     cgu: z.boolean().refine(v => v, "Merci d'accepter les CGU et la politique de confidentialité."),

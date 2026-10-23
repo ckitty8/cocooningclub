@@ -2,7 +2,9 @@ import { supabase } from "@/integrations/supabase/client";
 
 const STORAGE_KEY = "cc_visitor_id";
 
-// Génère ou récupère un ID stable pour le visiteur (stocké en localStorage)
+// Génère ou récupère un ID stable pour le visiteur (stocké en localStorage).
+// Malgré le nom de la colonne « visiteur_hash », c'est un UUID aléatoire, pas
+// un hash : le renommer demanderait une migration pour un gain nul.
 const getVisitorId = (): string => {
   try {
     let id = localStorage.getItem(STORAGE_KEY);

@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { withTimeout } from "@/utils/withTimeout";
@@ -9,6 +9,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  // Dernier utilisateur connu, lu par refreshProfile : évite qu'un appel juste
+  // après un changement d'utilisateur recharge le profil de l'ancien.
+  const userIdRef = useRef<string | null>(null);
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -32,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const refreshProfile = async () => {
-    if (user) await fetchProfile(user.id);
+    if (userIdRef.current) await fetchProfile(userIdRef.current);
   };
 
   useEffect(() => {
@@ -40,6 +43,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+      userIdRef.current = session?.user?.id ?? null;
 
       if (session?.user) {
         // TOKEN_REFRESHED se déclenche automatiquement (ex: quand l'onglet

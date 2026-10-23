@@ -2,10 +2,12 @@ import { expect, test } from "@playwright/test";
 import { ATELIER_ORACLE, ATELIER_TEST, MEMBRE_TEST, mockSupabase } from "./supabaseMock";
 
 // Le formulaire ignore les envois faits moins de 3 s après son ouverture
-// (anti-robot) : les tests attendent ce délai avant d'envoyer.
+// (anti-robot) : les tests avancent l'horloge du navigateur de ce délai
+// plutôt que de l'attendre pour de vrai.
 const DELAI_ANTI_ROBOT = 3_100;
 
 test.beforeEach(async ({ page }) => {
+  await page.clock.install();
   await mockSupabase(page);
 });
 
@@ -33,7 +35,7 @@ test("la pré-inscription valide les champs puis envoie uniquement l'identité",
   await page.getByPlaceholder("marie@email.com").fill("lea@exemple.fr");
   await page.getByRole("dialog").locator("select").selectOption(ATELIER_TEST.titre);
   await page.getByRole("checkbox").check();
-  await page.waitForTimeout(DELAI_ANTI_ROBOT);
+  await page.clock.fastForward(DELAI_ANTI_ROBOT);
   await envoyer.click();
 
   await expect(page.getByRole("heading", { name: "Pré-inscription enregistrée !" })).toBeVisible();
@@ -106,7 +108,7 @@ test("un robot qui remplit le champ piège ne crée aucune pré-inscription", as
   await page.getByRole("dialog").locator("select").selectOption(ATELIER_TEST.titre);
   await page.getByRole("checkbox").check();
   await page.getByRole("dialog").locator('input[name="site_web"]').fill("http://spam.example", { force: true });
-  await page.waitForTimeout(DELAI_ANTI_ROBOT);
+  await page.clock.fastForward(DELAI_ANTI_ROBOT);
   await page.getByRole("button", { name: /Envoyer ma pré-inscription/ }).click();
 
   await expect(page.getByRole("heading", { name: "Pré-inscription enregistrée !" })).toBeVisible();

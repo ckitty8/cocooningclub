@@ -28,7 +28,9 @@ export const logAction = async (
       details: details ?? null,
       user_agent: navigator.userAgent.substring(0, 500),
     });
-  } catch {
-    // Silent — un log raté ne doit pas casser l'action principale
+  } catch (err) {
+    // Un log raté ne doit pas casser l'action principale : on le signale
+    // seulement dans la console, sans rien afficher à l'utilisateur.
+    console.warn("[logAction] échec de l'enregistrement:", action, err);
   }
 };
