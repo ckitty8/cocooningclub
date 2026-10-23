@@ -42,6 +42,8 @@ const FORMULAIRE_CONTACT = {
 export interface MockSupabase {
   /** Corps JSON des INSERT reçus, par table. */
   inserts: Record<string, unknown[]>;
+  /** Corps JSON des UPDATE (PATCH) reçus, par table. */
+  updates: Record<string, unknown[]>;
   /** Corps JSON des appels de fonctions (rpc), par nom. */
   rpc: Record<string, unknown[]>;
 }
@@ -62,12 +64,14 @@ interface OptionsMock {
   antennes?: Record<string, unknown>[];
   /** Lignes de la vue `vue_autorisation_image` (consentement photo par personne). */
   autorisationsImage?: Record<string, unknown>[];
+  /** Lignes de `vue_logs` (journal des actions de l'équipe). */
+  logs?: Record<string, unknown>[];
   /** Simule une base où la migration de l'offre n'est pas encore appliquée. */
   offreAbsente?: boolean;
 }
 
 export const mockSupabase = async (page: Page, options: OptionsMock = {}): Promise<MockSupabase> => {
-  const mock: MockSupabase = { inserts: {}, rpc: {} };
+  const mock: MockSupabase = { inserts: {}, updates: {}, rpc: {} };
 
   await page.route("**/__supabase/**", async route => {
     const req = route.request();
@@ -93,12 +97,17 @@ export const mockSupabase = async (page: Page, options: OptionsMock = {}): Promi
       }
       return route.fulfill({ status: 201, body: "" });
     }
+    if (req.method() === "PATCH" && table) {
+      (mock.updates[table] ??= []).push(corpsJson(req));
+      return route.fulfill({ status: 204, body: "" });
+    }
     if (table === "utilisateurs" && options.profil) {
       return route.fulfill({ json: veutUnObjet ? options.profil : [options.profil] });
     }
     if (table === "inscriptions" && options.inscriptions) return route.fulfill({ json: options.inscriptions });
     if (table === "formules" && options.formules) return route.fulfill({ json: options.formules });
     if (table === "adhesions" && options.adhesions) return route.fulfill({ json: options.adhesions });
+    if (table === "vue_logs") return route.fulfill({ json: options.logs ?? [] });
     if (table === "vue_autorisation_image") return route.fulfill({ json: options.autorisationsImage ?? [] });
     if (table === "antennes" && options.antennes) return route.fulfill({ json: options.antennes });
     if (table === "ateliers") return route.fulfill({ json: [ATELIER_TEST] });

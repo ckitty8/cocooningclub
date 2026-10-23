@@ -91,6 +91,7 @@ test("l'admin voit le consentement photo d'une personne pré-inscrite", async ({
   });
   await connecterEn(page, admin);
   await page.goto("/admin/pre-inscriptions");
-  await expect(page.getByRole("heading", { name: "Marie Dupont" })).toBeVisible();
-  await expect(page.getByText("Consentement : Oui")).toBeVisible();
+  await page.getByRole("button", { name: "Ouvrir la pré-inscription de Marie Dupont" }).click();
+  const fenetre = page.getByRole("dialog", { name: "Pré-inscription de Marie Dupont" });
+  await expect(fenetre.getByText("Consentement : Oui")).toBeVisible();
 });

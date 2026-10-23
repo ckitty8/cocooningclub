@@ -40,32 +40,66 @@ test("un membre se pré-inscrit depuis son espace avec les informations de son c
   }]);
 });
 
-test("l'administration voit l'identité du membre pré-inscrit", async ({ page }) => {
+const LIGNE_ADMIN = {
+  id: "dddddddd-0000-4000-8000-000000000001",
+  atelier_id: ATELIER_TEST.id,
+  utilisateur_id: MEMBRE.id,
+  prenom_invite: null,
+  nom_invite: null,
+  email_invite: null,
+  telephone_invite: null,
+  date_naissance: null,
+  statut: "en_attente",
+  statut_paiement: "en_attente",
+  inscrit_le: new Date().toISOString(),
+  ateliers: { id: ATELIER_TEST.id, titre: ATELIER_TEST.titre, date_atelier: ATELIER_TEST.date_atelier, heure_debut: "14:00:00", lieu: "Gagny", adresse: null },
+  utilisateurs: { prenom: "Marie", nom: "Dupont", email: "marie@exemple.fr", telephone: "0601020304", date_naissance: "1990-05-12", role: "membre" },
+};
+
+test("l'administration voit l'identité du membre pré-inscrit, regroupée par atelier", async ({ page }) => {
   const admin = profilTest({ email: "admin@exemple.fr" });
-  await mockSupabase(page, {
-    profil: admin,
-    inscriptions: [{
-      id: "dddddddd-0000-4000-8000-000000000001",
-      atelier_id: ATELIER_TEST.id,
-      utilisateur_id: MEMBRE.id,
-      prenom_invite: null,
-      nom_invite: null,
-      email_invite: null,
-      telephone_invite: null,
-      date_naissance: null,
-      statut: "en_attente",
-      statut_paiement: "en_attente",
-      inscrit_le: new Date().toISOString(),
-      ateliers: { id: ATELIER_TEST.id, titre: ATELIER_TEST.titre, date_atelier: ATELIER_TEST.date_atelier, heure_debut: "14:00:00", lieu: "Gagny", adresse: null },
-      utilisateurs: { prenom: "Marie", nom: "Dupont", email: "marie@exemple.fr", telephone: "0601020304", date_naissance: "1990-05-12", role: "membre" },
-    }],
-  });
+  await mockSupabase(page, { profil: admin, inscriptions: [LIGNE_ADMIN] });
   await connecterEn(page, admin);
   await page.goto("/admin/pre-inscriptions");
 
-  await expect(page.getByRole("heading", { name: "Marie Dupont" })).toBeVisible();
-  await expect(page.getByText("marie@exemple.fr")).toBeVisible();
-  await expect(page.getByText("0601020304")).toBeVisible();
-  await expect(page.getByText(/Date de naissance : 12 mai 1990/)).toBeVisible();
-  await expect(page.getByText(ATELIER_TEST.titre).first()).toBeVisible();
+  // L'atelier a une demande à traiter : son bloc est ouvert.
+  await expect(page.getByRole("button", { name: new RegExp(ATELIER_TEST.titre) })).toHaveAttribute("aria-expanded", "true");
+  await expect(page.getByText("1 à traiter")).toBeVisible();
+  await expect(page.getByText("Marie Dupont", { exact: true })).toBeVisible();
+  await expect(page.getByText(/marie@exemple\.fr/)).toBeVisible();
+
+  // Le détail s'ouvre dans une fenêtre à onglets.
+  await page.getByRole("button", { name: "Ouvrir la pré-inscription de Marie Dupont" }).click();
+  const fenetre = page.getByRole("dialog", { name: "Pré-inscription de Marie Dupont" });
+  await expect(fenetre.getByText("0601020304")).toBeVisible();
+  await expect(fenetre.getByText(/12 mai 1990/)).toBeVisible();
+  await fenetre.getByRole("tab", { name: "Paiement" }).click();
+  await expect(fenetre.getByRole("button", { name: "En attente", pressed: true })).toBeVisible();
+});
+
+test("depuis « Inscrits » : l'atelier visé est ouvert, validation en un clic, historique", async ({ page }) => {
+  const admin = profilTest({ email: "admin@exemple.fr" });
+  const mock = await mockSupabase(page, {
+    profil: admin,
+    inscriptions: [LIGNE_ADMIN],
+    logs: [{ action: "inscription.validate", auteur: "Christelle", horodatage: new Date().toISOString() }],
+  });
+  await connecterEn(page, admin);
+  await page.goto(`/admin/pre-inscriptions?atelier=${ATELIER_TEST.id}`);
+
+  await expect(page.getByText(/Vous arrivez depuis/)).toBeVisible();
+  await expect(page.getByRole("button", { name: new RegExp(ATELIER_TEST.titre) })).toHaveAttribute("aria-expanded", "true");
+
+  await page.getByRole("button", { name: "Valider Marie Dupont" }).click();
+  await expect.poll(() => mock.updates.inscriptions?.[0]).toMatchObject({ statut: "confirme" });
+
+  await page.getByRole("button", { name: "Détail de Marie Dupont" }).click();
+  const fenetre = page.getByRole("dialog", { name: "Pré-inscription de Marie Dupont" });
+  await fenetre.getByRole("tab", { name: "Historique" }).click();
+  await expect(fenetre.getByText("Pré-inscription reçue")).toBeVisible();
+  await expect(fenetre.getByText("Pré-inscription validée")).toBeVisible();
+
+  await fenetre.getByRole("button", { name: "Fermer" }).click();
+  await page.getByRole("button", { name: "Tout afficher" }).click();
+  await expect(page.getByText(/Vous arrivez depuis/)).toHaveCount(0);
 });
