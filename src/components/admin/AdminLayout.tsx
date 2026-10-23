@@ -9,8 +9,7 @@ import {
 
 const navItems = [
   { href: "/admin/dashboard",          label: "Tableau de bord",         icon: LayoutDashboard },
-  { href: "/admin/membres",            label: "Membres",                  icon: Users },
-  { href: "/admin/ateliers",           label: "Ateliers",                 icon: CalendarDays },
+  { href: "/admin/ateliers",          label: "Ateliers",                 icon: CalendarDays },
   { href: "/admin/pre-inscriptions",   label: "Pré-inscriptions",         icon: UserCheck, badgeKey: "preinscriptions" as const },
   { href: "/admin/disponibilites",     label: "Disponibilités",           icon: CalendarClock },
   { href: "/admin/boite-a-idees",      label: "Boîte à idées",            icon: Lightbulb, badgeKey: "idees" as const },
@@ -18,6 +17,7 @@ const navItems = [
   { href: "/admin/documents",          label: "Documents",                icon: FileText },
   { href: "/admin/formulaire",         label: "Formulaire de contact",    icon: FormInput },
   { href: "/admin/messages-templates", label: "Modèles de messages",      icon: MessageSquare },
+  { href: "/admin/membres",            label: "Membres",                  icon: Users },
 ];
 
 // Outils du créateur du site : affichés en bas du menu, pour le créateur seulement.
