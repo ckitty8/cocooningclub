@@ -278,7 +278,7 @@ const Disponibilites = () => {
   return (
     <AdminLayout>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground">Disponibilités</h1>
+        <h1 className="text-2xl font-bold text-foreground">Gestion des dispo des admins</h1>
         <p className="text-muted-foreground text-sm mt-1">
           Gérez vos créneaux disponibles et vos congés. Ces infos bloquent la création d'ateliers si personne n'est dispo.
         </p>

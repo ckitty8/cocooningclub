@@ -11,7 +11,7 @@ const navItems = [
   { href: "/admin/dashboard",          label: "Tableau de bord",         icon: LayoutDashboard },
   { href: "/admin/ateliers",          label: "Ateliers",                 icon: CalendarDays },
   { href: "/admin/pre-inscriptions",   label: "Pré-inscriptions",         icon: UserCheck, badgeKey: "preinscriptions" as const },
-  { href: "/admin/disponibilites",     label: "Disponibilités",           icon: CalendarClock },
+  { href: "/admin/disponibilites",     label: "Gestion des dispo des admins",           icon: CalendarClock },
   { href: "/admin/boite-a-idees",      label: "Boîte à idées",            icon: Lightbulb, badgeKey: "idees" as const },
   { href: "/admin/avis",               label: "Témoignages",              icon: Star, badgeKey: "avis" as const },
   { href: "/admin/documents",          label: "Documents",                icon: FileText },

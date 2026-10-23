@@ -144,7 +144,7 @@ export const MATRICE: readonly SectionMatrice[] = [
       { libelle: "Membres", acces: ACCES.admin },
       { libelle: "Ateliers", acces: ACCES.admin },
       { libelle: "Pré-inscriptions", acces: ACCES.admin },
-      { libelle: "Disponibilités", acces: ACCES.admin },
+      { libelle: "Gestion des dispo des admins", acces: ACCES.admin },
       { libelle: "Boîte à idées", acces: ACCES.admin },
       { libelle: "Témoignages", acces: ACCES.admin },
       { libelle: "Documents", acces: ACCES.admin },
