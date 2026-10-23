@@ -50,6 +50,8 @@ Comptes utiles : une administratrice, une membre, une inscrite (rôle `inscrit`)
 - [ ] Après validation, la personne voit « Mon adhésion » et le consentement correct chez les admins (Membres, Inscrits, Pré-inscriptions).
 - [ ] Boîte à idées : idées avec prénom de l'auteur ; Témoignages, Documents, Formulaire de contact, Modèles de messages : aucune régression.
 
+- [ ] Les tables `inscriptions_backup_20260430` et `transactions_paypal_backup_20260430` n'existent plus (`verifications.sql`) ; rien d'autre ne change à l'écran.
+
 ## Après : créateur (`christellelab@gmail.com`)
 
 - [ ] Espace créateur : simulateur de rôle (Inscrit, Membre, Administrateur) et matrice des rôles à jour (ligne « Offre & adhésions », « Mon adhésion »).

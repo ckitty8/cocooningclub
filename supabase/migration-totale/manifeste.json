@@ -6,6 +6,7 @@
     "20261023000004_retire_role_membre_premium.sql",
     "20261023000005_droits_par_offre.sql",
     "20261023000006_bloque_validation_impayee.sql",
-    "20261023000007_tarif_adherente.sql"
+    "20261023000007_tarif_adherente.sql",
+    "20261023000008_supprime_tables_de_sauvegarde.sql"
   ]
 }
