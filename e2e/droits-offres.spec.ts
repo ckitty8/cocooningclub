@@ -72,3 +72,16 @@ test("la page « Droits par offre » du créateur résume la règle", async ({ p
   await page.goto("/admin/createur/droits");
   await expect(page.getByRole("heading", { level: 1, name: "Droits par offre" })).toBeVisible();
 });
+
+test("deux tarifs : l'adhérente Créatif voit le prix adhérente pour un atelier Business", async ({ page }) => {
+  const profil = profilTest();
+  await mockSupabase(page, { profil, antennes: ESPACES, ateliers: ATELIERS.map(a => ({ ...a, tarif_adherent: 18 })) });
+  await connecterEn(page, profil);
+  await page.goto("/admin/createur/simulateur");
+  await page.getByRole("button", { name: "Adhérente Créatif" }).click();
+  await expect(carte(page, "Pitch en public").getByText(/18 € à régler/)).toBeVisible();
+  await page.getByRole("button", { name: "Quitter" }).click();
+  await page.goto("/admin/createur/simulateur");
+  await page.getByRole("button", { name: "Sans adhésion" }).click();
+  await expect(carte(page, "Pitch en public").getByText(/25 € à régler · 18 € avec une adhésion/)).toBeVisible();
+});

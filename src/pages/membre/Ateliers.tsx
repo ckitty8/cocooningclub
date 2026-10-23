@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import PreInscriptionModal from "@/components/PreInscriptionModal";
 import { OffrePastille } from "@/components/OffrePastille";
-import { useMesOffres } from "@/hooks/useOffres";
+import { useMesOffres, useTarifsAdherent } from "@/hooks/useOffres";
 import { droitAtelier, euros, LIBELLES_DROIT, type DroitAtelier } from "@/lib/droits";
 import { Link } from "react-router-dom";
 import {
@@ -45,6 +45,7 @@ const formatTime = (t: string) => t.slice(0, 5);
 const Ateliers = () => {
   const { profile } = useAuth();
   const { offres, espaces, disponible, simulee } = useMesOffres();
+  const tarifsAdherent = useTarifsAdherent();
   const [ateliers, setAteliers] = useState<Atelier[]>([]);
   // Statut de mes pré-inscriptions actives, par atelier.
   const [myInscriptions, setMyInscriptions] = useState<Map<string, "en_attente" | "confirme">>(new Map());
@@ -93,8 +94,14 @@ const Ateliers = () => {
   };
 
   // « Inclus », « gratuit pour tous » ou « à régler » : d'après l'adhésion en cours (voir lib/droits.ts).
-  const droitDe = (a: Atelier): DroitAtelier | null => (disponible ? droitAtelier(a, espaces, offres) : null);
-  const mention = (d: DroitAtelier) => (d.etat === "a_payer" ? `${d.montant > 0 ? euros(d.montant) + " " : ""}à régler` : LIBELLES_DROIT[d.etat]);
+  const droitDe = (a: Atelier): DroitAtelier | null => (disponible ? droitAtelier({ ...a, tarif_adherent: tarifsAdherent.get(a.id) ?? null }, espaces, offres) : null);
+  const mention = (d: DroitAtelier, a: Atelier) => {
+    if (d.etat !== "a_payer") return LIBELLES_DROIT[d.etat];
+    const avecAdhesion = tarifsAdherent.get(a.id);
+    const base = `${d.montant > 0 ? euros(d.montant) + " " : ""}à régler`;
+    // Non-adhérente : on rappelle le tarif réservé aux adhérentes.
+    return offres.length === 0 && avecAdhesion != null && avecAdhesion < d.montant ? `${base} · ${euros(avecAdhesion)} avec une adhésion` : base;
+  };
   const styleMention = (d: DroitAtelier) =>
     d.etat === "inclus" ? "bg-green-100 text-green-700" : d.etat === "gratuit" ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-700";
 
@@ -187,7 +194,7 @@ const Ateliers = () => {
 
                   {droit && (
                     <p className="mt-3">
-                      <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${styleMention(droit)}`}>{mention(droit)}</span>
+                      <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${styleMention(droit)}`}>{mention(droit, a)}</span>
                     </p>
                   )}
 
@@ -270,7 +277,7 @@ const Ateliers = () => {
                   <p className="text-xs text-muted-foreground">Tarif</p>
                   <p className="font-medium mt-0.5">{popin.tarif_affichage ?? (popin.tarif_standard > 0 ? `${popin.tarif_standard} €` : "Gratuit")}</p>
                   {droitDe(popin) && (
-                    <p className="mt-1"><span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${styleMention(droitDe(popin)!)}`}>{mention(droitDe(popin)!)}</span></p>
+                    <p className="mt-1"><span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${styleMention(droitDe(popin)!)}`}>{mention(droitDe(popin)!, popin)}</span></p>
                   )}
                 </div>
               </div>

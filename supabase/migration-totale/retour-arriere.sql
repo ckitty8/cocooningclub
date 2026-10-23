@@ -4,6 +4,7 @@
 -- par une validation d'adhésion ne sont pas remis en arrière. Faire une sauvegarde avant.
 -- Sans la fonction supprimer_membre, le bouton « Supprimer » de l'admin échoue : revenir aussi au code précédent.
 BEGIN;
+ALTER TABLE public.ateliers DROP COLUMN IF EXISTS tarif_adherent;
 DROP TRIGGER  IF EXISTS trg_verifier_validation_impayee ON public.inscriptions;
 DROP FUNCTION IF EXISTS private.bloquer_validation_impayee();
 DROP FUNCTION IF EXISTS public.valider_sans_paiement(uuid, text);

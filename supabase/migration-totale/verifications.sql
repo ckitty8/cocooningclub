@@ -22,6 +22,7 @@ WITH controles(controle, ok) AS (
     ('Fonction mon_droit_atelier',            to_regprocedure('public.mon_droit_atelier(uuid)') IS NOT NULL),
     ('Fonction valider_sans_paiement',        to_regprocedure('public.valider_sans_paiement(uuid,text)') IS NOT NULL),
     ('Déclencheur de blocage des validations impayées', EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_verifier_validation_impayee' AND tgrelid = 'public.inscriptions'::regclass)),
+    ('Colonne ateliers.tarif_adherent',       EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'ateliers' AND column_name = 'tarif_adherent')),
     ('Au moins les 3 formules du bulletin',   CASE WHEN to_regclass('public.formules') IS NULL THEN false ELSE ((xpath('/row/c/text()', query_to_xml('SELECT count(*) AS c FROM public.formules', false, true, '')))[1]::text)::int >= 3 END),
     ('Formules rattachées à des espaces',     CASE WHEN to_regclass('public.formule_espaces') IS NULL THEN false ELSE ((xpath('/row/c/text()', query_to_xml('SELECT count(*) AS c FROM public.formule_espaces', false, true, '')))[1]::text)::int >= 4 END)
 )

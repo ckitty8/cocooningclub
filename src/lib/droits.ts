@@ -36,12 +36,22 @@ export interface DroitAtelier {
   montant: number;
 }
 
+/**
+ * Prix à régler par la personne : une adhérente (au moins une adhésion en cours) paie le tarif adhérente
+ * lorsqu'il est renseigné, même pour un espace que sa formule ne couvre pas ; sinon le tarif standard
+ * (non-adhérente). Tarif adhérente absent : même prix pour tout le monde.
+ */
+export const tarifPour = (
+  atelier: { tarif_standard: number | null; tarif_adherent?: number | null },
+  offres: OffreEnCours[],
+): number | null => (offres.length > 0 && atelier.tarif_adherent != null ? atelier.tarif_adherent : atelier.tarif_standard);
+
 export const droitAtelier = (
-  atelier: { antenne_id: string | null; tarif_standard: number | null },
+  atelier: { antenne_id: string | null; tarif_standard: number | null; tarif_adherent?: number | null },
   espaces: EspaceDroit[],
   offres: OffreEnCours[],
 ): DroitAtelier => {
-  const tarif = atelier.tarif_standard;
+  const tarif = tarifPour(atelier, offres);
   if (tarif !== null && tarif <= 0) return { etat: "gratuit", montant: 0 };
   const espace = espaces.find(e => e.id === atelier.antenne_id);
   if (estGratuitPourTous(espace)) return { etat: "gratuit", montant: 0 };

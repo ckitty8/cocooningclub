@@ -219,6 +219,7 @@ export type Database = {
           statut: Database["public"]["Enums"]["statut_atelier"]
           tarif_admin: number | null
           tarif_affichage: string | null
+          tarif_adherent: number | null
           tarif_standard: number
           titre: string
           url_image: string | null
@@ -247,6 +248,7 @@ export type Database = {
           statut?: Database["public"]["Enums"]["statut_atelier"]
           tarif_admin?: number | null
           tarif_affichage?: string | null
+          tarif_adherent?: number | null
           tarif_standard?: number
           titre: string
           url_image?: string | null
@@ -275,6 +277,7 @@ export type Database = {
           statut?: Database["public"]["Enums"]["statut_atelier"]
           tarif_admin?: number | null
           tarif_affichage?: string | null
+          tarif_adherent?: number | null
           tarif_standard?: number
           titre?: string
           url_image?: string | null

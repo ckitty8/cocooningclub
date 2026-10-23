@@ -33,6 +33,22 @@ describe("droit d'un atelier selon l'offre (tableau du club)", () => {
   it("donne le montant à régler", () => expect(droitAtelier(atelier("cre", 25), espaces, [])).toEqual({ etat: "a_payer", montant: 25 }));
 });
 
+describe("deux tarifs : adhérente et non-adhérente", () => {
+  const deuxPrix = { antenne_id: "bus", tarif_standard: 25, tarif_adherent: 18 };
+  it("une non-adhérente paie le tarif standard", () => expect(droitAtelier(deuxPrix, espaces, [])).toEqual({ etat: "a_payer", montant: 25 }));
+  it("une adhérente Créatif paie le tarif adhérente à un atelier Business", () =>
+    expect(droitAtelier(deuxPrix, espaces, [offre("cre")])).toEqual({ etat: "a_payer", montant: 18 }));
+  it("sans tarif adhérente, le prix est le même pour tous", () =>
+    expect(droitAtelier({ antenne_id: "bus", tarif_standard: 25 }, espaces, [offre("cre")]).montant).toBe(25));
+  it("un tarif adhérente à 0 € rend l'atelier gratuit pour les adhérentes seulement", () => {
+    const offert = { antenne_id: "bus", tarif_standard: 25, tarif_adherent: 0 };
+    expect(droitAtelier(offert, espaces, [offre("cre")]).etat).toBe("gratuit");
+    expect(droitAtelier(offert, espaces, []).etat).toBe("a_payer");
+  });
+  it("l'espace inclus reste inclus, quel que soit le tarif", () =>
+    expect(droitAtelier(deuxPrix, espaces, [offre("bus")]).etat).toBe("inclus"));
+});
+
 describe("espace gratuit pour tous", () => {
   it("Papotages avant la migration, sinon la colonne décide", () => {
     expect(estGratuitPourTous(papotages)).toBe(true);

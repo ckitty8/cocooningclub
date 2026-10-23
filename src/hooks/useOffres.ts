@@ -17,6 +17,23 @@ export const useEspaces = (): EspaceDroit[] => {
   return espaces;
 };
 
+/**
+ * Tarif adhérente de chaque atelier (colonne ajoutée par la migration « tarif adhérente »).
+ * Lu à part : tant que la colonne n'existe pas, la requête échoue et la carte reste vide.
+ */
+export const useTarifsAdherent = (): Map<string, number | null> => {
+  const [tarifs, setTarifs] = useState<Map<string, number | null>>(new Map());
+  useEffect(() => {
+    // La colonne n'est pas encore dans les types générés.
+    (supabase.from("ateliers") as unknown as { select: (c: string) => PromiseLike<{ data: { id: string; tarif_adherent: number | null }[] | null; error: unknown }> })
+      .select("id, tarif_adherent")
+      .then(({ data, error }) => {
+        if (!error && data) setTarifs(new Map(data.map(a => [a.id, a.tarif_adherent])));
+      });
+  }, []);
+  return tarifs;
+};
+
 interface LigneAdhesion {
   utilisateur_id: string;
   statut: string;

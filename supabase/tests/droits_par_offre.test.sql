@@ -5,29 +5,34 @@ SELECT slug, gratuit_pour_tous FROM antennes ORDER BY slug;
 
 BEGIN;
 \echo '--- 2. Sans adhésion (attendu : gratuit = Café + Atelier offert ; payant = floral, pitch, tarif inconnu)'
+SELECT set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222', true);
 SELECT a.titre, atelier_inclus('11111111-1111-1111-1111-111111111111', a.id) AS inclus FROM ateliers a ORDER BY a.titre;
 ROLLBACK;
 
 BEGIN;
 \echo '--- 3. Adhérente Créatif (attendu : inclus = Café, floral, offert, tarif inconnu ; pitch = f)'
+SELECT set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222', true);
 INSERT INTO adhesions (utilisateur_id, formule_id, statut, date_validation, valable_jusqu_au) SELECT '11111111-1111-1111-1111-111111111111', id, 'active', current_date, current_date + 30 FROM formules WHERE nom = 'Cocooning Créatif';
 SELECT a.titre, atelier_inclus('11111111-1111-1111-1111-111111111111', a.id) AS inclus FROM ateliers a ORDER BY a.titre;
 ROLLBACK;
 
 BEGIN;
 \echo '--- 4. Adhérente Business (attendu : pitch = t ; floral = f)'
+SELECT set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222', true);
 INSERT INTO adhesions (utilisateur_id, formule_id, statut, date_validation, valable_jusqu_au) SELECT '11111111-1111-1111-1111-111111111111', id, 'active', current_date, current_date + 30 FROM formules WHERE nom = 'Cocooning Business';
 SELECT a.titre, atelier_inclus('11111111-1111-1111-1111-111111111111', a.id) AS inclus FROM ateliers a WHERE a.titre IN ('Pitch en public','Atelier floral') ORDER BY a.titre;
 ROLLBACK;
 
 BEGIN;
 \echo '--- 5. Adhérente Complet (attendu : tout t)'
+SELECT set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222', true);
 INSERT INTO adhesions (utilisateur_id, formule_id, statut, date_validation, valable_jusqu_au) SELECT '11111111-1111-1111-1111-111111111111', id, 'active', current_date, current_date + 30 FROM formules WHERE nom = 'Cocooning Complet';
 SELECT bool_and(atelier_inclus('11111111-1111-1111-1111-111111111111', a.id)) AS tout_inclus FROM ateliers a;
 ROLLBACK;
 
 BEGIN;
 \echo '--- 6. Adhésion échue ou en attente : plus rien d''inclus (attendu : floral = f dans les deux cas)'
+SELECT set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222', true);
 INSERT INTO adhesions (utilisateur_id, formule_id, statut, date_validation, valable_jusqu_au) SELECT '11111111-1111-1111-1111-111111111111', id, 'active', current_date, current_date - 1 FROM formules WHERE nom = 'Cocooning Créatif';
 INSERT INTO adhesions (utilisateur_id, formule_id, statut) SELECT '44444444-4444-4444-4444-444444444444', id, 'en_attente' FROM formules WHERE nom = 'Cocooning Créatif';
 SELECT atelier_inclus('11111111-1111-1111-1111-111111111111', 'a2222222-2222-2222-2222-222222222222') AS echue,
@@ -126,3 +131,30 @@ SET LOCAL ROLE authenticated;
 SELECT valider_sans_paiement('b1111111-1111-1111-1111-111111111111', 'je me valide');
 RESET ROLE;
 ROLLBACK;
+
+-- ─────────────────────────────────────────────
+-- 20261023000007_tarif_adherente.sql
+-- ─────────────────────────────────────────────
+\echo '=== Deux tarifs ==='
+BEGIN;
+\echo '--- 15. Atelier Business 25 € / adhérente 0 € (attendu : sans adhésion = f ; adhérente Créatif = t ; adhérente Business = t)'
+SELECT set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222', true);
+UPDATE ateliers SET tarif_adherent = 0 WHERE id = 'a3333333-3333-3333-3333-333333333333';
+INSERT INTO adhesions (utilisateur_id, formule_id, statut, date_validation, valable_jusqu_au) SELECT '11111111-1111-1111-1111-111111111111', id, 'active', current_date, current_date + 30 FROM formules WHERE nom = 'Cocooning Créatif';
+INSERT INTO adhesions (utilisateur_id, formule_id, statut, date_validation, valable_jusqu_au) SELECT '44444444-4444-4444-4444-444444444444', id, 'active', current_date, current_date + 30 FROM formules WHERE nom = 'Cocooning Business';
+SELECT atelier_inclus('33333333-3333-3333-3333-333333333333', 'a3333333-3333-3333-3333-333333333333') AS sans_adhesion,
+       atelier_inclus('11111111-1111-1111-1111-111111111111', 'a3333333-3333-3333-3333-333333333333') AS creatif,
+       atelier_inclus('44444444-4444-4444-4444-444444444444', 'a3333333-3333-3333-3333-333333333333') AS business;
+ROLLBACK;
+
+BEGIN;
+\echo '--- 16. Tarif adhérente > 0 : l''adhérente Créatif doit toujours payer le Business (attendu : f), les autres cas inchangés (floral inclus = t)'
+SELECT set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222', true);
+UPDATE ateliers SET tarif_adherent = 18 WHERE id = 'a3333333-3333-3333-3333-333333333333';
+INSERT INTO adhesions (utilisateur_id, formule_id, statut, date_validation, valable_jusqu_au) SELECT '11111111-1111-1111-1111-111111111111', id, 'active', current_date, current_date + 30 FROM formules WHERE nom = 'Cocooning Créatif';
+SELECT atelier_inclus('11111111-1111-1111-1111-111111111111', 'a3333333-3333-3333-3333-333333333333') AS business_pour_creatif,
+       atelier_inclus('11111111-1111-1111-1111-111111111111', 'a2222222-2222-2222-2222-222222222222') AS floral_inclus;
+ROLLBACK;
+
+\echo '--- 17. Le tarif adhérente ne peut pas être négatif (attendu : erreur 23514)'
+UPDATE ateliers SET tarif_adherent = -1 WHERE id = 'a3333333-3333-3333-3333-333333333333';

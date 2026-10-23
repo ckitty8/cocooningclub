@@ -37,6 +37,8 @@ interface Atelier {
   places_max: number;
   places_disponibles: number;
   tarif_standard: number | null;
+  /** Colonne ajoutée par la migration « tarif adhérente » : absente avant. */
+  tarif_adherent?: number | null;
   tarif_affichage: string | null;
   lien_paypal: string | null;
   niveau: Niveau | null;
@@ -53,7 +55,7 @@ interface Antenne {
 const emptyForm = {
   titre: "", description: "", description_courte: "",
   date_atelier: "", date_fin_inscription: "", heure_debut: "", heure_fin: "", duree: "", lieu: "", adresse: "", url_image: "",
-  places_max: 10, tarif_standard: "", tarif_affichage: "",
+  places_max: 10, tarif_standard: "", tarif_adherent: "", tarif_affichage: "",
   lien_paypal: "", niveau: "" as Niveau | "", statut: "brouillon" as Statut,
   antenne_id: "",
 };
@@ -80,6 +82,7 @@ const Ateliers = () => {
   const { profile } = useAuth();
   const [affichage, setAffichage] = useState<AffichageAteliers>("cartes");
   const [ateliers, setAteliers] = useState<Atelier[]>([]);
+  const colonneTarifAdherent = ateliers.some(a => "tarif_adherent" in a);
   const [antennes, setAntennes] = useState<Antenne[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<{ open: boolean; atelier: Atelier | null }>({ open: false, atelier: null });
@@ -236,6 +239,7 @@ const Ateliers = () => {
       lieu: a.lieu ?? "", adresse: a.adresse ?? "", url_image: a.url_image ?? "",
       places_max: a.places_max,
       tarif_standard: a.tarif_standard?.toString() ?? "",
+      tarif_adherent: a.tarif_adherent?.toString() ?? "",
       tarif_affichage: a.tarif_affichage ?? "",
       lien_paypal: a.lien_paypal ?? "",
       niveau: a.niveau ?? "", statut: a.statut,
@@ -255,6 +259,7 @@ const Ateliers = () => {
       lieu: a.lieu ?? "", adresse: a.adresse ?? "", url_image: a.url_image ?? "",
       places_max: a.places_max,
       tarif_standard: a.tarif_standard?.toString() ?? "",
+      tarif_adherent: a.tarif_adherent?.toString() ?? "",
       tarif_affichage: a.tarif_affichage ?? "",
       lien_paypal: a.lien_paypal ?? "",
       niveau: a.niveau ?? "", statut: "brouillon",
@@ -313,6 +318,8 @@ const Ateliers = () => {
       url_image: form.url_image || null,
       places_max: Number(form.places_max),
       tarif_standard: form.tarif_standard ? Number(form.tarif_standard) : 0,
+      // Écrit seulement si la colonne existe (migration appliquée) ou si un tarif adhérente est saisi.
+      ...(colonneTarifAdherent || form.tarif_adherent !== "" ? { tarif_adherent: form.tarif_adherent !== "" ? Number(form.tarif_adherent) : null } : {}),
       tarif_affichage: form.tarif_affichage || null,
       lien_paypal: form.lien_paypal || null,
       niveau: (form.niveau as Niveau) || "debutant",
@@ -941,11 +948,17 @@ const Ateliers = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Tarif standard (€)</label>
+                  <label className="block text-sm font-medium mb-1.5">Tarif non-adhérente (€)</label>
                   <input type="number" min={0} step={0.01} value={form.tarif_standard} onChange={e => f("tarif_standard", e.target.value)}
                     placeholder="25" className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>
                 <div>
+                  <label className="block text-sm font-medium mb-1.5">Tarif adhérente (€)</label>
+                  <input type="number" min={0} step={0.01} value={form.tarif_adherent} onChange={e => f("tarif_adherent", e.target.value)}
+                    placeholder="Identique si vide" className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
+                  <p className="text-xs text-muted-foreground mt-1">Prix payé par une adhérente pour un atelier d'un espace que sa formule ne couvre pas.</p>
+                </div>
+                <div className="col-span-2">
                   <label className="block text-sm font-medium mb-1.5">Tarif affiché</label>
                   <input value={form.tarif_affichage} onChange={e => f("tarif_affichage", e.target.value)}
                     placeholder="ex: À partir de 20€" className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />

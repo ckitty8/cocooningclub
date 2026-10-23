@@ -5,7 +5,7 @@ import ListeParAtelier from "@/components/admin/preinscriptions/ListeParAtelier"
 import FenetreInscription from "@/components/admin/preinscriptions/FenetreInscription";
 import type { AtelierListe, InfoDroit, Inscription, StatutInscription, StatutPaiement } from "@/components/admin/preinscriptions/types";
 import { useAutorisationsImage } from "@/hooks/useAutorisationsImage";
-import { useEspaces, useOffresParPersonne } from "@/hooks/useOffres";
+import { useEspaces, useOffresParPersonne, useTarifsAdherent } from "@/hooks/useOffres";
 import { droitAtelier } from "@/lib/droits";
 import { supabase } from "@/integrations/supabase/client";
 import type { TablesUpdate } from "@/integrations/supabase/types";
@@ -54,6 +54,7 @@ const PreInscriptions = () => {
   const autorisations = useAutorisationsImage(inscriptions.map(i => i.utilisateur_id));
   // Offre de chaque personne et droit de l'atelier (gratuit / inclus / à payer) : visibles après la migration des offres.
   const espaces = useEspaces();
+  const tarifsAdherent = useTarifsAdherent();
   const { parPersonne: offres, disponible: offresDisponibles } = useOffresParPersonne(null);
   const [templates, setTemplates] = useState<Record<string, string>>({});
   const [ateliersDispo, setAteliersDispo] = useState<AtelierMinimal[]>([]);
@@ -193,10 +194,10 @@ const PreInscriptions = () => {
       const atelier = ateliersListe.find(a => a.id === i.atelier_id);
       if (!atelier) continue;
       const offresPersonne = i.utilisateur_id ? offres.get(i.utilisateur_id) ?? [] : [];
-      carte.set(i.id, { droit: droitAtelier(atelier, espaces, offresPersonne), offres: offresPersonne });
+      carte.set(i.id, { droit: droitAtelier({ ...atelier, tarif_adherent: tarifsAdherent.get(atelier.id) ?? null }, espaces, offresPersonne), offres: offresPersonne });
     }
     return carte;
-  }, [inscriptions, ateliersListe, espaces, offres, offresDisponibles]);
+  }, [inscriptions, ateliersListe, espaces, offres, offresDisponibles, tarifsAdherent]);
 
   const lignesVisibles = useMemo(() => groupes.flatMap(g => g.items), [groupes]);
   const fenetre = inscriptions.find(i => i.id === fenetreId) ?? null;
