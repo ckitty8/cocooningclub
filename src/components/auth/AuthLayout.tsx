@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Surtitre } from "@/components/vitrine";
-import photoAtelier from "@/assets/hero-workshop-960.webp";
+import photoAtelier from "@/assets/illustrations/hero-atelier.svg";
 
 interface AuthLayoutProps {
   titre: string;
@@ -19,7 +19,7 @@ const AuthLayout = ({ titre, sousTitre, retour = { to: "/", libelle: "Retour au 
     <div className="relative hidden lg:block">
       <img
         src={photoAtelier}
-        alt="Table d'atelier créatif avec bougies allumées, palette d'aquarelle, ciseaux et pelote de laine"
+        alt=""
         className="absolute inset-0 h-full w-full object-cover"
       />
     </div>

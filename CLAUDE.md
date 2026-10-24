@@ -12,7 +12,7 @@ Terminer le message à l'utilisatrice par ces deux phrases (avec le vrai hash du
 
 
 - **Mentions légales** (obligatoires, loi LCEN) : page à créer avec éditeur (nom, adresse, statut juridique du club), directeur de publication et hébergeur (Vercel). L'utilisateur a toutes les infos mais veut traiter ce point plus tard.
-- **Photos de l'accueil et de « Notre histoire »** : provisoires (découpées dans les maquettes, basse définition), à remplacer par les vraies photos du club, cf. `src/assets/accueil/README.md` et `src/assets/histoire/README.md`. Portraits des 5 fondatrices à fournir (initiales en attendant).
+- **Photos du site (24/10)** : les images d'origine inconnue (découpes de maquettes en basse définition) ont été remplacées par des illustrations vectorielles originales, `src/assets/illustrations/` (README et script `scripts/generate-illustrations.py`), libres de droits. Restent deux vraies photos du club (`src/assets/accueil/fondatrices.webp` et `groupe.webp`). À faire plus tard : vraies photos d'ateliers (fournies par le club) ou photos libres de droits (Unsplash / Pexels / Pixabay : ces sites sont bloqués dans l'environnement de la session, il faudrait autoriser les hôtes dans les paramètres réseau) ; portraits des 5 fondatrices à fournir (initiales en attendant).
 - **Google Analytics 4 + bannière cookie** : reporté à plus tard par l'utilisateur. Il faudra son identifiant de mesure `G-XXXXXXXXXX`.
 
 - **Bulletin signé à importer (mis de côté le 23/10)** : l'utilisatrice laisse ce sujet de côté, ne plus en parler ni le proposer. Rien à coder : les données du bulletin restent saisies dans « Ajouter une adhésion » et affichées dans « Mon adhésion ».
