@@ -1,15 +1,6 @@
 # Photos de la page « Notre histoire »
 
-Provisoires : découpées dans la maquette (très basse définition, 110 à
-550 px de large). À remplacer par les vraies photos du club en gardant les
-mêmes noms de fichiers (WebP, ~1200 px de large, ~600 px pour les polaroïds).
+Photos libres de droits (voir `../CREDITS.md` pour la source de chacune), à remplacer par de vraies photos du club en gardant les mêmes noms de fichiers (WebP) :
+`groupe-chapeau.webp` (hero, ~1600 × 830), `carnet.webp` et `neon.webp` (~1200 px de large), `rencontres.webp`, `idees.webp` et `aventure.webp` (polaroïds, ~600 × 650).
 
-- `groupe-chapeau.webp` : hero.
-- `carnet.webp` : « Tout a commencé par une envie simple » (le carnet de la
-  maquette porte la faute « Coconing »).
-- `rencontres.webp`, `idees.webp`, `aventure.webp` : polaroïds « Au fil des rencontres ».
-- `neon.webp` : « Une communauté qui grandit chaque jour ».
-
-Les portraits des fondatrices ne sont pas repris de la maquette (visages
-générés, pas les vraies personnes) : des initiales les remplacent en
-attendant les vraies photos.
+Les portraits des fondatrices ne sont pas des photos : des initiales les remplacent en attendant les vraies photos.

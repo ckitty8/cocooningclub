@@ -81,9 +81,9 @@ const Calendrier = () => {
           </div>
           <img
             src={photoAtelier}
-            width={960}
-            height={540}
-            alt="Table d'atelier créatif avec bougies allumées, palette d'aquarelle, ciseaux et pelote de laine"
+            width={1600}
+            height={900}
+            alt="Table d'atelier en bois avec papiers, ciseaux et ficelle"
             className="h-56 w-full rounded-2xl object-cover shadow-md sm:h-72"
           />
         </section>

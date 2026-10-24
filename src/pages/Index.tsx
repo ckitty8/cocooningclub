@@ -181,7 +181,7 @@ const ESPACES = [
   {
     titre: "L'Espace Papotages",
     photo: photoPapotages,
-    alt: "Trois femmes discutent en souriant autour d'un café",
+    alt: "Deux femmes boivent un café en discutant sur une terrasse",
     logo: ESPACES_PAR_SLUG.papotages.logo,
     description: "Des rencontres en toute simplicité pour échanger, partager et créer de nouveaux liens autour d'un café.",
     couleur: "bg-espace-papotages",
@@ -189,7 +189,7 @@ const ESPACES = [
   {
     titre: "L'Espace Créatif",
     photo: photoCreatif,
-    alt: "Mains qui assemblent fleurs séchées et papier lors d'un atelier créatif",
+    alt: "Trois femmes travaillent ensemble autour d'un atelier créatif",
     logo: ESPACES_PAR_SLUG.creatifs.logo,
     description: "Des ateliers pour découvrir, créer et laisser parler son imagination, débutante ou passionnée.",
     couleur: "bg-espace-creatifs",
@@ -197,7 +197,7 @@ const ESPACES = [
   {
     titre: "L'Espace Business",
     photo: photoBusiness,
-    alt: "Table de coworking avec ordinateur portable, carnets et tasses",
+    alt: "Trois femmes travaillent avec leurs ordinateurs et leurs documents",
     logo: ESPACES_PAR_SLUG.business.logo,
     description: "Un espace dédié aux entrepreneures pour échanger, s'entraider et faire avancer leurs projets ensemble.",
     couleur: "bg-espace-business",

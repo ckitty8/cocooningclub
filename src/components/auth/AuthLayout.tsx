@@ -19,7 +19,7 @@ const AuthLayout = ({ titre, sousTitre, retour = { to: "/", libelle: "Retour au 
     <div className="relative hidden lg:block">
       <img
         src={photoAtelier}
-        alt="Table d'atelier créatif avec bougies allumées, palette d'aquarelle, ciseaux et pelote de laine"
+        alt=""
         className="absolute inset-0 h-full w-full object-cover"
       />
     </div>
