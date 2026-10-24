@@ -11,10 +11,10 @@ import PreInscriptionModal from "@/components/PreInscriptionModal";
 import { supabase } from "@/integrations/supabase/client";
 import photoFondatrices from "@/assets/accueil/fondatrices.webp";
 import photoGroupe from "@/assets/accueil/groupe.webp";
-import photoPapotages from "@/assets/illustrations/papotages.svg";
-import photoCreatif from "@/assets/illustrations/creatif.svg";
-import photoBusiness from "@/assets/illustrations/business.svg";
-import photoAtelier from "@/assets/illustrations/hero-atelier.svg";
+import photoPapotages from "@/assets/accueil/papotages.webp";
+import photoCreatif from "@/assets/accueil/creatif.webp";
+import photoBusiness from "@/assets/accueil/business.webp";
+import photoAtelier from "@/assets/hero-workshop-960.webp";
 import { ESPACES_PAR_SLUG } from "@/lib/espaces";
 import { trackVisit } from "@/utils/trackVisit";
 import { usePublicAteliers } from "@/hooks/usePublicAteliers";
@@ -181,7 +181,7 @@ const ESPACES = [
   {
     titre: "L'Espace Papotages",
     photo: photoPapotages,
-    alt: "Illustration de deux tasses de café et de bulles de conversation",
+    alt: "Trois femmes discutent en souriant autour d'un café",
     logo: ESPACES_PAR_SLUG.papotages.logo,
     description: "Des rencontres en toute simplicité pour échanger, partager et créer de nouveaux liens autour d'un café.",
     couleur: "bg-espace-papotages",
@@ -189,7 +189,7 @@ const ESPACES = [
   {
     titre: "L'Espace Créatif",
     photo: photoCreatif,
-    alt: "Illustration d'une palette d'aquarelle, de ciseaux et de fleurs séchées",
+    alt: "Mains qui assemblent fleurs séchées et papier lors d'un atelier créatif",
     logo: ESPACES_PAR_SLUG.creatifs.logo,
     description: "Des ateliers pour découvrir, créer et laisser parler son imagination, débutante ou passionnée.",
     couleur: "bg-espace-creatifs",
@@ -197,7 +197,7 @@ const ESPACES = [
   {
     titre: "L'Espace Business",
     photo: photoBusiness,
-    alt: "Illustration d'un ordinateur portable, d'un carnet et d'une tasse de café",
+    alt: "Table de coworking avec ordinateur portable, carnets et tasses",
     logo: ESPACES_PAR_SLUG.business.logo,
     description: "Un espace dédié aux entrepreneures pour échanger, s'entraider et faire avancer leurs projets ensemble.",
     couleur: "bg-espace-business",

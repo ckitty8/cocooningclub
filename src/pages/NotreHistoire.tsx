@@ -4,18 +4,18 @@ import SiteHeader from "@/components/SiteHeader";
 import Footer from "@/components/Footer";
 import { Bouton, GrilleValeurs, Surtitre, TitreSection, type Valeur } from "@/components/vitrine";
 import { trackVisit } from "@/utils/trackVisit";
-import photoGroupe from "@/assets/illustrations/histoire-groupe.svg";
-import photoCarnet from "@/assets/illustrations/histoire-carnet.svg";
-import photoRencontres from "@/assets/illustrations/polaroid-rencontres.svg";
-import photoIdees from "@/assets/illustrations/polaroid-idees.svg";
-import photoAventure from "@/assets/illustrations/polaroid-aventure.svg";
-import photoNeon from "@/assets/illustrations/histoire-neon.svg";
+import photoGroupe from "@/assets/histoire/groupe-chapeau.webp";
+import photoCarnet from "@/assets/histoire/carnet.webp";
+import photoRencontres from "@/assets/histoire/rencontres.webp";
+import photoIdees from "@/assets/histoire/idees.webp";
+import photoAventure from "@/assets/histoire/aventure.webp";
+import photoNeon from "@/assets/histoire/neon.webp";
 
 // Photos « polaroïd » : légende manuscrite et légère rotation.
 const SOUVENIRS = [
-  { photo: photoRencontres, legende: "Des rencontres", alt: "Illustration de deux tasses de café et d'une bulle de conversation", rotation: "-rotate-6" },
-  { photo: photoIdees, legende: "Des idées", alt: "Illustration d'une ampoule et d'un carnet", rotation: "rotate-2 translate-y-6" },
-  { photo: photoAventure, legende: "Une aventure collective", alt: "Illustration de femmes de dos, bras levés face au coucher de soleil", rotation: "rotate-3" },
+  { photo: photoRencontres, legende: "Des rencontres", alt: "Femmes réunies autour d'une table et de tasses de café", rotation: "-rotate-6" },
+  { photo: photoIdees, legende: "Des idées", alt: "Mains au travail sur une table d'atelier créatif", rotation: "rotate-2 translate-y-6" },
+  { photo: photoAventure, legende: "Une aventure collective", alt: "Femmes de dos, bras levés face au coucher de soleil", rotation: "rotate-3" },
 ];
 
 const FONDATRICES = [
@@ -67,9 +67,9 @@ const NotreHistoire = () => {
         <section className="relative pt-20">
           <img
             src={photoGroupe}
-            width={1200}
-            height={620}
-            alt="Illustration de cinq femmes de dos face à un coucher de soleil"
+            width={548}
+            height={284}
+            alt="Cinq femmes de dos, bras dessus bras dessous, face à un coucher de soleil"
             className="h-64 w-full object-cover object-left sm:h-80 md:h-[26rem] md:w-[68%]"
           />
           <div className="relative mx-6 -mt-12 rounded-2xl bg-background p-8 shadow-lg md:absolute md:bottom-12 md:right-10 md:top-32 md:mx-0 md:mt-0 md:flex md:w-[40%] md:flex-col md:justify-center lg:p-12">
@@ -86,7 +86,7 @@ const NotreHistoire = () => {
           surtitre="Une belle aventure humaine"
           titre="Tout a commencé par une envie simple"
           photo={photoCarnet}
-          alt="Illustration d'un carnet ouvert, d'une tasse de café et d'un vase de fleurs séchées"
+          alt="Carnet ouvert sur « Une idée… Le Cocooning Club », à côté d'un café"
         >
           <p className={paragraphe}>
             Le Cocooning Club est né d'une envie simple, mais essentielle : créer du lien entre femmes, provoquer de
@@ -132,7 +132,7 @@ const NotreHistoire = () => {
           surtitre="Aujourd'hui"
           titre="Une communauté qui grandit chaque jour"
           photo={photoNeon}
-          alt="Illustration d'un cœur lumineux au-dessus d'un vase de fleurs séchées et d'une tasse"
+          alt="Néon « Plus qu'un club, une communauté de femmes inspirantes » au-dessus d'une table de café fleurie"
         >
           <p className={paragraphe}>
             Au fil des rencontres, le projet a pris forme naturellement. Il est devenu un lieu d'échange, de

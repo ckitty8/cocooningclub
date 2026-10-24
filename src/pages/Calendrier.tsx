@@ -8,7 +8,7 @@ import PreInscriptionModal from "@/components/PreInscriptionModal";
 import SiteHeader from "@/components/SiteHeader";
 import Footer from "@/components/Footer";
 import { Bouton, Surtitre, TitreSection } from "@/components/vitrine";
-import photoAtelier from "@/assets/illustrations/hero-atelier.svg";
+import photoAtelier from "@/assets/hero-workshop-960.webp";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { trackVisit } from "@/utils/trackVisit";
 import { usePublicAteliers } from "@/hooks/usePublicAteliers";
@@ -81,9 +81,9 @@ const Calendrier = () => {
           </div>
           <img
             src={photoAtelier}
-            width={1200}
-            height={675}
-            alt="Illustration d'une table d'atelier créatif : bougies, palette d'aquarelle, ciseaux et pelote de laine"
+            width={960}
+            height={540}
+            alt="Table d'atelier créatif avec bougies allumées, palette d'aquarelle, ciseaux et pelote de laine"
             className="h-56 w-full rounded-2xl object-cover shadow-md sm:h-72"
           />
         </section>
