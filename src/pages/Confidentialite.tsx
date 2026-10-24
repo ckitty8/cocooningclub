@@ -16,7 +16,7 @@ const Confidentialite = () => {
           <section className="space-y-2">
             <h2 className="font-brand text-xl text-foreground">1. Responsable du traitement</h2>
             <p>
-              Cocooning Club, association basée en Seine-et-Marne (Gagny · Chelles · Le Raincy), est responsable
+              Cocooning Club, association dont le siège est à Livry-Gargan (Seine-Saint-Denis), active à Gagny, Chelles et Le Raincy, est responsable
               du traitement des données personnelles collectées sur ce site. Pour toute question, vous pouvez
               nous contacter à l'adresse{" "}
               <a href="mailto:le.cocooning.club@gmail.com" className="text-terracotta underline underline-offset-2">
@@ -82,7 +82,7 @@ const Confidentialite = () => {
           <section className="space-y-2">
             <h2 className="font-brand text-xl text-foreground">6. Hébergement et sécurité</h2>
             <p>
-              Les données sont hébergées et sécurisées via Supabase. L'accès à l'espace d'administration est
+              Les données sont hébergées et sécurisées via Supabase, dans l'Union européenne (Irlande) ; le site est servi par Vercel. L'accès à l'espace d'administration est
               restreint aux membres autorisés de l'association.
             </p>
           </section>

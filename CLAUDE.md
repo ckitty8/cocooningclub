@@ -11,7 +11,7 @@ Terminer le message à l'utilisatrice par ces deux phrases (avec le vrai hash du
 ## Points en attente
 
 
-- **Mentions légales** (obligatoires, loi LCEN) : page à créer avec éditeur (nom, adresse, statut juridique du club), directeur de publication et hébergeur (Vercel). L'utilisateur a toutes les infos mais veut traiter ce point plus tard.
+- **Mentions légales (24/10)** : page `/mentions-legales` faite (association Le Cocooning Club, siège 16 rue Graffan 93190 Livry-Gargan, directrice de la publication Maëlle Guennanf, hébergeurs Vercel et Supabase en Irlande, crédit Pexels). Il manque, facultatif : numéro RNA / SIRET ; à vérifier : adresses des hébergeurs. Le siège étant en Seine-Saint-Denis, « Seine-et-Marne » a été remplacé partout par « Seine-Saint-Denis ».
 - **Photos du site (24/10)** : les images d'origine inconnue ont été remplacées par des photos libres de droits Pexels (sources et licence dans `src/assets/CREDITS.md`). Restent deux vraies photos du club (`accueil/fondatrices.webp`, `accueil/groupe.webp`). À faire : remplacer au fil du temps par de vraies photos d'ateliers du club (même nom de fichier) ; portraits des 5 fondatrices à fournir (initiales en attendant). Les illustrations vectorielles essayées le 24/10 ont été refusées (commit 28453a1, annulé) : ne pas les reproposer. Pour télécharger des photos : `https://images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg?auto=compress&cs=tinysrgb&w=2000` fonctionne (Pexels et `images.unsplash.com` sont autorisés dans l'environnement ; les pages de recherche des sites sont bloquées, les identifiants se trouvent avec la recherche web).
 - **Google Analytics 4 + bannière cookie** : reporté à plus tard par l'utilisateur. Il faudra son identifiant de mesure `G-XXXXXXXXXX`.
 

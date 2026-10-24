@@ -124,3 +124,15 @@ test("la page de connexion est exclue de Google", async ({ page }) => {
   await expect(page.getByLabel("Mot de passe", { exact: true })).toBeVisible();
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex, nofollow");
 });
+
+test("les mentions légales sont accessibles depuis le pied de page et nomment l'éditeur et les hébergeurs", async ({ page }) => {
+  await page.goto("/");
+  await page.locator("footer").getByRole("link", { name: "Mentions légales" }).click();
+  await expect(page).toHaveURL(/\/mentions-legales$/);
+  await expect(page).toHaveTitle("Mentions légales · Cocooning Club");
+  await expect(page.getByRole("heading", { level: 1, name: "Mentions légales" })).toBeVisible();
+  await expect(page.getByText("16 rue Graffan, 93190 Livry-Gargan")).toBeVisible();
+  await expect(page.getByText("Maëlle Guennanf")).toBeVisible();
+  await expect(page.getByText(/Vercel Inc\./)).toBeVisible();
+  await expect(page.getByText(/Supabase Inc\./)).toBeVisible();
+});

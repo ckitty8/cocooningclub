@@ -8,6 +8,7 @@ import Index from "./pages/Index.tsx";
 import Calendrier from "./pages/Calendrier.tsx";
 import Confidentialite from "./pages/Confidentialite.tsx";
 import Cgu from "./pages/Cgu.tsx";
+import MentionsLegales from "./pages/MentionsLegales.tsx";
 import NotreHistoire from "./pages/NotreHistoire.tsx";
 import Simulateur from "./pages/createur/Simulateur.tsx";
 import DroitsParOffre from "./pages/createur/DroitsParOffre.tsx";
@@ -111,6 +112,7 @@ const App = () => (
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/confidentialite" element={<Confidentialite />} />
           <Route path="/cgu" element={<Cgu />} />
+          <Route path="/mentions-legales" element={<MentionsLegales />} />
 
           {/* Espace membre */}
           <Route path="/espace-membre"               element={<RoleGuard allowedRoles={ACCES.espaceMembre}><MembreDashboard /></RoleGuard>} />

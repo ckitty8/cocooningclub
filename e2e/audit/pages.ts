@@ -14,6 +14,7 @@ export const PAGES: PageAuditee[] = [
   { chemin: "/forgot-password", profil: "visiteur" },
   { chemin: "/confidentialite", profil: "visiteur" },
   { chemin: "/cgu", profil: "visiteur" },
+  { chemin: "/mentions-legales", profil: "visiteur" },
   { chemin: "/introuvable", profil: "visiteur" },
   { chemin: "/espace-membre", profil: "membre" },
   { chemin: "/espace-membre/ateliers", profil: "membre" },
