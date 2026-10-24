@@ -42,9 +42,10 @@ const Confidentialite = () => {
                 données de compte nécessaires à l'accès à votre espace personnel.
               </li>
               <li>
-                <span className="text-foreground font-medium">Mesure d'audience :</span> un identifiant anonyme
-                stocké dans votre navigateur, la page consultée, le référent et le type de navigateur, à des fins
-                statistiques internes uniquement.
+                <span className="text-foreground font-medium">Mesure d'audience (uniquement si vous l'acceptez) :</span>{" "}
+                un identifiant anonyme stocké dans votre navigateur, la page consultée, la provenance et le type de
+                navigateur, par notre comptage interne et par Google Analytics (voir la rubrique « Cookies et
+                mesure d'audience »).
               </li>
             </ul>
           </section>
@@ -76,6 +77,27 @@ const Confidentialite = () => {
                 le.cocooning.club@gmail.com
               </a>
               . Vous pouvez également introduire une réclamation auprès de la CNIL (www.cnil.fr).
+            </p>
+          </section>
+
+          <section className="space-y-2" id="cookies">
+            <h2 className="font-brand text-xl text-foreground">Cookies et mesure d'audience</h2>
+            <p>
+              Le site n'utilise que des traceurs strictement nécessaires (connexion à l'espace membre,
+              préférences d'affichage) tant que vous n'avez pas accepté la mesure d'audience. Aucun cookie
+              publicitaire n'est utilisé.
+            </p>
+            <p>
+              Si vous cliquez sur « Tout accepter », nous activons <strong className="text-foreground">Google
+              Analytics 4</strong> (Google Ireland Limited, avec transfert possible de données vers Google LLC aux
+              États-Unis, encadré par le Data Privacy Framework) et notre comptage interne. Ils mesurent les pages
+              vues, la provenance et le type d'appareil, de façon statistique, pour améliorer le site. Les données de
+              Google Analytics sont conservées 14 mois au plus ; le cookie de mesure dure 13 mois au plus.
+            </p>
+            <p>
+              Vous pouvez refuser, ou changer d'avis à tout moment, en cliquant sur « Gérer mes cookies » en bas de
+              chaque page. Votre choix est conservé 6 mois, puis nous vous le redemandons. Un refus supprime les
+              cookies de mesure déjà posés.
             </p>
           </section>
 

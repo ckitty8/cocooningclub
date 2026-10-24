@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import RoleGuard from "@/components/RoleGuard";
 import RouteSeo from "@/components/RouteSeo";
+import CookieBanner from "@/components/CookieBanner";
 import Index from "./pages/Index.tsx";
 import Calendrier from "./pages/Calendrier.tsx";
 import Confidentialite from "./pages/Confidentialite.tsx";
@@ -102,6 +103,7 @@ const App = () => (
         <RouteSeo />
         <RecoveryRedirect />
         <SimulationBanner />
+        <CookieBanner />
         <Routes>
           {/* Routes publiques */}
           <Route path="/" element={<Index />} />

@@ -24,7 +24,7 @@ test("audit contraste et mise en page", async ({ page }) => {
   for (const { chemin, profil } of PAGES) {
     const utilisateur = profil === "membre" ? MEMBRE : profil === "createur" ? CREATEUR : profil === "admin" ? ADMIN : undefined;
     await page.unrouteAll();
-    await mockSupabase(page, { profil: utilisateur });
+    await mockSupabase(page, { profil: utilisateur, sansChoixCookies: true }); // la bannière fait partie de ce qu'on mesure
     if (utilisateur) await connecterEn(page, utilisateur);
     for (const largeur of LARGEURS) {
       await page.setViewportSize({ width: largeur, height: 900 });

@@ -68,12 +68,22 @@ interface OptionsMock {
   autorisationsImage?: Record<string, unknown>[];
   /** Lignes de `vue_logs` (journal des actions de l'équipe). */
   logs?: Record<string, unknown>[];
+  /** Ne pré-enregistre pas de choix de cookies : la bannière s'affiche (par défaut, le choix « refusé » est déjà fait). */
+  sansChoixCookies?: boolean;
   /** Simule une base où la migration de l'offre n'est pas encore appliquée. */
   offreAbsente?: boolean;
 }
 
 export const mockSupabase = async (page: Page, options: OptionsMock = {}): Promise<MockSupabase> => {
   const mock: MockSupabase = { inserts: {}, updates: {}, rpc: {} };
+
+  if (!options.sansChoixCookies) {
+    await page.addInitScript(() => {
+      try {
+        window.localStorage.setItem("cc_consentement", JSON.stringify({ audience: false, date: new Date().toISOString() }));
+      } catch { /* stockage indisponible */ }
+    });
+  }
 
   await page.route("**/__supabase/**", async route => {
     const req = route.request();

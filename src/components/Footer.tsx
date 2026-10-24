@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Heart, Instagram, Mail } from "lucide-react";
+import { ouvrirChoixCookies } from "@/lib/consentement";
 
 const Footer = () => {
   return (
@@ -77,6 +78,9 @@ const Footer = () => {
         <div className="border-t pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <p>© 2026 Cocooning Club · Tous droits réservés</p>
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+            <button type="button" onClick={ouvrirChoixCookies} className="inline-block py-1 hover:text-terracotta transition-colors">
+              Gérer mes cookies
+            </button>
             <Link to="/mentions-legales" className="inline-block py-1 hover:text-terracotta transition-colors">
               Mentions légales
             </Link>

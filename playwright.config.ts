@@ -36,6 +36,8 @@ export default defineConfig({
       // Supabase « factice » sur la même origine : toutes ses routes sont mockées.
       VITE_SUPABASE_URL: `${BASE_URL}/__supabase`,
       VITE_SUPABASE_PUBLISHABLE_KEY: "e2e-anon-key",
+      // Identifiant Google Analytics factice : le script de Google est intercepté dans les tests.
+      VITE_GA_MEASUREMENT_ID: "G-TEST000000",
     },
   },
 });
