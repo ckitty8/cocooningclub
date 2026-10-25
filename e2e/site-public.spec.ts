@@ -199,3 +199,19 @@ test("les mentions légales sont accessibles depuis le pied de page et nomment l
   await expect(page.getByText(/Vercel Inc\./)).toBeVisible();
   await expect(page.getByText(/Supabase Inc\./)).toBeVisible();
 });
+
+test("le public voit le nombre de places total, jamais les places restantes", async ({ page }) => {
+  await page.goto("/");
+  const carte = page.locator("#ateliers").getByText(`${ATELIER_TEST.places_max} places`, { exact: true }).first();
+  await expect(carte).toBeVisible();
+  await expect(page.getByText(/places restantes/)).toHaveCount(0);
+
+  await page.goto("/calendrier");
+  await expect(page.getByText(`${ATELIER_TEST.places_max} places`, { exact: true }).first()).toBeVisible();
+  await expect(page.getByText(/places restantes/)).toHaveCount(0);
+  await expect(page.getByText(`${ATELIER_TEST.places_disponibles}/${ATELIER_TEST.places_max}`)).toHaveCount(0);
+
+  await page.goto(`/calendrier?atelier=${ATELIER_TEST.id}`);
+  await expect(page.getByRole("dialog").or(page.locator("div.fixed")).getByText(`${ATELIER_TEST.places_max} places`, { exact: true })).toBeVisible();
+  await expect(page.getByText(/places restantes/)).toHaveCount(0);
+});

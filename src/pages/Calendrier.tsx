@@ -206,7 +206,7 @@ const Calendrier = () => {
                                   </span>
                                 )}
                                 <span className="inline-flex items-center gap-1.5">
-                                  <Users className="w-3.5 h-3.5" /> {ws.places_disponibles}/{ws.places_max}
+                                  <Users className="w-3.5 h-3.5" /> {ws.places_max} places
                                 </span>
                                 {ws.tarif_affichage && (
                                   <span className="inline-flex items-center gap-1.5">
@@ -312,7 +312,7 @@ const Calendrier = () => {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <Users className="w-4 h-4 text-terracotta flex-shrink-0" />
-                  <span>{popinWorkshop.places_disponibles} places restantes</span>
+                  <span>{popinWorkshop.places_max} places</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <Euro className="w-4 h-4 text-terracotta flex-shrink-0" />

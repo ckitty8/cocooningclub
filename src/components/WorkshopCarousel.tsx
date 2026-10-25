@@ -86,7 +86,7 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
 
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <Users className="w-4 h-4 text-terracotta flex-shrink-0" />
-                  <span>{ws.places_disponibles} places restantes</span>
+                  <span>{ws.places_max} places</span>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm text-foreground">
