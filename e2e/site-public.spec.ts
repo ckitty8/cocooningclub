@@ -215,3 +215,13 @@ test("le public voit le nombre de places total, jamais les places restantes", as
   await expect(page.getByRole("dialog").or(page.locator("div.fixed")).getByText(`${ATELIER_TEST.places_max} places`, { exact: true })).toBeVisible();
   await expect(page.getByText(/places restantes/)).toHaveCount(0);
 });
+
+test("le menu s'appelle « Notre histoire » (plus « À propos ») et mène à la page", async ({ page, isMobile }) => {
+  await page.goto("/");
+  if (isMobile) await page.getByRole("button", { name: "Ouvrir le menu" }).click();
+  const menu = isMobile ? page.locator("#menu-mobile") : page.locator("header");
+  await expect(menu.getByRole("link", { name: "À propos", exact: true })).toHaveCount(0);
+  await menu.getByRole("link", { name: "Notre histoire", exact: true }).first().click();
+  await expect(page).toHaveURL(/\/notre-histoire$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Notre histoire" })).toBeVisible();
+});

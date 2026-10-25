@@ -6,7 +6,7 @@ const LIENS = [
   { libelle: "Accueil", to: "/" },
   { libelle: "Nos espaces", to: "/#espaces" },
   { libelle: "Nos événements", to: "/calendrier" },
-  { libelle: "À propos", to: "/notre-histoire" },
+  { libelle: "Notre histoire", to: "/notre-histoire" },
   { libelle: "Contact", to: "/#contact" },
 ] as const;
 
