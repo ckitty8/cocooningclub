@@ -32,7 +32,7 @@ interface Atelier {
   lien_paypal: string | null;
   date_fin_inscription: string | null;
   statut: "publie" | "complet" | "brouillon" | "annule" | "termine";
-  antenne_id: string | null;
+  espace_id: string | null;
 }
 
 const isInscriptionsCloses = (a: { date_fin_inscription: string | null }) =>
@@ -60,7 +60,7 @@ const Ateliers = () => {
     const [aRes, iRes] = await Promise.all([
       supabase
         .from("ateliers")
-        .select("id, titre, description, description_courte, date_atelier, heure_debut, duree, lieu, adresse, url_image, places_max, places_disponibles, tarif_standard, tarif_affichage, lien_paypal, date_fin_inscription, statut, antenne_id")
+        .select("id, titre, description, description_courte, date_atelier, heure_debut, duree, lieu, adresse, url_image, places_max, places_disponibles, tarif_standard, tarif_affichage, lien_paypal, date_fin_inscription, statut, espace_id")
         .in("statut", ["publie", "complet"])
         .gte("date_atelier", today)
         .order("date_atelier"),

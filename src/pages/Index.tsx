@@ -1,5 +1,5 @@
 import { useState, useEffect, FormEvent } from "react";
-import { Feather, HandHeart, Heart, MessagesSquare, Pencil, Users } from "lucide-react";
+import { ArrowRight, Feather, HandHeart, Heart, MessagesSquare, Pencil, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import SiteHeader from "@/components/SiteHeader";
 import { Bouton, GrilleValeurs, Surtitre, TitreSection, type Valeur } from "@/components/vitrine";
@@ -18,7 +18,7 @@ import { usePublicAteliers } from "@/hooks/usePublicAteliers";
 import { useAntiSpam } from "@/hooks/useAntiSpam";
 import { messageErreurServeur } from "@/utils/messageErreurServeur";
 
-const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, description_courte, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription, antennes(slug)";
+const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, description_courte, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription, espaces(slug)";
 
 
 // ── Formulaire de contact dynamique ──────────────────────
@@ -264,7 +264,7 @@ const Index = () => {
         <div className="container mx-auto px-6">
           <div className="mx-auto mb-12 max-w-2xl space-y-4 text-center">
             <Surtitre>Notre univers</Surtitre>
-            <TitreSection>Trois univers pour se retrouver</TitreSection>
+            <TitreSection>Nos espaces</TitreSection>
             <span className="mx-auto block h-0.5 w-10 bg-primary" aria-hidden="true" />
             <p className="text-sm leading-relaxed text-muted-foreground md:text-base">
               Trois espaces complémentaires, pensés pour répondre à toutes vos envies : se rencontrer, créer et

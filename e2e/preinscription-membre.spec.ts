@@ -8,7 +8,6 @@ const MEMBRE = profilTest({
   nom: "Dupont",
   email: "marie@exemple.fr",
   telephone: "0601020304",
-  date_naissance: "1990-05-12",
   role: "membre",
 });
 
@@ -53,7 +52,7 @@ const LIGNE_ADMIN = {
   statut_paiement: "en_attente",
   inscrit_le: new Date().toISOString(),
   ateliers: { id: ATELIER_TEST.id, titre: ATELIER_TEST.titre, date_atelier: ATELIER_TEST.date_atelier, heure_debut: "14:00:00", lieu: "Gagny", adresse: null },
-  utilisateurs: { prenom: "Marie", nom: "Dupont", email: "marie@exemple.fr", telephone: "0601020304", date_naissance: "1990-05-12", role: "membre" },
+  utilisateurs: { prenom: "Marie", nom: "Dupont", email: "marie@exemple.fr", telephone: "0601020304", role: "membre" },
 };
 
 test("l'administration voit l'identité du membre pré-inscrit, regroupée par atelier", async ({ page }) => {
@@ -72,7 +71,6 @@ test("l'administration voit l'identité du membre pré-inscrit, regroupée par a
   await page.getByRole("button", { name: "Ouvrir la pré-inscription de Marie Dupont" }).click();
   const fenetre = page.getByRole("dialog", { name: "Pré-inscription de Marie Dupont" });
   await expect(fenetre.getByText("0601020304")).toBeVisible();
-  await expect(fenetre.getByText(/12 mai 1990/)).toBeVisible();
   await fenetre.getByRole("tab", { name: "Paiement" }).click();
   await expect(fenetre.getByRole("button", { name: "En attente", pressed: true })).toBeVisible();
 });

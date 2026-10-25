@@ -12,9 +12,20 @@ Comptes utiles : une administratrice, une membre, une inscrite (rôle `inscrit`)
 
 ## Base de données (voir README)
 
+- [ ] `verifier-avant.sql` : aucune ligne `A REGLER`.
+- [ ] Durées de conservation validées par l'équipe (visites 13 mois, journal 12 mois, messages de contact 3 ans, invités anonymisés 3 ans après l'atelier, date de naissance d'une pré-inscription effacée 30 jours après l'atelier) : `/confidentialite` les annonce déjà.
 - [ ] `migration-totale.sql` exécuté sans erreur.
 - [ ] `verifications.sql` : `=> TOUT EST OK` = `true`.
 - [ ] Rien n'a changé pour le visiteur : le site actuel fonctionne toujours (accueil, calendrier, pré-inscription).
+- [ ] pg_cron actif (Database > Extensions) : sinon l'activer puis relancer le dernier bloc `DO` de `20261024000001_conservation_des_donnees.sql` (planification de la purge et de la dépublication).
+
+## Au déploiement du site (renommages : l'ancien code n'y survit pas)
+
+- [ ] Le site (cette branche) est déployé, **puis aussitôt** `migration-deploiement.sql` exécuté sans erreur.
+- [ ] `verifications-deploiement.sql` : `=> TOUT EST OK` = `true`.
+- [ ] Admin → Ateliers : la liste, le filtre par espace, la création d'un atelier (menu « Espace ») et la fiche d'un atelier fonctionnent ; l'accueil et le calendrier affichent les logos des espaces.
+- [ ] Offre & adhésions : les formules affichent leurs espaces ; pré-inscription à un atelier inclus / à régler : le paiement se calcule toujours (fonction `atelier_inclus`).
+- [ ] Mon compte (membre et admin) : l'enregistrement fonctionne (plus de date de naissance) ; Membres : création et modification d'un membre sans date de naissance.
 
 ## Après : visiteur (navigation privée)
 
@@ -41,8 +52,8 @@ Comptes utiles : une administratrice, une membre, une inscrite (rôle `inscrit`)
 - [ ] **Ateliers** : chiffres clés ; bascule Cartes / Liste / Calendrier (le choix est retenu) ; recherche + filtres espace et statut. Calendrier : un atelier à sa date, « Créer un atelier ce jour-là » préremplit la date. Nouvel atelier : l'heure de fin se calcule (début + durée). Modifier la capacité recalcule les places libres (jamais d'inscrits fictifs). Le bouton « Inscrits » ouvre les pré-inscriptions de l'atelier ; le titre ouvre sa fiche.
 - [ ] **Fiche d'un atelier** (`/admin/ateliers/<id>`) : places prises, validées, à traiter, encaissé ; onglet Inscrites (paiement, présence, consentement, export CSV) et onglet Infos ; « Modifier » rouvre le formulaire.
 - [ ] **Pré-inscriptions** : accordéon par atelier (ceux avec des demandes à traiter sont ouverts) ; arrivée depuis « Inscrits » : atelier ouvert + bandeau + « Tout afficher » ; ✓ / ✕ en un clic ; fenêtre à onglets (Infos, Paiement, Messages mail / WhatsApp avec modèle modifiable, Historique) ; « Valider et envoyer » ; flèches personne précédente / suivante ; consentement affiché.
-- [ ] **Membres** : colonne naissance et colonne **Consentement** (Oui / Non / Non renseigné) ; suppression d'un membre de test : sa fiche **et** son compte de connexion disparaissent (`auth.users`).
-- [ ] **Gestion des dispo des admins** : congés, jours fériés, vacances, anniversaires dans le calendrier.
+- [ ] **Membres** : colonne **Consentement** (plus de colonne « Naissance » : la date de naissance n'est plus gardée sur les comptes) (Oui / Non / Non renseigné) ; suppression d'un membre de test : sa fiche **et** son compte de connexion disparaissent (`auth.users`).
+- [ ] **Gestion des dispo des admins** : congés, jours fériés et vacances dans le calendrier (plus d'anniversaires).
 - [ ] **Offre & adhésions** : les 3 formules (100 / 80 / 150 €) s'affichent ; créer, modifier, dupliquer, activer / désactiver une formule ; ajouter une adhésion (bulletin saisi : engagement, WhatsApp, consentement photo et supports) ; la valider : numéro, date de fin = validation + durée, la personne passe de `inscrit` à `membre` ; refuser une adhésion ; modifier le bulletin (retrait de consentement).
 - [ ] **Droits par offre** : avec un compte de test, adhésion Créatif validée → Papotages « Gratuit pour tous », atelier Créatifs « Inclus dans votre adhésion », atelier Business « 25 € à régler » ; adhésion Complet → tout inclus ; sans adhésion → seul Papotages est gratuit. La pré-inscription à un atelier inclus a un paiement « non requis », à un atelier à régler « en attente » (page Pré-inscriptions : étiquette Inclus / À régler, avertissement à la validation d'un atelier non réglé). Colonne et filtre « Offre en cours » dans Membres. Comparer avec le simulateur du créateur (« Adhérente Créatif »…) et la page « Droits par offre ».
 - [ ] **Deux tarifs** : dans Ateliers, le formulaire a « Tarif non-adhérente » et « Tarif adhérente » (vide = même prix). Un atelier Business à 25 € / 18 € : une non-adhérente voit « 25 € à régler · 18 € avec une adhésion », une adhérente Créatif voit « 18 € à régler », une adhérente Business voit « Inclus dans votre adhésion ». Tarif adhérente à 0 : gratuit pour les adhérentes seulement. La pré-inscription enregistre le paiement « non requis » si gratuit ou inclus, « en attente » sinon.

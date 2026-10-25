@@ -136,23 +136,23 @@ export type Database = {
       }
       formule_espaces: {
         Row: {
-          antenne_id: string
+          espace_id: string
           formule_id: string
         }
         Insert: {
-          antenne_id: string
+          espace_id: string
           formule_id: string
         }
         Update: {
-          antenne_id?: string
+          espace_id?: string
           formule_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "formule_espaces_antenne_id_fkey"
-            columns: ["antenne_id"]
+            foreignKeyName: "formule_espaces_espace_id_fkey"
+            columns: ["espace_id"]
             isOneToOne: false
-            referencedRelation: "antennes"
+            referencedRelation: "espaces"
             referencedColumns: ["id"]
           },
           {
@@ -164,7 +164,7 @@ export type Database = {
           },
         ]
       }
-      antennes: {
+      espaces: {
         Row: {
           cree_le: string
           description: string | null
@@ -197,7 +197,7 @@ export type Database = {
       ateliers: {
         Row: {
           adresse: string | null
-          antenne_id: string
+          espace_id: string
           cree_le: string
           date_atelier: string
           date_fin_inscription: string | null
@@ -226,7 +226,7 @@ export type Database = {
         }
         Insert: {
           adresse?: string | null
-          antenne_id: string
+          espace_id: string
           cree_le?: string
           date_atelier: string
           date_fin_inscription?: string | null
@@ -255,7 +255,7 @@ export type Database = {
         }
         Update: {
           adresse?: string | null
-          antenne_id?: string
+          espace_id?: string
           cree_le?: string
           date_atelier?: string
           date_fin_inscription?: string | null
@@ -284,10 +284,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "ateliers_antenne_id_fkey"
-            columns: ["antenne_id"]
+            foreignKeyName: "ateliers_espace_id_fkey"
+            columns: ["espace_id"]
             isOneToOne: false
-            referencedRelation: "antennes"
+            referencedRelation: "espaces"
             referencedColumns: ["id"]
           },
           {
@@ -780,58 +780,6 @@ export type Database = {
           },
         ]
       }
-      inscriptions_backup_20260430: {
-        Row: {
-          annule_le: string | null
-          atelier_id: string | null
-          date_naissance: string | null
-          email_invite: string | null
-          id: string | null
-          inscrit_le: string | null
-          nom_invite: string | null
-          prenom_invite: string | null
-          present: boolean | null
-          statut: Database["public"]["Enums"]["statut_inscription"] | null
-          statut_paiement: Database["public"]["Enums"]["statut_paiement"] | null
-          telephone_invite: string | null
-          utilisateur_id: string | null
-        }
-        Insert: {
-          annule_le?: string | null
-          atelier_id?: string | null
-          date_naissance?: string | null
-          email_invite?: string | null
-          id?: string | null
-          inscrit_le?: string | null
-          nom_invite?: string | null
-          prenom_invite?: string | null
-          present?: boolean | null
-          statut?: Database["public"]["Enums"]["statut_inscription"] | null
-          statut_paiement?:
-            | Database["public"]["Enums"]["statut_paiement"]
-            | null
-          telephone_invite?: string | null
-          utilisateur_id?: string | null
-        }
-        Update: {
-          annule_le?: string | null
-          atelier_id?: string | null
-          date_naissance?: string | null
-          email_invite?: string | null
-          id?: string | null
-          inscrit_le?: string | null
-          nom_invite?: string | null
-          prenom_invite?: string | null
-          present?: boolean | null
-          statut?: Database["public"]["Enums"]["statut_inscription"] | null
-          statut_paiement?:
-            | Database["public"]["Enums"]["statut_paiement"]
-            | null
-          telephone_invite?: string | null
-          utilisateur_id?: string | null
-        }
-        Relationships: []
-      }
       jours_feries: {
         Row: {
           annee: number
@@ -1009,51 +957,6 @@ export type Database = {
           },
         ]
       }
-      transactions_paypal_backup_20260430: {
-        Row: {
-          devise: string | null
-          donnees_brutes: Json | null
-          email_payeur: string | null
-          enregistre_le: string | null
-          id: string | null
-          inscription_id: string | null
-          montant: number | null
-          paypal_cree_le: string | null
-          paypal_transaction_id: string | null
-          statut:
-            | Database["public"]["Enums"]["statut_transaction_paypal"]
-            | null
-        }
-        Insert: {
-          devise?: string | null
-          donnees_brutes?: Json | null
-          email_payeur?: string | null
-          enregistre_le?: string | null
-          id?: string | null
-          inscription_id?: string | null
-          montant?: number | null
-          paypal_cree_le?: string | null
-          paypal_transaction_id?: string | null
-          statut?:
-            | Database["public"]["Enums"]["statut_transaction_paypal"]
-            | null
-        }
-        Update: {
-          devise?: string | null
-          donnees_brutes?: Json | null
-          email_payeur?: string | null
-          enregistre_le?: string | null
-          id?: string | null
-          inscription_id?: string | null
-          montant?: number | null
-          paypal_cree_le?: string | null
-          paypal_transaction_id?: string | null
-          statut?:
-            | Database["public"]["Enums"]["statut_transaction_paypal"]
-            | null
-        }
-        Relationships: []
-      }
       utilisateurs: {
         Row: {
           activite: string | null
@@ -1061,14 +964,12 @@ export type Database = {
           commune: string | null
           couleur_conges: string | null
           cree_le: string
-          date_naissance: string | null
           debut_abonnement: string | null
           email: string
           est_actif: boolean
           fin_abonnement: string | null
           id: string
           modifie_le: string
-          mot_de_passe_hash: string | null
           nom: string
           prenom: string
           role: Database["public"]["Enums"]["role_utilisateur"]
@@ -1081,14 +982,12 @@ export type Database = {
           commune?: string | null
           couleur_conges?: string | null
           cree_le?: string
-          date_naissance?: string | null
           debut_abonnement?: string | null
           email: string
           est_actif?: boolean
           fin_abonnement?: string | null
           id?: string
           modifie_le?: string
-          mot_de_passe_hash?: string | null
           nom: string
           prenom: string
           role?: Database["public"]["Enums"]["role_utilisateur"]
@@ -1101,14 +1000,12 @@ export type Database = {
           commune?: string | null
           couleur_conges?: string | null
           cree_le?: string
-          date_naissance?: string | null
           debut_abonnement?: string | null
           email?: string
           est_actif?: boolean
           fin_abonnement?: string | null
           id?: string
           modifie_le?: string
-          mot_de_passe_hash?: string | null
           nom?: string
           prenom?: string
           role?: Database["public"]["Enums"]["role_utilisateur"]
@@ -1213,8 +1110,8 @@ export type Database = {
       }
       vue_prochains_ateliers: {
         Row: {
-          antenne: string | null
-          antenne_slug: string | null
+          espace: string | null
+          espace_slug: string | null
           date_atelier: string | null
           description: string | null
           description_courte: string | null
@@ -1283,7 +1180,7 @@ export type Database = {
       }
     }
     Enums: {
-      acces_document: "membres" | "premium" | "tous"
+      acces_document: "membres" | "tous"
       categorie_idee:
         | "evolution_site"
         | "ateliers"
@@ -1299,7 +1196,6 @@ export type Database = {
         | "administrateur"
         | "inscrit"
         | "membre"
-        | "membre_premium"
       statut_atelier: "brouillon" | "publie" | "complet" | "annule" | "termine"
       statut_inscription: "en_attente" | "confirme" | "annule"
       statut_moderation: "en_attente" | "approuve" | "rejete"
@@ -1438,7 +1334,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      acces_document: ["membres", "premium", "tous"],
+      acces_document: ["membres", "tous"],
       categorie_idee: [
         "evolution_site",
         "ateliers",
@@ -1455,7 +1351,6 @@ export const Constants = {
         "administrateur",
         "inscrit",
         "membre",
-        "membre_premium",
       ],
       statut_atelier: ["brouillon", "publie", "complet", "annule", "termine"],
       statut_inscription: ["en_attente", "confirme", "annule"],

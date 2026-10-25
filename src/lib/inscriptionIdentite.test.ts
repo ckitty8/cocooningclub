@@ -9,7 +9,7 @@ const base: InscriptionIdentifiable = {
   date_naissance: null,
 };
 
-const compte = { prenom: "Marie", nom: "Dupont", email: "marie@exemple.fr", telephone: "0601020304", date_naissance: "1990-05-12" };
+const compte = { prenom: "Marie", nom: "Dupont", email: "marie@exemple.fr", telephone: "0601020304" };
 
 describe("identité d'une pré-inscription", () => {
   it("utilise les champs saisis pour un visiteur", () => {
@@ -24,11 +24,11 @@ describe("identité d'une pré-inscription", () => {
       nom: "Dupont",
       email: "marie@exemple.fr",
       telephone: "0601020304",
-      dateNaissance: "1990-05-12",
+      dateNaissance: null,
     });
   });
 
-  it("préfère le téléphone et la date saisis pour l'atelier à ceux du compte", () => {
+  it("préfère le téléphone et la date saisis pour l'atelier à la fiche du compte", () => {
     const res = inscIdentite({ ...base, telephone_invite: "0699999999", date_naissance: "1991-01-01", utilisateurs: compte });
     expect(res.telephone).toBe("0699999999");
     expect(res.dateNaissance).toBe("1991-01-01");

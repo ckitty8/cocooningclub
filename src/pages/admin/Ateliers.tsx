@@ -43,10 +43,10 @@ interface Atelier {
   lien_paypal: string | null;
   niveau: Niveau | null;
   statut: Statut;
-  antenne_id: string;
+  espace_id: string;
 }
 
-interface Antenne {
+interface Espace {
   id: string;
   nom: string;
   slug: string | null;
@@ -57,7 +57,7 @@ const emptyForm = {
   date_atelier: "", date_fin_inscription: "", heure_debut: "", heure_fin: "", duree: "", lieu: "", adresse: "", url_image: "",
   places_max: 10, tarif_standard: "", tarif_adherent: "", tarif_affichage: "",
   lien_paypal: "", niveau: "" as Niveau | "", statut: "brouillon" as Statut,
-  antenne_id: "",
+  espace_id: "",
 };
 
 // Brouillon persistant : si l'onglet est déchargé par le navigateur (mise en
@@ -83,7 +83,7 @@ const Ateliers = () => {
   const [affichage, setAffichage] = useState<AffichageAteliers>("cartes");
   const [ateliers, setAteliers] = useState<Atelier[]>([]);
   const colonneTarifAdherent = ateliers.some(a => "tarif_adherent" in a);
-  const [antennes, setAntennes] = useState<Antenne[]>([]);
+  const [espaces, setEspaces] = useState<Espace[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<{ open: boolean; atelier: Atelier | null }>({ open: false, atelier: null });
   const [form, setForm] = useState(emptyForm);
@@ -101,7 +101,7 @@ const Ateliers = () => {
   // Recherche + filtres
   const [search, setSearch] = useState("");
   const [filterStatut, setFilterStatut] = useState<Statut | "">("");
-  const [filterAntenne, setFilterAntenne] = useState<string>("toutes"); // id antenne ou "toutes"
+  const [filterEspace, setFilterEspace] = useState<string>("toutes"); // id espace ou "toutes"
 
   const fetchAteliers = async () => {
     // Marque comme "termine" les ateliers publiés/complets dont la date est passée.
@@ -154,8 +154,8 @@ const Ateliers = () => {
   };
 
   useEffect(() => {
-    supabase.from("antennes").select("id, nom, slug").order("ordre_affichage").then(({ data }) => {
-      setAntennes((data as Antenne[]) ?? []);
+    supabase.from("espaces").select("id, nom, slug").order("ordre_affichage").then(({ data }) => {
+      setEspaces((data as Espace[]) ?? []);
     });
   }, []);
 
@@ -217,14 +217,14 @@ const Ateliers = () => {
   const filtered = ateliers.filter(a => {
     const matchSearch = a.titre.toLowerCase().includes(search.toLowerCase());
     const matchStatut = filterStatut === "" || a.statut === filterStatut;
-    const matchAntenne = filterAntenne === "toutes" || a.antenne_id === filterAntenne;
-    return matchSearch && matchStatut && matchAntenne;
+    const matchEspace = filterEspace === "toutes" || a.espace_id === filterEspace;
+    return matchSearch && matchStatut && matchEspace;
   });
 
-  const countByAntenne = (antenneId: string) =>
-    antenneId === "toutes"
+  const countByEspace = (espaceId: string) =>
+    espaceId === "toutes"
       ? ateliers.length
-      : ateliers.filter(a => a.antenne_id === antenneId).length;
+      : ateliers.filter(a => a.espace_id === espaceId).length;
 
   const countByStatut = (s: Statut | "") =>
     s === "" ? ateliers.length : ateliers.filter(a => a.statut === s).length;
@@ -243,7 +243,7 @@ const Ateliers = () => {
       tarif_affichage: a.tarif_affichage ?? "",
       lien_paypal: a.lien_paypal ?? "",
       niveau: a.niveau ?? "", statut: a.statut,
-      antenne_id: a.antenne_id,
+      espace_id: a.espace_id,
     });
     setModal({ open: true, atelier: a });
   };
@@ -263,7 +263,7 @@ const Ateliers = () => {
       tarif_affichage: a.tarif_affichage ?? "",
       lien_paypal: a.lien_paypal ?? "",
       niveau: a.niveau ?? "", statut: "brouillon",
-      antenne_id: a.antenne_id,
+      espace_id: a.espace_id,
     });
     setModal({ open: true, atelier: null });
   };
@@ -292,7 +292,7 @@ const Ateliers = () => {
       }
     }
 
-    if (!form.antenne_id) {
+    if (!form.espace_id) {
       toast.error("Choisis un espace");
       setSaving(false);
       return;
@@ -324,7 +324,7 @@ const Ateliers = () => {
       lien_paypal: form.lien_paypal || null,
       niveau: (form.niveau as Niveau) || "debutant",
       statut: form.statut,
-      antenne_id: form.antenne_id,
+      espace_id: form.espace_id,
     };
     if (modal.atelier) {
       const before = modal.atelier;
@@ -573,14 +573,14 @@ const Ateliers = () => {
           />
         </div>
         <select
-          value={filterAntenne}
-          onChange={e => setFilterAntenne(e.target.value)}
+          value={filterEspace}
+          onChange={e => setFilterEspace(e.target.value)}
           aria-label="Filtrer par espace"
           className="border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary"
         >
-          <option value="toutes">Tous les espaces ({countByAntenne("toutes")})</option>
-          {antennes.map(c => (
-            <option key={c.id} value={c.id}>{c.nom} ({countByAntenne(c.id)})</option>
+          <option value="toutes">Tous les espaces ({countByEspace("toutes")})</option>
+          {espaces.map(c => (
+            <option key={c.id} value={c.id}>{c.nom} ({countByEspace(c.id)})</option>
           ))}
         </select>
         <select
@@ -594,9 +594,9 @@ const Ateliers = () => {
             <option key={st} value={st}>{statutLabels[st]} ({countByStatut(st)})</option>
           ))}
         </select>
-        {(search || filterAntenne !== "toutes" || filterStatut !== "") && (
+        {(search || filterEspace !== "toutes" || filterStatut !== "") && (
           <button
-            onClick={() => { setSearch(""); setFilterAntenne("toutes"); setFilterStatut(""); }}
+            onClick={() => { setSearch(""); setFilterEspace("toutes"); setFilterStatut(""); }}
             className="flex items-center gap-1 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground"
           >
             <X className="w-4 h-4" /> Réinitialiser
@@ -611,7 +611,7 @@ const Ateliers = () => {
       ) : affichage === "calendrier" ? (
         <VueCalendrier
           ateliers={filtered}
-          slugDe={antenneId => antennes.find(c => c.id === antenneId)?.slug ?? undefined}
+          slugDe={espaceId => espaces.find(c => c.id === espaceId)?.slug ?? undefined}
           onCreer={dateIso => openAdd(dateIso)}
         />
       ) : filtered.length === 0 ? (
@@ -642,7 +642,7 @@ const Ateliers = () => {
                 const moisPrecedent = i > 0
                   ? new Date(filtered[i - 1].date_atelier).toLocaleDateString("fr-FR", { month: "long", year: "numeric" })
                   : null;
-                const logo = ESPACES_PAR_SLUG[antennes.find(c => c.id === a.antenne_id)?.slug ?? ""]?.logo;
+                const logo = ESPACES_PAR_SLUG[espaces.find(c => c.id === a.espace_id)?.slug ?? ""]?.logo;
                 return (
                   <Fragment key={a.id}>
                     {mois !== moisPrecedent && (
@@ -841,15 +841,15 @@ const Ateliers = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Espace *</label>
-                <select value={form.antenne_id} onChange={e => f("antenne_id", e.target.value)}
+                <select value={form.espace_id} onChange={e => f("espace_id", e.target.value)}
                   className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary">
                   <option value="">— Choisir un espace —</option>
-                  {antennes.map(c => (
+                  {espaces.map(c => (
                     <option key={c.id} value={c.id}>{c.nom}</option>
                   ))}
                 </select>
-                {antennes.length === 0 && (
-                  <p className="text-xs text-amber-600 mt-1">Aucun espace en base. Crée-en un côté Supabase (table antennes) avant de continuer.</p>
+                {espaces.length === 0 && (
+                  <p className="text-xs text-amber-600 mt-1">Aucun espace en base. Crée-en un côté Supabase (table espaces) avant de continuer.</p>
                 )}
               </div>
               <div>
@@ -985,7 +985,7 @@ const Ateliers = () => {
             <div className="flex justify-end gap-3 p-6 border-t">
               <button onClick={closeModal}
                 className="px-4 py-2 text-sm border rounded-full hover:bg-muted transition-colors">Annuler</button>
-              <button onClick={handleSave} disabled={saving || !form.titre || !form.date_atelier || !form.heure_debut || !form.antenne_id}
+              <button onClick={handleSave} disabled={saving || !form.titre || !form.date_atelier || !form.heure_debut || !form.espace_id}
                 className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-full hover:opacity-90 transition-opacity disabled:opacity-50">
                 {saving ? "Enregistrement..." : "Enregistrer"}
               </button>

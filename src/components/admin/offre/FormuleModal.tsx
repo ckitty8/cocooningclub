@@ -24,7 +24,7 @@ const FormuleModal = ({ formule, espaces, onClose, onSaved }: Props) => {
   const [duree, setDuree] = useState(String(formule.duree_mois));
   const [lien, setLien] = useState(formule.lien_helloasso ?? "");
   const [modes, setModes] = useState<string[]>(formule.modes_reglement);
-  const [espacesIds, setEspacesIds] = useState<string[]>(formule.formule_espaces.map(fe => fe.antenne_id));
+  const [espacesIds, setEspacesIds] = useState<string[]>(formule.formule_espaces.map(fe => fe.espace_id));
   const [active, setActive] = useState(formule.est_active);
   const [saving, setSaving] = useState(false);
 
@@ -47,7 +47,7 @@ const FormuleModal = ({ formule, espaces, onClose, onSaved }: Props) => {
     prix: Number.isFinite(prixNombre) ? prixNombre : 0,
     duree_mois: Number.isInteger(dureeNombre) && dureeNombre > 0 ? dureeNombre : 12,
     est_active: active,
-    formule_espaces: espacesIds.map(antenne_id => ({ antenne_id })),
+    formule_espaces: espacesIds.map(espace_id => ({ espace_id })),
   };
 
   const enregistrer = async () => {
@@ -76,7 +76,7 @@ const FormuleModal = ({ formule, espaces, onClose, onSaved }: Props) => {
         if (errDel) throw errDel;
       }
       if (espacesIds.length > 0) {
-        const { error } = await supabase.from("formule_espaces").insert(espacesIds.map(antenne_id => ({ formule_id: id, antenne_id })));
+        const { error } = await supabase.from("formule_espaces").insert(espacesIds.map(espace_id => ({ formule_id: id, espace_id })));
         if (error) throw error;
       }
       logAction(creation ? "formule.create" : "formule.update", "formules", id, { nom: valeurs.nom, prix: valeurs.prix });

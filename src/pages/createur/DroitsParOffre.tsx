@@ -11,7 +11,7 @@ interface FormuleLue {
   nom: string;
   couleur: string;
   ordre: number;
-  formule_espaces: { antenne_id: string }[];
+  formule_espaces: { espace_id: string }[];
 }
 
 /** Les droits par offre, calculés avec les formules enregistrées (ou, avant la migration, celles du bulletin d'adhésion). */
@@ -21,13 +21,13 @@ const DroitsParOffre = () => {
 
   useEffect(() => {
     document.title = "Droits par offre · Cocooning Club";
-    supabase.from("formules").select("id, nom, couleur, ordre, formule_espaces(antenne_id)").order("ordre")
+    supabase.from("formules").select("id, nom, couleur, ordre, formule_espaces(espace_id)").order("ordre")
       .then(({ data, error }) => setFormules(error ? [] : ((data ?? []) as unknown as FormuleLue[])));
   }, []);
 
   const reelles = (formules ?? []).length > 0;
   const lignes = reelles
-    ? (formules ?? []).map(f => ({ id: f.id, nom: f.nom, couleur: f.couleur, espaces: f.formule_espaces.map(fe => fe.antenne_id) }))
+    ? (formules ?? []).map(f => ({ id: f.id, nom: f.nom, couleur: f.couleur, espaces: f.formule_espaces.map(fe => fe.espace_id) }))
     : OFFRES_SIMULABLES.map(o => ({
         id: o.code, nom: o.formule, couleur: o.couleur,
         espaces: espaces.filter(e => o.slugs.includes(e.slug)).map(e => e.id),

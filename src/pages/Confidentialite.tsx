@@ -64,7 +64,16 @@ const Confidentialite = () => {
             <p>
               Vos données sont conservées le temps nécessaire à la gestion de votre relation avec l'association
               (inscriptions, adhésion) et supprimées ou anonymisées au-delà, sauf obligation légale contraire.
+              Plus précisément :
             </p>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>date de naissance (pour les ateliers qui la demandent) : effacée 30 jours après l'atelier ;</li>
+              <li>pré-inscriptions sans compte : anonymisées 3 ans après la date de l'atelier ;</li>
+              <li>messages envoyés via le formulaire de contact : supprimés après 3 ans ;</li>
+              <li>statistiques de fréquentation du site : supprimées après 13 mois ;</li>
+              <li>journal des actions de l'équipe : supprimé après 12 mois ;</li>
+              <li>compte membre : conservé jusqu'à votre demande de suppression.</li>
+            </ul>
           </section>
 
           <section className="space-y-2">

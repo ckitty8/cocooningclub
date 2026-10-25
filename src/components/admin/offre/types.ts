@@ -17,7 +17,7 @@ export interface Formule {
   modes_reglement: string[];
   est_active: boolean;
   ordre: number;
-  formule_espaces: { antenne_id: string }[];
+  formule_espaces: { espace_id: string }[];
 }
 
 export interface Adhesion {

@@ -90,7 +90,7 @@ const PreInscriptions = () => {
       const [inscRes, tplRes, atelRes, listeRes] = await withTimeout(Promise.all([
         supabase
           .from("inscriptions")
-          .select("*, ateliers(id, titre, date_atelier, heure_debut, lieu, adresse), utilisateurs(prenom, nom, email, telephone, date_naissance, role)")
+          .select("*, ateliers(id, titre, date_atelier, heure_debut, lieu, adresse), utilisateurs(prenom, nom, email, telephone, role)")
           .order("inscrit_le", { ascending: false }),
         supabase
           .from("parametres_messages")
@@ -105,7 +105,7 @@ const PreInscriptions = () => {
         // Tous les ateliers : un bloc par atelier dans l'accordéon.
         supabase
           .from("ateliers")
-          .select("id, titre, date_atelier, heure_debut, lieu, statut, tarif_standard, places_max, places_disponibles, antenne_id")
+          .select("id, titre, date_atelier, heure_debut, lieu, statut, tarif_standard, places_max, places_disponibles, espace_id")
           .order("date_atelier"),
       ]));
 
@@ -124,7 +124,7 @@ const PreInscriptions = () => {
         if (guestEmails.length) {
           const { data: matched } = await supabase
             .from("utilisateurs")
-            .select("prenom, nom, email, telephone, date_naissance, role")
+            .select("prenom, nom, email, telephone, role")
             .in("email", guestEmails);
           const byEmail = new Map<string, NonNullable<Inscription["utilisateurs"]>>(
             (matched ?? []).map(u => [String(u.email).toLowerCase(), u as NonNullable<Inscription["utilisateurs"]>])

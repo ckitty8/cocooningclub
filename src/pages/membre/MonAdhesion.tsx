@@ -34,7 +34,7 @@ interface MonAdhesionLigne {
     couleur: string;
     prix: number;
     duree_mois: number;
-    formule_espaces: { antenne_id: string }[];
+    formule_espaces: { espace_id: string }[];
   } | null;
 }
 
@@ -61,10 +61,10 @@ const MonAdhesion = () => {
     if (!profile?.id) return;
     Promise.all([
       supabase.from("adhesions")
-        .select("*, formules(nom, description, couleur, prix, duree_mois, formule_espaces(antenne_id))")
+        .select("*, formules(nom, description, couleur, prix, duree_mois, formule_espaces(espace_id))")
         .eq("utilisateur_id", profile.id)
         .order("cree_le", { ascending: false }),
-      supabase.from("antennes").select("id, nom"),
+      supabase.from("espaces").select("id, nom"),
     ]).then(([aRes, eRes]) => {
       setAdhesions((aRes.data as MonAdhesionLigne[]) ?? []);
       setEspaces(Object.fromEntries(((eRes.data ?? []) as { id: string; nom: string }[]).map(e => [e.id, e.nom])));
@@ -77,7 +77,7 @@ const MonAdhesion = () => {
   const historique = adhesions.filter(a => a.id !== courante?.id);
   const statut = courante ? statutAdhesion(courante, aujourdhuiIso()) : null;
   const photos = courante ? autorisationDepuisChamps(courante, courante.utilisateur_id) : null;
-  const espacesInclus = (courante?.formules?.formule_espaces ?? []).map(fe => espaces[fe.antenne_id]).filter(Boolean);
+  const espacesInclus = (courante?.formules?.formule_espaces ?? []).map(fe => espaces[fe.espace_id]).filter(Boolean);
 
   return (
     <MembreLayout>

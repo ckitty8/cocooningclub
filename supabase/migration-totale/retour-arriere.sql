@@ -6,7 +6,18 @@
 -- decrement_atelier_spots (20261023000010), fonction morte, n'est pas recréée.
 -- Les tables de sauvegarde supprimées par 20261023000008 (6 inscriptions de test d'avril) ne sont PAS recréées.
 -- Sans la fonction supprimer_membre, le bouton « Supprimer » de l'admin échoue : revenir aussi au code précédent.
+-- Si migration-deploiement.sql a été appliquée, lancer D'ABORD retour-arriere-deploiement.sql (sinon « antennes » n'existe plus).
+-- Nettoyage premium / mot_de_passe_hash (20261024000000) : les valeurs d'enum retirées et la colonne vide ne sont PAS
+-- recréées (inutilisées). Purge RGPD (20261024000001) : retirée ci-dessous (fonction et jobs pg_cron).
 BEGIN;
+DO $$
+BEGIN
+  IF to_regclass('cron.job') IS NOT NULL THEN
+    PERFORM cron.unschedule(jobid) FROM cron.job WHERE jobname IN ('purger_donnees_anciennes_daily', 'depublier_ateliers_passes_daily');
+  END IF;
+END
+$$;
+DROP FUNCTION IF EXISTS private.purger_donnees_anciennes();
 ALTER TABLE public.ateliers DROP COLUMN IF EXISTS tarif_adherent;
 DROP TRIGGER  IF EXISTS trg_verifier_validation_impayee ON public.inscriptions;
 DROP FUNCTION IF EXISTS private.bloquer_validation_impayee();

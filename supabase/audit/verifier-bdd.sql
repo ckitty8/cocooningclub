@@ -65,8 +65,8 @@ LEFT JOIN public.inscriptions i ON i.atelier_id = a.id AND i.statut = 'confirme'
 GROUP BY a.id, a.titre, a.places_max, a.places_disponibles
 HAVING a.places_disponibles <> greatest(a.places_max - count(i.id), 0)
 UNION ALL
-SELECT 'Atelier sans espace (antenne)', 'erreur', a.id::text, a.titre
-FROM public.ateliers a WHERE a.antenne_id IS NULL
+SELECT 'Atelier sans espace', 'erreur', a.id::text, a.titre
+FROM public.ateliers a WHERE a.espace_id IS NULL
 UNION ALL
 SELECT 'Atelier payant sans tarif', 'avertissement', a.id::text, a.titre
 FROM public.ateliers a WHERE a.tarif_standard IS NULL

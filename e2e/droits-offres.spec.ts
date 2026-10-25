@@ -12,12 +12,12 @@ const ESPACES = [
   { id: "a0000000-0000-4000-8000-000000000003", nom: "Business", slug: "business", ordre_affichage: 3 },
 ];
 
-const atelier = (n: number, titre: string, antenne: (typeof ESPACES)[number]) => ({
+const atelier = (n: number, titre: string, espace: (typeof ESPACES)[number]) => ({
   ...ATELIER_TEST,
   id: `aaaaaaaa-0000-4000-8000-00000000010${n}`,
   titre,
-  antenne_id: antenne.id,
-  antennes: { slug: antenne.slug },
+  espace_id: espace.id,
+  espaces: { slug: espace.slug },
   tarif_standard: 25,
   tarif_affichage: "25 €",
 });
@@ -30,7 +30,7 @@ const ATELIERS = [
 
 const ouvrir = async (page: import("@playwright/test").Page) => {
   const profil = profilTest();
-  await mockSupabase(page, { profil, antennes: ESPACES, ateliers: ATELIERS });
+  await mockSupabase(page, { profil, espaces: ESPACES, ateliers: ATELIERS });
   await connecterEn(page, profil);
 };
 
@@ -75,7 +75,7 @@ test("la page « Droits par offre » du créateur résume la règle", async ({ p
 
 test("deux tarifs : l'adhérente Créatif voit le prix adhérente pour un atelier Business", async ({ page }) => {
   const profil = profilTest();
-  await mockSupabase(page, { profil, antennes: ESPACES, ateliers: ATELIERS.map(a => ({ ...a, tarif_adherent: 18 })) });
+  await mockSupabase(page, { profil, espaces: ESPACES, ateliers: ATELIERS.map(a => ({ ...a, tarif_adherent: 18 })) });
   await connecterEn(page, profil);
   await page.goto("/admin/createur/simulateur");
   await page.getByRole("button", { name: "Adhérente Créatif" }).click();

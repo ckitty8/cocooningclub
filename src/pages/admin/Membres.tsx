@@ -6,7 +6,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { logAction } from "@/utils/logAction";
 import { withTimeout } from "@/utils/withTimeout";
 import { toast } from "sonner";
-import { formaterDateNaissance } from "@/lib/anniversaires";
 import BadgePhotos from "@/components/BadgePhotos";
 import { useAutorisationsImage } from "@/hooks/useAutorisationsImage";
 import { useOffresParPersonne } from "@/hooks/useOffres";
@@ -21,7 +20,6 @@ interface Utilisateur {
   prenom: string;
   email: string;
   telephone: string | null;
-  date_naissance: string | null;
   url_avatar: string | null;
   debut_abonnement: string | null;
   fin_abonnement: string | null;
@@ -44,7 +42,6 @@ const roleLabel: Record<UserRole, string> = {
 
 const emptyEditForm = {
   nom: "", prenom: "", email: "", telephone: "",
-  date_naissance: "",
   debut_abonnement: "", fin_abonnement: "",
   role: "inscrit" as UserRole,
   est_actif: false,
@@ -52,7 +49,6 @@ const emptyEditForm = {
 
 const emptyCreateForm = {
   nom: "", prenom: "", email: "", telephone: "",
-  date_naissance: "",
   mot_de_passe: "", role: "inscrit" as UserRole,
   debut_abonnement: "", fin_abonnement: "",
   est_actif: false, // Inactif par défaut → pas de mail Supabase envoyé
@@ -114,7 +110,7 @@ const Membres = () => {
     return matchSearch && matchRole && matchActif && matchOffre;
   });
   const nomsOffres = Array.from(new Set(Array.from(offres.values()).flat().map(o => nomCourtOffre(o.nom)))).sort();
-  const nbColonnes = offresDisponibles ? 8 : 7;
+  const nbColonnes = offresDisponibles ? 7 : 6;
 
   // ── Création ──────────────────────────────────────────────
   const handleCreate = async () => {
@@ -164,7 +160,6 @@ const Membres = () => {
       nom: createForm.nom,
       prenom: createForm.prenom,
       telephone: createForm.telephone || null,
-      date_naissance: createForm.date_naissance || null,
       role: createForm.role,
       est_actif: createForm.est_actif,
       debut_abonnement: createForm.debut_abonnement || null,
@@ -195,7 +190,7 @@ const Membres = () => {
   const openEdit = (m: Utilisateur) => {
     setEditForm({
       nom: m.nom, prenom: m.prenom, email: m.email,
-      telephone: m.telephone ?? "", date_naissance: m.date_naissance ?? "",
+      telephone: m.telephone ?? "",
       debut_abonnement: m.debut_abonnement ?? "",
       fin_abonnement: m.fin_abonnement ?? "", role: m.role,
       est_actif: m.est_actif,
@@ -228,7 +223,6 @@ const Membres = () => {
     const payload: TablesUpdate<"utilisateurs"> = {
       nom: editForm.nom, prenom: editForm.prenom, email: editForm.email,
       telephone: editForm.telephone || null,
-      date_naissance: editForm.date_naissance || null,
       debut_abonnement: editForm.debut_abonnement || null,
       fin_abonnement: editForm.fin_abonnement || null,
     };
@@ -383,7 +377,6 @@ const Membres = () => {
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground">Rôle</th>
                 {offresDisponibles && <th className="text-left px-5 py-3 font-medium text-muted-foreground">Offre en cours</th>}
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground">Statut</th>
-                <th className="text-left px-5 py-3 font-medium text-muted-foreground hidden md:table-cell">Naissance</th>
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground hidden md:table-cell">Consentement</th>
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground hidden lg:table-cell">Abonnement</th>
                 <th className="px-5 py-3" />
@@ -415,9 +408,6 @@ const Membres = () => {
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${m.est_actif ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}>
                       {m.est_actif ? "Actif" : "Inactif"}
                     </span>
-                  </td>
-                  <td className="px-5 py-3.5 hidden md:table-cell text-xs text-muted-foreground">
-                    {formaterDateNaissance(m.date_naissance)}
                   </td>
                   <td className="px-5 py-3.5 hidden md:table-cell">
                     <BadgePhotos autorisation={autorisations.get(m.id)} avecLibelle={false} />
@@ -522,15 +512,9 @@ const Membres = () => {
                   <p className="text-xs text-muted-foreground mt-1">Le membre pourra le changer via "Mot de passe oublié"</p>
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">Téléphone</label>
-                  <input value={createForm.telephone} onChange={e => setCreateForm(f => ({ ...f, telephone: e.target.value }))} className={fieldClass} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">Date de naissance</label>
-                  <input type="date" value={createForm.date_naissance} onChange={e => setCreateForm(f => ({ ...f, date_naissance: e.target.value }))} className={fieldClass} />
-                </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Téléphone</label>
+                <input value={createForm.telephone} onChange={e => setCreateForm(f => ({ ...f, telephone: e.target.value }))} className={fieldClass} />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Rôle</label>
@@ -586,15 +570,9 @@ const Membres = () => {
                 <label className="block text-sm font-medium mb-1.5">Email</label>
                 <input type="email" value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} className={fieldClass} />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">Téléphone</label>
-                  <input value={editForm.telephone} onChange={e => setEditForm(f => ({ ...f, telephone: e.target.value }))} className={fieldClass} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">Date de naissance</label>
-                  <input type="date" value={editForm.date_naissance} onChange={e => setEditForm(f => ({ ...f, date_naissance: e.target.value }))} className={fieldClass} />
-                </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Téléphone</label>
+                <input value={editForm.telephone} onChange={e => setEditForm(f => ({ ...f, telephone: e.target.value }))} className={fieldClass} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>

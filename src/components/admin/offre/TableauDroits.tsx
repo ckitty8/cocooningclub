@@ -53,7 +53,7 @@ const TableauDroits = ({ formules, espaces }: Props) => {
             <tr key={l.cle} className="border-t">
               <td className="px-4 py-3">{l.titre}</td>
               {espaces.map(e => {
-                const droit = droitAtelier({ antenne_id: e.id, tarif_standard: 25 }, espaces, l.offres);
+                const droit = droitAtelier({ espace_id: e.id, tarif_standard: 25 }, espaces, l.offres);
                 return (
                   <td key={e.id} className="px-4 py-3 text-center">
                     <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STYLES[droit.etat].classe}`}>{STYLES[droit.etat].libelle}</span>

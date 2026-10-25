@@ -14,8 +14,8 @@ export interface Workshop {
   tarif_standard: number;
   statut: string;
   date_fin_inscription?: string | null;
-  /** Espace de l'atelier (jointure sur `antennes`), si demandé dans la requête. */
-  antennes?: { slug: string } | null;
+  /** Espace de l'atelier (jointure sur `espaces`), si demandé dans la requête. */
+  espaces?: { slug: string } | null;
 }
 
 export const FRENCH_MONTHS = [

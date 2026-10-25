@@ -9,7 +9,7 @@ import { compressImage } from "@/utils/compressImage";
 import { ROLES } from "@/lib/roles";
 import {
   User, Mail, Phone, Image as ImageIcon, Save, Upload, Trash2, Loader2,
-  Info, Lock, CalendarRange, Receipt, KeyRound, Cake,
+  Info, Lock, CalendarRange, Receipt, KeyRound,
 } from "lucide-react";
 
 const MAX_AVATAR_MB = 2;
@@ -27,7 +27,7 @@ interface PaiementHistorique {
 
 const MonCompte = () => {
   const { profile, user, roleReel, refreshProfile } = useAuth();
-  const [form, setForm] = useState({ prenom: "", nom: "", email: "", telephone: "", date_naissance: "" });
+  const [form, setForm] = useState({ prenom: "", nom: "", email: "", telephone: "" });
   const [originalEmail, setOriginalEmail] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -49,7 +49,6 @@ const MonCompte = () => {
         nom: profile.nom ?? "",
         email: profile.email ?? "",
         telephone: profile.telephone ?? "",
-        date_naissance: profile.date_naissance ?? "",
       });
       setOriginalEmail(profile.email ?? "");
     }
@@ -84,8 +83,7 @@ const MonCompte = () => {
     form.prenom !== (profile.prenom ?? "") ||
     form.nom !== (profile.nom ?? "") ||
     form.email !== originalEmail ||
-    form.telephone !== (profile.telephone ?? "") ||
-    form.date_naissance !== (profile.date_naissance ?? "");
+    form.telephone !== (profile.telephone ?? "");
   const emailChanged = form.email !== originalEmail;
 
   const handleSave = async () => {
@@ -113,7 +111,6 @@ const MonCompte = () => {
       prenom: form.prenom.trim(),
       nom: form.nom.trim(),
       telephone: form.telephone.trim() || null,
-      date_naissance: form.date_naissance || null,
     };
     if (emailChanged) payload.email = form.email.trim();
 
@@ -275,12 +272,6 @@ const MonCompte = () => {
               <div>
                 <label className="text-sm font-medium mb-1.5 flex items-center gap-1.5"><Phone className="w-3.5 h-3.5" /> Téléphone</label>
                 <input type="tel" value={form.telephone} onChange={e => setForm({ ...form, telephone: e.target.value })} className="w-full rounded-xl border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium mb-1.5 flex items-center gap-1.5"><Cake className="w-3.5 h-3.5" /> Date de naissance</label>
-                <input type="date" value={form.date_naissance} onChange={e => setForm({ ...form, date_naissance: e.target.value })} className="w-full rounded-xl border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
             </div>
             {emailChanged && (

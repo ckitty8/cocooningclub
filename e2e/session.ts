@@ -14,7 +14,6 @@ export const profilTest = (surcharge: Record<string, unknown> = {}) => ({
   prenom: "Christelle",
   email: "christellelab@gmail.com",
   telephone: null,
-  date_naissance: null,
   url_avatar: null,
   debut_abonnement: null,
   fin_abonnement: null,

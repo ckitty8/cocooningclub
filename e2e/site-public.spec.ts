@@ -1,11 +1,13 @@
 import { expect, test } from "@playwright/test";
-import { ATELIER_TEST, mockSupabase } from "./supabaseMock";
+import { ATELIER_ORACLE, ATELIER_TEST, MEMBRE_TEST, mockSupabase } from "./supabaseMock";
 
 // Le formulaire ignore les envois faits moins de 3 s après son ouverture
-// (anti-robot) : les tests attendent ce délai avant d'envoyer.
+// (anti-robot) : les tests avancent l'horloge du navigateur de ce délai
+// plutôt que de l'attendre pour de vrai.
 const DELAI_ANTI_ROBOT = 3_100;
 
 test.beforeEach(async ({ page }) => {
+  await page.clock.install();
   await mockSupabase(page);
 });
 
@@ -13,7 +15,9 @@ test("l'accueil affiche les espaces et les ateliers à venir", async ({ page }) 
   await page.goto("/");
   await expect(page).toHaveTitle(/Cocooning Club/);
   await expect(page.getByRole("heading", { level: 1, name: "À propos du Cocooning Club" })).toBeVisible();
-  for (const espace of ["L'Espace Papotages", "L'Espace Créatif", "L'Espace Business"]) {
+  await expect(page.getByRole("heading", { name: "Nos espaces" })).toBeVisible();
+  // Cartes à retournement : le nom de l'espace est dans un titre lisible par les lecteurs d'écran.
+  for (const espace of ["Papotages", "Créatifs", "Business"]) {
     await expect(page.getByRole("heading", { name: espace, exact: true })).toBeAttached();
   }
   await expect(page.getByText(ATELIER_TEST.titre).first()).toBeVisible();
@@ -34,7 +38,7 @@ test("la pré-inscription valide les champs puis envoie uniquement l'identité",
   await page.getByPlaceholder("marie@email.com").fill("lea@exemple.fr");
   await page.getByRole("dialog").locator("select").selectOption(ATELIER_TEST.titre);
   await page.getByRole("checkbox").check();
-  await page.waitForTimeout(DELAI_ANTI_ROBOT);
+  await page.clock.fastForward(DELAI_ANTI_ROBOT);
   await envoyer.click();
 
   await expect(page.getByRole("heading", { name: "Pré-inscription enregistrée !" })).toBeVisible();
@@ -48,6 +52,56 @@ test("la pré-inscription valide les champs puis envoie uniquement l'identité",
   }]);
 });
 
+test("un membre connecté se pré-inscrit avec son compte, sans délai ni champs invité", async ({ page }) => {
+  const mock = await mockSupabase(page, { membre: MEMBRE_TEST });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Pré-inscription" }).first().click();
+
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.getByPlaceholder("Marie Dupont")).toHaveValue("Marie Dupont");
+  await expect(dialog.getByPlaceholder("Marie Dupont")).not.toBeEditable();
+  await expect(dialog.getByPlaceholder("marie@email.com")).toHaveValue(MEMBRE_TEST.email);
+  await expect(dialog.getByPlaceholder("marie@email.com")).not.toBeEditable();
+
+  await dialog.locator("select").selectOption(ATELIER_TEST.titre);
+  await page.getByRole("checkbox").check();
+  // Pas d'attente anti-robot : un membre est authentifié.
+  await page.getByRole("button", { name: /Envoyer ma pré-inscription/ }).click();
+
+  await expect(page.getByRole("heading", { name: "Pré-inscription enregistrée !" })).toBeVisible();
+  expect(mock.inserts.inscriptions).toEqual([{
+    atelier_id: ATELIER_TEST.id,
+    utilisateur_id: MEMBRE_TEST.id,
+    telephone_invite: null,
+    date_naissance: null,
+  }]);
+});
+
+test("l'atelier Pierre & Oracle exige la date de naissance avant l'envoi", async ({ page }) => {
+  const mock = await mockSupabase(page, { membre: MEMBRE_TEST, ateliers: [ATELIER_TEST, ATELIER_ORACLE] });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Pré-inscription" }).first().click();
+
+  const dialog = page.getByRole("dialog");
+  await dialog.locator("select").selectOption(ATELIER_ORACLE.titre);
+  await page.getByRole("checkbox").check();
+  await page.getByRole("button", { name: /Envoyer ma pré-inscription/ }).click();
+
+  await expect(page.getByText("La date de naissance est requise pour cet atelier.")).toBeVisible();
+  expect(mock.inserts.inscriptions).toBeUndefined();
+
+  await dialog.locator('input[type="date"]').fill("1990-05-17");
+  await page.getByRole("button", { name: /Envoyer ma pré-inscription/ }).click();
+
+  await expect(page.getByRole("heading", { name: "Pré-inscription enregistrée !" })).toBeVisible();
+  expect(mock.inserts.inscriptions).toEqual([{
+    atelier_id: ATELIER_ORACLE.id,
+    utilisateur_id: MEMBRE_TEST.id,
+    telephone_invite: null,
+    date_naissance: "1990-05-17",
+  }]);
+});
+
 test("un robot qui remplit le champ piège ne crée aucune pré-inscription", async ({ page }) => {
   const mock = await mockSupabase(page);
   await page.goto("/");
@@ -57,7 +111,7 @@ test("un robot qui remplit le champ piège ne crée aucune pré-inscription", as
   await page.getByRole("dialog").locator("select").selectOption(ATELIER_TEST.titre);
   await page.getByRole("checkbox").check();
   await page.getByRole("dialog").locator('input[name="site_web"]').fill("http://spam.example", { force: true });
-  await page.waitForTimeout(DELAI_ANTI_ROBOT);
+  await page.clock.fastForward(DELAI_ANTI_ROBOT);
   await page.getByRole("button", { name: /Envoyer ma pré-inscription/ }).click();
 
   await expect(page.getByRole("heading", { name: "Pré-inscription enregistrée !" })).toBeVisible();

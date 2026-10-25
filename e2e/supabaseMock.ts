@@ -25,7 +25,7 @@ export const ATELIER_TEST = {
   tarif_standard: 15,
   statut: "publie",
   date_fin_inscription: null,
-  antennes: { slug: "papotages" },
+  espaces: { slug: "papotages" },
 };
 
 const FORMULAIRE_CONTACT = {
@@ -38,6 +38,38 @@ const FORMULAIRE_CONTACT = {
     { id: "c3", label: "Message", field_type: "textarea", obligatoire: true, position: 3, options: null },
   ],
 };
+
+export const ATELIER_ORACLE = {
+  ...ATELIER_TEST,
+  id: "aaaaaaaa-0000-4000-8000-000000000002",
+  titre: "Atelier Créatif — Pierre & Oracle",
+  date_atelier: dansJours(21),
+};
+
+export const MEMBRE_TEST = {
+  id: "bbbbbbbb-0000-4000-8000-000000000001",
+  prenom: "Marie",
+  nom: "Dupont",
+  email: "marie@exemple.fr",
+  telephone: null,
+  url_avatar: null,
+  debut_abonnement: null,
+  fin_abonnement: null,
+  role: "membre",
+  est_actif: true,
+  cree_le: "2026-01-01T00:00:00Z",
+};
+
+// Session Supabase telle que le client la relit depuis localStorage au
+// chargement. La clé dépend du nom d'hôte de VITE_SUPABASE_URL (127.0.0.1).
+const sessionStockee = (membre: typeof MEMBRE_TEST) => ({
+  access_token: "e2e.access.token",
+  refresh_token: "e2e-refresh-token",
+  token_type: "bearer",
+  expires_in: 3600,
+  expires_at: Math.floor(Date.now() / 1000) + 3600,
+  user: { id: membre.id, aud: "authenticated", role: "authenticated", email: membre.email, app_metadata: {}, user_metadata: {}, created_at: membre.cree_le },
+});
 
 export interface MockSupabase {
   /** Corps JSON des INSERT reçus, par table. */
@@ -53,7 +85,9 @@ const corpsJson = (req: Request) => {
   return brut ? JSON.parse(brut) : null;
 };
 
-interface OptionsMock {
+export interface OptionsMock {
+  /** Connecte ce membre : session stockée dans le navigateur + profil renvoyé par la base. */
+  membre?: typeof MEMBRE_TEST;
   /** Ligne `utilisateurs` renvoyée à la personne connectée (voir e2e/session.ts). */
   profil?: Record<string, unknown>;
   /** Lignes renvoyées à la lecture de la table `inscriptions` (page admin). */
@@ -61,7 +95,7 @@ interface OptionsMock {
   /** Tables de l'offre (écran admin « Offre & adhésions »). */
   formules?: Record<string, unknown>[];
   adhesions?: Record<string, unknown>[];
-  antennes?: Record<string, unknown>[];
+  espaces?: Record<string, unknown>[];
   /** Ateliers renvoyés à la lecture de la table `ateliers` (par défaut : un atelier Papotages). */
   ateliers?: Record<string, unknown>[];
   /** Lignes de la vue `vue_autorisation_image` (consentement photo par personne). */
@@ -76,6 +110,14 @@ interface OptionsMock {
 
 export const mockSupabase = async (page: Page, options: OptionsMock = {}): Promise<MockSupabase> => {
   const mock: MockSupabase = { inserts: {}, updates: {}, rpc: {} };
+  const { membre } = options;
+
+  if (membre) {
+    await page.addInitScript(
+      ([cle, valeur]) => localStorage.setItem(cle, valeur),
+      ["sb-127-auth-token", JSON.stringify(sessionStockee(membre))],
+    );
+  }
 
   if (!options.sansChoixCookies) {
     await page.addInitScript(() => {
@@ -113,15 +155,16 @@ export const mockSupabase = async (page: Page, options: OptionsMock = {}): Promi
       (mock.updates[table] ??= []).push(corpsJson(req));
       return route.fulfill({ status: 204, body: "" });
     }
-    if (table === "utilisateurs" && options.profil) {
-      return route.fulfill({ json: veutUnObjet ? options.profil : [options.profil] });
+    if (table === "utilisateurs" && (options.profil ?? membre)) {
+      const profil = options.profil ?? membre;
+      return route.fulfill({ json: veutUnObjet ? profil : [profil] });
     }
     if (table === "inscriptions" && options.inscriptions) return route.fulfill({ json: options.inscriptions });
     if (table === "formules" && options.formules) return route.fulfill({ json: options.formules });
     if (table === "adhesions" && options.adhesions) return route.fulfill({ json: options.adhesions });
     if (table === "vue_logs") return route.fulfill({ json: options.logs ?? [] });
     if (table === "vue_autorisation_image") return route.fulfill({ json: options.autorisationsImage ?? [] });
-    if (table === "antennes" && options.antennes) return route.fulfill({ json: options.antennes });
+    if (table === "espaces" && options.espaces) return route.fulfill({ json: options.espaces });
     if (table === "ateliers" && options.ateliers && !veutUnObjet) return route.fulfill({ json: options.ateliers });
     if (table === "ateliers") return route.fulfill({ json: veutUnObjet ? ATELIER_TEST : [ATELIER_TEST] });
     if (table === "formulaires") return route.fulfill({ json: veutUnObjet ? FORMULAIRE_CONTACT : [FORMULAIRE_CONTACT] });

@@ -31,7 +31,7 @@ interface AtelierFiche {
   tarif_affichage: string | null;
   niveau: string | null;
   statut: string;
-  antennes: { nom: string; slug: string } | null;
+  espaces: { nom: string; slug: string } | null;
 }
 
 interface Inscrite {
@@ -46,7 +46,7 @@ interface Inscrite {
   statut_paiement: "en_attente" | "paye" | "non_requis";
   present: boolean | null;
   inscrit_le: string;
-  utilisateurs: { prenom: string | null; nom: string | null; email: string | null; telephone: string | null; date_naissance: string | null; role: string | null } | null;
+  utilisateurs: { prenom: string | null; nom: string | null; email: string | null; telephone: string | null; role: string | null } | null;
 }
 
 const STATUTS = { en_attente: "En attente", confirme: "Validée", annule: "Refusée" } as const;
@@ -70,8 +70,8 @@ const FicheAtelier = () => {
   const charger = useCallback(async () => {
     if (!id) return;
     const [aRes, iRes] = await Promise.all([
-      supabase.from("ateliers").select("*, antennes(nom, slug)").eq("id", id).maybeSingle(),
-      supabase.from("inscriptions").select("*, utilisateurs(prenom, nom, email, telephone, date_naissance, role)").eq("atelier_id", id).order("inscrit_le"),
+      supabase.from("ateliers").select("*, espaces(nom, slug)").eq("id", id).maybeSingle(),
+      supabase.from("inscriptions").select("*, utilisateurs(prenom, nom, email, telephone, role)").eq("atelier_id", id).order("inscrit_le"),
     ]);
     setAtelier((aRes.data as unknown as AtelierFiche) ?? null);
     const lignes = (iRes.data as unknown as Inscrite[]) ?? [];
@@ -79,7 +79,7 @@ const FicheAtelier = () => {
     // Pré-inscription faite en « invitée » avec l'e-mail d'un compte existant : on retrouve la fiche du compte.
     const emails = Array.from(new Set(lignes.filter(i => !i.utilisateur_id && i.email_invite).map(i => i.email_invite!.toLowerCase())));
     if (emails.length) {
-      const { data } = await supabase.from("utilisateurs").select("prenom, nom, email, telephone, date_naissance, role").in("email", emails);
+      const { data } = await supabase.from("utilisateurs").select("prenom, nom, email, telephone, role").in("email", emails);
       const parEmail = new Map((data ?? []).map(u => [String(u.email).toLowerCase(), u as NonNullable<Inscrite["utilisateurs"]>]));
       for (const i of lignes) {
         if (!i.utilisateur_id && i.email_invite && !i.utilisateurs) i.utilisateurs = parEmail.get(i.email_invite.toLowerCase()) ?? null;
@@ -98,7 +98,7 @@ const FicheAtelier = () => {
   const tarif = atelier?.tarif_standard ?? 0;
   const payant = tarif > 0;
   const resume = useMemo(() => resumeInscrites(inscrites, tarif), [inscrites, tarif]);
-  const logo = atelier?.antennes ? ESPACES_PAR_SLUG[atelier.antennes.slug]?.logo : undefined;
+  const logo = atelier?.espaces ? ESPACES_PAR_SLUG[atelier.espaces.slug]?.logo : undefined;
 
   const visibles = inscrites.filter(i => {
     const ident = inscIdentite(i);
@@ -213,7 +213,7 @@ const FicheAtelier = () => {
           </section>
           <section className="bg-card border rounded-2xl p-5 space-y-2 text-muted-foreground">
             <h2 className="font-semibold text-foreground">Pratique</h2>
-            <p>Espace : {atelier.antennes?.nom ?? "—"}</p>
+            <p>Espace : {atelier.espaces?.nom ?? "—"}</p>
             <p>Durée : {atelier.duree ?? "—"}</p>
             <p>Tarif : {atelier.tarif_affichage ?? (payant ? `${tarif} €` : "gratuit")}</p>
             <p>Niveau : {atelier.niveau ?? "—"}</p>

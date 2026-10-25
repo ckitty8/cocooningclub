@@ -803,7 +803,7 @@ export const PAGES = [
       ],
       parcoursNominal: [
         "Arrive sur /admin/mon-compte (depuis le menu utilisateur en bas du sidebar).",
-        "Voit ses informations actuelles : nom, prénom, email, téléphone, date de naissance, photo, couleur congés.",
+        "Voit ses informations actuelles : nom, prénom, email, téléphone, photo, couleur congés.",
         "Modifie un ou plusieurs champs.",
         "Sauvegarde → `update` sur `utilisateurs` (champs métier) + `supabase.auth.updateUser` (email/password).",
         "Toast de confirmation, profil rafraîchi en contexte React.",
@@ -1021,7 +1021,7 @@ export const PAGES = [
       preconditions: ["Session membre active."],
       parcoursNominal: [
         "Arrive sur /espace-membre/mon-compte (depuis le menu utilisateur).",
-        "Modifie ses informations personnelles (téléphone, photo, date de naissance).",
+        "Modifie ses informations personnelles (téléphone, photo).",
         "Sauvegarde → `update` sur `utilisateurs` filtré par `id = auth.uid()`.",
         "Change son mot de passe via `supabase.auth.updateUser({password})`.",
       ],

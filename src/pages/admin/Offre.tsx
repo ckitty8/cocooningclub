@@ -72,8 +72,8 @@ const Offre = () => {
       await withTimeout(supabase.rpc("expirer_adhesions")).catch(() => undefined);
 
       const [fRes, eRes, aRes] = await withTimeout(Promise.all([
-        supabase.from("formules").select("*, formule_espaces(antenne_id)").order("ordre"),
-        supabase.from("antennes").select("id, nom, slug").order("ordre_affichage"),
+        supabase.from("formules").select("*, formule_espaces(espace_id)").order("ordre"),
+        supabase.from("espaces").select("id, nom, slug").order("ordre_affichage"),
         supabase.from("adhesions")
           .select("*, utilisateurs(prenom, nom, email, telephone, role, commune, activite), formules(nom, couleur, duree_mois)")
           .order("cree_le", { ascending: false }),

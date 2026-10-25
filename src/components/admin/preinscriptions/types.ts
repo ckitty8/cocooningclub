@@ -28,7 +28,6 @@ export interface Inscription {
     nom: string | null;
     email: string | null;
     telephone: string | null;
-    date_naissance: string | null;
     role: "administrateur" | "inscrit" | "membre" | null;
   } | null;
 }
@@ -44,7 +43,7 @@ export interface AtelierListe {
   tarif_standard: number | null;
   places_max: number;
   places_disponibles: number;
-  antenne_id: string | null;
+  espace_id: string | null;
 }
 
 /** Offre de la personne et droit de l'atelier qui en découle (gratuit, inclus ou à payer). */

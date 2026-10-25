@@ -11,12 +11,12 @@ const FORMULES = [
   {
     id: "f0000000-0000-4000-8000-0000000000a1", nom: "Cocooning Créatif", description: "Ateliers créatifs.", couleur: "sauge",
     prix: 80, duree_mois: 12, lien_helloasso: null, modes_reglement: ["en_ligne", "virement", "especes"],
-    est_active: true, ordre: 2, formule_espaces: [{ antenne_id: ESPACES[0].id }],
+    est_active: true, ordre: 2, formule_espaces: [{ espace_id: ESPACES[0].id }],
   },
   {
     id: "f0000000-0000-4000-8000-0000000000a2", nom: "Cocooning Complet", description: "Les deux univers.", couleur: "terracotta",
     prix: 150, duree_mois: 12, lien_helloasso: null, modes_reglement: ["en_ligne"],
-    est_active: true, ordre: 3, formule_espaces: ESPACES.map(e => ({ antenne_id: e.id })),
+    est_active: true, ordre: 3, formule_espaces: ESPACES.map(e => ({ espace_id: e.id })),
   },
 ];
 const dansJours = (n: number) => {
@@ -41,7 +41,7 @@ const ADHESION_ACTIVE = {
 
 const ouvrir = async (page: import("@playwright/test").Page, options = {}) => {
   const mock = await mockSupabase(page, {
-    profil: ADMIN, formules: FORMULES, antennes: ESPACES, adhesions: [ADHESION_A_VALIDER, ADHESION_ACTIVE], ...options,
+    profil: ADMIN, formules: FORMULES, espaces: ESPACES, adhesions: [ADHESION_A_VALIDER, ADHESION_ACTIVE], ...options,
   });
   await connecterEn(page, ADMIN);
   await page.goto("/admin/offre");
@@ -67,7 +67,7 @@ test("elle crée une formule", async ({ page }) => {
   await fenetre.getByRole("button", { name: "Enregistrer" }).click();
   await expect(page.getByText("Formule créée")).toBeVisible();
   expect(mock.inserts.formules?.[0]).toMatchObject({ nom: "Cocooning Business", prix: 100, duree_mois: 12 });
-  expect(mock.inserts.formule_espaces?.[0]).toEqual([{ formule_id: "eeeeeeee-0000-4000-8000-000000000001", antenne_id: ESPACES[1].id }]);
+  expect(mock.inserts.formule_espaces?.[0]).toEqual([{ formule_id: "eeeeeeee-0000-4000-8000-000000000001", espace_id: ESPACES[1].id }]);
 });
 
 test("elle refuse une formule sans tarif valide", async ({ page }) => {

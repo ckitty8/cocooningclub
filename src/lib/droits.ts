@@ -47,15 +47,15 @@ export const tarifPour = (
 ): number | null => (offres.length > 0 && atelier.tarif_adherent != null ? atelier.tarif_adherent : atelier.tarif_standard);
 
 export const droitAtelier = (
-  atelier: { antenne_id: string | null; tarif_standard: number | null; tarif_adherent?: number | null },
+  atelier: { espace_id: string | null; tarif_standard: number | null; tarif_adherent?: number | null },
   espaces: EspaceDroit[],
   offres: OffreEnCours[],
 ): DroitAtelier => {
   const tarif = tarifPour(atelier, offres);
   if (tarif !== null && tarif <= 0) return { etat: "gratuit", montant: 0 };
-  const espace = espaces.find(e => e.id === atelier.antenne_id);
+  const espace = espaces.find(e => e.id === atelier.espace_id);
   if (estGratuitPourTous(espace)) return { etat: "gratuit", montant: 0 };
-  if (atelier.antenne_id && espacesCouverts(offres).has(atelier.antenne_id)) return { etat: "inclus", montant: 0 };
+  if (atelier.espace_id && espacesCouverts(offres).has(atelier.espace_id)) return { etat: "inclus", montant: 0 };
   return { etat: "a_payer", montant: tarif ?? 0 };
 };
 
@@ -75,7 +75,7 @@ export const offresEnCours = (
   lignes: {
     statut: string;
     valable_jusqu_au: string | null;
-    formules: { id: string; nom: string; couleur: string; formule_espaces: { antenne_id: string }[] } | null;
+    formules: { id: string; nom: string; couleur: string; formule_espaces: { espace_id: string }[] } | null;
   }[],
   aujourdhui: string,
 ): OffreEnCours[] =>
@@ -85,7 +85,7 @@ export const offresEnCours = (
       formule_id: l.formules!.id,
       nom: l.formules!.nom,
       couleur: l.formules!.couleur,
-      espaces: l.formules!.formule_espaces.map(fe => fe.antenne_id),
+      espaces: l.formules!.formule_espaces.map(fe => fe.espace_id),
       valable_jusqu_au: l.valable_jusqu_au as string,
     }));
 

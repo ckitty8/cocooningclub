@@ -15,7 +15,7 @@ interface Props {
 const prix = (n: number) => `${Number.isInteger(Number(n)) ? Number(n) : Number(n).toLocaleString("fr-FR")} €`;
 
 const FormuleCard = ({ formule, espaces, nbActives, onModifier, onDupliquer, onBasculer }: Props) => {
-  const inclus = espaces.filter(e => formule.formule_espaces.some(fe => fe.antenne_id === e.id)).map(e => e.nom);
+  const inclus = espaces.filter(e => formule.formule_espaces.some(fe => fe.espace_id === e.id)).map(e => e.nom);
   const admin = !!onModifier;
 
   return (

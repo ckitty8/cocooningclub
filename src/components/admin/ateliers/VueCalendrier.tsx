@@ -15,13 +15,13 @@ export interface AtelierCalendrier {
   statut: string;
   places_max: number;
   places_disponibles: number;
-  antenne_id: string;
+  espace_id: string;
 }
 
 interface Props {
   ateliers: AtelierCalendrier[];
   /** Couleur de l'espace d'un atelier. */
-  slugDe: (atelierAntenneId: string) => string | undefined;
+  slugDe: (atelierEspaceId: string) => string | undefined;
   onCreer: (dateIso: string) => void;
 }
 
@@ -68,7 +68,7 @@ const VueCalendrier = ({ ateliers, slugDe, onCreer }: Props) => {
                   <Link key={a.id} to={`/admin/ateliers/${a.id}`} onClick={e => e.stopPropagation()}
                     title={`${a.titre}${a.statut === "brouillon" ? " (brouillon)" : ""}`}
                     className={`mt-1 block truncate rounded-md px-1.5 py-0.5 text-[11px] text-white ${a.statut === "brouillon" ? "bg-[repeating-linear-gradient(45deg,#b9aea8,#b9aea8_6px,#cfc6c1_6px,#cfc6c1_12px)] !text-foreground" : ""}`}
-                    style={a.statut === "brouillon" ? undefined : { backgroundColor: couleurEspace(slugDe(a.antenne_id)) }}>
+                    style={a.statut === "brouillon" ? undefined : { backgroundColor: couleurEspace(slugDe(a.espace_id)) }}>
                     {heure(a.heure_debut)} {a.titre}
                   </Link>
                 ))}
@@ -88,7 +88,7 @@ const VueCalendrier = ({ ateliers, slugDe, onCreer }: Props) => {
             <ul className="space-y-2">
               {selection.map(a => (
                 <li key={a.id} className="rounded-xl border p-3 text-sm">
-                  <p className="flex items-center gap-2 font-medium"><span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: couleurEspace(slugDe(a.antenne_id)) }} />{a.titre}</p>
+                  <p className="flex items-center gap-2 font-medium"><span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: couleurEspace(slugDe(a.espace_id)) }} />{a.titre}</p>
                   <p className="text-xs text-muted-foreground mt-1">{heure(a.heure_debut)}{a.lieu ? ` · ${a.lieu}` : ""} · {a.places_max - a.places_disponibles}/{a.places_max} places prises</p>
                   <div className="mt-2 flex gap-2">
                     <Link to={`/admin/ateliers/${a.id}`} className="px-3 py-1 text-xs border rounded-full hover:bg-muted">Fiche</Link>

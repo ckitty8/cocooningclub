@@ -7,7 +7,7 @@ const INSCRITE = {
   id: "dddddddd-0000-4000-8000-000000000001", atelier_id: ATELIER_TEST.id, utilisateur_id: "cccccccc-0000-4000-8000-000000000001",
   prenom_invite: null, nom_invite: null, email_invite: null, telephone_invite: null, date_naissance: null,
   statut: "confirme", statut_paiement: "en_attente", present: false, inscrit_le: new Date().toISOString(),
-  utilisateurs: { prenom: "Marie", nom: "Dupont", email: "marie@exemple.fr", telephone: "0601020304", date_naissance: null, role: "membre" },
+  utilisateurs: { prenom: "Marie", nom: "Dupont", email: "marie@exemple.fr", telephone: "0601020304", role: "membre" },
 };
 
 test("« Inscrits » mène aux pré-inscriptions de l'atelier, et le titre à sa fiche", async ({ page }) => {

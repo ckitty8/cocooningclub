@@ -9,6 +9,12 @@
     "20261023000007_tarif_adherente.sql",
     "20261023000008_supprime_tables_de_sauvegarde.sql",
     "20261023000009_reserve_admin_dispo_aux_admins.sql",
-    "20261023000010_supprime_decrement_atelier_spots.sql"
+    "20261023000010_supprime_decrement_atelier_spots.sql",
+    "20261024000000_nettoyage_premium_et_mot_de_passe_hash.sql",
+    "20261024000001_conservation_des_donnees.sql"
+  ],
+  "migrationsAuDeploiement": [
+    "20261024000002_minimisation_date_naissance.sql",
+    "20261024000003_renomme_antennes_en_espaces.sql"
   ]
 }

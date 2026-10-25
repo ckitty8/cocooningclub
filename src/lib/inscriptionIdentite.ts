@@ -9,7 +9,6 @@ export interface FicheCompte {
   nom: string | null;
   email: string | null;
   telephone: string | null;
-  date_naissance?: string | null;
 }
 
 export interface InscriptionIdentifiable {
@@ -26,6 +25,6 @@ export const inscIdentite = (insc: InscriptionIdentifiable) => ({
   nom: insc.nom_invite ?? insc.utilisateurs?.nom ?? "",
   email: insc.email_invite ?? insc.utilisateurs?.email ?? null,
   telephone: insc.telephone_invite ?? insc.utilisateurs?.telephone ?? null,
-  // La date saisie pour l'atelier prime ; sinon celle du compte.
-  dateNaissance: insc.date_naissance ?? insc.utilisateurs?.date_naissance ?? null,
+  // Date saisie pour l'atelier uniquement : les comptes ne la conservent plus.
+  dateNaissance: insc.date_naissance,
 });

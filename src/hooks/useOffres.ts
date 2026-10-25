@@ -8,7 +8,7 @@ import { offreSimulee, offresEnCours, type EspaceDroit, type OffreEnCours } from
 export const useEspaces = (): EspaceDroit[] => {
   const [espaces, setEspaces] = useState<EspaceDroit[]>([]);
   useEffect(() => {
-    supabase.from("antennes").select("*").order("ordre_affichage").then(({ data }) => {
+    supabase.from("espaces").select("*").order("ordre_affichage").then(({ data }) => {
       setEspaces(((data ?? []) as unknown as EspaceDroit[]).map(e => ({
         id: e.id, nom: e.nom, slug: e.slug, gratuit_pour_tous: e.gratuit_pour_tous ?? null,
       })));
@@ -38,7 +38,7 @@ interface LigneAdhesion {
   utilisateur_id: string;
   statut: string;
   valable_jusqu_au: string | null;
-  formules: { id: string; nom: string; couleur: string; formule_espaces: { antenne_id: string }[] } | null;
+  formules: { id: string; nom: string; couleur: string; formule_espaces: { espace_id: string }[] } | null;
 }
 
 /**
@@ -54,7 +54,7 @@ export const useOffresParPersonne = (moi: string | null) => {
     let annule = false;
     const requete = supabase
       .from("adhesions")
-      .select("utilisateur_id, statut, valable_jusqu_au, formules(id, nom, couleur, formule_espaces(antenne_id))")
+      .select("utilisateur_id, statut, valable_jusqu_au, formules(id, nom, couleur, formule_espaces(espace_id))")
       .eq("statut", "active")
       .gte("valable_jusqu_au", aujourdhuiIso());
     (moi ? requete.eq("utilisateur_id", moi) : requete).then(({ data, error }) => {

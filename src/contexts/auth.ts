@@ -15,7 +15,6 @@ export interface Profile {
   prenom: string | null;
   email: string | null;
   telephone: string | null;
-  date_naissance: string | null;
   commune?: string | null;
   activite?: string | null;
   url_avatar: string | null;

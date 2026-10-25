@@ -22,12 +22,12 @@ const ADHESION = {
   image_supports: ["site", "reseaux"], image_signee_le: dansJours(-12), cree_le: "2026-10-12T10:00:00Z",
   formules: {
     nom: "Cocooning Complet", description: "Les deux univers.", couleur: "terracotta", prix: 150, duree_mois: 12,
-    formule_espaces: ESPACES.map(e => ({ antenne_id: e.id })),
+    formule_espaces: ESPACES.map(e => ({ espace_id: e.id })),
   },
 };
 
 test("une membre retrouve son récapitulatif et son bulletin d'adhésion", async ({ page }) => {
-  await mockSupabase(page, { profil: MEMBRE, adhesions: [ADHESION], antennes: ESPACES });
+  await mockSupabase(page, { profil: MEMBRE, adhesions: [ADHESION], espaces: ESPACES });
   await connecterEn(page, MEMBRE);
   await page.goto("/espace-membre/mon-adhesion");
 
@@ -51,7 +51,7 @@ test("une membre retrouve son récapitulatif et son bulletin d'adhésion", async
 });
 
 test("une membre sans bulletin enregistré en est informée", async ({ page }) => {
-  await mockSupabase(page, { profil: MEMBRE, adhesions: [], antennes: ESPACES });
+  await mockSupabase(page, { profil: MEMBRE, adhesions: [], espaces: ESPACES });
   await connecterEn(page, MEMBRE);
   await page.goto("/espace-membre/mon-adhesion");
   await expect(page.getByText("Aucun bulletin d'adhésion enregistré")).toBeVisible();
@@ -86,7 +86,7 @@ test("l'admin voit le consentement photo d'une personne pré-inscrite", async ({
       prenom_invite: null, nom_invite: null, email_invite: null, telephone_invite: null, date_naissance: null,
       statut: "en_attente", statut_paiement: "en_attente", inscrit_le: new Date().toISOString(),
       ateliers: { id: ATELIER_TEST.id, titre: ATELIER_TEST.titre, date_atelier: ATELIER_TEST.date_atelier, heure_debut: "14:00:00", lieu: "Gagny", adresse: null },
-      utilisateurs: { prenom: "Marie", nom: "Dupont", email: "marie@exemple.fr", telephone: "0601020304", date_naissance: "1990-05-12", role: "membre" },
+      utilisateurs: { prenom: "Marie", nom: "Dupont", email: "marie@exemple.fr", telephone: "0601020304", role: "membre" },
     }],
   });
   await connecterEn(page, admin);
