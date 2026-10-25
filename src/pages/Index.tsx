@@ -215,7 +215,7 @@ const Index = () => {
 
   return (
     // Thème crème des pages vitrine (variables dans index.css).
-    <div className="theme-creme min-h-screen bg-background text-foreground">
+    <div className="theme-vitrine min-h-screen bg-background text-foreground">
       <SiteHeader actif="Accueil" />
 
       {/* Hero */}
@@ -223,7 +223,7 @@ const Index = () => {
         <div className="container mx-auto grid items-center gap-10 px-6 py-12 lg:grid-cols-2 lg:gap-14 lg:py-20">
           <div className="space-y-5">
             <Surtitre>À propos</Surtitre>
-            <h1 className="font-brand text-4xl leading-[1.1] text-foreground sm:text-5xl lg:text-6xl">
+            <h1 className="font-display text-5xl leading-[1.1] text-foreground sm:text-6xl lg:text-7xl">
               À propos du Cocooning Club
             </h1>
             <p className="text-lg leading-snug text-terracotta md:text-xl">
@@ -264,7 +264,7 @@ const Index = () => {
         <div className="container mx-auto px-6">
           <div className="mx-auto mb-12 max-w-2xl space-y-4 text-center">
             <Surtitre>Notre univers</Surtitre>
-            <TitreSection>Nos espaces</TitreSection>
+            <TitreSection>Trois univers pour se retrouver</TitreSection>
             <span className="mx-auto block h-0.5 w-10 bg-primary" aria-hidden="true" />
             <p className="text-sm leading-relaxed text-muted-foreground md:text-base">
               Trois espaces complémentaires, pensés pour répondre à toutes vos envies : se rencontrer, créer et

@@ -47,7 +47,7 @@ const TestimonialsSection = () => {
   return (
     <section className="py-24 bg-card">
       <div className="container mx-auto px-6">
-        <h2 className="font-brand text-3xl md:text-5xl leading-tight text-center text-foreground mb-4">
+        <h2 className="font-display text-5xl md:text-6xl leading-tight text-center text-foreground mb-4">
           Ce qu'elles en disent
         </h2>
         <p className="text-center text-muted-foreground max-w-lg mx-auto mb-16">

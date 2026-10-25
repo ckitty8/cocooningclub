@@ -15,7 +15,7 @@ test("l'accueil affiche les espaces et les ateliers à venir", async ({ page }) 
   await page.goto("/");
   await expect(page).toHaveTitle(/Cocooning Club/);
   await expect(page.getByRole("heading", { level: 1, name: "À propos du Cocooning Club" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Nos espaces" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Trois univers pour se retrouver" })).toBeVisible();
   // Cartes à retournement : le nom de l'espace est dans un titre lisible par les lecteurs d'écran.
   for (const espace of ["Papotages", "Créatifs", "Business"]) {
     await expect(page.getByRole("heading", { name: espace, exact: true })).toBeAttached();
