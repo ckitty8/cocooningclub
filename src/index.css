@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@400;500;700&family=DM+Sans:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -20,7 +20,7 @@
     --popover-foreground: 11 33% 29%;
 
     --primary: 12 47% 49%;
-    --primary-foreground: 23 91% 91%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 140 20% 72%;
     --secondary-foreground: 20 20% 20%;
@@ -65,4 +65,32 @@
   h1, h2, h3, h4 {
     font-family: var(--font-display);
   }
+}
+
+@layer base {
+  /* Pages vitrine (accueil, notre histoire) : fond crème plus clair que la pêche de la charte, et
+     texte secondaire assombri pour rester lisible (contraste AA). */
+  .theme-creme {
+    --background: 27 100% 98%;
+    --card: 24 50% 95%;
+    --muted-foreground: 11 18% 38%;
+  }
+
+  /* Espaces connectés (administration et espace membre) : même fond crème que le site. Les titres passent en
+     Playfair Display (Great Vibes est trop fin pour des écrans de gestion). */
+  .admin-shell h1,
+  .admin-shell h2,
+  .admin-shell h3,
+  .admin-shell h4,
+  .admin-shell .font-display {
+    font-family: 'Playfair Display', serif;
+  }
+}
+
+/* Impression du bulletin d'adhésion (espace membre) : seul le bulletin sort sur papier ou en PDF. */
+@media print {
+  body * { visibility: hidden; }
+  .bulletin-imprimable, .bulletin-imprimable * { visibility: visible; }
+  .bulletin-imprimable { position: absolute; left: 0; top: 0; width: 100%; }
+  .bulletin-imprimable article { box-shadow: none; border: 0; }
 }

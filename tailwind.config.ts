@@ -16,13 +16,20 @@ export default {
     extend: {
       fontFamily: {
         display: ['Great Vibes', 'cursive'],
-        // Réservée au nom "Cocooning Club" (wordmark) : Great Vibes en
-        // majuscules espacées perd son tracé cursif et devient illisible,
-        // donc ce seul élément reste en Playfair Display.
+        // Nom "Cocooning Club" (wordmark) et titres de la page d'accueil.
         brand: ['Playfair Display', 'serif'],
         body: ['DM Sans', 'sans-serif'],
       },
       colors: {
+        // Terracotta assombri pour du petit texte sur fond clair (contraste
+        // AA), le terracotta de la charte (#b95b43) restant pour les boutons.
+        terracotta: "#9a4936",
+        // Couleur de chacun des trois espaces (charte graphique).
+        espace: {
+          papotages: "#ce8f7e",
+          creatifs: "#82947a",
+          business: "#9e6678",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

@@ -8,6 +8,7 @@ import {
   CalendarDays, Ticket, BookOpen, ArrowRight, Loader2, Sparkles,
   Clock, MapPin, Newspaper,
 } from "lucide-react";
+import { dateLongue } from "@/lib/dates";
 
 interface AtelierResume {
   id: string;
@@ -38,8 +39,6 @@ interface DocResume {
   created_at: string;
 }
 
-const formatDate = (iso: string) =>
-  new Date(iso + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
 const formatTime = (t: string) => t.slice(0, 5);
 
@@ -102,7 +101,7 @@ const Dashboard = () => {
     return (
       <MembreLayout>
         <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <Loader2 className="w-8 h-8 animate-spin text-terracotta" />
         </div>
       </MembreLayout>
     );
@@ -116,7 +115,7 @@ const Dashboard = () => {
     <MembreLayout>
       <div className="mb-8">
         <h1 className="text-2xl lg:text-3xl font-bold text-foreground flex items-center gap-2">
-          <Sparkles className="w-6 h-6 text-primary" />
+          <Sparkles className="w-6 h-6 text-terracotta" />
           {greeting}
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
@@ -129,7 +128,7 @@ const Dashboard = () => {
         <Link to="/espace-membre/inscriptions" className="bg-card border rounded-2xl p-5 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Ticket className="w-5 h-5 text-primary" />
+              <Ticket className="w-5 h-5 text-terracotta" />
             </div>
             <span className="text-xs text-muted-foreground uppercase tracking-wider">À venir</span>
           </div>
@@ -175,10 +174,10 @@ const Dashboard = () => {
         <div className="lg:col-span-2 bg-card border rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-foreground flex items-center gap-2">
-              <Ticket className="w-4 h-4 text-primary" />
+              <Ticket className="w-4 h-4 text-terracotta" />
               Mes prochains ateliers
             </h2>
-            <Link to="/espace-membre/inscriptions" className="text-xs text-primary hover:underline flex items-center gap-1">
+            <Link to="/espace-membre/inscriptions" className="inline-flex items-center gap-1 py-1 text-xs text-terracotta hover:underline">
               Tout voir <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -203,12 +202,12 @@ const Dashboard = () => {
                     <img src={ins.atelier.url_image} alt="" loading="lazy" decoding="async" className="w-16 h-16 rounded-lg object-cover shrink-0" />
                   ) : (
                     <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                      <CalendarDays className="w-6 h-6 text-primary" />
+                      <CalendarDays className="w-6 h-6 text-terracotta" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-foreground truncate">{ins.atelier.titre}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5 capitalize">{formatDate(ins.atelier.date_atelier)}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 capitalize">{dateLongue(ins.atelier.date_atelier)}</p>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
                       <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{formatTime(ins.atelier.heure_debut)}</span>
                       {ins.atelier.lieu && (
@@ -240,10 +239,10 @@ const Dashboard = () => {
         <div className="bg-card border rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-foreground flex items-center gap-2">
-              <Newspaper className="w-4 h-4 text-primary" />
+              <Newspaper className="w-4 h-4 text-terracotta" />
               Dernier magazine
             </h2>
-            <Link to="/espace-membre/magazine" className="text-xs text-primary hover:underline flex items-center gap-1">
+            <Link to="/espace-membre/magazine" className="inline-flex items-center gap-1 py-1 text-xs text-terracotta hover:underline">
               Tous <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -251,9 +250,9 @@ const Dashboard = () => {
           {latestMagazine ? (
             <Link to="/espace-membre/magazine" className="block group">
               <div className="aspect-[3/4] bg-gradient-to-br from-primary/20 to-amber-500/20 rounded-xl flex items-center justify-center mb-3 overflow-hidden">
-                <Newspaper className="w-12 h-12 text-primary/60 group-hover:scale-110 transition-transform" />
+                <Newspaper className="w-12 h-12 text-terracotta/60 group-hover:scale-110 transition-transform" />
               </div>
-              <p className="font-medium text-sm text-foreground group-hover:text-primary transition-colors">
+              <p className="font-medium text-sm text-foreground group-hover:text-terracotta transition-colors">
                 {latestMagazine.titre}
               </p>
               {latestMagazine.description && (

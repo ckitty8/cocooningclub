@@ -1,0 +1,18 @@
+# Déjà fait directement en production (hors paquet de migration)
+
+Ces actions ont été faites sur la base partagée (preview + production) avec l'accord de l'équipe. Elles ne sont
+**pas** à rejouer ; elles sont notées pour la traçabilité et pour pouvoir les annuler.
+
+## 23/10/2026
+
+| Action | Détail | Retour arrière |
+|---|---|---|
+| Migration `20261023000001_corrige_inscription_tardive.sql` | Correctif : toutes les pré-inscriptions échouaient (`private.is_admin()` absent en production). | Remettre l'ancienne fonction (non souhaitable). |
+| Titres des 8 ateliers | Retrait du préfixe « Cocoon » : `Cocoon Papotages - Human design` → `Papotages - Human design`, `Cocoon Papotages - Animal Totem`, `Cocoon Papotages - Méthode DISC`, `Cocoon Papotages - Nos traditions de fin d'année`, `Cocoon créatif - Bingo des objectifs` → `Créatif - Bingo des objectifs`, `Cocoon créatif - Atelier floral automnal`, `Cocoon créatif - Calendrier de l'avent`, `Cocoon créatif - Cuisine de Noël` (même principe). | Remettre « Cocoon » devant chaque titre (« Cocoon créatif - … » avec c minuscule). |
+| Places de « Créatif - Atelier floral automnal » | `places_disponibles` remis à 20 (capacité 20, aucune inscription) : l'ancienne valeur 10 faisait afficher 10 inscrits fictifs. | Sans objet. |
+
+## État de la base relevé le 23/10/2026 (pour mémoire)
+
+- `utilisateurs` : 5 administratrices actives, aucun membre ni inscrit.
+- `ateliers` : 8 (3 terminés, 5 publiés), aucun payant, aucun lien PayPal ; `inscriptions` : 0 ; `transactions_paypal` : 0.
+- Compte `ciritecgrp@gmail.com` : existe dans `auth.users`, sans fiche `utilisateurs` (donc aucun accès au site).

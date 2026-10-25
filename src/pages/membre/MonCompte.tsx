@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { messageErreurServeur } from "@/utils/messageErreurServeur";
 import { compressImage } from "@/utils/compressImage";
+import { ROLES } from "@/lib/roles";
 import {
   User, Mail, Phone, Image as ImageIcon, Save, Upload, Trash2, Loader2,
   Info, Lock, CalendarRange, Receipt, KeyRound, Cake,
@@ -25,7 +26,7 @@ interface PaiementHistorique {
 }
 
 const MonCompte = () => {
-  const { profile, user, refreshProfile } = useAuth();
+  const { profile, user, roleReel, refreshProfile } = useAuth();
   const [form, setForm] = useState({ prenom: "", nom: "", email: "", telephone: "", date_naissance: "" });
   const [originalEmail, setOriginalEmail] = useState("");
   const [saving, setSaving] = useState(false);
@@ -72,7 +73,7 @@ const MonCompte = () => {
     return (
       <MembreLayout>
         <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <Loader2 className="w-8 h-8 animate-spin text-terracotta" />
         </div>
       </MembreLayout>
     );
@@ -204,12 +205,6 @@ const MonCompte = () => {
   const subscriptionEnd = profile.fin_abonnement ? new Date(profile.fin_abonnement) : null;
   const subscriptionActive = subscriptionEnd && subscriptionEnd >= new Date();
 
-  const roleLabel: Record<string, string> = {
-    administrateur: "Administrateur",
-    inscrit: "Inscrit",
-    membre: "Membre",
-  };
-
   return (
     <MembreLayout>
       <div className="mb-6">
@@ -223,7 +218,7 @@ const MonCompte = () => {
         {/* Avatar */}
         <div className="bg-card border rounded-2xl p-5">
           <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <ImageIcon className="w-4 h-4 text-primary" />
+            <ImageIcon className="w-4 h-4 text-terracotta" />
             Photo de profil
           </h2>
           <div className="flex items-center gap-5 flex-wrap">
@@ -231,7 +226,7 @@ const MonCompte = () => {
               {profile.url_avatar ? (
                 <img src={profile.url_avatar} alt="Ma photo de profil" className="w-24 h-24 rounded-full object-cover border-2 border-muted" onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
               ) : (
-                <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center text-primary text-3xl font-bold">{initials}</div>
+                <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center text-foreground text-3xl font-bold">{initials}</div>
               )}
               {uploadingAvatar && (
                 <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center">
@@ -258,7 +253,7 @@ const MonCompte = () => {
         {/* Infos perso */}
         <div className="bg-card border rounded-2xl p-5">
           <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <User className="w-4 h-4 text-primary" />
+            <User className="w-4 h-4 text-terracotta" />
             Informations personnelles
           </h2>
           <div className="space-y-4">
@@ -312,7 +307,7 @@ const MonCompte = () => {
         {/* Mot de passe */}
         <div className="bg-card border rounded-2xl p-5">
           <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <KeyRound className="w-4 h-4 text-primary" />
+            <KeyRound className="w-4 h-4 text-terracotta" />
             Mot de passe
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -336,14 +331,14 @@ const MonCompte = () => {
         {/* Abonnement */}
         <div className="bg-card border rounded-2xl p-5">
           <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <CalendarRange className="w-4 h-4 text-primary" />
+            <CalendarRange className="w-4 h-4 text-terracotta" />
             Mon abonnement
           </h2>
           <div className="space-y-3 text-sm">
             <div className="flex items-center justify-between py-2 border-b">
               <span className="text-muted-foreground">Statut</span>
               <span className="inline-flex items-center gap-1 font-medium">
-                {roleLabel[profile.role] ?? profile.role}
+                {ROLES[roleReel ?? profile.role].libelle}
               </span>
             </div>
             <div className="flex items-center justify-between py-2 border-b">
@@ -369,7 +364,7 @@ const MonCompte = () => {
         {/* Historique paiements */}
         <div className="bg-card border rounded-2xl p-5">
           <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Receipt className="w-4 h-4 text-primary" />
+            <Receipt className="w-4 h-4 text-terracotta" />
             Historique des paiements
           </h2>
           {loadingPaiements ? (

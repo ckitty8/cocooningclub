@@ -196,7 +196,7 @@ const Avis = () => {
   if (loading) return (
     <AdminLayout>
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <Loader2 className="w-8 h-8 animate-spin text-terracotta" />
       </div>
     </AdminLayout>
   );
@@ -231,7 +231,7 @@ const Avis = () => {
             }`}
           >
             {f === "tous" ? "Tous" : statutLabel[f]}
-            <span className="ml-2 text-xs opacity-70">({counts[f]})</span>
+            <span className="ml-2 text-xs">({counts[f]})</span>
           </button>
         ))}
       </div>
@@ -379,7 +379,7 @@ const Avis = () => {
               <X className="w-5 h-5" />
             </button>
             <h2 className="text-xl font-bold text-foreground mb-1 flex items-center gap-2">
-              <MessageSquare className="w-5 h-5 text-primary" />
+              <MessageSquare className="w-5 h-5 text-terracotta" />
               Nouveau témoignage
             </h2>
             <p className="text-sm text-muted-foreground mb-5">

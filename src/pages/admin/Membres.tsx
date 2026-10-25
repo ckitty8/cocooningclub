@@ -6,6 +6,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { logAction } from "@/utils/logAction";
 import { withTimeout } from "@/utils/withTimeout";
 import { toast } from "sonner";
+import { formaterDateNaissance } from "@/lib/anniversaires";
+import BadgePhotos from "@/components/BadgePhotos";
+import { useAutorisationsImage } from "@/hooks/useAutorisationsImage";
+import { useOffresParPersonne } from "@/hooks/useOffres";
+import OffresPersonne from "@/components/OffrePastille";
+import { nomCourtOffre } from "@/lib/droits";
 import { Plus, Search, Pencil, Trash2, UserX, UserCheck2, X, Eye, EyeOff } from "lucide-react";
 import type { UserRole } from "@/contexts/auth";
 
@@ -72,6 +78,12 @@ const Membres = () => {
 
   const [saving, setSaving] = useState(false);
 
+    // Consentement photo : lu par relation (dernier bulletin d'adhésion de chaque personne).
+  const autorisations = useAutorisationsImage(null);
+  // Offre en cours de chaque personne (adhésion → formule). Absente tant que la migration n'est pas appliquée.
+  const { parPersonne: offres, disponible: offresDisponibles } = useOffresParPersonne(null);
+  const [filtreOffre, setFiltreOffre] = useState<string>("toutes");
+
   const fetchMembers = async () => {
     try {
       const { data, error } = await withTimeout(
@@ -96,8 +108,13 @@ const Membres = () => {
     const matchSearch = !q || [m.nom, m.prenom, m.email].some(v => v?.toLowerCase().includes(q));
     const matchRole = filterRole === "tous" || m.role === filterRole;
     const matchActif = filterActif === "tous" || (filterActif === "actif" ? m.est_actif : !m.est_actif);
-    return matchSearch && matchRole && matchActif;
+    const offresDe = offres.get(m.id) ?? [];
+    const matchOffre = !offresDisponibles || filtreOffre === "toutes"
+      || (filtreOffre === "aucune" ? offresDe.length === 0 : offresDe.some(o => nomCourtOffre(o.nom) === filtreOffre));
+    return matchSearch && matchRole && matchActif && matchOffre;
   });
+  const nomsOffres = Array.from(new Set(Array.from(offres.values()).flat().map(o => nomCourtOffre(o.nom)))).sort();
+  const nbColonnes = offresDisponibles ? 8 : 7;
 
   // ── Création ──────────────────────────────────────────────
   const handleCreate = async () => {
@@ -299,7 +316,12 @@ const Membres = () => {
   const handleDelete = async (m: Utilisateur) => {
     if (m.id === me?.id) return;
     if (!confirm(`Supprimer définitivement ${m.prenom} ${m.nom} ?`)) return;
-    await supabase.from("utilisateurs").delete().eq("id", m.id);
+    // Supprime le profil ET le compte de connexion (fonction SQL réservée aux admins).
+    const { error } = await supabase.rpc("supprimer_membre", { p_id: m.id });
+    if (error) {
+      toast.error("La suppression a échoué.");
+      return;
+    }
     logAction("membre.delete", "utilisateurs", m.id, {
       email: m.email, prenom: m.prenom, nom: m.nom, role: m.role,
     });
@@ -335,6 +357,14 @@ const Membres = () => {
           <option value="membre">Membres</option>
           <option value="administrateur">Admins</option>
         </select>
+        {offresDisponibles && (
+          <select value={filtreOffre} onChange={e => setFiltreOffre(e.target.value)} aria-label="Filtrer par offre"
+            className="border rounded-xl px-3 py-2 text-sm bg-card focus:outline-none focus:ring-2 focus:ring-primary">
+            <option value="toutes">Toutes les offres</option>
+            {nomsOffres.map(n => <option key={n} value={n}>{n}</option>)}
+            <option value="aucune">Sans adhésion</option>
+          </select>
+        )}
         <select value={filterActif} onChange={e => setFilterActif(e.target.value)}
           className="border rounded-xl px-3 py-2 text-sm bg-card focus:outline-none focus:ring-2 focus:ring-primary">
           <option value="tous">Tous statuts</option>
@@ -351,31 +381,46 @@ const Membres = () => {
               <tr>
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground">Membre</th>
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground">Rôle</th>
+                {offresDisponibles && <th className="text-left px-5 py-3 font-medium text-muted-foreground">Offre en cours</th>}
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground">Statut</th>
+                <th className="text-left px-5 py-3 font-medium text-muted-foreground hidden md:table-cell">Naissance</th>
+                <th className="text-left px-5 py-3 font-medium text-muted-foreground hidden md:table-cell">Consentement</th>
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground hidden lg:table-cell">Abonnement</th>
                 <th className="px-5 py-3" />
               </tr>
             </thead>
             <tbody className="divide-y">
               {loading ? (
-                <tr><td colSpan={5} className="text-center py-12 text-muted-foreground">Chargement...</td></tr>
+                <tr><td colSpan={nbColonnes} className="text-center py-12 text-muted-foreground">Chargement...</td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={5} className="text-center py-12 text-muted-foreground">Aucun résultat</td></tr>
+                <tr><td colSpan={nbColonnes} className="text-center py-12 text-muted-foreground">Aucun résultat</td></tr>
               ) : filtered.map(m => (
                 <tr key={m.id} className="hover:bg-muted/20 transition-colors">
                   <td className="px-5 py-3.5">
                     <p className="font-medium">{m.prenom} {m.nom}</p>
                     <p className="text-xs text-muted-foreground">{m.email}</p>
+                    <div className="mt-1 md:hidden"><BadgePhotos autorisation={autorisations.get(m.id)} /></div>
                   </td>
                   <td className="px-5 py-3.5">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${roleBadgeClass[m.role]}`}>
                       {roleLabel[m.role]}
                     </span>
                   </td>
+                  {offresDisponibles && (
+                    <td className="px-5 py-3.5">
+                      {m.role === "administrateur" ? <span className="text-muted-foreground">—</span> : <OffresPersonne offres={offres.get(m.id) ?? []} />}
+                    </td>
+                  )}
                   <td className="px-5 py-3.5">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${m.est_actif ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}>
                       {m.est_actif ? "Actif" : "Inactif"}
                     </span>
+                  </td>
+                  <td className="px-5 py-3.5 hidden md:table-cell text-xs text-muted-foreground">
+                    {formaterDateNaissance(m.date_naissance)}
+                  </td>
+                  <td className="px-5 py-3.5 hidden md:table-cell">
+                    <BadgePhotos autorisation={autorisations.get(m.id)} avecLibelle={false} />
                   </td>
                   <td className="px-5 py-3.5 hidden lg:table-cell text-xs text-muted-foreground">
                     {m.debut_abonnement

@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { logAction } from "@/utils/logAction";
 import { toast } from "sonner";
 import { compressImage } from "@/utils/compressImage";
+import { ROLES } from "@/lib/roles";
 import {
   User, Mail, Image as ImageIcon, Save, Upload, Trash2, Loader2, Info, AlertCircle,
   Phone, Calendar, CalendarRange,
@@ -14,7 +15,7 @@ import {
 const MAX_AVATAR_MB = 2;
 
 const MonCompte = () => {
-  const { profile, user, refreshProfile } = useAuth();
+  const { profile, user, roleReel, refreshProfile } = useAuth();
   const [form, setForm] = useState({
     prenom: "",
     nom: "",
@@ -48,7 +49,7 @@ const MonCompte = () => {
   if (!profile) return (
     <AdminLayout>
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <Loader2 className="w-8 h-8 animate-spin text-terracotta" />
       </div>
     </AdminLayout>
   );
@@ -205,7 +206,7 @@ const MonCompte = () => {
         {/* Avatar */}
         <div className="bg-card border rounded-2xl p-5">
           <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <ImageIcon className="w-4 h-4 text-primary" />
+            <ImageIcon className="w-4 h-4 text-terracotta" />
             Photo de profil
           </h2>
 
@@ -220,7 +221,7 @@ const MonCompte = () => {
                   onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
                 />
               ) : (
-                <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center text-primary text-3xl font-bold">
+                <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center text-foreground text-3xl font-bold">
                   {initials}
                 </div>
               )}
@@ -266,7 +267,7 @@ const MonCompte = () => {
         {/* Infos perso */}
         <div className="bg-card border rounded-2xl p-5">
           <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <User className="w-4 h-4 text-primary" />
+            <User className="w-4 h-4 text-terracotta" />
             Informations personnelles
           </h2>
 
@@ -394,7 +395,7 @@ const MonCompte = () => {
           <div className="space-y-1.5 text-sm">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Rôle</span>
-              <span className="font-medium text-foreground">{profile.role}</span>
+              <span className="font-medium text-foreground">{ROLES[roleReel ?? profile.role].libelle}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">ID utilisateur</span>

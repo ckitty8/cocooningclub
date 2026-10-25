@@ -4,6 +4,8 @@ import { Calendar, ChevronLeft, ChevronRight, MapPin, Users, Euro, AlarmClock } 
 import type { Workshop } from "@/data/workshops";
 import { formatDateFr, formatTimeFr } from "@/data/workshops";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
+import { espaceDe } from "@/lib/espaces";
+import AjouterAgenda from "@/components/AjouterAgenda";
 
 interface WorkshopCarouselProps {
   workshops: Workshop[];
@@ -32,6 +34,7 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
       <div className="grid md:grid-cols-3 gap-8">
         {visible.map((ws, visibleIdx) => {
           const actualIndex = page * ITEMS_PER_PAGE + visibleIdx;
+          const espace = espaceDe(ws);
           const closed = !!ws.date_fin_inscription
             && new Date(ws.date_fin_inscription + "T23:59:59") < new Date();
 
@@ -41,56 +44,67 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
               onClick={() => navigate(`/calendrier?atelier=${ws.id}`)}
               className="bg-card rounded-2xl border overflow-hidden flex flex-col cursor-pointer transition-all hover:shadow-lg hover:ring-2 hover:ring-primary/30"
             >
-              <div className="p-6 border-b bg-primary/5">
-                <h3 className="font-display text-xl font-semibold text-foreground">{ws.titre}</h3>
+              <div className="flex items-center gap-4 p-6 border-b bg-primary/5">
+                {espace && (
+                  <img
+                    src={espace.logo}
+                    alt={`Espace ${espace.nom}`}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-16 w-24 shrink-0 rounded-xl bg-white object-contain p-1 shadow-sm"
+                  />
+                )}
+                <h3 className="font-brand text-xl text-foreground">{ws.titre}</h3>
               </div>
               <div className="p-6 space-y-3 flex-1 flex flex-col">
                 <p className="text-muted-foreground text-sm leading-relaxed mb-2">{ws.description_courte || ws.description}</p>
 
                 <div className="flex items-center gap-2 text-sm text-foreground">
-                  <Calendar className="w-4 h-4 text-primary flex-shrink-0" />
+                  <Calendar className="w-4 h-4 text-terracotta flex-shrink-0" />
                   <span>{formatDateFr(ws.date_atelier)} · {formatTimeFr(ws.heure_debut)}</span>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm text-foreground">
-                  <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
-                  {ws.adresse ? (
-                    <a
-                      href={googleMapsSearchUrl(ws.adresse)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={e => e.stopPropagation()}
-                      className="hover:underline"
-                    >
-                      {ws.lieu}
-                    </a>
-                  ) : (
-                    <span>{ws.lieu}</span>
-                  )}
-                </div>
+                {ws.lieu && (
+                  <div className="flex items-center gap-2 text-sm text-foreground">
+                    <MapPin className="w-4 h-4 text-terracotta flex-shrink-0" />
+                    {ws.adresse ? (
+                      <a
+                        href={googleMapsSearchUrl(ws.adresse)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={e => e.stopPropagation()}
+                        className="inline-block py-1 hover:underline"
+                      >
+                        {ws.lieu}
+                      </a>
+                    ) : (
+                      <span>{ws.lieu}</span>
+                    )}
+                  </div>
+                )}
 
                 <div className="flex items-center gap-2 text-sm text-foreground">
-                  <Users className="w-4 h-4 text-primary flex-shrink-0" />
+                  <Users className="w-4 h-4 text-terracotta flex-shrink-0" />
                   <span>{ws.places_disponibles} places restantes</span>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm text-foreground">
-                  <Euro className="w-4 h-4 text-primary flex-shrink-0" />
+                  <Euro className="w-4 h-4 text-terracotta flex-shrink-0" />
                   <span>{ws.tarif_affichage}</span>
                 </div>
 
                 {ws.date_fin_inscription && (
                   <div className="flex items-center gap-2 text-sm text-foreground">
-                    <AlarmClock className="w-4 h-4 text-primary flex-shrink-0" />
+                    <AlarmClock className="w-4 h-4 text-terracotta flex-shrink-0" />
                     <span>Inscriptions jusqu'au {formatDateFr(ws.date_fin_inscription)}</span>
                   </div>
                 )}
 
-                <div className="pt-2 mt-auto">
+                <div className="mt-auto space-y-1 pt-2">
                   {closed ? (
                     <button
                       disabled
-                      className="w-full bg-muted text-muted-foreground py-3 rounded-xl text-sm font-medium cursor-not-allowed"
+                      className="w-full cursor-not-allowed rounded-full bg-muted py-3 text-sm font-medium text-muted-foreground"
                       onClick={(e) => e.stopPropagation()}
                     >
                       Inscriptions closes
@@ -98,11 +112,12 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
                   ) : (
                     <button
                       onClick={(e) => { e.stopPropagation(); onReserve(ws.titre); }}
-                      className="w-full bg-primary text-primary-foreground py-3 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
+                      className="w-full rounded-full bg-primary py-3 text-sm font-medium text-white transition-colors hover:bg-primary/90"
                     >
                       Pré-inscription
                     </button>
                   )}
+                  <AjouterAgenda atelier={ws} variante="menu" />
                 </div>
               </div>
             </div>
@@ -125,10 +140,11 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
             <button
               key={i}
               onClick={() => setPage(i)}
-              className={`w-2.5 h-2.5 rounded-full transition-colors ${
-                i === page ? "bg-primary" : "bg-border"
-              }`}
-            />
+              aria-label={`Page ${i + 1}`}
+              className="flex h-6 w-6 items-center justify-center"
+            >
+              <span className={`h-2.5 w-2.5 rounded-full transition-colors ${i === page ? "bg-primary" : "bg-border"}`} />
+            </button>
           ))}
         </div>
 

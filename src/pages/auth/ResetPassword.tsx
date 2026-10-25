@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import AuthLayout from "@/components/auth/AuthLayout";
+import { boutonEnvoi, champ, libelle } from "@/components/auth/classes";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -49,92 +52,68 @@ const ResetPassword = () => {
 
   if (done) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <div className="w-full max-w-md">
-          <div className="bg-card rounded-2xl border p-8 shadow-sm text-center space-y-4">
-            <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
-              <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <h2 className="font-semibold text-lg">Mot de passe mis à jour !</h2>
-            <p className="text-sm text-muted-foreground">
-              Vous allez être redirigé vers la page de connexion...
-            </p>
-          </div>
+      <AuthLayout titre="Mot de passe mis à jour" retour={{ to: "/login", libelle: "Aller à la connexion" }}>
+        <div className="space-y-3 text-center">
+          <CheckCircle2 className="mx-auto h-14 w-14 text-green-600" aria-hidden="true" />
+          <p className="text-sm text-muted-foreground">Vous allez être redirigé vers la page de connexion…</p>
         </div>
-      </div>
+      </AuthLayout>
     );
   }
 
   if (!ready) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <div className="w-full max-w-md">
-          <div className="bg-card rounded-2xl border p-8 shadow-sm text-center space-y-4">
-            <p className="text-sm text-muted-foreground">Vérification du lien en cours...</p>
-            <p className="text-xs text-muted-foreground">
-              Si rien ne se passe, le lien a peut-être expiré.{" "}
-              <Link to="/forgot-password" className="text-primary hover:underline">
-                Demander un nouveau lien
-              </Link>
-            </p>
-          </div>
+      <AuthLayout titre="Nouveau mot de passe" retour={{ to: "/login", libelle: "Retour à la connexion" }}>
+        <div className="space-y-3 text-center">
+          <p className="text-sm text-muted-foreground">Vérification du lien en cours…</p>
+          <p className="text-xs text-muted-foreground">
+            Si rien ne se passe, le lien a peut-être expiré.{" "}
+            <Link to="/forgot-password" className="text-terracotta hover:underline">
+              Demander un nouveau lien
+            </Link>
+          </p>
         </div>
-      </div>
+      </AuthLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-10">
-          <Link to="/" className="font-brand text-3xl font-bold text-foreground tracking-[0.08em] uppercase hover:opacity-80 transition-opacity">
-            Cocooning Club
-          </Link>
-          <p className="text-muted-foreground mt-2 text-sm">Choisissez un nouveau mot de passe</p>
+    <AuthLayout titre="Nouveau mot de passe" sousTitre="Choisissez un nouveau mot de passe d'au moins 6 caractères.">
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div>
+          <label htmlFor="mot-de-passe" className={libelle}>Nouveau mot de passe</label>
+          <input
+            id="mot-de-passe"
+            type="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            required
+            autoComplete="new-password"
+            className={champ}
+            placeholder="••••••••"
+          />
+        </div>
+        <div>
+          <label htmlFor="confirmation" className={libelle}>Confirmer le mot de passe</label>
+          <input
+            id="confirmation"
+            type="password"
+            value={confirm}
+            onChange={e => setConfirm(e.target.value)}
+            required
+            autoComplete="new-password"
+            className={champ}
+            placeholder="••••••••"
+          />
         </div>
 
-        <div className="bg-card rounded-2xl border p-8 shadow-sm">
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium mb-1.5">Nouveau mot de passe</label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-                autoComplete="new-password"
-                className="w-full border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="••••••••"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1.5">Confirmer le mot de passe</label>
-              <input
-                type="password"
-                value={confirm}
-                onChange={e => setConfirm(e.target.value)}
-                required
-                autoComplete="new-password"
-                className="w-full border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="••••••••"
-              />
-            </div>
+        {error && <p className="text-sm text-destructive">{error}</p>}
 
-            {error && <p className="text-destructive text-sm">{error}</p>}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-primary text-primary-foreground py-3 rounded-full font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
-            >
-              {loading ? "Enregistrement..." : "Enregistrer le mot de passe"}
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
+        <button type="submit" disabled={loading} className={boutonEnvoi}>
+          {loading ? "Enregistrement…" : "Enregistrer le mot de passe"}
+        </button>
+      </form>
+    </AuthLayout>
   );
 };
 

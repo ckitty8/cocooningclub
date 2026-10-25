@@ -6,20 +6,17 @@ export interface Workshop {
   duree: string;
   places_disponibles: number;
   places_max: number;
-  description: string;
+  description: string | null;
   description_courte?: string | null;
-  lieu: string;
+  lieu: string | null;
   adresse?: string | null;
-  tarif_affichage: string;
+  tarif_affichage: string | null;
   tarif_standard: number;
   statut: string;
   date_fin_inscription?: string | null;
+  /** Espace de l'atelier (jointure sur `antennes`), si demandé dans la requête. */
+  antennes?: { slug: string } | null;
 }
-
-export const MONTH_MAP: Record<string, number> = {
-  Janvier: 0, Février: 1, Mars: 2, Avril: 3, Mai: 4, Juin: 5,
-  Juillet: 6, Août: 7, Septembre: 8, Octobre: 9, Novembre: 10, Décembre: 11,
-};
 
 export const FRENCH_MONTHS = [
   "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",

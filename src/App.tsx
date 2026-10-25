@@ -4,16 +4,26 @@ import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import RoleGuard from "@/components/RoleGuard";
 import RouteSeo from "@/components/RouteSeo";
+import CookieBanner from "@/components/CookieBanner";
 import Index from "./pages/Index.tsx";
 import Calendrier from "./pages/Calendrier.tsx";
 import Confidentialite from "./pages/Confidentialite.tsx";
 import Cgu from "./pages/Cgu.tsx";
+import MentionsLegales from "./pages/MentionsLegales.tsx";
+import NotreHistoire from "./pages/NotreHistoire.tsx";
+import Simulateur from "./pages/createur/Simulateur.tsx";
+import DroitsParOffre from "./pages/createur/DroitsParOffre.tsx";
+import MatriceRoles from "./pages/createur/MatriceRoles.tsx";
+import SimulationBanner from "@/components/SimulationBanner";
+import { ACCES } from "@/lib/roles";
 import NotFound from "./pages/NotFound.tsx";
 import Login from "./pages/auth/Login.tsx";
 import ForgotPassword from "./pages/auth/ForgotPassword.tsx";
 import ResetPassword from "./pages/auth/ResetPassword.tsx";
 import Dashboard from "./pages/admin/Dashboard.tsx";
 import Membres from "./pages/admin/Membres.tsx";
+import Offre from "./pages/admin/Offre.tsx";
+import FicheAtelier from "./pages/admin/FicheAtelier.tsx";
 import AteliersAdmin from "./pages/admin/Ateliers.tsx";
 import Documents from "./pages/admin/Documents.tsx";
 import Formulaire from "./pages/admin/Formulaire.tsx";
@@ -29,6 +39,7 @@ import MembreInscriptions from "./pages/membre/Inscriptions.tsx";
 import MembreMagazine from "./pages/membre/Magazine.tsx";
 import MembreMonCompte from "./pages/membre/MonCompte.tsx";
 import MembreBoiteAIdees from "./pages/membre/BoiteAIdees.tsx";
+import MembreMonAdhesion from "./pages/membre/MonAdhesion.tsx";
 
 
 // Une ancre mal encodée (ex. « #100% ») ne doit pas faire planter la page.
@@ -91,36 +102,48 @@ const App = () => (
         <ScrollToTop />
         <RouteSeo />
         <RecoveryRedirect />
+        <SimulationBanner />
+        <CookieBanner />
         <Routes>
           {/* Routes publiques */}
           <Route path="/" element={<Index />} />
           <Route path="/calendrier" element={<Calendrier />} />
+          <Route path="/notre-histoire" element={<NotreHistoire />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/confidentialite" element={<Confidentialite />} />
           <Route path="/cgu" element={<Cgu />} />
+          <Route path="/mentions-legales" element={<MentionsLegales />} />
 
           {/* Espace membre */}
-          <Route path="/espace-membre"               element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreDashboard /></RoleGuard>} />
-          <Route path="/espace-membre/ateliers"      element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreAteliers /></RoleGuard>} />
-          <Route path="/espace-membre/inscriptions"  element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreInscriptions /></RoleGuard>} />
-          <Route path="/espace-membre/magazine"      element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreMagazine /></RoleGuard>} />
-          <Route path="/espace-membre/mon-compte"    element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreMonCompte /></RoleGuard>} />
-          <Route path="/espace-membre/boite-a-idees" element={<RoleGuard allowedRoles={["inscrit", "membre", "administrateur"]}><MembreBoiteAIdees /></RoleGuard>} />
+          <Route path="/espace-membre"               element={<RoleGuard allowedRoles={ACCES.espaceMembre}><MembreDashboard /></RoleGuard>} />
+          <Route path="/espace-membre/ateliers"      element={<RoleGuard allowedRoles={ACCES.espaceMembre}><MembreAteliers /></RoleGuard>} />
+          <Route path="/espace-membre/inscriptions"  element={<RoleGuard allowedRoles={ACCES.espaceMembre}><MembreInscriptions /></RoleGuard>} />
+          <Route path="/espace-membre/magazine"      element={<RoleGuard allowedRoles={ACCES.espaceMembre}><MembreMagazine /></RoleGuard>} />
+          <Route path="/espace-membre/mon-adhesion"  element={<RoleGuard allowedRoles={ACCES.espaceMembre}><MembreMonAdhesion /></RoleGuard>} />
+          <Route path="/espace-membre/mon-compte"    element={<RoleGuard allowedRoles={ACCES.espaceMembre}><MembreMonCompte /></RoleGuard>} />
+          <Route path="/espace-membre/boite-a-idees" element={<RoleGuard allowedRoles={ACCES.espaceMembre}><MembreBoiteAIdees /></RoleGuard>} />
 
           {/* Routes admin protégées */}
-          <Route path="/admin/dashboard"         element={<RoleGuard allowedRoles={["administrateur"]}><Dashboard /></RoleGuard>} />
-          <Route path="/admin/membres"           element={<RoleGuard allowedRoles={["administrateur"]}><Membres /></RoleGuard>} />
-          <Route path="/admin/ateliers"          element={<RoleGuard allowedRoles={["administrateur"]}><AteliersAdmin /></RoleGuard>} />
-          <Route path="/admin/pre-inscriptions"  element={<RoleGuard allowedRoles={["administrateur"]}><PreInscriptions /></RoleGuard>} />
-          <Route path="/admin/documents"         element={<RoleGuard allowedRoles={["administrateur"]}><Documents /></RoleGuard>} />
-          <Route path="/admin/formulaire"        element={<RoleGuard allowedRoles={["administrateur"]}><Formulaire /></RoleGuard>} />
-          <Route path="/admin/messages-templates" element={<RoleGuard allowedRoles={["administrateur"]}><TemplatesMessages /></RoleGuard>} />
-          <Route path="/admin/disponibilites"     element={<RoleGuard allowedRoles={["administrateur"]}><Disponibilites /></RoleGuard>} />
-          <Route path="/admin/boite-a-idees"      element={<RoleGuard allowedRoles={["administrateur"]}><BoiteAIdees /></RoleGuard>} />
-          <Route path="/admin/avis"               element={<RoleGuard allowedRoles={["administrateur"]}><AvisAdmin /></RoleGuard>} />
-          <Route path="/admin/mon-compte"         element={<RoleGuard allowedRoles={["administrateur"]}><MonCompte /></RoleGuard>} />
+          <Route path="/admin/dashboard"         element={<RoleGuard allowedRoles={ACCES.admin}><Dashboard /></RoleGuard>} />
+          <Route path="/admin/membres"           element={<RoleGuard allowedRoles={ACCES.admin}><Membres /></RoleGuard>} />
+          <Route path="/admin/offre"             element={<RoleGuard allowedRoles={ACCES.admin}><Offre /></RoleGuard>} />
+          <Route path="/admin/ateliers"          element={<RoleGuard allowedRoles={ACCES.admin}><AteliersAdmin /></RoleGuard>} />
+          <Route path="/admin/ateliers/:id"      element={<RoleGuard allowedRoles={ACCES.admin}><FicheAtelier /></RoleGuard>} />
+          <Route path="/admin/pre-inscriptions"  element={<RoleGuard allowedRoles={ACCES.admin}><PreInscriptions /></RoleGuard>} />
+          <Route path="/admin/documents"         element={<RoleGuard allowedRoles={ACCES.admin}><Documents /></RoleGuard>} />
+          <Route path="/admin/formulaire"        element={<RoleGuard allowedRoles={ACCES.admin}><Formulaire /></RoleGuard>} />
+          <Route path="/admin/messages-templates" element={<RoleGuard allowedRoles={ACCES.admin}><TemplatesMessages /></RoleGuard>} />
+          <Route path="/admin/disponibilites"     element={<RoleGuard allowedRoles={ACCES.admin}><Disponibilites /></RoleGuard>} />
+          <Route path="/admin/boite-a-idees"      element={<RoleGuard allowedRoles={ACCES.admin}><BoiteAIdees /></RoleGuard>} />
+          <Route path="/admin/avis"               element={<RoleGuard allowedRoles={ACCES.admin}><AvisAdmin /></RoleGuard>} />
+          <Route path="/admin/mon-compte"         element={<RoleGuard allowedRoles={ACCES.admin}><MonCompte /></RoleGuard>} />
+
+          {/* Outils du créateur : rôle réel testé, pour rester accessibles pendant une simulation */}
+          <Route path="/admin/createur/simulateur" element={<RoleGuard allowedRoles={ACCES.createur} reel><Simulateur /></RoleGuard>} />
+          <Route path="/admin/createur/droits"     element={<RoleGuard allowedRoles={ACCES.createur} reel><DroitsParOffre /></RoleGuard>} />
+          <Route path="/admin/createur/matrice"    element={<RoleGuard allowedRoles={ACCES.createur} reel><MatriceRoles /></RoleGuard>} />
 
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -1,0 +1,14 @@
+{
+  "derniereMigrationAppliqueeEnProd": "20261023000001",
+  "migrations": [
+    "20261023000002_supprime_membre_et_compte.sql",
+    "20261023000003_offre_et_adhesions.sql",
+    "20261023000004_retire_role_membre_premium.sql",
+    "20261023000005_droits_par_offre.sql",
+    "20261023000006_bloque_validation_impayee.sql",
+    "20261023000007_tarif_adherente.sql",
+    "20261023000008_supprime_tables_de_sauvegarde.sql",
+    "20261023000009_reserve_admin_dispo_aux_admins.sql",
+    "20261023000010_supprime_decrement_atelier_spots.sql"
+  ]
+}

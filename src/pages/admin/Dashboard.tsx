@@ -81,7 +81,7 @@ const KpiCard = ({
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
         <div className={`
           w-9 h-9 rounded-xl flex items-center justify-center shrink-0
-          ${accent ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"}
+          ${accent ? "bg-primary text-primary-foreground" : "bg-primary/10 text-terracotta"}
           ${pulse ? "ring-4 ring-primary/20" : ""}
         `}>
           <Icon className="w-4 h-4" />
@@ -90,7 +90,7 @@ const KpiCard = ({
       <p className="text-3xl font-bold text-foreground leading-none mb-1.5">{value}</p>
       {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
       {href && (
-        <p className="text-xs text-primary font-medium mt-3 flex items-center gap-1">
+        <p className="text-xs text-terracotta font-medium mt-3 flex items-center gap-1">
           Voir <ArrowRight className="w-3 h-3" />
         </p>
       )}
@@ -207,7 +207,7 @@ const Dashboard = () => {
   if (loading) return (
     <AdminLayout>
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <Loader2 className="w-8 h-8 animate-spin text-terracotta" />
       </div>
     </AdminLayout>
   );
@@ -276,10 +276,10 @@ const Dashboard = () => {
         <div className="bg-card border rounded-2xl overflow-hidden">
           <div className="px-5 py-4 border-b flex items-center justify-between">
             <h2 className="font-semibold text-foreground flex items-center gap-2">
-              <CalendarDays className="w-4 h-4 text-primary" />
+              <CalendarDays className="w-4 h-4 text-terracotta" />
               Prochains ateliers
             </h2>
-            <Link to="/admin/ateliers" className="text-xs text-primary font-medium hover:underline flex items-center gap-1">
+            <Link to="/admin/ateliers" className="inline-flex items-center gap-1 py-1 text-xs text-terracotta font-medium hover:underline">
               Tous <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -288,7 +288,7 @@ const Dashboard = () => {
               <CalendarDays className="w-8 h-8 mx-auto mb-2 opacity-30" />
               Aucun atelier à venir.
               <div className="mt-3">
-                <Link to="/admin/ateliers" className="text-primary text-xs font-medium hover:underline">
+                <Link to="/admin/ateliers" className="text-terracotta text-xs font-medium hover:underline">
                   + Créer un atelier
                 </Link>
               </div>
@@ -317,7 +317,7 @@ const Dashboard = () => {
                         <span className="inline-flex items-center gap-1">
                           <MapPin className="w-3 h-3" />
                           {a.adresse ? (
-                            <a href={googleMapsSearchUrl(a.adresse)} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                            <a href={googleMapsSearchUrl(a.adresse)} target="_blank" rel="noopener noreferrer" className="inline-block py-1 hover:underline">
                               {a.lieu}
                             </a>
                           ) : a.lieu}
@@ -346,10 +346,10 @@ const Dashboard = () => {
         <div className="bg-card border rounded-2xl overflow-hidden">
           <div className="px-5 py-4 border-b flex items-center justify-between">
             <h2 className="font-semibold text-foreground flex items-center gap-2">
-              <UserCheck className="w-4 h-4 text-primary" />
+              <UserCheck className="w-4 h-4 text-terracotta" />
               Pré-inscriptions à valider
             </h2>
-            <Link to="/admin/pre-inscriptions" className="text-xs text-primary font-medium hover:underline flex items-center gap-1">
+            <Link to="/admin/pre-inscriptions" className="inline-flex items-center gap-1 py-1 text-xs text-terracotta font-medium hover:underline">
               Toutes <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -396,7 +396,7 @@ const Dashboard = () => {
       <div className="bg-card border rounded-2xl overflow-hidden mt-6">
         <div className="px-5 py-4 border-b flex items-center justify-between">
           <h2 className="font-semibold text-foreground flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-primary" />
+            <TrendingUp className="w-4 h-4 text-terracotta" />
             Trafic du site
           </h2>
           <span className="text-xs text-muted-foreground">Sur 30 jours glissants</span>
@@ -416,7 +416,7 @@ const Dashboard = () => {
           </div>
           <div className="p-4 text-center">
             <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Visiteurs uniques (30j)</p>
-            <p className="text-2xl font-bold text-primary">{visites.uniques_30j}</p>
+            <p className="text-2xl font-bold text-terracotta">{visites.uniques_30j}</p>
           </div>
           <div className="p-4 text-center">
             <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Total</p>

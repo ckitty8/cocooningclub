@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { audienceAutorisee } from "@/lib/consentement";
 
 const STORAGE_KEY = "cc_visitor_id";
 
@@ -21,6 +22,8 @@ const getVisitorId = (): string => {
 const lastVisits: Record<string, number> = {};
 
 export const trackVisit = (page: string): void => {
+  // Mesure interne : seulement si la personne a accepté la mesure d'audience.
+  if (!audienceAutorisee()) return;
   const now = Date.now();
   const last = lastVisits[page] ?? 0;
   if (now - last < 5000) return;

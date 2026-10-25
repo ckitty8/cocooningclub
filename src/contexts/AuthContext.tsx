@@ -3,12 +3,80 @@ import type { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { withTimeout } from "@/utils/withTimeout";
 import { AuthContext, type Profile } from "@/contexts/auth";
+import { estRoleSimulable, roleEffectif, roleReelDe, type RoleSimulable } from "@/lib/roles";
+import { estOffreSimulee, type OffreSimulee } from "@/lib/droits";
+
+// La simulation est propre à l'onglet (elle s'efface en le fermant).
+const CLE_SIMULATION = "createur.simulation";
+const CLE_OFFRE_SIMULEE = "createur.simulation.offre";
+
+const lireOffreSimulee = (): OffreSimulee | null => {
+  try {
+    const valeur = sessionStorage.getItem(CLE_OFFRE_SIMULEE);
+    return estOffreSimulee(valeur) ? valeur : null;
+  } catch {
+    return null;
+  }
+};
+
+const ecrireOffreSimulee = (offre: OffreSimulee | null) => {
+  try {
+    if (offre) sessionStorage.setItem(CLE_OFFRE_SIMULEE, offre);
+    else sessionStorage.removeItem(CLE_OFFRE_SIMULEE);
+  } catch {
+    // Stockage indisponible : l'offre simulée reste en mémoire.
+  }
+};
+
+const lireSimulation = (): RoleSimulable | null => {
+  try {
+    const valeur = sessionStorage.getItem(CLE_SIMULATION);
+    return estRoleSimulable(valeur) ? valeur : null;
+  } catch {
+    return null;
+  }
+};
+
+const ecrireSimulation = (role: RoleSimulable | null) => {
+  try {
+    if (role) sessionStorage.setItem(CLE_SIMULATION, role);
+    else sessionStorage.removeItem(CLE_SIMULATION);
+  } catch {
+    // Stockage indisponible (navigation privée stricte) : la simulation reste en mémoire.
+  }
+};
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [simulationDemandee, setSimulationDemandee] = useState<RoleSimulable | null>(lireSimulation);
+  const [offreDemandee, setOffreDemandee] = useState<OffreSimulee | null>(lireOffreSimulee);
+
+  // Seul le créateur peut simuler : pour tout autre compte, la valeur est ignorée.
+  const roleReel = profile ? roleReelDe(profile, user?.email) : null;
+  const simulation = roleReel === "createur" ? simulationDemandee : null;
+  const role = roleEffectif(roleReel, simulation);
+
+  // L'offre simulée ne vaut que pendant la simulation d'une adhérente.
+  const offreSimulee = simulation === "membre" ? offreDemandee : null;
+
+  const simuler = (nouveauRole: RoleSimulable | null) => {
+    if (roleReel !== "createur") return;
+    setSimulationDemandee(nouveauRole);
+    ecrireSimulation(nouveauRole);
+    if (nouveauRole !== "membre") {
+      setOffreDemandee(null);
+      ecrireOffreSimulee(null);
+    }
+  };
+
+  const simulerOffre = (offre: OffreSimulee | null) => {
+    if (roleReel !== "createur") return;
+    setOffreDemandee(offre);
+    ecrireOffreSimulee(offre);
+  };
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -76,10 +144,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     await supabase.auth.signOut();
     setProfile(null);
+    setSimulationDemandee(null);
+    ecrireSimulation(null);
+    setOffreDemandee(null);
+    ecrireOffreSimulee(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, loading, signIn, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, session, profile, roleReel, role, simulation, simuler, offreSimulee, simulerOffre, loading, signIn, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

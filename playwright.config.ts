@@ -13,6 +13,9 @@ const BASE_URL = `http://127.0.0.1:${PORT}`;
 
 export default defineConfig({
   testDir: "e2e",
+  // L'audit de contraste et de mise en page (long) se lance à part : npm run audit:visuel
+  testIgnore: process.env.AUDIT_VISUEL ? [] : ["**/audit/**"],
+  testMatch: process.env.AUDIT_VISUEL ? "**/audit/*.spec.ts" : "**/*.spec.ts",
   fullyParallel: true,
   reporter: "list",
   use: {
@@ -33,6 +36,8 @@ export default defineConfig({
       // Supabase « factice » sur la même origine : toutes ses routes sont mockées.
       VITE_SUPABASE_URL: `${BASE_URL}/__supabase`,
       VITE_SUPABASE_PUBLISHABLE_KEY: "e2e-anon-key",
+      // Identifiant Google Analytics factice : le script de Google est intercepté dans les tests.
+      VITE_GA_MEASUREMENT_ID: "G-TEST000000",
     },
   },
 });

@@ -285,7 +285,7 @@ const TemplatesMessages = () => {
   if (loading) return (
     <AdminLayout>
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <Loader2 className="w-8 h-8 animate-spin text-terracotta" />
       </div>
     </AdminLayout>
   );
@@ -302,7 +302,7 @@ const TemplatesMessages = () => {
       {/* Aide variables */}
       <div className="bg-primary/5 border border-primary/20 rounded-2xl p-5 mb-6">
         <div className="flex items-start gap-3">
-          <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+          <Info className="w-5 h-5 text-terracotta shrink-0 mt-0.5" />
           <div className="flex-1">
             <p className="font-medium text-foreground mb-2">Variables disponibles</p>
             <p className="text-sm text-muted-foreground mb-3">
@@ -311,7 +311,7 @@ const TemplatesMessages = () => {
             <div className="flex flex-wrap gap-2">
               {VARIABLES.map(v => (
                 <div key={v.key} className="bg-background border rounded-lg px-3 py-1.5 text-xs">
-                  <code className="font-mono text-primary font-medium">{v.key}</code>
+                  <code className="font-mono text-terracotta font-medium">{v.key}</code>
                   <span className="text-muted-foreground ml-2">→ {v.desc}</span>
                 </div>
               ))}
@@ -326,7 +326,7 @@ const TemplatesMessages = () => {
           onClick={() => setActiveTab("mail")}
           className={`flex items-center gap-2 px-5 py-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
             activeTab === "mail"
-              ? "border-primary text-primary"
+              ? "border-primary text-terracotta"
               : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
         >
@@ -337,7 +337,7 @@ const TemplatesMessages = () => {
           onClick={() => setActiveTab("whatsapp")}
           className={`flex items-center gap-2 px-5 py-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
             activeTab === "whatsapp"
-              ? "border-primary text-primary"
+              ? "border-primary text-terracotta"
               : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
         >

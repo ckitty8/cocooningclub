@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { withTimeout } from "@/utils/withTimeout";
 import { toast } from "sonner";
+import { anniversairesDuJour, type Naissance } from "@/lib/anniversaires";
 import {
   Loader2, Plus, Trash2, CalendarX, Clock, ChevronLeft, ChevronRight, CalendarDays, X, Palette, Check
 } from "lucide-react";
@@ -56,7 +57,7 @@ const isDateInRange = (dateIso: string, debutIso: string, finIso: string) =>
   dateIso >= debutIso && dateIso <= finIso;
 
 type CalEvent = {
-  type: "conge" | "ferie" | "vacances";
+  type: "conge" | "ferie" | "vacances" | "anniversaire";
   label: string;
   color: string; // classes tailwind
 };
@@ -103,6 +104,7 @@ const Disponibilites = () => {
   const [joursFeries, setJoursFeries] = useState<JourFerie[]>([]);
   const [vacances, setVacances] = useState<VacancesScolaires[]>([]);
   const [admins, setAdmins] = useState<Admin[]>([]);
+  const [naissances, setNaissances] = useState<Naissance[]>([]);
   const [savingColor, setSavingColor] = useState(false);
 
   // Couleur courante de l'admin connecté
@@ -132,19 +134,21 @@ const Disponibilites = () => {
       return;
     }
     try {
-      const [dRes, iRes, jRes, vRes, aRes, allIRes] = await withTimeout(Promise.all([
+      const [dRes, iRes, jRes, vRes, aRes, allIRes, nRes] = await withTimeout(Promise.all([
         supabase.from("disponibilites").select("*").eq("utilisateur_id", profile.id),
         supabase.from("indisponibilites").select("*").eq("utilisateur_id", profile.id).order("date_debut"),
         supabase.from("jours_feries").select("*").order("date"),
         supabase.from("vacances_scolaires").select("*").eq("zone", "C").order("date_debut"),
         supabase.from("utilisateurs").select("id, prenom, nom, couleur_conges").eq("role", "administrateur"),
         supabase.from("indisponibilites").select("*, utilisateurs(couleur_conges, prenom)").order("date_debut"),
+        supabase.from("utilisateurs").select("prenom, date_naissance").eq("est_actif", true).not("date_naissance", "is", null),
       ]));
       setDisponibilites((dRes.data as Disponibilite[]) ?? []);
       setIndisponibilites((iRes.data as Indisponibilite[]) ?? []);
       setJoursFeries((jRes.data as JourFerie[]) ?? []);
       setVacances((vRes.data as VacancesScolaires[]) ?? []);
       setAdmins((aRes.data as Admin[]) ?? []);
+      setNaissances((nRes.data as Naissance[]) ?? []);
 
       // Transform join result into flat structure
       const allI = (allIRes.data ?? []).map(row => ({
@@ -266,7 +270,7 @@ const Disponibilites = () => {
   if (loading) return (
     <AdminLayout>
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <Loader2 className="w-8 h-8 animate-spin text-terracotta" />
       </div>
     </AdminLayout>
   );
@@ -274,7 +278,7 @@ const Disponibilites = () => {
   return (
     <AdminLayout>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground">Disponibilités</h1>
+        <h1 className="text-2xl font-bold text-foreground">Gestion des dispo des admins</h1>
         <p className="text-muted-foreground text-sm mt-1">
           Gérez vos créneaux disponibles et vos congés. Ces infos bloquent la création d'ateliers si personne n'est dispo.
         </p>
@@ -284,7 +288,7 @@ const Disponibilites = () => {
       <div className="bg-card border rounded-2xl p-5 mb-6">
         <div className="flex items-start gap-3 flex-wrap">
           <div className="flex items-center gap-2">
-            <Palette className="w-4 h-4 text-primary shrink-0" />
+            <Palette className="w-4 h-4 text-terracotta shrink-0" />
             <h3 className="font-semibold">Ma couleur d'affichage</h3>
           </div>
           <div className="flex-1 min-w-[280px]">
@@ -309,7 +313,7 @@ const Disponibilites = () => {
                   >
                     <span className={`w-5 h-5 rounded-full ${c.swatch} shrink-0`} />
                     <span className="font-medium">{c.label}</span>
-                    {isMine && <Check className="w-4 h-4 text-primary" />}
+                    {isMine && <Check className="w-4 h-4 text-terracotta" />}
                   </button>
                 );
               })}
@@ -319,7 +323,7 @@ const Disponibilites = () => {
       </div>
 
       {/* Onglets */}
-      <div className="flex gap-2 mb-6 border-b">
+      <div className="flex gap-2 mb-6 border-b overflow-x-auto">
         {([
           { key: "dispo",      label: "Mes disponibilités", icon: Clock },
           { key: "conges",     label: "Mes congés",          icon: CalendarX },
@@ -328,8 +332,8 @@ const Disponibilites = () => {
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`flex items-center gap-2 px-5 py-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
-              tab === key ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
+            className={`flex shrink-0 items-center gap-2 whitespace-nowrap px-5 py-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
+              tab === key ? "border-primary text-terracotta" : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             <Icon className="w-4 h-4" />
@@ -344,7 +348,7 @@ const Disponibilites = () => {
           {/* Ajout */}
           <div className="bg-card border rounded-2xl p-5">
             <h2 className="font-semibold mb-4 flex items-center gap-2">
-              <Plus className="w-4 h-4 text-primary" />
+              <Plus className="w-4 h-4 text-terracotta" />
               Ajouter un créneau
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
@@ -422,7 +426,7 @@ const Disponibilites = () => {
           {/* Ajout */}
           <div className="bg-card border rounded-2xl p-5">
             <h2 className="font-semibold mb-4 flex items-center gap-2">
-              <Plus className="w-4 h-4 text-primary" />
+              <Plus className="w-4 h-4 text-terracotta" />
               Ajouter une période de congé
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
@@ -548,6 +552,14 @@ const Disponibilites = () => {
             }
           });
 
+          anniversairesDuJour(naissances, iso).forEach(a => {
+            events.push({
+              type: "anniversaire",
+              label: `🎂 ${a.prenom} (${a.age} ans)`,
+              color: "bg-pink-300 text-pink-900",
+            });
+          });
+
           return events;
         };
 
@@ -617,6 +629,9 @@ const Disponibilites = () => {
                 <span className="inline-flex items-center gap-1.5">
                   <span className="w-3 h-3 rounded bg-amber-400" /> Vacances scolaires
                 </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded bg-pink-300" /> Anniversaires
+                </span>
               </div>
             </div>
 
@@ -649,7 +664,7 @@ const Disponibilites = () => {
                       ${isToday ? "bg-primary/5" : ""}
                     `}
                   >
-                    <span className={`text-xs font-semibold ${isToday ? "text-primary" : "text-foreground"}`}>
+                    <span className={`text-xs font-semibold ${isToday ? "text-terracotta" : "text-foreground"}`}>
                       {day}
                     </span>
                     <div className="flex flex-col gap-0.5 overflow-hidden">

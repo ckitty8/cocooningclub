@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Heart, Instagram, Mail } from "lucide-react";
+import { ouvrirChoixCookies } from "@/lib/consentement";
 
 const Footer = () => {
   return (
@@ -8,16 +9,17 @@ const Footer = () => {
         <div className="grid md:grid-cols-3 gap-8 md:gap-12 mb-8 md:mb-12">
           {/* Brand */}
           <div className="space-y-4">
-            <h3 className="font-brand text-2xl font-bold text-foreground tracking-[0.08em] uppercase">
-              Cocooning Club
-            </h3>
+            <Link to="/" className="flex items-center gap-3 font-brand text-2xl text-terracotta">
+              <img src="/logo-160.webp" alt="" width={56} height={56} className="h-14 w-14 shrink-0" loading="lazy" />
+              Le Cocooning Club
+            </Link>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
               Papotages, ateliers créatifs et business : des rendez-vous pour déconnecter, échanger et grandir ensemble dans une ambiance douce et bienveillante.
             </p>
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <span>Fait avec</span>
-              <Heart className="w-3 h-3 text-primary fill-primary" />
-              <span>en Seine-et-Marne</span>
+              <Heart className="w-3 h-3 text-terracotta fill-primary" />
+              <span>en Seine-Saint-Denis</span>
             </div>
           </div>
 
@@ -26,19 +28,19 @@ const Footer = () => {
             <h4 className="text-2xl md:text-3xl font-display font-bold text-foreground">Navigation</h4>
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li>
-                <Link to="/#apropos" className="hover:text-primary transition-colors">À propos</Link>
+                <Link to="/notre-histoire" className="hover:text-terracotta transition-colors">Notre histoire</Link>
               </li>
               <li>
-                <Link to="/#ateliers" className="hover:text-primary transition-colors">Nos Ateliers</Link>
+                <Link to="/#ateliers" className="hover:text-terracotta transition-colors">Nos Ateliers</Link>
               </li>
               <li>
-                <Link to="/calendrier" className="hover:text-primary transition-colors">Calendrier</Link>
+                <Link to="/calendrier" className="hover:text-terracotta transition-colors">Calendrier</Link>
               </li>
               <li>
-                <Link to="/#contact" className="hover:text-primary transition-colors">Contact</Link>
+                <Link to="/#contact" className="hover:text-terracotta transition-colors">Contact</Link>
               </li>
               <li>
-                <Link to="/login" className="hover:text-primary transition-colors">Espace Membre</Link>
+                <Link to="/login" className="hover:text-terracotta transition-colors">Espace Membre</Link>
               </li>
             </ul>
           </div>
@@ -51,21 +53,21 @@ const Footer = () => {
                 href="https://www.instagram.com/cocooningclub?igsh=d2xkcWYxM3B6YTJo"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 flex items-center justify-center rounded-full border border-border text-muted-foreground hover:text-primary hover:border-primary transition-colors"
+                className="w-9 h-9 flex items-center justify-center rounded-full border border-border text-muted-foreground hover:text-terracotta hover:border-primary transition-colors"
                 aria-label="Instagram"
               >
                 <Instagram className="w-4 h-4" />
               </a>
               <a
                 href="mailto:le.cocooning.club@gmail.com"
-                className="w-9 h-9 flex items-center justify-center rounded-full border border-border text-muted-foreground hover:text-primary hover:border-primary transition-colors"
+                className="w-9 h-9 flex items-center justify-center rounded-full border border-border text-muted-foreground hover:text-terracotta hover:border-primary transition-colors"
                 aria-label="Email"
               >
                 <Mail className="w-4 h-4" />
               </a>
             </div>
             <p className="text-sm text-muted-foreground">
-              <a href="mailto:le.cocooning.club@gmail.com" className="hover:text-primary transition-colors">
+              <a href="mailto:le.cocooning.club@gmail.com" className="hover:text-terracotta transition-colors">
                 le.cocooning.club@gmail.com
               </a>
             </p>
@@ -76,10 +78,16 @@ const Footer = () => {
         <div className="border-t pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <p>© 2026 Cocooning Club · Tous droits réservés</p>
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
-            <Link to="/cgu" className="hover:text-primary transition-colors">
+            <button type="button" onClick={ouvrirChoixCookies} className="inline-block py-1 hover:text-terracotta transition-colors">
+              Gérer mes cookies
+            </button>
+            <Link to="/mentions-legales" className="inline-block py-1 hover:text-terracotta transition-colors">
+              Mentions légales
+            </Link>
+            <Link to="/cgu" className="inline-block py-1 hover:text-terracotta transition-colors">
               CGU
             </Link>
-            <Link to="/confidentialite" className="hover:text-primary transition-colors">
+            <Link to="/confidentialite" className="inline-block py-1 hover:text-terracotta transition-colors">
               Paramètres de confidentialité
             </Link>
             <p>Gagny · Chelles · Le Raincy</p>

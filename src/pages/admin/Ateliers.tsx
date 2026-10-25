@@ -1,18 +1,25 @@
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
+import { dureeEntre, heureDeFin } from "@/lib/dureeAtelier";
+import { placesRestantes } from "@/lib/placesAtelier";
 import { withTimeout } from "@/utils/withTimeout";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { searchAdresse, type AdresseSuggestion } from "@/utils/adresseAutocomplete";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { enregistrerAffichage, lireAffichage, type AffichageAteliers } from "@/lib/affichageAteliers";
+import { ESPACES_PAR_SLUG } from "@/lib/espaces";
+import { Link, useSearchParams } from "react-router-dom";
+import VueCalendrier from "@/components/admin/ateliers/VueCalendrier";
+import { chiffresAteliers } from "@/lib/calendrierAteliers";
+import { aujourdhuiIso } from "@/lib/adhesions";
 import { compressImage } from "@/utils/compressImage";
-import { Plus, Pencil, Trash2, Copy, X, MapPin, Clock, Users, Euro, Search, UserCheck, UserX, Image as ImageIcon, CircleDashed } from "lucide-react";
+import { Plus, Pencil, Trash2, Copy, X, MapPin, Clock, Users, Euro, Search, Image as ImageIcon, LayoutGrid, List, CalendarDays } from "lucide-react";
 
 type Statut = "brouillon" | "publie" | "complet" | "annule" | "termine";
 type Niveau = "debutant" | "intermediaire" | "avance";
-type StatutInscription = "en_attente" | "confirme" | "annule";
-type StatutPaiement = "en_attente" | "paye" | "non_requis";
 
 interface Atelier {
   id: string;
@@ -30,6 +37,8 @@ interface Atelier {
   places_max: number;
   places_disponibles: number;
   tarif_standard: number | null;
+  /** Colonne ajoutée par la migration « tarif adhérente » : absente avant. */
+  tarif_adherent?: number | null;
   tarif_affichage: string | null;
   lien_paypal: string | null;
   niveau: Niveau | null;
@@ -40,31 +49,13 @@ interface Atelier {
 interface Antenne {
   id: string;
   nom: string;
-}
-
-interface Inscription {
-  id: string;
-  utilisateur_id: string | null;
-  nom_invite: string;
-  prenom_invite: string;
-  email_invite: string;
-  statut: StatutInscription;
-  statut_paiement: StatutPaiement;
-  present: boolean | null;
-  inscrit_le: string;
-  date_naissance: string | null;
-  utilisateurs?: {
-    prenom: string | null;
-    nom: string | null;
-    email: string | null;
-    role: "administrateur" | "inscrit" | "membre" | null;
-  } | null;
+  slug: string | null;
 }
 
 const emptyForm = {
   titre: "", description: "", description_courte: "",
   date_atelier: "", date_fin_inscription: "", heure_debut: "", heure_fin: "", duree: "", lieu: "", adresse: "", url_image: "",
-  places_max: 10, tarif_standard: "", tarif_affichage: "",
+  places_max: 10, tarif_standard: "", tarif_adherent: "", tarif_affichage: "",
   lien_paypal: "", niveau: "" as Niveau | "", statut: "brouillon" as Statut,
   antenne_id: "",
 };
@@ -87,25 +78,11 @@ const statutColors: Record<Statut, string> = {
   termine: "bg-purple-100 text-purple-600",
 };
 
-const inscriptionBadge: Record<StatutInscription, string> = {
-  en_attente: "bg-yellow-100 text-yellow-700",
-  confirme: "bg-green-100 text-green-700",
-  annule: "bg-red-100 text-red-600",
-};
-const inscriptionLabel: Record<StatutInscription, string> = {
-  en_attente: "En attente", confirme: "Confirmé", annule: "Annulé",
-};
-const paiementBadge: Record<StatutPaiement, string> = {
-  en_attente: "bg-yellow-100 text-yellow-700",
-  paye: "bg-green-100 text-green-700",
-  non_requis: "bg-gray-100 text-gray-500",
-};
-const paiementLabel: Record<StatutPaiement, string> = {
-  en_attente: "En attente", paye: "Payé", non_requis: "—",
-};
-
 const Ateliers = () => {
+  const { profile } = useAuth();
+  const [affichage, setAffichage] = useState<AffichageAteliers>("cartes");
   const [ateliers, setAteliers] = useState<Atelier[]>([]);
+  const colonneTarifAdherent = ateliers.some(a => "tarif_adherent" in a);
   const [antennes, setAntennes] = useState<Antenne[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<{ open: boolean; atelier: Atelier | null }>({ open: false, atelier: null });
@@ -125,11 +102,6 @@ const Ateliers = () => {
   const [search, setSearch] = useState("");
   const [filterStatut, setFilterStatut] = useState<Statut | "">("");
   const [filterAntenne, setFilterAntenne] = useState<string>("toutes"); // id antenne ou "toutes"
-
-  // Panel inscrits
-  const [inscritPanel, setInscritPanel] = useState<{ open: boolean; atelier: Atelier | null }>({ open: false, atelier: null });
-  const [inscriptions, setInscriptions] = useState<Inscription[]>([]);
-  const [inscLoading, setInscLoading] = useState(false);
 
   const fetchAteliers = async () => {
     // Marque comme "termine" les ateliers publiés/complets dont la date est passée.
@@ -164,8 +136,25 @@ const Ateliers = () => {
 
   useEffect(() => { fetchAteliers(); }, []);
 
+  // Pré-inscriptions à traiter, pour les chiffres clés du haut de page.
+  const [aTraiter, setATraiter] = useState(0);
   useEffect(() => {
-    supabase.from("antennes").select("id, nom").order("ordre_affichage").then(({ data }) => {
+    supabase.from("inscriptions").select("id", { count: "exact", head: true }).eq("statut", "en_attente")
+      .then(({ count }) => setATraiter(count ?? 0));
+  }, []);
+
+  // Affichage (cartes / liste) choisi par cette administratrice.
+  useEffect(() => {
+    if (profile?.id) setAffichage(lireAffichage(profile.id));
+  }, [profile?.id]);
+
+  const choisirAffichage = (valeur: AffichageAteliers) => {
+    setAffichage(valeur);
+    if (profile?.id) enregistrerAffichage(profile.id, valeur);
+  };
+
+  useEffect(() => {
+    supabase.from("antennes").select("id, nom, slug").order("ordre_affichage").then(({ data }) => {
       setAntennes((data as Antenne[]) ?? []);
     });
   }, []);
@@ -240,64 +229,8 @@ const Ateliers = () => {
   const countByStatut = (s: Statut | "") =>
     s === "" ? ateliers.length : ateliers.filter(a => a.statut === s).length;
 
-  const openInscrits = async (a: Atelier) => {
-    setInscritPanel({ open: true, atelier: a });
-    setInscLoading(true);
-    const { data } = await supabase
-      .from("inscriptions")
-      .select("*, utilisateurs(prenom, nom, email, role)")
-      .eq("atelier_id", a.id)
-      .order("inscrit_le");
-    const insc = (data as unknown as Inscription[]) ?? [];
-
-    // Si l'inscription a été faite en mode "invité" (utilisateur_id null)
-    // mais que l'email correspond à un compte existant, on rapatrie la
-    // fiche pour appliquer le bon badge.
-    const guestEmails = Array.from(new Set(
-      insc
-        .filter(i => !i.utilisateur_id && i.email_invite)
-        .map(i => i.email_invite!.toLowerCase())
-    ));
-    if (guestEmails.length) {
-      const { data: matched } = await supabase
-        .from("utilisateurs")
-        .select("prenom, nom, email, role")
-        .in("email", guestEmails);
-      const byEmail = new Map<string, NonNullable<Inscription["utilisateurs"]>>(
-        (matched ?? []).map(u => [String(u.email).toLowerCase(), u as NonNullable<Inscription["utilisateurs"]>])
-      );
-      for (const i of insc) {
-        if (!i.utilisateur_id && i.email_invite && !i.utilisateurs) {
-          const u = byEmail.get(i.email_invite.toLowerCase());
-          if (u) i.utilisateurs = u;
-        }
-      }
-    }
-
-    setInscriptions(insc);
-    setInscLoading(false);
-  };
-
-  const togglePresent = async (insc: Inscription) => {
-    await supabase.from("inscriptions").update({ present: !insc.present }).eq("id", insc.id);
-    setInscriptions(prev => prev.map(i => i.id === insc.id ? { ...i, present: !i.present } : i));
-  };
-
-  // Toggle paiement : cycle en_attente ↔ paye.
-  // Si l'inscription est marquée non_requis mais que l'atelier a un
-  // tarif > 0 (incohérence après-coup), on bascule vers en_attente.
-  // Un atelier réellement gratuit (tarif null/0) garde non_requis et
-  // désactive le bouton dans l'UI.
-  const togglePaiement = async (insc: Inscription) => {
-    const atelier = inscritPanel.atelier;
-    const isPaid = (atelier?.tarif_standard ?? 0) > 0;
-    if (insc.statut_paiement === "non_requis" && !isPaid) return;
-    const next: StatutPaiement = insc.statut_paiement === "paye" ? "en_attente" : "paye";
-    await supabase.from("inscriptions").update({ statut_paiement: next }).eq("id", insc.id);
-    setInscriptions(prev => prev.map(i => i.id === insc.id ? { ...i, statut_paiement: next } : i));
-  };
-
-  const openAdd = () => { setForm(emptyForm); setModal({ open: true, atelier: null }); };
+  const openAdd = (dateAtelier = "") => { setForm({ ...emptyForm, date_atelier: dateAtelier }); setModal({ open: true, atelier: null }); };
+  const [searchParams, setSearchParams] = useSearchParams();
   const openEdit = (a: Atelier) => {
     setForm({
       titre: a.titre, description: a.description ?? "", description_courte: a.description_courte ?? "",
@@ -306,6 +239,7 @@ const Ateliers = () => {
       lieu: a.lieu ?? "", adresse: a.adresse ?? "", url_image: a.url_image ?? "",
       places_max: a.places_max,
       tarif_standard: a.tarif_standard?.toString() ?? "",
+      tarif_adherent: a.tarif_adherent?.toString() ?? "",
       tarif_affichage: a.tarif_affichage ?? "",
       lien_paypal: a.lien_paypal ?? "",
       niveau: a.niveau ?? "", statut: a.statut,
@@ -325,6 +259,7 @@ const Ateliers = () => {
       lieu: a.lieu ?? "", adresse: a.adresse ?? "", url_image: a.url_image ?? "",
       places_max: a.places_max,
       tarif_standard: a.tarif_standard?.toString() ?? "",
+      tarif_adherent: a.tarif_adherent?.toString() ?? "",
       tarif_affichage: a.tarif_affichage ?? "",
       lien_paypal: a.lien_paypal ?? "",
       niveau: a.niveau ?? "", statut: "brouillon",
@@ -383,6 +318,8 @@ const Ateliers = () => {
       url_image: form.url_image || null,
       places_max: Number(form.places_max),
       tarif_standard: form.tarif_standard ? Number(form.tarif_standard) : 0,
+      // Écrit seulement si la colonne existe (migration appliquée) ou si un tarif adhérente est saisi.
+      ...(colonneTarifAdherent || form.tarif_adherent !== "" ? { tarif_adherent: form.tarif_adherent !== "" ? Number(form.tarif_adherent) : null } : {}),
       tarif_affichage: form.tarif_affichage || null,
       lien_paypal: form.lien_paypal || null,
       niveau: (form.niveau as Niveau) || "debutant",
@@ -391,7 +328,23 @@ const Ateliers = () => {
     };
     if (modal.atelier) {
       const before = modal.atelier;
-      const { error } = await supabase.from("ateliers").update(payload).eq("id", modal.atelier.id);
+      // Changer la capacité doit recalculer les places libres : capacité - inscriptions confirmées.
+      // Sinon augmenter « places » laissait l'ancien nombre de places libres et l'atelier
+      // affichait des inscrits qui n'existent pas.
+      const { count: confirmees, error: errCount } = await supabase
+        .from("inscriptions")
+        .select("id", { count: "exact", head: true })
+        .eq("atelier_id", modal.atelier.id)
+        .eq("statut", "confirme");
+      if (errCount) {
+        toast.error(`Erreur : ${errCount.message}`, { duration: 8000 });
+        setSaving(false);
+        return;
+      }
+      const { error } = await supabase
+        .from("ateliers")
+        .update({ ...payload, places_disponibles: placesRestantes(payload.places_max, confirmees ?? 0) })
+        .eq("id", modal.atelier.id);
       if (error) {
         console.error("[Ateliers.handleSave update]", error);
         toast.error(`Erreur : ${error.message}`, { duration: 8000 });
@@ -435,10 +388,20 @@ const Ateliers = () => {
     setSaving(false);
   };
 
+  // Arrivée depuis la fiche d'un atelier : /admin/ateliers?modifier=<id> ouvre directement le formulaire.
+  const aModifier = searchParams.get("modifier");
+  useEffect(() => {
+    if (!aModifier || loading) return;
+    const atelier = ateliers.find(a => a.id === aModifier);
+    if (atelier) openEdit(atelier);
+    setSearchParams({}, { replace: true });
+  }, [aModifier, loading]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleDelete = async (id: string) => {
     const atelier = ateliers.find(a => a.id === id);
     if (!confirm("Supprimer cet atelier définitivement ?")) return;
-    await supabase.from("ateliers").delete().eq("id", id);
+    const { error } = await supabase.from("ateliers").delete().eq("id", id);
+    if (error) { toast.error(`Suppression impossible : ${error.message}`); return; }
     logAction("atelier.delete", "ateliers", id, { titre: atelier?.titre, date_atelier: atelier?.date_atelier });
     fetchAteliers();
   };
@@ -446,25 +409,29 @@ const Ateliers = () => {
   const f = (key: keyof typeof form, val: string | number) =>
     setForm(prev => ({ ...prev, [key]: val }));
 
-  const formatDuree = (minutes: number) => {
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    return m === 0 ? `${h}h` : `${h}h${String(m).padStart(2, "0")}`;
+  // Durée, début et fin sont liés : modifier la durée ou le début recalcule la
+  // fin ; modifier la fin recalcule la durée. Si la durée saisie n'est pas
+  // reconnue, la fin n'est pas touchée.
+  const handleDureeChange = (value: string) => {
+    setForm(prev => {
+      const fin = prev.heure_debut ? heureDeFin(prev.heure_debut, value) : null;
+      return { ...prev, duree: value, heure_fin: fin ?? prev.heure_fin };
+    });
   };
 
-  // Met à jour l'heure de début/fin et pré-remplit la durée calculée à
-  // partir des deux horaires. Le champ durée reste une saisie libre :
-  // l'utilisateur peut toujours la modifier manuellement ensuite.
   const handleHeureChange = (key: "heure_debut" | "heure_fin", value: string) => {
     setForm(prev => {
       const next = { ...prev, [key]: value };
-      const debut = key === "heure_debut" ? value : prev.heure_debut;
-      const fin = key === "heure_fin" ? value : prev.heure_fin;
-      if (debut && fin) {
-        const [h1, m1] = debut.split(":").map(Number);
-        const [h2, m2] = fin.split(":").map(Number);
-        const diff = (h2 * 60 + m2) - (h1 * 60 + m1);
-        if (diff > 0) next.duree = formatDuree(diff);
+      if (key === "heure_debut") {
+        const fin = heureDeFin(value, prev.duree);
+        if (fin) next.heure_fin = fin;
+        else {
+          const duree = prev.heure_fin ? dureeEntre(value, prev.heure_fin) : null;
+          if (duree) next.duree = duree;
+        }
+      } else {
+        const duree = prev.heure_debut ? dureeEntre(prev.heure_debut, value) : null;
+        if (duree) next.duree = duree;
       }
       return next;
     });
@@ -537,96 +504,210 @@ const Ateliers = () => {
   return (
     <AdminLayout>
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
           <h1 className="text-2xl font-bold">Ateliers</h1>
           <p className="text-muted-foreground text-sm mt-1">
             {filtered.length} / {ateliers.length} atelier(s)
           </p>
         </div>
-        <button onClick={openAdd}
-          className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium hover:opacity-90 transition-opacity">
-          <Plus className="w-4 h-4" /> Ajouter
-        </button>
-      </div>
-
-      {/* Onglets espaces */}
-      <div className="flex flex-wrap gap-2 mb-4 border-b pb-3">
-        <button
-          onClick={() => setFilterAntenne("toutes")}
-          className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-            filterAntenne === "toutes"
-              ? "bg-primary text-primary-foreground"
-              : "bg-card border text-foreground hover:bg-muted"
-          }`}
-        >
-          Tous
-          <span className="ml-2 text-xs opacity-70">({countByAntenne("toutes")})</span>
-        </button>
-        {antennes.map(c => (
-          <button
-            key={c.id}
-            onClick={() => setFilterAntenne(c.id)}
-            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-              filterAntenne === c.id
-                ? "bg-primary text-primary-foreground"
-                : "bg-card border text-foreground hover:bg-muted"
-            }`}
-          >
-            {c.nom}
-            <span className="ml-2 text-xs opacity-70">({countByAntenne(c.id)})</span>
+        <div className="flex flex-wrap items-center gap-3">
+          <div role="group" aria-label="Affichage des ateliers" className="inline-flex rounded-full border bg-card p-0.5">
+            {([["cartes", "Cartes", LayoutGrid], ["liste", "Liste", List], ["calendrier", "Calendrier", CalendarDays]] as const).map(([valeur, libelle, Icone]) => (
+              <button
+                key={valeur}
+                onClick={() => choisirAffichage(valeur)}
+                aria-pressed={affichage === valeur}
+                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                  affichage === valeur ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"
+                }`}
+              >
+                <Icone className="w-3.5 h-3.5" /> {libelle}
+              </button>
+            ))}
+          </div>
+          <button onClick={() => openAdd()}
+            className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium hover:opacity-90 transition-opacity">
+            <Plus className="w-4 h-4" /> Ajouter
           </button>
-        ))}
+        </div>
       </div>
 
-      {/* Onglets statut */}
-      <div className="flex flex-wrap gap-2 mb-4">
-        {([
-          ["", "Tous"],
-          ["brouillon", "Brouillon"],
-          ["publie", "Publié"],
-          ["complet", "Complet"],
-          ["termine", "Terminé"],
-          ["annule", "Annulé"],
-        ] as Array<[Statut | "", string]>).map(([val, label]) => (
-          <button
-            key={val || "tous"}
-            onClick={() => setFilterStatut(val)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-              filterStatut === val
-                ? "bg-foreground text-background"
-                : "bg-card border text-foreground hover:bg-muted"
-            }`}
-          >
-            {label}
-            <span className="ml-1.5 opacity-70">({countByStatut(val)})</span>
-          </button>
-        ))}
-      </div>
+      {/* Chiffres clés */}
+      {(() => {
+        const c = chiffresAteliers(ateliers, aujourdhuiIso());
+        return (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+            {([
+              [c.aVenir, "ateliers à venir", null],
+              [c.placesLibres, "places encore libres", null],
+              [aTraiter, "pré-inscriptions à traiter", "/admin/pre-inscriptions"],
+              [c.brouillons, "brouillons à publier", null],
+            ] as [number, string, string | null][]).map(([valeur, libelle, lien]) => {
+              const contenu = (
+                <>
+                  <p className="font-display text-2xl text-terracotta">{valeur}</p>
+                  <p className="text-xs text-muted-foreground">{libelle}</p>
+                </>
+              );
+              return lien ? (
+                <Link key={libelle} to={lien} className="bg-card border rounded-2xl px-4 py-3 hover:bg-muted/40 transition-colors">{contenu}</Link>
+              ) : (
+                <div key={libelle} className="bg-card border rounded-2xl px-4 py-3">{contenu}</div>
+              );
+            })}
+          </div>
+        );
+      })()}
 
-      {/* Recherche */}
-      <div className="mb-6">
-        <div className="relative">
+      {/* Recherche et filtres */}
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-[220px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Rechercher un atelier..."
+            aria-label="Rechercher un atelier"
             className="w-full pl-9 pr-4 py-2.5 border rounded-xl text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
+        <select
+          value={filterAntenne}
+          onChange={e => setFilterAntenne(e.target.value)}
+          aria-label="Filtrer par espace"
+          className="border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+        >
+          <option value="toutes">Tous les espaces ({countByAntenne("toutes")})</option>
+          {antennes.map(c => (
+            <option key={c.id} value={c.id}>{c.nom} ({countByAntenne(c.id)})</option>
+          ))}
+        </select>
+        <select
+          value={filterStatut}
+          onChange={e => setFilterStatut(e.target.value as Statut | "")}
+          aria-label="Filtrer par statut"
+          className="border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+        >
+          <option value="">Tous les statuts ({countByStatut("")})</option>
+          {(Object.keys(statutLabels) as Statut[]).map(st => (
+            <option key={st} value={st}>{statutLabels[st]} ({countByStatut(st)})</option>
+          ))}
+        </select>
+        {(search || filterAntenne !== "toutes" || filterStatut !== "") && (
+          <button
+            onClick={() => { setSearch(""); setFilterAntenne("toutes"); setFilterStatut(""); }}
+            className="flex items-center gap-1 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <X className="w-4 h-4" /> Réinitialiser
+          </button>
+        )}
       </div>
 
       {loading ? (
         <div className="flex items-center justify-center h-48">
           <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
+      ) : affichage === "calendrier" ? (
+        <VueCalendrier
+          ateliers={filtered}
+          slugDe={antenneId => antennes.find(c => c.id === antenneId)?.slug ?? undefined}
+          onCreer={dateIso => openAdd(dateIso)}
+        />
       ) : filtered.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
           <p className="text-lg font-medium">{ateliers.length === 0 ? "Aucun atelier" : "Aucun résultat"}</p>
           <p className="text-sm mt-1">
             {ateliers.length === 0 ? 'Cliquez sur "+ Ajouter" pour créer votre premier atelier.' : "Modifiez votre recherche ou votre filtre."}
           </p>
+        </div>
+      ) : affichage === "liste" ? (
+        <div className="bg-card rounded-2xl border overflow-x-auto">
+          <table className="w-full min-w-[820px] text-sm">
+            <thead className="border-b bg-muted/30">
+              <tr>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Date</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Atelier</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Lieu</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Places</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Tarif</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Statut</th>
+                <th className="px-4 py-3" />
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((a, i) => {
+                const inscrits = a.places_max - a.places_disponibles;
+                const mois = new Date(a.date_atelier).toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+                const moisPrecedent = i > 0
+                  ? new Date(filtered[i - 1].date_atelier).toLocaleDateString("fr-FR", { month: "long", year: "numeric" })
+                  : null;
+                const logo = ESPACES_PAR_SLUG[antennes.find(c => c.id === a.antenne_id)?.slug ?? ""]?.logo;
+                return (
+                  <Fragment key={a.id}>
+                    {mois !== moisPrecedent && (
+                      <tr className="bg-background">
+                        <td colSpan={7} className="px-4 py-2 font-display text-base capitalize text-terracotta">{mois}</td>
+                      </tr>
+                    )}
+                    <tr className="border-t hover:bg-muted/20 transition-colors">
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <p className="font-medium">
+                          {new Date(a.date_atelier).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(a.date_atelier).toLocaleDateString("fr-FR", { weekday: "long" })}
+                        </p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          {logo && <img src={logo} alt="" className="h-7 w-12 object-contain shrink-0" />}
+                          <div>
+                            <Link to={`/admin/ateliers/${a.id}`} className="font-medium leading-snug hover:underline">{a.titre}</Link>
+                            <p className="text-xs text-muted-foreground">
+                              {a.heure_debut ? a.heure_debut.slice(0, 5) : ""}
+                              {a.heure_fin ? ` – ${a.heure_fin.slice(0, 5)}` : ""}
+                              {a.duree ? ` · ${a.duree}` : ""}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">{a.lieu ?? "—"}</td>
+                      <td className="px-4 py-3 w-40">
+                        <p className="text-xs mb-1">{inscrits}/{a.places_max}</p>
+                        <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${a.places_disponibles <= 0 ? "bg-amber-600" : "bg-primary"}`}
+                            style={{ width: `${a.places_max > 0 ? Math.min(100, (inscrits / a.places_max) * 100) : 0}%` }}
+                          />
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {a.tarif_affichage ?? (a.tarif_standard != null ? `${a.tarif_standard}€` : "—")}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statutColors[a.statut]}`}>
+                          {statutLabels[a.statut]}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-end gap-1">
+                          <Link to={`/admin/pre-inscriptions?atelier=${a.id}`} title="Inscrits et pré-inscriptions" aria-label={`Inscrits de ${a.titre}`}
+                            className="p-2 rounded-full hover:bg-muted"><Users className="w-4 h-4" /></Link>
+                          <button onClick={() => openEdit(a)} title="Modifier"
+                            className="p-2 rounded-full hover:bg-muted"><Pencil className="w-4 h-4" /></button>
+                          <button onClick={() => openDuplicate(a)} title="Dupliquer"
+                            className="p-2 rounded-full hover:bg-muted"><Copy className="w-4 h-4" /></button>
+                          <button onClick={() => handleDelete(a.id)} title="Supprimer"
+                            className="p-2 rounded-full text-destructive hover:bg-destructive/10"><Trash2 className="w-4 h-4" /></button>
+                        </div>
+                      </td>
+                    </tr>
+                  </Fragment>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -639,7 +720,9 @@ const Ateliers = () => {
                 )}
                 <div className="p-5 flex flex-col flex-1">
                 <div className="flex items-start justify-between mb-3">
-                  <h3 className="font-semibold text-foreground leading-snug flex-1 pr-2">{a.titre}</h3>
+                  <h3 className="font-semibold text-foreground leading-snug flex-1 pr-2">
+                    <Link to={`/admin/ateliers/${a.id}`} className="inline-block py-0.5 hover:underline">{a.titre}</Link>
+                  </h3>
                   <span className={`shrink-0 px-2.5 py-0.5 rounded-full text-xs font-medium ${statutColors[a.statut]}`}>
                     {statutLabels[a.statut]}
                   </span>
@@ -667,7 +750,7 @@ const Ateliers = () => {
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={e => e.stopPropagation()}
-                          className="hover:underline"
+                          className="inline-block py-1 hover:underline"
                         >
                           {a.lieu}
                         </a>
@@ -680,6 +763,12 @@ const Ateliers = () => {
                     <Users className="w-3.5 h-3.5 shrink-0" />
                     <span>{a.places_disponibles}/{a.places_max} places disponibles</span>
                   </div>
+                  <div className="h-1.5 rounded-full bg-muted overflow-hidden" aria-hidden="true">
+                    <div
+                      className={`h-full rounded-full ${a.places_disponibles <= 0 ? "bg-amber-600" : "bg-primary"}`}
+                      style={{ width: `${a.places_max > 0 ? Math.min(100, (inscrits / a.places_max) * 100) : 0}%` }}
+                    />
+                  </div>
                   {(a.tarif_affichage || a.tarif_standard != null) && (
                     <div className="flex items-center gap-1.5">
                       <Euro className="w-3.5 h-3.5 shrink-0" />
@@ -689,13 +778,13 @@ const Ateliers = () => {
                 </div>
 
                 <div className="flex gap-2 mt-auto">
-                  <button
-                    onClick={() => openInscrits(a)}
+                  <Link
+                    to={`/admin/pre-inscriptions?atelier=${a.id}`}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs border rounded-full hover:bg-muted transition-colors"
                   >
                     <Users className="w-3 h-3" />
                     Inscrits ({inscrits})
-                  </button>
+                  </Link>
                   <button onClick={() => openEdit(a)}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs border rounded-full hover:bg-muted transition-colors flex-1 justify-center">
                     <Pencil className="w-3 h-3" /> Modifier
@@ -713,135 +802,6 @@ const Ateliers = () => {
               </div>
             );
           })}
-        </div>
-      )}
-
-      {/* Panel inscrits */}
-      {inscritPanel.open && inscritPanel.atelier && (
-        <div className="fixed inset-0 z-50 flex justify-end">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setInscritPanel({ open: false, atelier: null })} />
-          <aside className="relative w-full max-w-xl bg-card border-l shadow-2xl flex flex-col h-full z-10 animate-in slide-in-from-right duration-200">
-            <div className="flex items-center justify-between p-6 border-b">
-              <div>
-                <h2 className="font-semibold text-base">Inscrits</h2>
-                <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-[280px]">{inscritPanel.atelier.titre}</p>
-              </div>
-              <button onClick={() => setInscritPanel({ open: false, atelier: null })}
-                className="p-1.5 rounded-lg hover:bg-muted">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto">
-              {inscLoading ? (
-                <div className="flex items-center justify-center h-32">
-                  <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                </div>
-              ) : inscriptions.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-32 text-muted-foreground gap-1">
-                  <Users className="w-8 h-8 opacity-30" />
-                  <p className="text-sm">Aucun inscrit pour cet atelier</p>
-                </div>
-              ) : (
-                <div className="divide-y">
-                  {(() => {
-                    const atelier = inscritPanel.atelier;
-                    const tarifStd = atelier?.tarif_standard ?? 0;
-                    const atelierIsPaid = tarifStd > 0;
-                    const montantPour = (): number => tarifStd;
-                    return inscriptions.map(insc => {
-                      const prenom = insc.prenom_invite ?? insc.utilisateurs?.prenom ?? "";
-                      const nom = insc.nom_invite ?? insc.utilisateurs?.nom ?? "";
-                      const email = insc.email_invite ?? insc.utilisateurs?.email ?? "";
-                      const montant = montantPour();
-                      return (
-                    <div key={insc.id} className="px-6 py-4 flex items-center gap-4">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm flex items-center gap-2">
-                          {prenom} {nom}
-                          {insc.utilisateur_id && (
-                            <span className="text-[10px] uppercase tracking-wider bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">Membre</span>
-                          )}
-                        </p>
-                        <p className="text-xs text-muted-foreground truncate">{email}</p>
-                        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                          <span className={`text-xs px-1.5 py-0.5 rounded-full ${inscriptionBadge[insc.statut]}`}>
-                            {inscriptionLabel[insc.statut]}
-                          </span>
-                          <span className={`text-xs px-1.5 py-0.5 rounded-full ${paiementBadge[insc.statut_paiement]}`}>
-                            {paiementLabel[insc.statut_paiement]}
-                          </span>
-                          <span className="text-xs px-1.5 py-0.5 rounded-full bg-foreground/5 text-foreground font-medium">
-                            {atelierIsPaid ? `${montant.toFixed(2)} €` : "Gratuit"}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-1.5 shrink-0">
-                        <button
-                          onClick={() => togglePresent(insc)}
-                          title={insc.present ? "Marquer absent" : "Marquer présent"}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                            insc.present
-                              ? "bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
-                              : "border-muted-foreground/20 text-muted-foreground hover:bg-muted"
-                          }`}
-                        >
-                          {insc.present ? <UserCheck className="w-3.5 h-3.5" /> : <UserX className="w-3.5 h-3.5" />}
-                          {insc.present ? "Présent" : "Absent"}
-                        </button>
-                        <button
-                          onClick={() => togglePaiement(insc)}
-                          disabled={insc.statut_paiement === "non_requis" && !atelierIsPaid}
-                          title={
-                            insc.statut_paiement === "non_requis" && !atelierIsPaid ? "Atelier gratuit" :
-                            insc.statut_paiement === "paye" ? "Marquer non payé" : "Marquer payé"
-                          }
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                            insc.statut_paiement === "paye"
-                              ? "bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
-                              : insc.statut_paiement === "non_requis" && !atelierIsPaid
-                              ? "border-muted-foreground/20 text-muted-foreground"
-                              : "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100"
-                          }`}
-                        >
-                          {insc.statut_paiement === "paye"
-                            ? <Euro className="w-3.5 h-3.5" />
-                            : <CircleDashed className="w-3.5 h-3.5" />}
-                          {insc.statut_paiement === "paye" ? "Payé"
-                            : insc.statut_paiement === "non_requis" && !atelierIsPaid ? "Gratuit"
-                            : "Non payé"}
-                        </button>
-                      </div>
-                    </div>
-                      );
-                    });
-                  })()}
-                </div>
-              )}
-            </div>
-
-            <div className="p-4 border-t text-xs text-muted-foreground text-center space-y-1">
-              <div>
-                {inscriptions.length} inscrit(s) · {inscriptions.filter(i => i.present).length} présent(s)
-              </div>
-              {(() => {
-                const tarifStd = inscritPanel.atelier?.tarif_standard ?? 0;
-                if (tarifStd === 0) return null;
-                const totalAttendu = inscriptions
-                  .filter(i => i.statut === "confirme")
-                  .reduce((s) => s + tarifStd, 0);
-                const totalEncaisse = inscriptions
-                  .filter(i => i.statut === "confirme" && i.statut_paiement === "paye")
-                  .reduce((s) => s + tarifStd, 0);
-                return (
-                  <div>
-                    Total attendu : <span className="font-semibold text-foreground">{totalAttendu.toFixed(2)} €</span>
-                    {" · "}encaissé : <span className="font-semibold text-foreground">{totalEncaisse.toFixed(2)} €</span>
-                  </div>
-                );
-              })()}
-            </div>
-          </aside>
         </div>
       )}
 
@@ -915,7 +875,7 @@ const Ateliers = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1.5">Durée</label>
-                  <input value={form.duree} onChange={e => f("duree", e.target.value)}
+                  <input value={form.duree} onChange={e => handleDureeChange(e.target.value)}
                     placeholder="ex: 2h30" className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>
               </div>
@@ -929,6 +889,9 @@ const Ateliers = () => {
                   <label className="block text-sm font-medium mb-1.5">Heure fin</label>
                   <input type="time" value={form.heure_fin} onChange={e => handleHeureChange("heure_fin", e.target.value)}
                     className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
+                  {form.heure_debut && form.heure_fin && form.heure_fin <= form.heure_debut && (
+                    <p className="text-xs text-destructive mt-1">L'heure de fin doit être après l'heure de début.</p>
+                  )}
                 </div>
               </div>
               <div>
@@ -986,11 +949,17 @@ const Ateliers = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Tarif standard (€)</label>
+                  <label className="block text-sm font-medium mb-1.5">Tarif non-adhérente (€)</label>
                   <input type="number" min={0} step={0.01} value={form.tarif_standard} onChange={e => f("tarif_standard", e.target.value)}
                     placeholder="25" className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>
                 <div>
+                  <label className="block text-sm font-medium mb-1.5">Tarif adhérente (€)</label>
+                  <input type="number" min={0} step={0.01} value={form.tarif_adherent} onChange={e => f("tarif_adherent", e.target.value)}
+                    placeholder="Identique si vide" className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
+                  <p className="text-xs text-muted-foreground mt-1">Prix payé par une adhérente pour un atelier d'un espace que sa formule ne couvre pas.</p>
+                </div>
+                <div className="col-span-2">
                   <label className="block text-sm font-medium mb-1.5">Tarif affiché</label>
                   <input value={form.tarif_affichage} onChange={e => f("tarif_affichage", e.target.value)}
                     placeholder="ex: À partir de 20€" className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />

@@ -1,54 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import AdminLayout from "@/components/admin/AdminLayout";
+import ListeParAtelier from "@/components/admin/preinscriptions/ListeParAtelier";
+import FenetreInscription from "@/components/admin/preinscriptions/FenetreInscription";
+import type { AtelierListe, InfoDroit, Inscription, StatutInscription, StatutPaiement } from "@/components/admin/preinscriptions/types";
+import { useAutorisationsImage } from "@/hooks/useAutorisationsImage";
+import { useEspaces, useOffresParPersonne, useTarifsAdherent } from "@/hooks/useOffres";
+import { droitAtelier } from "@/lib/droits";
 import { supabase } from "@/integrations/supabase/client";
 import type { TablesUpdate } from "@/integrations/supabase/types";
 import { logAction } from "@/utils/logAction";
+import { inscIdentite } from "@/lib/inscriptionIdentite";
+import { grouperParAtelier, periodeDe, type FiltreStatut, type Periode } from "@/lib/preInscriptions";
+import { aujourdhuiIso } from "@/lib/adhesions";
 import { withTimeout } from "@/utils/withTimeout";
-import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { toast } from "sonner";
-import {
-  Check, X, Mail, MessageSquare, Clock, Calendar, MapPin, Phone, User,
-  CheckCircle2, XCircle, Loader2, UserPlus, Pencil, CreditCard
-} from "lucide-react";
-
-interface Inscription {
-  id: string;
-  atelier_id: string;
-  utilisateur_id: string | null;
-  prenom_invite: string | null;
-  nom_invite: string | null;
-  email_invite: string | null;
-  telephone_invite: string | null;
-  date_naissance: string | null;
-  statut: "en_attente" | "confirme" | "annule";
-  statut_paiement: "en_attente" | "paye" | "non_requis";
-  inscrit_le: string;
-  ateliers?: {
-    id: string;
-    titre: string;
-    date_atelier: string;
-    heure_debut: string;
-    lieu: string | null;
-    adresse: string | null;
-  } | null;
-  utilisateurs?: {
-    prenom: string | null;
-    nom: string | null;
-    email: string | null;
-    telephone: string | null;
-    role: "administrateur" | "inscrit" | "membre" | null;
-  } | null;
-}
-
-// Récupère prénom / nom / email / téléphone effectifs d'une inscription :
-// pour une inscription faite depuis l'espace membre, les champs invite sont
-// vides ; on retombe alors sur la fiche utilisateurs liée via utilisateur_id.
-const inscIdentite = (insc: Inscription) => ({
-  prenom: insc.prenom_invite ?? insc.utilisateurs?.prenom ?? "",
-  nom: insc.nom_invite ?? insc.utilisateurs?.nom ?? "",
-  email: insc.email_invite ?? insc.utilisateurs?.email ?? null,
-  telephone: insc.telephone_invite ?? insc.utilisateurs?.telephone ?? null,
-});
+import { Loader2, Pencil, Search, UserPlus, X, CreditCard } from "lucide-react";
 
 interface Template {
   cle: string;
@@ -64,62 +31,40 @@ interface AtelierMinimal {
   tarif_standard: number | null;
 }
 
-type FilterStatut = "en_attente" | "confirme" | "annule" | "tous";
-
 const PIERRE_ORACLE_TITRE = "Atelier Créatif — Pierre & Oracle";
 
-// Formatage des dates
 const formatDate = (iso: string) => {
   const d = new Date(iso);
   return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
 };
 
-const formatHeure = (h: string) => h.substring(0, 5);
-
-const formatDateTime = (iso: string) => {
-  const d = new Date(iso);
-  return d.toLocaleString("fr-FR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
-};
-
-// Remplace les variables dans un template
-const fillTemplate = (tpl: string, insc: Inscription): string => {
-  const a = insc.ateliers;
-  const id = inscIdentite(insc);
-  return tpl
-    .replaceAll("{prenom}", id.prenom)
-    .replaceAll("{nom}", id.nom)
-    .replaceAll("{titre}", a?.titre ?? "")
-    .replaceAll("{date}", a?.date_atelier ? formatDate(a.date_atelier) : "")
-    .replaceAll("{heure}", a?.heure_debut ? formatHeure(a.heure_debut) : "")
-    .replaceAll("{lieu}", a?.lieu ?? "");
-};
-
-// Normalise un numéro de téléphone FR pour wa.me
-const normalizePhoneForWhatsApp = (phone: string): string => {
-  const digits = phone.replace(/\D/g, "");
-  if (digits.startsWith("33")) return digits;
-  if (digits.startsWith("0")) return "33" + digits.substring(1);
-  return digits;
-};
-
-const statutBadge: Record<string, string> = {
-  en_attente: "bg-amber-100 text-amber-700",
-  confirme:   "bg-green-100 text-green-700",
-  annule:     "bg-red-100 text-red-700",
-};
-
-const statutLabel: Record<string, string> = {
+const STATUT_LABELS: Record<StatutInscription, string> = {
   en_attente: "En attente",
-  confirme:   "Validé",
-  annule:     "Refusé",
+  confirme:   "Validées",
+  annule:     "Refusées",
 };
 
 const PreInscriptions = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  // Arrivée depuis « Inscrits » (écran Ateliers) : ?atelier=<id>.
+  const cible = searchParams.get("atelier");
+
   const [inscriptions, setInscriptions] = useState<Inscription[]>([]);
+  // Consentement photo de chaque personne connectée : lu par relation (dernier bulletin d'adhésion).
+  const autorisations = useAutorisationsImage(inscriptions.map(i => i.utilisateur_id));
+  // Offre de chaque personne et droit de l'atelier (gratuit / inclus / à payer) : visibles après la migration des offres.
+  const espaces = useEspaces();
+  const tarifsAdherent = useTarifsAdherent();
+  const { parPersonne: offres, disponible: offresDisponibles } = useOffresParPersonne(null);
   const [templates, setTemplates] = useState<Record<string, string>>({});
   const [ateliersDispo, setAteliersDispo] = useState<AtelierMinimal[]>([]);
+  const [ateliersListe, setAteliersListe] = useState<AtelierListe[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<FilterStatut>("en_attente");
+  const [filter, setFilter] = useState<FiltreStatut>(cible ? "tous" : "en_attente");
+  const [periode, setPeriode] = useState<Periode>("avenir");
+  const [recherche, setRecherche] = useState("");
+  const [ouvertsManuels, setOuvertsManuels] = useState<Record<string, boolean>>({});
+  const [fenetreId, setFenetreId] = useState<string | null>(null);
   const [actingOn, setActingOn] = useState<string | null>(null);
 
   // Modal ajout / édition
@@ -136,26 +81,31 @@ const PreInscriptions = () => {
     statut_paiement: "non_requis" as "non_requis" | "en_attente" | "paye",
   });
   const [newSaving, setNewSaving] = useState(false);
+  const [derogation, setDerogation] = useState<Inscription | null>(null);
+  const [motifDerogation, setMotifDerogation] = useState("");
 
   const fetchAll = async () => {
     try {
       const today = new Date().toISOString().slice(0, 10);
-      const [inscRes, tplRes, atelRes] = await withTimeout(Promise.all([
+      const [inscRes, tplRes, atelRes, listeRes] = await withTimeout(Promise.all([
         supabase
           .from("inscriptions")
-          .select("*, ateliers(id, titre, date_atelier, heure_debut, lieu, adresse), utilisateurs(prenom, nom, email, telephone, role)")
+          .select("*, ateliers(id, titre, date_atelier, heure_debut, lieu, adresse), utilisateurs(prenom, nom, email, telephone, date_naissance, role)")
           .order("inscrit_le", { ascending: false }),
         supabase
           .from("parametres_messages")
           .select("cle, valeur"),
         // Liste des ateliers proposables : tous sauf annulés / terminés.
-        // On utilise .in() avec les statuts à inclure (plus lisible et
-        // moins risqué côté typage que .not("statut", "in", ...)).
         supabase
           .from("ateliers")
           .select("id, titre, date_atelier, heure_debut, statut, tarif_standard")
           .in("statut", ["brouillon", "publie", "complet"])
           .gte("date_atelier", today)
+          .order("date_atelier"),
+        // Tous les ateliers : un bloc par atelier dans l'accordéon.
+        supabase
+          .from("ateliers")
+          .select("id, titre, date_atelier, heure_debut, lieu, statut, tarif_standard, places_max, places_disponibles, antenne_id")
           .order("date_atelier"),
       ]));
 
@@ -174,7 +124,7 @@ const PreInscriptions = () => {
         if (guestEmails.length) {
           const { data: matched } = await supabase
             .from("utilisateurs")
-            .select("prenom, nom, email, telephone, role")
+            .select("prenom, nom, email, telephone, date_naissance, role")
             .in("email", guestEmails);
           const byEmail = new Map<string, NonNullable<Inscription["utilisateurs"]>>(
             (matched ?? []).map(u => [String(u.email).toLowerCase(), u as NonNullable<Inscription["utilisateurs"]>])
@@ -195,6 +145,7 @@ const PreInscriptions = () => {
         setTemplates(map);
       }
       if (atelRes.data) setAteliersDispo(atelRes.data as AtelierMinimal[]);
+      if (listeRes.data) setAteliersListe(listeRes.data as AtelierListe[]);
     } catch (err) {
       console.error("[PreInscriptions.fetchAll] error:", err);
     } finally {
@@ -204,10 +155,30 @@ const PreInscriptions = () => {
 
   useEffect(() => { fetchAll(); }, []);
 
-  const filtered = useMemo(() => {
-    if (filter === "tous") return inscriptions;
-    return inscriptions.filter(i => i.statut === filter);
-  }, [inscriptions, filter]);
+  const aujourdhui = aujourdhuiIso();
+
+  // Arrivée sur un atelier passé : on affiche directement l'onglet « Passés ».
+  const atelierCible = ateliersListe.find(a => a.id === cible);
+  useEffect(() => {
+    if (atelierCible) setPeriode(periodeDe(atelierCible.date_atelier, aujourdhui));
+  }, [atelierCible?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const groupes = useMemo(
+    () => grouperParAtelier(inscriptions, ateliersListe, {
+      filtre: filter, periode, aujourdhui, recherche, cible,
+      texte: i => {
+        const id = inscIdentite(i);
+        return `${id.prenom} ${id.nom} ${id.email ?? ""} ${i.ateliers?.titre ?? ""}`;
+      },
+    }),
+    [inscriptions, ateliersListe, filter, periode, aujourdhui, recherche, cible],
+  );
+
+  // Ouvert par défaut : l'atelier visé, sinon ceux qui ont des demandes à traiter.
+  const ouverts = useMemo(
+    () => Object.fromEntries(groupes.map(g => [g.atelier.id, ouvertsManuels[g.atelier.id] ?? (cible ? g.atelier.id === cible : g.aTraiter > 0)])),
+    [groupes, ouvertsManuels, cible],
+  );
 
   const counts = useMemo(() => ({
     en_attente: inscriptions.filter(i => i.statut === "en_attente").length,
@@ -216,10 +187,31 @@ const PreInscriptions = () => {
     tous:       inscriptions.length,
   }), [inscriptions]);
 
-  const handleChangeStatut = async (insc: Inscription, next: Inscription["statut"]) => {
-    if (insc.statut === next) return;
+  const droits = useMemo(() => {
+    if (!offresDisponibles || espaces.length === 0) return undefined;
+    const carte = new Map<string, InfoDroit>();
+    for (const i of inscriptions) {
+      const atelier = ateliersListe.find(a => a.id === i.atelier_id);
+      if (!atelier) continue;
+      const offresPersonne = i.utilisateur_id ? offres.get(i.utilisateur_id) ?? [] : [];
+      carte.set(i.id, { droit: droitAtelier({ ...atelier, tarif_adherent: tarifsAdherent.get(atelier.id) ?? null }, espaces, offresPersonne), offres: offresPersonne });
+    }
+    return carte;
+  }, [inscriptions, ateliersListe, espaces, offres, offresDisponibles, tarifsAdherent]);
+
+  const lignesVisibles = useMemo(() => groupes.flatMap(g => g.items), [groupes]);
+  const fenetre = inscriptions.find(i => i.id === fenetreId) ?? null;
+
+  const handleChangeStatut = async (insc: Inscription, next: Inscription["statut"]): Promise<boolean> => {
+    if (insc.statut === next) return false;
     const id = inscIdentite(insc);
-    if (next === "annule" && !confirm(`Refuser la pré-inscription de ${id.prenom} ${id.nom} ?`)) return;
+    if (next === "annule" && !confirm(`Refuser la pré-inscription de ${id.prenom} ${id.nom} ?`)) return false;
+    // Règlement non enregistré : la validation est bloquée (aussi en base), sauf dérogation motivée.
+    if (next === "confirme" && insc.statut_paiement === "en_attente") {
+      setMotifDerogation("");
+      setDerogation(insc);
+      return false;
+    }
 
     setActingOn(insc.id);
     const payload: TablesUpdate<"inscriptions"> = { statut: next };
@@ -230,40 +222,47 @@ const PreInscriptions = () => {
       .update(payload)
       .eq("id", insc.id);
 
+    setActingOn(null);
     if (error) {
       toast.error(`Erreur : ${error.message}`);
-    } else {
-      const action = next === "confirme" ? "validate" : next === "annule" ? "refuse" : "reset";
-      toast.success(
-        next === "confirme" ? `Pré-inscription de ${id.prenom} validée`
-        : next === "annule"  ? "Pré-inscription refusée"
-                             : "Pré-inscription remise en attente"
-      );
-      setInscriptions(prev => prev.map(i => i.id === insc.id ? { ...i, statut: next } : i));
-      logAction(`inscription.${action}`, "inscriptions", insc.id, {
-        prenom: id.prenom, nom: id.nom,
-        atelier: insc.ateliers?.titre, email: id.email,
-        statut_avant: insc.statut, statut_apres: next,
-      });
+      return false;
     }
-    setActingOn(null);
+    const action = next === "confirme" ? "validate" : next === "annule" ? "refuse" : "reset";
+    toast.success(
+      next === "confirme" ? `Pré-inscription de ${id.prenom} validée`
+      : next === "annule"  ? "Pré-inscription refusée"
+                           : "Pré-inscription remise en attente"
+    );
+    setInscriptions(prev => prev.map(i => i.id === insc.id ? { ...i, statut: next } : i));
+    logAction(`inscription.${action}`, "inscriptions", insc.id, {
+      prenom: id.prenom, nom: id.nom,
+      atelier: insc.ateliers?.titre, email: id.email,
+      statut_avant: insc.statut, statut_apres: next,
+    });
+    return true;
   };
 
+  const validerSansPaiement = async () => {
+    if (!derogation) return;
+    const motif = motifDerogation.trim();
+    if (motif.length < 3) { toast.error("Indiquez le motif de la dérogation"); return; }
+    const id = inscIdentite(derogation);
+    setActingOn(derogation.id);
+    const { error } = await supabase.rpc("valider_sans_paiement", { p_inscription: derogation.id, p_motif: motif });
+    setActingOn(null);
+    if (error) { toast.error(`Erreur : ${error.message}`); return; }
+    setInscriptions(prev => prev.map(i => i.id === derogation.id ? { ...i, statut: "confirme" } : i));
+    toast.success(`Pré-inscription de ${id.prenom} validée sans paiement`);
+    setDerogation(null);
+  };
 
-  const openMail = (insc: Inscription) => {
-    const email = inscIdentite(insc).email;
-    if (!email) {
-      toast.error("Pas d'email renseigné");
-      return;
-    }
-    const isValidated = insc.statut === "confirme";
-    const sujetKey = isValidated ? "validation_mail_sujet" : "refus_mail_sujet";
-    const corpsKey = isValidated ? "validation_mail_corps" : "refus_mail_corps";
-    const sujet = fillTemplate(templates[sujetKey] ?? "", insc);
-    const corps = fillTemplate(templates[corpsKey] ?? "", insc);
-
-    const url = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(sujet)}&body=${encodeURIComponent(corps)}`;
-    window.location.href = url;
+  const handlePaiement = async (insc: Inscription, paiement: StatutPaiement) => {
+    if (insc.statut_paiement === paiement) return;
+    const { error } = await supabase.from("inscriptions").update({ statut_paiement: paiement }).eq("id", insc.id);
+    if (error) { toast.error(`Erreur : ${error.message}`); return; }
+    setInscriptions(prev => prev.map(i => i.id === insc.id ? { ...i, statut_paiement: paiement } : i));
+    logAction("inscription.paiement", "inscriptions", insc.id, { paiement_avant: insc.statut_paiement, paiement_apres: paiement });
+    toast.success("Paiement mis à jour");
   };
 
   const openAddModal = () => {
@@ -299,6 +298,9 @@ const PreInscriptions = () => {
       toast.error("Prénom et nom sont obligatoires"); return;
     }
     if (!newForm.email.trim()) { toast.error("Email obligatoire"); return; }
+    if (newForm.statut === "confirme" && newForm.statut_paiement === "en_attente") {
+      toast.error("Paiement en attente : enregistrez le règlement (ou « Non requis ») avant de valider."); return;
+    }
 
     const atelier = ateliersDispo.find(a => a.id === newForm.atelier_id)
                  ?? (editingInscription?.ateliers ? {
@@ -418,25 +420,10 @@ const PreInscriptions = () => {
     setNewSaving(false);
   };
 
-  const openWhatsApp = (insc: Inscription) => {
-    const tel = inscIdentite(insc).telephone;
-    if (!tel) {
-      toast.error("Pas de téléphone renseigné");
-      return;
-    }
-    const isValidated = insc.statut === "confirme";
-    const tplKey = isValidated ? "validation_whatsapp" : "refus_whatsapp";
-    const message = fillTemplate(templates[tplKey] ?? "", insc);
-
-    const phone = normalizePhoneForWhatsApp(tel);
-    const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-    window.open(url, "_blank", "noopener,noreferrer");
-  };
-
   if (loading) return (
     <AdminLayout>
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <Loader2 className="w-8 h-8 animate-spin text-terracotta" />
       </div>
     </AdminLayout>
   );
@@ -447,7 +434,7 @@ const PreInscriptions = () => {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Pré-inscriptions</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Validez ou refusez les demandes d'inscription aux ateliers.
+            Les demandes, regroupées par atelier : validez, refusez et contactez.
           </p>
         </div>
         <button
@@ -459,190 +446,112 @@ const PreInscriptions = () => {
         </button>
       </div>
 
-      {/* Filtres */}
-      <div className="flex flex-wrap gap-2 mb-6">
-        {(["en_attente", "confirme", "annule", "tous"] as FilterStatut[]).map(f => (
+      {cible && atelierCible && (
+        <div className="mb-4 flex items-center gap-3 rounded-2xl border border-primary bg-primary/5 px-4 py-3 text-sm">
+          <span className="flex-1">
+            Vous arrivez depuis <b>Ateliers › Inscrits</b> : l'atelier <b>{atelierCible.titre}</b> est ouvert.
+          </span>
           <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-              filter === f
-                ? "bg-primary text-primary-foreground"
-                : "bg-card border text-foreground hover:bg-muted"
-            }`}
+            onClick={() => { setSearchParams({}); setOuvertsManuels({}); }}
+            className="shrink-0 rounded-full border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted"
           >
-            {f === "tous" ? "Toutes" : statutLabel[f]}
-            <span className="ml-2 text-xs opacity-70">({counts[f]})</span>
+            Tout afficher
           </button>
-        ))}
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center gap-3 mb-5">
+        <div role="group" aria-label="Filtrer par statut" className="inline-flex flex-wrap rounded-full border bg-card p-0.5">
+          {(["en_attente", "confirme", "annule", "tous"] as FiltreStatut[]).map(f => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              aria-pressed={filter === f}
+              className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${filter === f ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
+            >
+              {f === "tous" ? "Toutes" : STATUT_LABELS[f]} <span>({counts[f]})</span>
+            </button>
+          ))}
+        </div>
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <input
+            value={recherche}
+            onChange={e => setRecherche(e.target.value)}
+            aria-label="Rechercher une personne ou un atelier"
+            placeholder="Rechercher une personne, un atelier…"
+            className="w-full pl-9 pr-4 py-2.5 border rounded-xl text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+        </div>
+        <div role="group" aria-label="Période" className="inline-flex rounded-full border bg-card p-0.5">
+          {([["avenir", "À venir"], ["passes", "Passés"]] as [Periode, string][]).map(([cle, libelle]) => (
+            <button
+              key={cle}
+              onClick={() => setPeriode(cle)}
+              aria-pressed={periode === cle}
+              className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${periode === cle ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
+            >
+              {libelle}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Liste */}
-      {filtered.length === 0 ? (
-        <div className="bg-card rounded-2xl border p-12 text-center">
-          <Clock className="w-12 h-12 text-muted-foreground/50 mx-auto mb-3" />
-          <p className="text-muted-foreground">Aucune pré-inscription {filter !== "tous" ? `avec le statut "${statutLabel[filter]}"` : ""}.</p>
+      {groupes.length === 0 ? (
+        <div className="bg-card rounded-2xl border p-12 text-center text-muted-foreground">
+          Aucune pré-inscription {filter !== "tous" ? `« ${STATUT_LABELS[filter].toLowerCase()} »` : ""} {periode === "avenir" ? "pour les ateliers à venir" : "pour les ateliers passés"}.
         </div>
       ) : (
-        <div className="space-y-3">
-          {filtered.map(insc => {
-            const identite = inscIdentite(insc);
-            const fullName = `${identite.prenom} ${identite.nom}`.trim();
-            return (
-            <div key={insc.id} className="bg-card rounded-2xl border p-5">
-              <div className="flex flex-col lg:flex-row lg:items-start gap-4">
-                {/* Infos */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-2 flex-wrap">
-                    <h3 className="font-semibold text-foreground flex items-center gap-2">
-                      <User className="w-4 h-4 text-muted-foreground" />
-                      {fullName || <span className="text-muted-foreground italic">Sans nom</span>}
-                    </h3>
-                    {(() => {
-                      const role = insc.utilisateurs?.role;
-                      if (!role) return null;
-                      const map: Record<string, { label: string; cls: string }> = {
-                        administrateur: { label: "Admin",   cls: "bg-purple-100 text-purple-700" },
-                        membre:         { label: "Membre",  cls: "bg-primary/10 text-primary" },
-                        inscrit:        { label: "Inscrit", cls: "bg-gray-100 text-gray-600" },
-                      };
-                      const r = map[role];
-                      return r ? (
-                        <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-medium ${r.cls}`}>
-                          {r.label}
-                        </span>
-                      ) : null;
-                    })()}
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statutBadge[insc.statut]}`}>
-                      {statutLabel[insc.statut]}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      Reçu le {formatDateTime(insc.inscrit_le)}
-                    </span>
-                  </div>
+        <ListeParAtelier
+          groupes={groupes}
+          ouverts={ouverts}
+          onBasculer={atelierId => setOuvertsManuels(prev => ({ ...prev, [atelierId]: !ouverts[atelierId] }))}
+          autorisations={autorisations}
+          droits={droits}
+          actingOn={actingOn}
+          onOuvrir={insc => setFenetreId(insc.id)}
+          onStatut={handleChangeStatut}
+        />
+      )}
 
-                  <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1 text-sm">
-                    {identite.email && (
-                      <div className="flex items-center gap-2 text-muted-foreground truncate">
-                        <Mail className="w-3.5 h-3.5 shrink-0" />
-                        <span className="truncate">{identite.email}</span>
-                      </div>
-                    )}
-                    {identite.telephone && (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Phone className="w-3.5 h-3.5 shrink-0" />
-                        <span>{identite.telephone}</span>
-                      </div>
-                    )}
-                    {insc.ateliers && (
-                      <>
-                        <div className="flex items-center gap-2 text-foreground font-medium mt-1 sm:col-span-2">
-                          <Calendar className="w-3.5 h-3.5 text-primary shrink-0" />
-                          <span className="truncate">{insc.ateliers.titre}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <Clock className="w-3.5 h-3.5 shrink-0" />
-                          <span>{formatDate(insc.ateliers.date_atelier)} — {formatHeure(insc.ateliers.heure_debut)}</span>
-                        </div>
-                        {insc.ateliers.lieu && (
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <MapPin className="w-3.5 h-3.5 shrink-0" />
-                            {insc.ateliers.adresse ? (
-                              <a href={googleMapsSearchUrl(insc.ateliers.adresse)} target="_blank" rel="noopener noreferrer" className="truncate hover:underline">
-                                {insc.ateliers.lieu}
-                              </a>
-                            ) : (
-                              <span className="truncate">{insc.ateliers.lieu}</span>
-                            )}
-                          </div>
-                        )}
-                      </>
-                    )}
-                    {insc.date_naissance && (
-                      <div className="text-xs text-muted-foreground sm:col-span-2 mt-1">
-                        Date de naissance : {formatDate(insc.date_naissance)}
-                      </div>
-                    )}
-                  </div>
-                </div>
+      {fenetre && (
+        <FenetreInscription
+          insc={fenetre}
+          liste={lignesVisibles}
+          atelier={ateliersListe.find(a => a.id === fenetre.atelier_id)}
+          autorisation={fenetre.utilisateur_id ? autorisations.get(fenetre.utilisateur_id) : undefined}
+          info={droits?.get(fenetre.id)}
+          templates={templates}
+          occupe={actingOn === fenetre.id}
+          onClose={() => setFenetreId(null)}
+          onNavigate={insc => setFenetreId(insc.id)}
+          onStatut={handleChangeStatut}
+          onPaiement={handlePaiement}
+          onModifier={insc => openEditModal(insc)}
+        />
+      )}
 
-                {/* Actions */}
-                <div className="flex flex-wrap gap-2 lg:flex-col lg:w-48 shrink-0">
-                  <div className="flex gap-1.5 lg:flex-col w-full">
-                    <button
-                      onClick={() => handleChangeStatut(insc, "confirme")}
-                      disabled={actingOn === insc.id || insc.statut === "confirme"}
-                      title="Valider la pré-inscription"
-                      className={`flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-colors disabled:cursor-not-allowed flex-1 lg:flex-none ${
-                        insc.statut === "confirme"
-                          ? "bg-green-50 text-green-700 border border-green-200"
-                          : "bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
-                      }`}
-                    >
-                      {actingOn === insc.id ? <Loader2 className="w-4 h-4 animate-spin" /> :
-                        insc.statut === "confirme" ? <CheckCircle2 className="w-4 h-4" /> : <Check className="w-4 h-4" />}
-                      {insc.statut === "confirme" ? "Validé" : "Valider"}
-                    </button>
-                    <button
-                      onClick={() => handleChangeStatut(insc, "annule")}
-                      disabled={actingOn === insc.id || insc.statut === "annule"}
-                      title="Refuser la pré-inscription"
-                      className={`flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-colors disabled:cursor-not-allowed flex-1 lg:flex-none ${
-                        insc.statut === "annule"
-                          ? "bg-red-50 text-red-700 border border-red-200"
-                          : "bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"
-                      }`}
-                    >
-                      {insc.statut === "annule" ? <XCircle className="w-4 h-4" /> : <X className="w-4 h-4" />}
-                      {insc.statut === "annule" ? "Refusé" : "Refuser"}
-                    </button>
-                  </div>
-                  {insc.statut !== "en_attente" && (
-                    <button
-                      onClick={() => handleChangeStatut(insc, "en_attente")}
-                      disabled={actingOn === insc.id}
-                      className="flex items-center justify-center gap-2 border border-foreground/20 text-muted-foreground hover:bg-muted px-3 py-1.5 rounded-xl text-xs font-medium transition-colors disabled:opacity-40"
-                      title="Remettre en attente"
-                    >
-                      <Clock className="w-3.5 h-3.5" />
-                      Remettre en attente
-                    </button>
-                  )}
-
-                  <button
-                    onClick={() => openEditModal(insc)}
-                    className="flex items-center justify-center gap-2 border border-foreground/20 text-foreground px-3 py-1.5 rounded-xl text-xs font-medium hover:bg-muted transition-colors"
-                    title="Modifier l'inscription"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                    Modifier
-                  </button>
-
-                  <div className="flex gap-2 lg:flex-col w-full">
-                    <button
-                      onClick={() => openMail(insc)}
-                      disabled={!identite.email || insc.statut === "en_attente"}
-                      className="flex items-center justify-center gap-2 border border-foreground/20 text-foreground px-4 py-2 rounded-xl text-sm font-medium hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-1 lg:flex-none"
-                      title={insc.statut === "en_attente" ? "Validez ou refusez d'abord" : !identite.email ? "Pas d'email" : "Envoyer un mail"}
-                    >
-                      <Mail className="w-4 h-4" />
-                      Mail
-                    </button>
-                    <button
-                      onClick={() => openWhatsApp(insc)}
-                      disabled={!identite.telephone || insc.statut === "en_attente"}
-                      className="flex items-center justify-center gap-2 border border-foreground/20 text-foreground px-4 py-2 rounded-xl text-sm font-medium hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-1 lg:flex-none"
-                      title={insc.statut === "en_attente" ? "Validez ou refusez d'abord" : !identite.telephone ? "Pas de téléphone" : "Envoyer WhatsApp"}
-                    >
-                      <MessageSquare className="w-4 h-4" />
-                      WhatsApp
-                    </button>
-                  </div>
-                </div>
-              </div>
+      {derogation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm p-4" onClick={() => setDerogation(null)}>
+          <div role="dialog" aria-modal="true" aria-label="Valider sans paiement" className="bg-background border rounded-2xl shadow-2xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+            <h2 className="text-lg font-bold mb-1">Paiement non réglé</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              {inscIdentite(derogation).prenom} {inscIdentite(derogation).nom} n'a pas réglé « {derogation.ateliers?.titre} ».
+              Enregistrez d'abord le paiement (onglet Paiement), ou validez quand même en indiquant le motif : il sera inscrit au journal.
+            </p>
+            <label htmlFor="motif-derogation" className="block text-sm font-medium mb-1.5">Motif *</label>
+            <textarea
+              id="motif-derogation" value={motifDerogation} onChange={e => setMotifDerogation(e.target.value)} rows={3}
+              placeholder="Ex. règlement en espèces sur place, geste commercial…"
+              className="w-full rounded-xl border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <button onClick={() => setDerogation(null)} className="rounded-xl border px-4 py-2 text-sm hover:bg-muted">Annuler</button>
+              <button onClick={validerSansPaiement} disabled={actingOn === derogation.id} className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60">
+                Valider sans paiement
+              </button>
             </div>
-            );
-          })}
+          </div>
         </div>
       )}
 
@@ -663,7 +572,7 @@ const PreInscriptions = () => {
               <X className="w-5 h-5" />
             </button>
             <h2 className="text-xl font-bold text-foreground mb-1 flex items-center gap-2">
-              {editingInscription ? <Pencil className="w-5 h-5 text-primary" /> : <UserPlus className="w-5 h-5 text-primary" />}
+              {editingInscription ? <Pencil className="w-5 h-5 text-terracotta" /> : <UserPlus className="w-5 h-5 text-terracotta" />}
               {editingInscription ? "Modifier l'inscription" : "Nouvelle inscription"}
             </h2>
             <p className="text-sm text-muted-foreground mb-5">

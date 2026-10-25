@@ -3,12 +3,16 @@ import MembreLayout from "@/components/membre/MembreLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
-import { toast } from "sonner";
-import { messageErreurServeur } from "@/utils/messageErreurServeur";
+import PreInscriptionModal from "@/components/PreInscriptionModal";
+import { OffrePastille } from "@/components/OffrePastille";
+import { useMesOffres, useTarifsAdherent } from "@/hooks/useOffres";
+import { droitAtelier, euros, LIBELLES_DROIT, type DroitAtelier } from "@/lib/droits";
+import { Link } from "react-router-dom";
 import {
   CalendarDays, Clock, MapPin, Users, Euro, Loader2, CheckCircle2,
   ExternalLink, X, AlarmClock,
 } from "lucide-react";
+import { dateLongue } from "@/lib/dates";
 
 interface Atelier {
   id: string;
@@ -28,23 +32,26 @@ interface Atelier {
   lien_paypal: string | null;
   date_fin_inscription: string | null;
   statut: "publie" | "complet" | "brouillon" | "annule" | "termine";
+  antenne_id: string | null;
 }
 
 const isInscriptionsCloses = (a: { date_fin_inscription: string | null }) =>
   !!a.date_fin_inscription && new Date(a.date_fin_inscription + "T23:59:59") < new Date();
 
-const formatDate = (iso: string) =>
-  new Date(iso + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
 const formatTime = (t: string) => t.slice(0, 5);
 
 const Ateliers = () => {
   const { profile } = useAuth();
+  const { offres, espaces, disponible, simulee } = useMesOffres();
+  const tarifsAdherent = useTarifsAdherent();
   const [ateliers, setAteliers] = useState<Atelier[]>([]);
-  const [myInscriptions, setMyInscriptions] = useState<Set<string>>(new Set());
+  // Statut de mes pré-inscriptions actives, par atelier.
+  const [myInscriptions, setMyInscriptions] = useState<Map<string, "en_attente" | "confirme">>(new Map());
   const [loading, setLoading] = useState(true);
-  const [registering, setRegistering] = useState<string | null>(null);
   const [popin, setPopin] = useState<Atelier | null>(null);
+  // Titre de l'atelier en cours de pré-inscription, ou null si la fenêtre est fermée.
+  const [preInscription, setPreInscription] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     if (!profile) return;
@@ -53,7 +60,7 @@ const Ateliers = () => {
     const [aRes, iRes] = await Promise.all([
       supabase
         .from("ateliers")
-        .select("id, titre, description, description_courte, date_atelier, heure_debut, duree, lieu, adresse, url_image, places_max, places_disponibles, tarif_standard, tarif_affichage, lien_paypal, date_fin_inscription, statut")
+        .select("id, titre, description, description_courte, date_atelier, heure_debut, duree, lieu, adresse, url_image, places_max, places_disponibles, tarif_standard, tarif_affichage, lien_paypal, date_fin_inscription, statut, antenne_id")
         .in("statut", ["publie", "complet"])
         .gte("date_atelier", today)
         .order("date_atelier"),
@@ -65,44 +72,43 @@ const Ateliers = () => {
     ]);
 
     setAteliers((aRes.data as Atelier[]) ?? []);
-    setMyInscriptions(new Set(((iRes.data ?? []) as { atelier_id: string }[]).map(i => i.atelier_id)));
+    setMyInscriptions(new Map(
+      ((iRes.data ?? []) as { atelier_id: string; statut: "en_attente" | "confirme" }[]).map(i => [i.atelier_id, i.statut]),
+    ));
     setLoading(false);
   }, [profile]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const handleRegister = async (atelier: Atelier) => {
-    if (!profile) return;
-    setRegistering(atelier.id);
-
-    // Statuts d'inscription et de paiement fixés par la base (trigger).
-    const { error } = await supabase.from("inscriptions").insert({
-      atelier_id: atelier.id,
-      utilisateur_id: profile.id,
-    });
-
-    if (error) {
-      toast.error(messageErreurServeur(error), { duration: 6000 });
-      setRegistering(null);
-      return;
-    }
-
-    toast.success(
-      atelier.tarif_standard > 0
-        ? "Inscription enregistrée. Pensez à régler votre paiement via PayPal pour la confirmer."
-        : "Inscription enregistrée — confirmation à venir.",
-      { duration: 6000 }
-    );
-    setRegistering(null);
+  // La pré-inscription passe par la même fenêtre que sur l'accueil (identité
+  // du compte pré-remplie, CGU, date de naissance si l'atelier la demande).
+  const ouvrirPreInscription = (atelier: Atelier) => {
     setPopin(null);
-    await fetchData();
+    setPreInscription(atelier.titre);
   };
+
+  const fermerPreInscription = () => {
+    setPreInscription(null);
+    fetchData();
+  };
+
+  // « Inclus », « gratuit pour tous » ou « à régler » : d'après l'adhésion en cours (voir lib/droits.ts).
+  const droitDe = (a: Atelier): DroitAtelier | null => (disponible ? droitAtelier({ ...a, tarif_adherent: tarifsAdherent.get(a.id) ?? null }, espaces, offres) : null);
+  const mention = (d: DroitAtelier, a: Atelier) => {
+    if (d.etat !== "a_payer") return LIBELLES_DROIT[d.etat];
+    const avecAdhesion = tarifsAdherent.get(a.id);
+    const base = `${d.montant > 0 ? euros(d.montant) + " " : ""}à régler`;
+    // Non-adhérente : on rappelle le tarif réservé aux adhérentes.
+    return offres.length === 0 && avecAdhesion != null && avecAdhesion < d.montant ? `${base} · ${euros(avecAdhesion)} avec une adhésion` : base;
+  };
+  const styleMention = (d: DroitAtelier) =>
+    d.etat === "inclus" ? "bg-green-100 text-green-700" : d.etat === "gratuit" ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-700";
 
   if (loading) {
     return (
       <MembreLayout>
         <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <Loader2 className="w-8 h-8 animate-spin text-terracotta" />
         </div>
       </MembreLayout>
     );
@@ -113,9 +119,30 @@ const Ateliers = () => {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">Ateliers</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Tous les ateliers proposés par le club. Cliquez pour vous inscrire.
+          Tous les ateliers proposés par le club. Cliquez sur « Pré-inscription » pour réserver votre place.
         </p>
       </div>
+
+      {disponible && (
+        <div className="mb-5 flex flex-wrap items-center gap-3 rounded-2xl border bg-card px-5 py-3 text-sm">
+          {offres.length > 0 ? (
+            <>
+              <span className="flex flex-wrap gap-1">{offres.map(o => <OffrePastille key={o.formule_id} offre={o} />)}</span>
+              <span className="flex-1 min-w-[200px]">
+                <b>Votre offre</b> · valable jusqu'au {new Date(Math.max(...offres.map(o => new Date(o.valable_jusqu_au).getTime()))).toLocaleDateString("fr-FR")}
+                <span className="block text-xs text-muted-foreground">
+                  Inclus : Papotages{espaces.filter(e => offres.some(o => o.espaces.includes(e.id))).map(e => `, ${e.nom}`).join("")} · les autres espaces : atelier à régler à l'unité
+                </span>
+              </span>
+            </>
+          ) : (
+            <span className="flex-1">
+              <b>Aucune adhésion en cours.</b> Papotages est gratuit pour tous ; les ateliers des autres espaces se règlent à l'unité.
+            </span>
+          )}
+          {!simulee && <Link to="/espace-membre/mon-adhesion" className="inline-block py-1 text-terracotta hover:underline">Mon adhésion ›</Link>}
+        </div>
+      )}
 
       {ateliers.length === 0 ? (
         <div className="bg-card border rounded-2xl p-12 text-center">
@@ -125,16 +152,17 @@ const Ateliers = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {ateliers.map(a => {
-            const inscribed = myInscriptions.has(a.id);
+            const statutInscription = myInscriptions.get(a.id);
             const full = a.statut === "complet" || a.places_disponibles <= 0;
             const closed = isInscriptionsCloses(a);
+            const droit = droitDe(a);
             return (
               <div key={a.id} className="bg-card border rounded-2xl overflow-hidden flex flex-col hover:shadow-md transition-shadow">
                 {a.url_image ? (
                   <img src={a.url_image} alt={a.titre} loading="lazy" decoding="async" className="w-full aspect-[16/10] object-contain bg-muted/30" />
                 ) : (
                   <div className="w-full aspect-[16/10] bg-gradient-to-br from-primary/15 to-amber-500/15 flex items-center justify-center">
-                    <CalendarDays className="w-10 h-10 text-primary/50" />
+                    <CalendarDays className="w-10 h-10 text-terracotta/50" />
                   </div>
                 )}
                 <div className="p-5 flex-1 flex flex-col">
@@ -144,13 +172,13 @@ const Ateliers = () => {
                   )}
 
                   <div className="space-y-1.5 text-xs text-muted-foreground mt-3">
-                    <div className="flex items-center gap-2 capitalize"><CalendarDays className="w-3.5 h-3.5" />{formatDate(a.date_atelier)}</div>
+                    <div className="flex items-center gap-2 capitalize"><CalendarDays className="w-3.5 h-3.5" />{dateLongue(a.date_atelier)}</div>
                     <div className="flex items-center gap-2"><Clock className="w-3.5 h-3.5" />{formatTime(a.heure_debut)} · {a.duree}</div>
                     {a.lieu && (
                       <div className="flex items-center gap-2">
                         <MapPin className="w-3.5 h-3.5" />
                         {a.adresse ? (
-                          <a href={googleMapsSearchUrl(a.adresse)} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                          <a href={googleMapsSearchUrl(a.adresse)} target="_blank" rel="noopener noreferrer" className="inline-block py-1 hover:underline">
                             {a.lieu}
                           </a>
                         ) : a.lieu}
@@ -159,14 +187,21 @@ const Ateliers = () => {
                     <div className="flex items-center gap-2"><Users className="w-3.5 h-3.5" />{a.places_disponibles} / {a.places_max} places</div>
                     {a.tarif_affichage && <div className="flex items-center gap-2"><Euro className="w-3.5 h-3.5" />{a.tarif_affichage}</div>}
                     {a.date_fin_inscription && (
-                      <div className="flex items-center gap-2"><AlarmClock className="w-3.5 h-3.5" />Inscriptions jusqu'au {formatDate(a.date_fin_inscription)}</div>
+                      <div className="flex items-center gap-2"><AlarmClock className="w-3.5 h-3.5" />Inscriptions jusqu'au {dateLongue(a.date_fin_inscription)}</div>
                     )}
                   </div>
 
+                  {droit && (
+                    <p className="mt-3">
+                      <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${styleMention(droit)}`}>{mention(droit, a)}</span>
+                    </p>
+                  )}
+
                   <div className="mt-auto pt-4 flex items-center gap-2">
-                    {inscribed ? (
+                    {statutInscription ? (
                       <div className="flex-1 inline-flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-2 rounded-full text-sm font-medium">
-                        <CheckCircle2 className="w-4 h-4" /> Inscrit·e
+                        <CheckCircle2 className="w-4 h-4" />
+                        {statutInscription === "confirme" ? "Inscrit·e" : "Pré-inscription envoyée"}
                       </div>
                     ) : full ? (
                       <button disabled className="flex-1 bg-muted text-muted-foreground px-4 py-2 rounded-full text-sm font-medium cursor-not-allowed">
@@ -181,7 +216,7 @@ const Ateliers = () => {
                         onClick={() => setPopin(a)}
                         className="flex-1 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium hover:opacity-90 transition-opacity"
                       >
-                        S'inscrire
+                        {droit?.etat === "a_payer" && droit.montant > 0 ? `Pré-inscription · ${euros(droit.montant)}` : "Pré-inscription"}
                       </button>
                     )}
                   </div>
@@ -215,7 +250,7 @@ const Ateliers = () => {
               <div className="grid grid-cols-2 gap-3 text-sm mb-5">
                 <div className="bg-muted/40 rounded-xl p-3">
                   <p className="text-xs text-muted-foreground">Date</p>
-                  <p className="font-medium capitalize mt-0.5">{formatDate(popin.date_atelier)}</p>
+                  <p className="font-medium capitalize mt-0.5">{dateLongue(popin.date_atelier)}</p>
                 </div>
                 <div className="bg-muted/40 rounded-xl p-3">
                   <p className="text-xs text-muted-foreground">Horaire</p>
@@ -240,17 +275,18 @@ const Ateliers = () => {
                 <div className="bg-muted/40 rounded-xl p-3">
                   <p className="text-xs text-muted-foreground">Tarif</p>
                   <p className="font-medium mt-0.5">{popin.tarif_affichage ?? (popin.tarif_standard > 0 ? `${popin.tarif_standard} €` : "Gratuit")}</p>
+                  {droitDe(popin) && (
+                    <p className="mt-1"><span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${styleMention(droitDe(popin)!)}`}>{mention(droitDe(popin)!, popin)}</span></p>
+                  )}
                 </div>
               </div>
 
               <div className="flex flex-col gap-2">
                 <button
-                  onClick={() => handleRegister(popin)}
-                  disabled={registering === popin.id}
-                  className="w-full bg-primary text-primary-foreground px-5 py-3 rounded-full text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+                  onClick={() => ouvrirPreInscription(popin)}
+                  className="w-full bg-primary text-primary-foreground px-5 py-3 rounded-full text-sm font-medium hover:opacity-90 transition-opacity"
                 >
-                  {registering === popin.id ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                  Confirmer mon inscription
+                  Pré-inscription
                 </button>
                 {popin.tarif_standard > 0 && popin.lien_paypal && (
                   <a
@@ -266,6 +302,10 @@ const Ateliers = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {preInscription !== null && (
+        <PreInscriptionModal ateliers={ateliers} atelierInitial={preInscription} onFermer={fermerPreInscription} />
       )}
     </MembreLayout>
   );
