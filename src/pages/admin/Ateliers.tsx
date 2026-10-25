@@ -12,11 +12,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { enregistrerAffichage, lireAffichage, type AffichageAteliers } from "@/lib/affichageAteliers";
 import { ESPACES_PAR_SLUG } from "@/lib/espaces";
 import { Link, useSearchParams } from "react-router-dom";
+import { copierLienInscription } from "@/utils/copierLienInscription";
 import VueCalendrier from "@/components/admin/ateliers/VueCalendrier";
 import { chiffresAteliers } from "@/lib/calendrierAteliers";
 import { aujourdhuiIso } from "@/lib/adhesions";
 import { compressImage } from "@/utils/compressImage";
-import { Plus, Pencil, Trash2, Copy, X, MapPin, Clock, Users, Euro, Search, Image as ImageIcon, LayoutGrid, List, CalendarDays } from "lucide-react";
+import { Plus, Pencil, Trash2, Copy, Link2, X, MapPin, Clock, Users, Euro, Search, Image as ImageIcon, LayoutGrid, List, CalendarDays } from "lucide-react";
 
 type Statut = "brouillon" | "publie" | "complet" | "annule" | "termine";
 type Niveau = "debutant" | "intermediaire" | "avance";
@@ -694,6 +695,8 @@ const Ateliers = () => {
                         <div className="flex items-center justify-end gap-1">
                           <Link to={`/admin/pre-inscriptions?atelier=${a.id}`} title="Inscrits et pré-inscriptions" aria-label={`Inscrits de ${a.titre}`}
                             className="p-2 rounded-full hover:bg-muted"><Users className="w-4 h-4" /></Link>
+                          <button onClick={() => copierLienInscription(a.id)} title="Copier le lien d'inscription" aria-label={`Copier le lien d'inscription de ${a.titre}`}
+                            className="p-2 rounded-full hover:bg-muted"><Link2 className="w-4 h-4" /></button>
                           <button onClick={() => openEdit(a)} title="Modifier"
                             className="p-2 rounded-full hover:bg-muted"><Pencil className="w-4 h-4" /></button>
                           <button onClick={() => openDuplicate(a)} title="Dupliquer"
@@ -788,6 +791,10 @@ const Ateliers = () => {
                   <button onClick={() => openEdit(a)}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs border rounded-full hover:bg-muted transition-colors flex-1 justify-center">
                     <Pencil className="w-3 h-3" /> Modifier
+                  </button>
+                  <button onClick={() => copierLienInscription(a.id)} title="Copier le lien d'inscription" aria-label={`Copier le lien d'inscription de ${a.titre}`}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs border rounded-full hover:bg-muted transition-colors">
+                    <Link2 className="w-3 h-3" />
                   </button>
                   <button onClick={() => openDuplicate(a)} title="Dupliquer"
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs border rounded-full hover:bg-muted transition-colors">

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { CircleDashed, Download, Euro, MapPin, Pencil, Search, UserCheck, UserX } from "lucide-react";
+import { CircleDashed, Download, Euro, Link2, MapPin, Pencil, Search, UserCheck, UserX } from "lucide-react";
 import { toast } from "sonner";
 import AdminLayout from "@/components/admin/AdminLayout";
 import BadgePhotos from "@/components/BadgePhotos";
@@ -12,6 +12,7 @@ import { LIBELLES_PHOTOS, etatPhotos } from "@/lib/autorisationImage";
 import { inscIdentite } from "@/lib/inscriptionIdentite";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { dateLongue } from "@/lib/dates";
+import { copierLienInscription } from "@/utils/copierLienInscription";
 
 interface AtelierFiche {
   id: string;
@@ -178,8 +179,11 @@ const FicheAtelier = () => {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-muted">{STATUT_ATELIER[atelier.statut] ?? atelier.statut}</span>
+          <button onClick={() => copierLienInscription(atelier.id)} className="flex items-center gap-1.5 px-4 py-2 border rounded-full text-sm hover:bg-muted">
+            <Link2 className="w-3.5 h-3.5" /> Lien d'inscription
+          </button>
           <Link to={`/admin/pre-inscriptions?atelier=${atelier.id}`} className="px-4 py-2 border rounded-full text-sm hover:bg-muted">Pré-inscriptions</Link>
           <Link to={`/admin/ateliers?modifier=${atelier.id}`} className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium bg-primary text-primary-foreground hover:opacity-90">
             <Pencil className="w-3.5 h-3.5" /> Modifier

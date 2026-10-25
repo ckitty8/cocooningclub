@@ -780,6 +780,45 @@ export type Database = {
           },
         ]
       }
+      pre_inscriptions_secours: {
+        Row: {
+          atelier_id: string | null
+          atelier_titre: string | null
+          cree_le: string
+          date_naissance: string | null
+          email: string | null
+          erreur: string | null
+          id: string
+          nom: string
+          telephone: string | null
+          utilisateur_id: string | null
+        }
+        Insert: {
+          atelier_id?: string | null
+          atelier_titre?: string | null
+          cree_le?: string
+          date_naissance?: string | null
+          email?: string | null
+          erreur?: string | null
+          id?: string
+          nom?: string
+          telephone?: string | null
+          utilisateur_id?: string | null
+        }
+        Update: {
+          atelier_id?: string | null
+          atelier_titre?: string | null
+          cree_le?: string
+          date_naissance?: string | null
+          email?: string | null
+          erreur?: string | null
+          id?: string
+          nom?: string
+          telephone?: string | null
+          utilisateur_id?: string | null
+        }
+        Relationships: []
+      }
       jours_feries: {
         Row: {
           annee: number

@@ -44,8 +44,11 @@ for (const fichier of readdirSync(migrations).filter(f => f.endsWith(".sql")).so
     erreurs.push(`Migration absente du manifeste (postérieure à la production) : ${fichier}`);
   }
 }
-const tri = [...toutes].sort();
-if (JSON.stringify(tri) !== JSON.stringify(toutes)) erreurs.push("Le manifeste doit lister les migrations dans l'ordre (migrations, puis migrationsAuDeploiement).");
+// Chaque liste doit être dans l'ordre chronologique. Une migration additive récente peut figurer dans
+// `migrations` même si des migrations « au déploiement » plus anciennes existent : elle n'en dépend pas.
+for (const { liste, sortie } of paquets) {
+  if (JSON.stringify([...liste].sort()) !== JSON.stringify(liste)) erreurs.push(`Le manifeste doit lister les migrations dans l'ordre (${sortie.split("/").pop()}).`);
+}
 
 const contenu = ({ liste, titre, suite }) => {
   const parties = [

@@ -69,6 +69,7 @@ const Confidentialite = () => {
             <ul className="list-disc pl-5 space-y-1">
               <li>date de naissance (pour les ateliers qui la demandent) : effacée 30 jours après l'atelier ;</li>
               <li>pré-inscriptions sans compte : anonymisées 3 ans après la date de l'atelier ;</li>
+              <li>pré-inscriptions que le site n'a pas pu enregistrer normalement (copie de secours de vos coordonnées, le temps de vous recontacter) : supprimées après 6 mois ;</li>
               <li>messages envoyés via le formulaire de contact : supprimés après 3 ans ;</li>
               <li>statistiques de fréquentation du site : supprimées après 13 mois ;</li>
               <li>journal des actions de l'équipe : supprimé après 12 mois ;</li>

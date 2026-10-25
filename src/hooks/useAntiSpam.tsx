@@ -45,6 +45,18 @@ export const useAntiSpam = () => {
     [trap],
   );
 
+  /** true si le champ piège est rempli : signe sûr d'un robot (un humain ne le voit pas). */
+  const piegeRempli = useCallback(() => trap.trim() !== "", [trap]);
+
+  /**
+   * Envoi trop rapide : une personne réelle peut aller vite (remplissage automatique du navigateur).
+   * On attend le délai minimal au lieu de jeter la demande, pour ne perdre aucun contact.
+   */
+  const attendreDelai = useCallback(async () => {
+    const reste = MIN_FILL_MS - (Date.now() - shownAt.current);
+    if (reste > 0) await new Promise(r => setTimeout(r, reste));
+  }, []);
+
   const honeypot = (
     <div style={hiddenStyle} aria-hidden="true">
       <label>
@@ -61,5 +73,5 @@ export const useAntiSpam = () => {
     </div>
   );
 
-  return { honeypot, isBot, reset };
+  return { honeypot, isBot, piegeRempli, attendreDelai, reset };
 };

@@ -31,6 +31,9 @@ WITH controles(controle, ok) AS (
     ('Aucun type *_ancien résiduel',          (SELECT count(*) FROM pg_type WHERE typnamespace = 'public'::regnamespace AND typname LIKE '%\_ancien') = 0),
     ('Colonne utilisateurs.mot_de_passe_hash supprimée', NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'utilisateurs' AND column_name = 'mot_de_passe_hash')),
     ('Fonction de purge RGPD fermée au public', COALESCE((SELECT NOT has_function_privilege('anon', p.oid, 'EXECUTE') AND NOT has_function_privilege('authenticated', p.oid, 'EXECUTE') FROM pg_proc p WHERE p.pronamespace = 'private'::regnamespace AND p.proname = 'purger_donnees_anciennes'), false)),
+    ('Table pre_inscriptions_secours (filet de sécurité des pré-inscriptions)', to_regclass('public.pre_inscriptions_secours') IS NOT NULL),
+    ('RLS activée sur pre_inscriptions_secours', COALESCE((SELECT relrowsecurity FROM pg_class WHERE oid = to_regclass('public.pre_inscriptions_secours')), false)),
+    ('Un visiteur peut déposer une demande de secours mais pas la relire', COALESCE(has_table_privilege('anon', 'public.pre_inscriptions_secours', 'INSERT') AND NOT has_table_privilege('anon', 'public.pre_inscriptions_secours', 'SELECT'), false)),
     ('Au moins les 3 formules du bulletin',   CASE WHEN to_regclass('public.formules') IS NULL THEN false ELSE ((xpath('/row/c/text()', query_to_xml('SELECT count(*) AS c FROM public.formules', false, true, '')))[1]::text)::int >= 3 END),
     ('Formules rattachées à des espaces',     CASE WHEN to_regclass('public.formule_espaces') IS NULL THEN false ELSE ((xpath('/row/c/text()', query_to_xml('SELECT count(*) AS c FROM public.formule_espaces', false, true, '')))[1]::text)::int >= 4 END)
 )

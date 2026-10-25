@@ -29,6 +29,9 @@ Comptes utiles : une administratrice, une membre, une inscrite (rôle `inscrit`)
 
 ## Après : visiteur (navigation privée)
 
+- [ ] **Lien d'inscription** : sur un atelier (Admin → Ateliers, bouton « Copier le lien d'inscription »), coller le lien dans un navigateur privé : la page affiche l'atelier et le formulaire ; une pré-inscription de test apparaît dans Pré-inscriptions.
+- [ ] **Filet de sécurité** : une pré-inscription ne se perd jamais. Si l'enregistrement normal échoue, la demande apparaît dans le bandeau « Demandes à récupérer » de Pré-inscriptions (bouton « Traitée » pour la retirer) ; si même cela échoue, elle est gardée dans le navigateur et renvoyée au prochain chargement du site.
+
 - [ ] Accueil, « Notre histoire », calendrier (filtres, « Ajouter à mon agenda » télécharge un fichier `.ics`).
 - [ ] Pré-inscription à un atelier : champs obligatoires, case CGU obligatoire, message « Pré-inscription enregistrée ».
 - [ ] Pages `/cgu`, `/confidentialite`, 404 sur une adresse inconnue, connexion, mot de passe oublié.

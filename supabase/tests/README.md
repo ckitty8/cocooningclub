@@ -14,6 +14,7 @@ Scénarios qui vérifient les triggers de sécurité sur une base Postgres jetab
 - `20261023000009_reserve_admin_dispo_aux_admins.sql` : `admin_dispo_le` réservée aux administrateurs (droit retiré aux visiteurs + contrôle dans la fonction).
 - `20261024000000_nettoyage_premium_et_mot_de_passe_hash.sql` : retrait des valeurs premium des enums (policies recréées à l'identique), suppression de `mot_de_passe_hash` ;
 - `20261024000001_conservation_des_donnees.sql` et `20261024000002_minimisation_date_naissance.sql` : purge et anonymisation RGPD, retrait de la date de naissance des comptes ;
+- `20261025000000_pre_inscriptions_secours.sql` : filet de sécurité des pré-inscriptions (table `pre_inscriptions_secours` : dépôt ouvert aux visiteurs, lecture réservée aux administrateurs, champs tronqués, limite large, purge à 6 mois). Test : `pre_inscriptions_secours.test.sql`, sur la base `t` du premier bloc ci-dessous après les trois migrations de sécurité.
 - `20261024000003_renomme_antennes_en_espaces.sql` : renommage de la table, des colonnes (`ateliers`, `formule_espaces`) et des vues, réécriture de `atelier_inclus`.
 
 ```bash

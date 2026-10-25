@@ -12,6 +12,7 @@ import photoAtelier from "@/assets/hero-workshop-960.webp";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { trackVisit } from "@/utils/trackVisit";
 import { usePublicAteliers } from "@/hooks/usePublicAteliers";
+import { copierLienInscription } from "@/utils/copierLienInscription";
 import { espaceDe } from "@/lib/espaces";
 import AjouterAgenda from "@/components/AjouterAgenda";
 
@@ -343,6 +344,13 @@ const Calendrier = () => {
               >
                 <Link2 className="w-4 h-4" />
                 Copier le lien de l'atelier
+              </button>
+              <button
+                onClick={() => copierLienInscription(popinWorkshop.id)}
+                className="w-full flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Link2 className="w-4 h-4" />
+                Copier le lien d'inscription
               </button>
             </div>
           </div>

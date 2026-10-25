@@ -78,6 +78,15 @@ export interface MockSupabase {
   updates: Record<string, unknown[]>;
   /** Corps JSON des appels de fonctions (rpc), par nom. */
   rpc: Record<string, unknown[]>;
+  /** Filtres des DELETE reçus (ex. « id=eq.… »), par table. */
+  deletes: Record<string, string[]>;
+  /**
+   * Pannes simulées, modifiables en cours de test :
+   * - inscriptions : l'enregistrement normal échoue (erreur serveur) ;
+   * - doublon : la base répond « une pré-inscription existe déjà » ;
+   * - secours : la table de secours est injoignable (coupure réseau).
+   */
+  pannes: { inscriptions: boolean; doublon: boolean; secours: boolean };
 }
 
 const corpsJson = (req: Request) => {
@@ -106,10 +115,12 @@ export interface OptionsMock {
   sansChoixCookies?: boolean;
   /** Simule une base où la migration de l'offre n'est pas encore appliquée. */
   offreAbsente?: boolean;
+  /** Lignes de `pre_inscriptions_secours` (demandes à récupérer, page admin). */
+  secours?: Record<string, unknown>[];
 }
 
 export const mockSupabase = async (page: Page, options: OptionsMock = {}): Promise<MockSupabase> => {
-  const mock: MockSupabase = { inserts: {}, updates: {}, rpc: {} };
+  const mock: MockSupabase = { inserts: {}, updates: {}, rpc: {}, deletes: {}, pannes: { inscriptions: false, doublon: false, secours: false } };
   const { membre } = options;
 
   if (membre) {
@@ -143,6 +154,18 @@ export const mockSupabase = async (page: Page, options: OptionsMock = {}): Promi
       (mock.rpc[table.slice(4)] ??= []).push(corpsJson(req));
       return route.fulfill({ json: [] });
     }
+    if (req.method() === "POST" && table === "inscriptions" && mock.pannes.doublon) {
+      return route.fulfill({
+        status: 400,
+        json: { code: "P0001", message: "Une pré-inscription existe déjà pour cet atelier avec ces coordonnées. Nous revenons vers vous très vite !" },
+      });
+    }
+    if (req.method() === "POST" && table === "inscriptions" && mock.pannes.inscriptions) {
+      return route.fulfill({ status: 500, json: { code: "XX000", message: "panne simulée" } });
+    }
+    if (req.method() === "POST" && table === "pre_inscriptions_secours" && mock.pannes.secours) {
+      return route.abort("failed");
+    }
     if (req.method() === "POST" && table) {
       (mock.inserts[table] ??= []).push(corpsJson(req));
       if ((req.headers()["prefer"] ?? "").includes("return=representation")) {
@@ -150,6 +173,10 @@ export const mockSupabase = async (page: Page, options: OptionsMock = {}): Promi
         return route.fulfill({ status: 201, json: veutUnObjet ? ligne : [ligne] });
       }
       return route.fulfill({ status: 201, body: "" });
+    }
+    if (req.method() === "DELETE" && table) {
+      (mock.deletes[table] ??= []).push(url.search);
+      return route.fulfill({ status: 204, body: "" });
     }
     if (req.method() === "PATCH" && table) {
       (mock.updates[table] ??= []).push(corpsJson(req));
@@ -162,6 +189,7 @@ export const mockSupabase = async (page: Page, options: OptionsMock = {}): Promi
     if (table === "inscriptions" && options.inscriptions) return route.fulfill({ json: options.inscriptions });
     if (table === "formules" && options.formules) return route.fulfill({ json: options.formules });
     if (table === "adhesions" && options.adhesions) return route.fulfill({ json: options.adhesions });
+    if (table === "pre_inscriptions_secours") return route.fulfill({ json: options.secours ?? [] });
     if (table === "vue_logs") return route.fulfill({ json: options.logs ?? [] });
     if (table === "vue_autorisation_image") return route.fulfill({ json: options.autorisationsImage ?? [] });
     if (table === "espaces" && options.espaces) return route.fulfill({ json: options.espaces });

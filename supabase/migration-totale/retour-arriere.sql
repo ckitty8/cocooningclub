@@ -18,6 +18,9 @@ BEGIN
 END
 $$;
 DROP FUNCTION IF EXISTS private.purger_donnees_anciennes();
+-- Filet de sécurité des pré-inscriptions (20261025000000) : supprime les demandes de secours encore non traitées.
+DROP TABLE IF EXISTS public.pre_inscriptions_secours;
+DROP FUNCTION IF EXISTS private.preparer_pre_inscription_secours();
 ALTER TABLE public.ateliers DROP COLUMN IF EXISTS tarif_adherent;
 DROP TRIGGER  IF EXISTS trg_verifier_validation_impayee ON public.inscriptions;
 DROP FUNCTION IF EXISTS private.bloquer_validation_impayee();

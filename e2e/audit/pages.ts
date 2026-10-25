@@ -9,6 +9,7 @@ export interface PageAuditee {
 export const PAGES: PageAuditee[] = [
   { chemin: "/", profil: "visiteur" },
   { chemin: "/calendrier", profil: "visiteur" },
+  { chemin: `/inscription/${ATELIER_TEST.id}`, profil: "visiteur" },
   { chemin: "/notre-histoire", profil: "visiteur" },
   { chemin: "/login", profil: "visiteur" },
   { chemin: "/forgot-password", profil: "visiteur" },

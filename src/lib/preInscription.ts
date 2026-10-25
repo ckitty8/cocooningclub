@@ -46,6 +46,10 @@ export const valeursInitiales = (atelierTitre = "", profil?: Profile | null): Pr
   cgu: false,
 });
 
+/** Lien à partager pour s'inscrire : ouvre directement la pré-inscription à cet atelier. */
+export const lienInscription = (atelierId: string, origine = window.location.origin) =>
+  `${origine}/inscription/${atelierId}`;
+
 /** « Marie Dupont » → prénom « Marie », nom « Dupont » (le prénom sert de nom s'il est seul). */
 export const separerNomComplet = (nomComplet: string) => {
   const [prenom = "", ...reste] = nomComplet.trim().split(/\s+/);
@@ -58,7 +62,7 @@ export const separerNomComplet = (nomComplet: string) => {
  *   son espace membre (la base refuse alors les champs « invité »).
  * - Visiteur : enregistrée avec les coordonnées saisies.
  */
-export const envoyerPreInscription = (data: PreInscriptionData, atelierId: string, profil: Profile | null) => {
+export const envoyerPreInscription = (data: PreInscriptionData, atelierId: string, profil: Pick<Profile, "id"> | null) => {
   const complements = {
     telephone_invite: data.phone || null,
     date_naissance: data.birthdate || null,

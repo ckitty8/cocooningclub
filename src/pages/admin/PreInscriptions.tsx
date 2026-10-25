@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import AdminLayout from "@/components/admin/AdminLayout";
 import ListeParAtelier from "@/components/admin/preinscriptions/ListeParAtelier";
+import DemandesSecours from "@/components/admin/preinscriptions/DemandesSecours";
 import FenetreInscription from "@/components/admin/preinscriptions/FenetreInscription";
 import type { AtelierListe, InfoDroit, Inscription, StatutInscription, StatutPaiement } from "@/components/admin/preinscriptions/types";
 import { useAutorisationsImage } from "@/hooks/useAutorisationsImage";
@@ -445,6 +446,8 @@ const PreInscriptions = () => {
           Nouvelle inscription
         </button>
       </div>
+
+      <DemandesSecours />
 
       {cible && atelierCible && (
         <div className="mb-4 flex items-center gap-3 rounded-2xl border border-primary bg-primary/5 px-4 py-3 text-sm">

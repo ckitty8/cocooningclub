@@ -60,6 +60,7 @@ const NOT_FOUND: PageMeta = { title: "Page introuvable · Cocooning Club", index
 const metaFor = (pathname: string): PageMeta => {
   const path = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
   if (PUBLIC_PAGES[path]) return PUBLIC_PAGES[path];
+  if (path.startsWith("/inscription/")) return { title: "Pré-inscription · Cocooning Club", index: false };
   if (path.startsWith("/espace-membre")) return { title: "Espace membre · Cocooning Club", index: false };
   if (path.startsWith("/admin")) return { title: "Administration · Cocooning Club", index: false };
   return NOT_FOUND;

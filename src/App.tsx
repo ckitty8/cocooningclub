@@ -7,6 +7,7 @@ import RouteSeo from "@/components/RouteSeo";
 import CookieBanner from "@/components/CookieBanner";
 import Index from "./pages/Index.tsx";
 import Calendrier from "./pages/Calendrier.tsx";
+import Inscription from "./pages/Inscription.tsx";
 import Confidentialite from "./pages/Confidentialite.tsx";
 import Cgu from "./pages/Cgu.tsx";
 import MentionsLegales from "./pages/MentionsLegales.tsx";
@@ -16,6 +17,7 @@ import DroitsParOffre from "./pages/createur/DroitsParOffre.tsx";
 import MatriceRoles from "./pages/createur/MatriceRoles.tsx";
 import SimulationBanner from "@/components/SimulationBanner";
 import { ACCES } from "@/lib/roles";
+import { rejouerFile } from "@/lib/preInscriptionSecours";
 import NotFound from "./pages/NotFound.tsx";
 import Login from "./pages/auth/Login.tsx";
 import ForgotPassword from "./pages/auth/ForgotPassword.tsx";
@@ -94,6 +96,18 @@ const RecoveryRedirect = () => {
   return null;
 };
 
+// Renvoie les pré-inscriptions gardées dans le navigateur quand le réseau ou le serveur était
+// indisponible (voir src/lib/preInscriptionSecours.ts) : au chargement du site et au retour de la connexion.
+const RenvoiPreInscriptions = () => {
+  useEffect(() => {
+    const renvoyer = () => { void rejouerFile(); };
+    renvoyer();
+    window.addEventListener("online", renvoyer);
+    return () => window.removeEventListener("online", renvoyer);
+  }, []);
+  return null;
+};
+
 const App = () => (
   <>
     <Toaster />
@@ -102,12 +116,14 @@ const App = () => (
         <ScrollToTop />
         <RouteSeo />
         <RecoveryRedirect />
+        <RenvoiPreInscriptions />
         <SimulationBanner />
         <CookieBanner />
         <Routes>
           {/* Routes publiques */}
           <Route path="/" element={<Index />} />
           <Route path="/calendrier" element={<Calendrier />} />
+          <Route path="/inscription/:id" element={<Inscription />} />
           <Route path="/notre-histoire" element={<NotreHistoire />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
