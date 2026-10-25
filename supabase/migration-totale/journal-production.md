@@ -3,6 +3,12 @@
 Ces actions ont été faites sur la base partagée (preview + production) avec l'accord de l'équipe. Elles ne sont
 **pas** à rejouer ; elles sont notées pour la traçabilité et pour pouvoir les annuler.
 
+## 25/10/2026
+
+| Action | Détail | Retour arrière |
+|---|---|---|
+| `migration-totale.sql` puis `migration-deploiement.sql` collés dans le SQL Editor | Appliqués par l'équipe ; contrôles lus par Claude le 25/10 : date de naissance des comptes et `antennes` supprimées, `espaces` en place, 3 formules, rôle premium retiré, tables de sauvegarde supprimées, fonction de purge présente. `pg_cron` n'est pas disponible : la purge RGPD et la dépublication des ateliers passés ne sont pas planifiées. | `retour-arriere-deploiement.sql` puis `retour-arriere.sql` (la colonne `date_naissance` est recréée vide). |
+
 ## 23/10/2026
 
 | Action | Détail | Retour arrière |
