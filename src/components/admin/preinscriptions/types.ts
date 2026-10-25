@@ -12,6 +12,10 @@ export interface Inscription {
   email_invite: string | null;
   telephone_invite: string | null;
   date_naissance: string | null;
+  /** Droit à l'image donné à la pré-inscription (null = pas de réponse). */
+  autorisation_image?: boolean | null;
+  /** Accord pour le groupe WhatsApp (null = pas de réponse). */
+  accord_whatsapp?: boolean | null;
   statut: StatutInscription;
   statut_paiement: StatutPaiement;
   inscrit_le: string;

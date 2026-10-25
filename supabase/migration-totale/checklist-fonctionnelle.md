@@ -30,6 +30,7 @@ Comptes utiles : une administratrice, une membre, une inscrite (rôle `inscrit`)
 ## Après : visiteur (navigation privée)
 
 - [ ] **Lien d'inscription** : sur un atelier (Admin → Ateliers, bouton « Copier le lien d'inscription »), coller le lien dans un navigateur privé : la page affiche l'atelier et le formulaire ; une pré-inscription de test apparaît dans Pré-inscriptions.
+- [ ] **Formulaire de pré-inscription** : champs Atelier, Nom, Prénom, E-mail, Téléphone (tous obligatoires), « Droit à l'image » (J'autorise / Je n'autorise pas) et « Groupe WhatsApp » (J'accepte / Je n'accepte pas) : une réponse est obligatoire pour chacun et une seule case peut être cochée ; bloc « Paiement » et case CGU ; après l'envoi, message « Merci pour ton inscription 💛 ». Dans Admin → Pré-inscriptions → fenêtre d'une demande, onglet Infos : « Droit à l'image » et « Groupe WhatsApp » affichés (« Non renseigné » pour les anciennes demandes).
 - [ ] **Filet de sécurité** : une pré-inscription ne se perd jamais. Si l'enregistrement normal échoue, la demande apparaît dans le bandeau « Demandes à récupérer » de Pré-inscriptions (bouton « Traitée » pour la retirer) ; si même cela échoue, elle est gardée dans le navigateur et renvoyée au prochain chargement du site.
 
 - [ ] Accueil, « Notre histoire », calendrier (filtres, « Ajouter à mon agenda » télécharge un fichier `.ics`).

@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, ChevronLeft, ChevronRight, MapPin, Users, Euro, AlarmClock } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Link2, MapPin, Users, Euro, AlarmClock } from "lucide-react";
 import type { Workshop } from "@/data/workshops";
 import { formatDateFr, formatTimeFr } from "@/data/workshops";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { espaceDe } from "@/lib/espaces";
 import AjouterAgenda from "@/components/AjouterAgenda";
+import { copierLienInscription } from "@/utils/copierLienInscription";
 
 interface WorkshopCarouselProps {
   workshops: Workshop[];
@@ -118,6 +119,15 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
                     </button>
                   )}
                   <AjouterAgenda atelier={ws} variante="menu" />
+                  {!closed && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); void copierLienInscription(ws.id); }}
+                      className="flex min-h-11 w-full items-center justify-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <Link2 className="h-4 w-4" aria-hidden="true" />
+                      Partager le lien d'inscription
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

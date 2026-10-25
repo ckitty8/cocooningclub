@@ -58,6 +58,10 @@ const dateHeure = (iso: string) =>
 
 const champ = "w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary";
 
+/** « Autorise » / « N'autorise pas » / « Non renseigné » (pré-inscriptions faites avant le nouveau formulaire). */
+const reponseLibelle = (valeur: boolean | null | undefined, oui: string, non: string) =>
+  valeur === true ? oui : valeur === false ? non : "Non renseigné";
+
 const FenetreInscription = ({
   insc, liste, atelier, autorisation, info, templates, occupe, onClose, onNavigate, onStatut, onPaiement, onModifier,
 }: Props) => {
@@ -170,6 +174,8 @@ const FenetreInscription = ({
                 {id.email && <p className="flex items-center gap-2"><Mail className="w-4 h-4 shrink-0" />{id.email}</p>}
                 {id.telephone && <p className="flex items-center gap-2"><Phone className="w-4 h-4 shrink-0" />{id.telephone}</p>}
                 {id.dateNaissance && <p>Date de naissance : {dateLongue(id.dateNaissance)}</p>}
+                <p>Droit à l'image : <span className="font-medium text-foreground">{reponseLibelle(insc.autorisation_image, "Autorise", "N'autorise pas")}</span></p>
+                <p>Groupe WhatsApp : <span className="font-medium text-foreground">{reponseLibelle(insc.accord_whatsapp, "Accepte", "N'accepte pas")}</span></p>
                 <p>Reçue le {dateHeure(insc.inscrit_le)}</p>
                 <button onClick={() => onModifier(insc)} className="inline-flex items-center gap-1.5 mt-1 px-3 py-1.5 text-xs border rounded-full hover:bg-muted text-foreground">
                   <Pencil className="w-3 h-3" /> Modifier

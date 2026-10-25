@@ -20,7 +20,7 @@ vi.mock("@/integrations/supabase/client", () => ({
 import { enregistrerPreInscription, estDoublon, nombreEnFile, rejouerFile, type DemandePreInscription } from "./preInscriptionSecours";
 
 const demande: DemandePreInscription = {
-  data: { name: "Léa Martin", email: "lea@exemple.fr", phone: "0611223344", workshop: "Atelier floral", birthdate: "", cgu: true },
+  data: { prenom: "Léa", nom: "Martin", email: "lea@exemple.fr", phone: "0611223344", workshop: "Atelier floral", birthdate: "", droitImage: "oui", whatsapp: "non", cgu: true },
   atelierId: "atelier-1",
   atelierTitre: "Atelier floral",
   profil: null,
@@ -50,8 +50,18 @@ describe("enregistrerPreInscription", () => {
     expect(await enregistrerPreInscription(demande)).toEqual({ issue: "secours" });
     expect(envois[1]).toEqual({
       table: "pre_inscriptions_secours",
-      ligne: expect.objectContaining({ nom: "Léa Martin", email: "lea@exemple.fr", telephone: "0611223344", atelier_id: "atelier-1", erreur: "XX000 : panne" }),
+      ligne: expect.objectContaining({ prenom: "Léa", nom: "Martin", email: "lea@exemple.fr", telephone: "0611223344", atelier_id: "atelier-1", droit_image: true, accord_whatsapp: false, erreur: "XX000 : panne" }),
     });
+  });
+
+  it("enregistre quand même la pré-inscription si la base n'a pas encore les colonnes de consentement", async () => {
+    let appels = 0;
+    reponses.inscriptions = { get error() { appels += 1; return appels === 1 ? { code: "PGRST204", message: "Could not find the 'accord_whatsapp' column" } : null; } } as never;
+    expect(await enregistrerPreInscription(demande)).toEqual({ issue: "enregistree" });
+    expect(envois.map(e => e.table)).toEqual(["inscriptions", "inscriptions"]);
+    expect(envois[0].ligne).toHaveProperty("accord_whatsapp");
+    expect(envois[1].ligne).not.toHaveProperty("accord_whatsapp");
+    expect(envois[1].ligne).toEqual(expect.objectContaining({ email_invite: "lea@exemple.fr" }));
   });
 
   it("garde aussi en secours une limite d'envois atteinte (la demande n'est pas perdue)", async () => {
@@ -68,7 +78,7 @@ describe("enregistrerPreInscription", () => {
   it("prend l'identité du compte pour un membre connecté", async () => {
     reponses.inscriptions = { error: { code: "XX000", message: "panne" } };
     await enregistrerPreInscription({ ...demande, profil: { id: "u1", prenom: "Marie", nom: "Dupont", email: "marie@exemple.fr" } });
-    expect(envois[1].ligne).toEqual(expect.objectContaining({ nom: "Marie Dupont", email: "marie@exemple.fr", utilisateur_id: "u1" }));
+    expect(envois[1].ligne).toEqual(expect.objectContaining({ prenom: "Marie", nom: "Dupont", email: "marie@exemple.fr", utilisateur_id: "u1" }));
   });
 
   it("garde la demande dans le navigateur quand tout échoue, puis la renvoie une fois le réseau revenu", async () => {

@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { ATELIER_TEST, mockSupabase } from "./supabaseMock";
+import { remplirPreInscription, TITRE_MERCI } from "./formulaire";
 import { connecterEn, profilTest } from "./session";
 
 const INSCRITE = profilTest({
@@ -23,9 +24,10 @@ test("un simple inscrit se pré-inscrit à un atelier depuis le site public, rat
   await page.goto("/");
   await page.getByRole("button", { name: "Pré-inscription" }).first().click();
   const fenetre = page.getByRole("dialog", { name: "Pré-inscription" });
-  await expect(fenetre.getByPlaceholder("Marie Dupont")).toHaveValue("Julie Martin");
-  await fenetre.getByRole("checkbox").check();
+  await expect(fenetre.getByLabel("Prénom", { exact: true })).toHaveValue("Julie");
+  await expect(fenetre.getByLabel("Nom", { exact: true })).toHaveValue("Martin");
+  await remplirPreInscription(fenetre, { tel: "0611223344" });
   await fenetre.getByRole("button", { name: /Envoyer ma pré-inscription/ }).click();
-  await expect(page.getByRole("heading", { name: "Pré-inscription enregistrée !" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: TITRE_MERCI })).toBeVisible();
   expect(mock.inserts.inscriptions?.[0]).toMatchObject({ atelier_id: ATELIER_TEST.id, utilisateur_id: INSCRITE.id });
 });

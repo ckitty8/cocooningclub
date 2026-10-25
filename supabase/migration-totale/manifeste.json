@@ -12,7 +12,8 @@
     "20261023000010_supprime_decrement_atelier_spots.sql",
     "20261024000000_nettoyage_premium_et_mot_de_passe_hash.sql",
     "20261024000001_conservation_des_donnees.sql",
-    "20261025000000_pre_inscriptions_secours.sql"
+    "20261025000000_pre_inscriptions_secours.sql",
+    "20261025000001_consentements_pre_inscription.sql"
   ],
   "migrationsAuDeploiement": [
     "20261024000002_minimisation_date_naissance.sql",

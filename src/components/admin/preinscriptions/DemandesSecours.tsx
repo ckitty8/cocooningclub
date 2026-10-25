@@ -55,12 +55,18 @@ const DemandesSecours = () => {
         {demandes.map(d => (
           <li key={d.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white px-4 py-3">
             <div className="min-w-0 space-y-0.5 text-sm">
-              <p className="font-medium text-foreground">{d.nom}{d.atelier_titre && <span className="font-normal text-muted-foreground"> · {d.atelier_titre}</span>}</p>
+              <p className="font-medium text-foreground">{[d.prenom, d.nom].filter(Boolean).join(" ")}{d.atelier_titre && <span className="font-normal text-muted-foreground"> · {d.atelier_titre}</span>}</p>
               <p className="flex flex-wrap items-center gap-x-4 gap-y-0.5 text-muted-foreground">
                 {d.email && <a href={`mailto:${d.email}`} className="flex items-center gap-1 underline underline-offset-2"><Mail className="h-3.5 w-3.5" aria-hidden="true" />{d.email}</a>}
                 {d.telephone && <a href={`tel:${d.telephone}`} className="flex items-center gap-1 underline underline-offset-2"><Phone className="h-3.5 w-3.5" aria-hidden="true" />{d.telephone}</a>}
                 <span>{dateLongue(d.cree_le.slice(0, 10))}</span>
               </p>
+              {(d.droit_image !== null || d.accord_whatsapp !== null) && (
+                <p className="text-xs text-muted-foreground">
+                  Droit à l'image : {d.droit_image === null ? "non renseigné" : d.droit_image ? "autorise" : "n'autorise pas"} ·
+                  WhatsApp : {d.accord_whatsapp === null ? "non renseigné" : d.accord_whatsapp ? "accepte" : "n'accepte pas"}
+                </p>
+              )}
               {d.erreur && <p className="text-xs text-muted-foreground">Cause : {d.erreur}</p>}
             </div>
             <button

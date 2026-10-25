@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { ATELIER_TEST, mockSupabase } from "./supabaseMock";
+import { remplirPreInscription, TITRE_MERCI } from "./formulaire";
 import { connecterEn, profilTest } from "./session";
 
 const MEMBRE = profilTest({
@@ -23,19 +24,23 @@ test("un membre se pré-inscrit depuis son espace avec les informations de son c
 
   // Fenêtre commune avec l'accueil, identité du compte déjà remplie et non modifiable.
   const fenetre = page.getByRole("dialog", { name: "Pré-inscription" });
-  await expect(fenetre.getByPlaceholder("Marie Dupont")).toHaveValue("Marie Dupont");
-  await expect(fenetre.getByPlaceholder("Marie Dupont")).toHaveAttribute("readonly", "");
-  await expect(fenetre.getByPlaceholder("marie@email.com")).toHaveValue("marie@exemple.fr");
-  await fenetre.getByRole("checkbox").check();
+  await expect(fenetre.getByLabel("Prénom", { exact: true })).toHaveValue("Marie");
+  await expect(fenetre.getByLabel("Nom", { exact: true })).toHaveValue("Dupont");
+  await expect(fenetre.getByLabel("Nom", { exact: true })).toHaveAttribute("readonly", "");
+  await expect(fenetre.getByLabel("E-mail", { exact: true })).toHaveValue("marie@exemple.fr");
+  await expect(fenetre.getByLabel("Téléphone", { exact: true })).toHaveValue("0601020304");
+  await remplirPreInscription(fenetre);
   await fenetre.getByRole("button", { name: /Envoyer ma pré-inscription/ }).click();
-  await expect(page.getByRole("heading", { name: "Pré-inscription enregistrée !" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: TITRE_MERCI })).toBeVisible();
 
   // Rattachée au compte : aucun champ « invité » n'est envoyé.
   expect(mock.inserts.inscriptions).toEqual([{
     atelier_id: ATELIER_TEST.id,
     utilisateur_id: MEMBRE.id,
-    telephone_invite: null,
+    telephone_invite: "0601020304",
     date_naissance: null,
+    autorisation_image: true,
+    accord_whatsapp: false,
   }]);
 });
 

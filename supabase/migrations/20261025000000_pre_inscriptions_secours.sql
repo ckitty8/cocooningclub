@@ -14,6 +14,7 @@
 CREATE TABLE IF NOT EXISTS public.pre_inscriptions_secours (
   id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   cree_le        TIMESTAMPTZ NOT NULL DEFAULT now(),
+  prenom         TEXT,
   nom            TEXT NOT NULL DEFAULT 'Sans nom',
   email          TEXT,
   telephone      TEXT,
@@ -21,6 +22,8 @@ CREATE TABLE IF NOT EXISTS public.pre_inscriptions_secours (
   atelier_id     UUID,
   atelier_titre  TEXT,
   utilisateur_id UUID,
+  droit_image    BOOLEAN,   -- NULL = pas de réponse
+  accord_whatsapp BOOLEAN,  -- NULL = pas de réponse
   erreur         TEXT
 );
 
@@ -33,6 +36,7 @@ LANGUAGE plpgsql
 SET search_path = public, pg_catalog
 AS $$
 BEGIN
+  NEW.prenom         := NULLIF(left(btrim(COALESCE(NEW.prenom, '')), 200), '');
   NEW.nom            := COALESCE(NULLIF(left(btrim(COALESCE(NEW.nom, '')), 200), ''), 'Sans nom');
   NEW.email          := NULLIF(left(btrim(COALESCE(NEW.email, '')), 255), '');
   NEW.telephone      := NULLIF(left(btrim(COALESCE(NEW.telephone, '')), 40), '');

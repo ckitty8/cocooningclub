@@ -712,6 +712,9 @@ export type Database = {
       }
       inscriptions: {
         Row: {
+          accord_whatsapp: boolean | null
+          autorisation_image: boolean | null
+          consentements_le: string | null
           annule_le: string | null
           atelier_id: string
           date_naissance: string | null
@@ -727,6 +730,9 @@ export type Database = {
           utilisateur_id: string | null
         }
         Insert: {
+          accord_whatsapp?: boolean | null
+          autorisation_image?: boolean | null
+          consentements_le?: string | null
           annule_le?: string | null
           atelier_id: string
           date_naissance?: string | null
@@ -742,6 +748,9 @@ export type Database = {
           utilisateur_id?: string | null
         }
         Update: {
+          accord_whatsapp?: boolean | null
+          autorisation_image?: boolean | null
+          consentements_le?: string | null
           annule_le?: string | null
           atelier_id?: string
           date_naissance?: string | null
@@ -782,6 +791,9 @@ export type Database = {
       }
       pre_inscriptions_secours: {
         Row: {
+          accord_whatsapp: boolean | null
+          droit_image: boolean | null
+          prenom: string | null
           atelier_id: string | null
           atelier_titre: string | null
           cree_le: string
@@ -794,6 +806,9 @@ export type Database = {
           utilisateur_id: string | null
         }
         Insert: {
+          accord_whatsapp?: boolean | null
+          droit_image?: boolean | null
+          prenom?: string | null
           atelier_id?: string | null
           atelier_titre?: string | null
           cree_le?: string
@@ -806,6 +821,9 @@ export type Database = {
           utilisateur_id?: string | null
         }
         Update: {
+          accord_whatsapp?: boolean | null
+          droit_image?: boolean | null
+          prenom?: string | null
           atelier_id?: string | null
           atelier_titre?: string | null
           cree_le?: string

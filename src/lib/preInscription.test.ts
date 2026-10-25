@@ -2,8 +2,9 @@ import { describe, expect, it, vi } from "vitest";
 import type { Profile } from "@/contexts/auth";
 import {
   ATELIER_AVEC_DATE_NAISSANCE,
+  preInscriptionMembreSchema,
   preInscriptionSchema,
-  separerNomComplet,
+  reponseEnBooleen,
   valeursInitiales,
 } from "./preInscription";
 
@@ -11,16 +12,19 @@ import {
 vi.mock("@/integrations/supabase/client", () => ({ supabase: {} }));
 
 const valide = {
-  name: "Marie Dupont",
+  prenom: "Marie",
+  nom: "Dupont",
   email: "marie@exemple.fr",
   phone: "06 12 34 56 78",
   workshop: "Atelier Papotages",
   birthdate: "",
+  droitImage: "oui",
+  whatsapp: "non",
   cgu: true,
 };
 
-const erreurs = (data: unknown) => {
-  const res = preInscriptionSchema.safeParse(data);
+const erreurs = (data: unknown, schema = preInscriptionSchema) => {
+  const res = schema.safeParse(data);
   return res.success ? {} : Object.fromEntries(res.error.issues.map(i => [i.path[0], i.message]));
 };
 
@@ -29,16 +33,28 @@ describe("preInscriptionSchema", () => {
     expect(erreurs(valide)).toEqual({});
   });
 
-  it("accepte un téléphone vide", () => {
-    expect(erreurs({ ...valide, phone: "" })).toEqual({});
+  it("accepte les deux réponses « non »", () => {
+    expect(erreurs({ ...valide, droitImage: "non", whatsapp: "non" })).toEqual({});
+  });
+
+  it("exige un nom et un prénom distincts", () => {
+    expect(erreurs({ ...valide, prenom: "  " })).toEqual({ prenom: "Veuillez indiquer votre prénom." });
+    expect(erreurs({ ...valide, nom: "" })).toEqual({ nom: "Veuillez indiquer votre nom." });
   });
 
   it("refuse un email invalide", () => {
     expect(erreurs({ ...valide, email: "marie" })).toHaveProperty("email");
   });
 
-  it("refuse un téléphone qui contient des lettres", () => {
+  it("exige un téléphone valide", () => {
+    expect(erreurs({ ...valide, phone: "" })).toEqual({ phone: "Veuillez indiquer votre numéro de téléphone." });
     expect(erreurs({ ...valide, phone: "appelle-moi" })).toHaveProperty("phone");
+  });
+
+  it("exige une réponse au droit à l'image et au groupe WhatsApp", () => {
+    expect(erreurs({ ...valide, droitImage: "" })).toEqual({ droitImage: "Merci de choisir une réponse." });
+    expect(erreurs({ ...valide, whatsapp: "" })).toEqual({ whatsapp: "Merci de choisir une réponse." });
+    expect(erreurs({ ...valide, droitImage: "peut-être" })).toHaveProperty("droitImage");
   });
 
   it("exige l'acceptation des CGU", () => {
@@ -51,23 +67,30 @@ describe("preInscriptionSchema", () => {
   });
 });
 
-describe("separerNomComplet", () => {
-  it("sépare le prénom du reste du nom", () => {
-    expect(separerNomComplet("  Marie   de La Tour ")).toEqual({ prenom: "Marie", nom: "de La Tour" });
+describe("preInscriptionMembreSchema", () => {
+  it("n'exige pas de ressaisir l'identité du compte, mais garde téléphone et réponses obligatoires", () => {
+    const membre = { ...valide, prenom: "", nom: "", email: "" };
+    expect(erreurs(membre, preInscriptionMembreSchema)).toEqual({});
+    expect(erreurs({ ...membre, phone: "" }, preInscriptionMembreSchema)).toHaveProperty("phone");
+    expect(erreurs({ ...membre, droitImage: "" }, preInscriptionMembreSchema)).toHaveProperty("droitImage");
   });
+});
 
-  it("utilise le prénom comme nom quand il est seul", () => {
-    expect(separerNomComplet("Marie")).toEqual({ prenom: "Marie", nom: "Marie" });
+describe("reponseEnBooleen", () => {
+  it("« oui » vaut true, tout le reste false", () => {
+    expect(reponseEnBooleen("oui")).toBe(true);
+    expect(reponseEnBooleen("non")).toBe(false);
+    expect(reponseEnBooleen("")).toBe(false);
   });
 });
 
 describe("valeursInitiales", () => {
-  it("laisse l'identité vide pour un visiteur", () => {
-    expect(valeursInitiales("Atelier X")).toMatchObject({ name: "", email: "", workshop: "Atelier X", cgu: false });
+  it("laisse l'identité et les réponses vides pour une visiteuse", () => {
+    expect(valeursInitiales("Atelier X")).toMatchObject({ prenom: "", nom: "", email: "", workshop: "Atelier X", droitImage: "", whatsapp: "", cgu: false });
   });
 
   it("pré-remplit l'identité d'un membre connecté", () => {
-    const profil = { id: "u1", prenom: "Marie", nom: "Dupont", email: "marie@exemple.fr" } as Profile;
-    expect(valeursInitiales("Atelier X", profil)).toMatchObject({ name: "Marie Dupont", email: "marie@exemple.fr" });
+    const profil = { id: "u1", prenom: "Marie", nom: "Dupont", email: "marie@exemple.fr", telephone: "0601020304" } as Profile;
+    expect(valeursInitiales("Atelier X", profil)).toMatchObject({ prenom: "Marie", nom: "Dupont", email: "marie@exemple.fr", phone: "0601020304" });
   });
 });

@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Profile } from "@/contexts/auth";
-import { envoyerPreInscription, type PreInscriptionData } from "@/lib/preInscription";
+import { envoyerPreInscription, reponseEnBooleen, type PreInscriptionData } from "@/lib/preInscription";
 
 // Une pré-inscription ne doit jamais être perdue, même si le site ou la base a un problème.
 // Enregistrement en trois temps :
@@ -36,6 +36,10 @@ type ErreurServeur = { code?: string; message?: string } | null;
 /** « Une pré-inscription existe déjà… » (trigger inscription_active_existe) : la personne est déjà notée. */
 export const estDoublon = (error: ErreurServeur): boolean =>
   error?.code === "P0001" && /existe déjà/i.test(error.message ?? "");
+
+/** La base n'a pas (encore) les colonnes du droit à l'image / WhatsApp (migration 20261025000001 à appliquer). */
+const colonneConsentementAbsente = (error: ErreurServeur): boolean =>
+  error?.code === "PGRST204" || error?.code === "42703" || /autorisation_image|accord_whatsapp|consentements_le/.test(error?.message ?? "");
 
 const texteErreur = (e: unknown): string => {
   if (e && typeof e === "object" && "message" in e) {
@@ -85,14 +89,16 @@ const mettreEnFile = (demande: DemandePreInscription, erreur: string): boolean =
 
 // ─── Enregistrement ─────────────────────────────────────────────────────
 
-const identite = (d: DemandePreInscription) => {
-  const nom = d.profil ? [d.profil.prenom, d.profil.nom].filter(Boolean).join(" ") : d.data.name;
-  return { nom, email: d.profil?.email ?? d.data.email };
-};
+const identite = (d: DemandePreInscription) => ({
+  prenom: d.profil ? d.profil.prenom : d.data.prenom,
+  nom: (d.profil ? d.profil.nom : d.data.nom) ?? "",
+  email: d.profil?.email ?? d.data.email,
+});
 
 const deposerEnSecours = async (d: DemandePreInscription, erreur: string) => {
-  const { nom, email } = identite(d);
+  const { prenom, nom, email } = identite(d);
   return supabase.from("pre_inscriptions_secours").insert({
+    prenom: prenom || null,
     nom,
     email: email || null,
     telephone: d.data.phone || null,
@@ -100,6 +106,8 @@ const deposerEnSecours = async (d: DemandePreInscription, erreur: string) => {
     atelier_id: d.atelierId,
     atelier_titre: d.atelierTitre || null,
     utilisateur_id: d.profil?.id ?? null,
+    droit_image: d.data.droitImage ? reponseEnBooleen(d.data.droitImage) : null,
+    accord_whatsapp: d.data.whatsapp ? reponseEnBooleen(d.data.whatsapp) : null,
     erreur,
   });
 };
@@ -112,7 +120,9 @@ const tenter = async (d: DemandePreInscription): Promise<IssuePreInscription | n
   let erreur = "";
   try {
     if (d.atelierId) {
-      const { error } = await envoyerPreInscription(d.data, d.atelierId, d.profil);
+      let { error } = await envoyerPreInscription(d.data, d.atelierId, d.profil);
+      // Base pas encore à jour (colonnes de consentement absentes) : on enregistre quand même la pré-inscription.
+      if (error && colonneConsentementAbsente(error)) ({ error } = await envoyerPreInscription(d.data, d.atelierId, d.profil, true));
       if (!error) return { issue: "enregistree" };
       if (estDoublon(error)) return { issue: "doublon", message: error.message ?? "" };
       erreur = texteErreur(error);

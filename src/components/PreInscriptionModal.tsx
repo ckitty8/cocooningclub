@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useForm, type FieldError } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { CheckCircle2, X } from "lucide-react";
@@ -39,6 +39,37 @@ const champ = "w-full rounded-xl border bg-background px-4 py-3 text-sm text-for
 const libelle = "block text-sm font-medium text-foreground mb-1.5";
 const erreur = "text-destructive text-xs mt-1";
 
+// Question à deux cases (J'autorise / Je n'autorise pas) : une seule peut être cochée, et une réponse
+// est obligatoire. Les cases sont assez grandes pour le doigt (24 px).
+const DeuxCases = ({ legende, children, valeur, onChoisir, libelleOui, libelleNon, erreurChamp }: {
+  legende: string;
+  children: ReactNode;
+  valeur: string;
+  onChoisir: (v: "oui" | "non" | "") => void;
+  libelleOui: string;
+  libelleNon: string;
+  erreurChamp?: FieldError;
+}) => (
+  <fieldset className="rounded-xl border bg-muted/30 p-4">
+    <legend className="px-1 text-sm font-medium text-foreground">{legende}</legend>
+    <div className="mb-3 space-y-2 text-xs leading-relaxed text-muted-foreground">{children}</div>
+    <div className="flex flex-wrap gap-x-6 gap-y-2">
+      {([["oui", libelleOui], ["non", libelleNon]] as const).map(([cle, libelle]) => (
+        <label key={cle} className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
+          <input
+            type="checkbox"
+            checked={valeur === cle}
+            onChange={() => onChoisir(valeur === cle ? "" : cle)}
+            className="h-6 w-6 shrink-0 accent-primary"
+          />
+          {libelle}
+        </label>
+      ))}
+    </div>
+    {erreurChamp && <p className={erreur}>{erreurChamp.message}</p>}
+  </fieldset>
+);
+
 // Fenêtre de pré-inscription, utilisée par l'accueil et le calendrier.
 // Elle est montée à chaque ouverture : le formulaire et le chrono anti-robot
 // repartent de zéro.
@@ -47,7 +78,7 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer, atelierId, en
   const antiSpam = useAntiSpam();
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
 
-  const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm<PreInscriptionData>({
+  const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<PreInscriptionData>({
     resolver: zodResolver(profile ? preInscriptionMembreSchema : preInscriptionSchema),
     defaultValues: valeursInitiales(atelierInitial, profile),
   });
@@ -118,26 +149,25 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer, atelierId, en
             </div>
             <div>
               <h3 className="font-brand text-2xl text-foreground mb-1">
-                {confirmation.issue === "locale" ? "Demande bien notée" : "Pré-inscription enregistrée !"}
+                {confirmation.issue === "locale" ? "Demande bien notée" : "Merci pour ton inscription 💛"}
               </h3>
-              <p className="text-sm text-muted-foreground">
+              <div className="space-y-2 text-sm text-muted-foreground">
                 {confirmation.issue === "locale" ? (
-                  <>
-                    Nous n'avons pas pu joindre le serveur, mais votre demande pour <span className="font-medium text-foreground">"{confirmation.titre}"</span> est
-                    gardée sur cet appareil et sera envoyée automatiquement dès que possible. Rouvrez simplement le site avec une connexion.
-                  </>
+                  <p>
+                    Nous n'avons pas pu joindre le serveur, mais ta demande pour <span className="font-medium text-foreground">"{confirmation.titre}"</span> est
+                    gardée sur cet appareil et sera envoyée automatiquement dès que possible. Rouvre simplement le site avec une connexion.
+                  </p>
                 ) : (
                   <>
-                    Votre demande pour <span className="font-medium text-foreground">"{confirmation.titre}"</span>
-                    {confirmation.atelier && <> le {formatDateFr(confirmation.atelier.date_atelier)} à {formatTimeFr(confirmation.atelier.heure_debut)}</>} a été envoyée.
-                    <span className="text-xs mt-2 block">
-                      {confirmation.issue === "secours"
-                        ? "L'équipe a bien reçu vos coordonnées et reviendra vers vous par email ou WhatsApp."
-                        : "Vous recevrez une confirmation par email ou WhatsApp après validation par l'équipe."}
-                    </span>
+                    <p>On a hâte de te rencontrer et de partager ce moment avec toi.</p>
+                    <p>Tu recevras un message très bientôt avec les détails pratiques.</p>
+                    <p className="text-xs">
+                      <span className="font-medium text-foreground">{confirmation.titre}</span>
+                      {confirmation.atelier && <> · {formatDateFr(confirmation.atelier.date_atelier)} à {formatTimeFr(confirmation.atelier.heure_debut)}</>}
+                    </p>
                   </>
                 )}
-              </p>
+              </div>
             </div>
             {confirmation.atelier && confirmation.issue !== "locale" && (
               <div className="space-y-3 pt-2">
@@ -160,26 +190,6 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer, atelierId, en
 
             <form onSubmit={handleSubmit(onSubmit)} className="relative space-y-4">
               {antiSpam.honeypot}
-
-              <div>
-                <label className={libelle}>Nom complet</label>
-                <input {...register("name")} readOnly={!!profile} placeholder="Marie Dupont" className={champ} />
-                {errors.name && <p className={erreur}>{errors.name.message}</p>}
-              </div>
-
-              <div>
-                <label className={libelle}>Email</label>
-                <input {...register("email")} readOnly={!!profile} type="email" placeholder="marie@email.com" className={champ} />
-                {errors.email && <p className={erreur}>{errors.email.message}</p>}
-              </div>
-
-              <div>
-                <label className={libelle}>
-                  Téléphone <span className="text-muted-foreground font-normal">(optionnel — pour WhatsApp)</span>
-                </label>
-                <input {...register("phone")} type="tel" placeholder="06 12 34 56 78" className={champ} />
-                {errors.phone && <p className={erreur}>{errors.phone.message}</p>}
-              </div>
 
               <div>
                 <label className={libelle}>Atelier</label>
@@ -211,6 +221,77 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer, atelierId, en
                   {errors.birthdate && <p className={erreur}>{errors.birthdate.message}</p>}
                 </div>
               )}
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="pi-nom" className={libelle}>Nom</label>
+                  <input id="pi-nom" {...register("nom")} readOnly={!!profile} autoComplete="family-name" placeholder="Dupont" className={champ} />
+                  {errors.nom && <p className={erreur}>{errors.nom.message}</p>}
+                </div>
+                <div>
+                  <label htmlFor="pi-prenom" className={libelle}>Prénom</label>
+                  <input id="pi-prenom" {...register("prenom")} readOnly={!!profile} autoComplete="given-name" placeholder="Marie" className={champ} />
+                  {errors.prenom && <p className={erreur}>{errors.prenom.message}</p>}
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="pi-email" className={libelle}>E-mail</label>
+                <input id="pi-email" {...register("email")} autoComplete="email" readOnly={!!profile} type="email" placeholder="marie@email.com" className={champ} />
+                {errors.email && <p className={erreur}>{errors.email.message}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="pi-tel" className={libelle}>Téléphone</label>
+                <input id="pi-tel" {...register("phone")} type="tel" autoComplete="tel" placeholder="06 12 34 56 78" className={champ} />
+                {errors.phone && <p className={erreur}>{errors.phone.message}</p>}
+              </div>
+
+              <DeuxCases
+                legende="Droit à l'image"
+                valeur={watch("droitImage")}
+                onChoisir={v => setValue("droitImage", v, { shouldValidate: true })}
+                libelleOui="J'autorise"
+                libelleNon="Je n'autorise pas"
+                erreurChamp={errors.droitImage}
+              >
+                <p>
+                  Des photos et des vidéos peuvent être réalisées pendant l'atelier. En cochant « J'autorise », j'autorise l'association
+                  Le Cocooning Club à me photographier et à me filmer, et à utiliser ces images (site internet, réseaux sociaux, supports
+                  de communication de l'association), gratuitement, pour une durée de 3 ans à compter de l'atelier.
+                </p>
+                <p>
+                  Cette autorisation est facultative : si je ne l'accorde pas, mon inscription n'est pas modifiée et l'équipe veillera à ne pas
+                  me rendre identifiable sur ses images. Je peux retirer mon accord à tout moment en écrivant à le.cocooning.club@gmail.com.
+                  Mes données sont traitées selon la{" "}
+                  <Link to="/confidentialite" target="_blank" className="text-terracotta underline underline-offset-2">politique de confidentialité</Link>{" "}
+                  (consentement, article 6.1.a du RGPD).
+                </p>
+              </DeuxCases>
+
+              <DeuxCases
+                legende="Groupe WhatsApp"
+                valeur={watch("whatsapp")}
+                onChoisir={v => setValue("whatsapp", v, { shouldValidate: true })}
+                libelleOui="J'accepte"
+                libelleNon="Je n'accepte pas"
+                erreurChamp={errors.whatsapp}
+              >
+                <p>
+                  Le Cocooning Club est autorisé à m'ajouter au groupe WhatsApp afin de recevoir les informations, échanges et prochaines
+                  dates d’événements.
+                </p>
+              </DeuxCases>
+
+              <section aria-label="Paiement" className="rounded-xl border bg-muted/30 p-4">
+                <p className="mb-2 text-sm font-medium text-foreground">Paiement</p>
+                <ul className="list-disc space-y-1.5 pl-5 text-xs leading-relaxed text-muted-foreground">
+                  <li>Les modalités de paiement te seront envoyées après validation de ton inscription.</li>
+                  <li>Inscription et paiement au plus tard le vendredi précédant l’atelier.</li>
+                  <li>Toute inscription est définitive : non échangeable et non remboursable, sauf en cas d’annulation de notre part.</li>
+                  <li>L’atelier est maintenu à partir de 5 participants minimum. En cas d’annulation faute de participants, vous serez intégralement remboursé(e).</li>
+                </ul>
+              </section>
 
               <div>
                 <label className="flex items-start gap-2.5 text-xs text-muted-foreground leading-relaxed cursor-pointer">

@@ -2,7 +2,7 @@
 -- MIGRATION TOTALE DU SITE : à coller dans le SQL Editor de Supabase.
 -- Fichier généré par `npm run migration:build` : ne pas le modifier à la main.
 -- Tout est exécuté dans une seule transaction : en cas d'erreur, rien n'est appliqué.
--- Contient : 20261023000002_supprime_membre_et_compte.sql, 20261023000003_offre_et_adhesions.sql, 20261023000004_retire_role_membre_premium.sql, 20261023000005_droits_par_offre.sql, 20261023000006_bloque_validation_impayee.sql, 20261023000007_tarif_adherente.sql, 20261023000008_supprime_tables_de_sauvegarde.sql, 20261023000009_reserve_admin_dispo_aux_admins.sql, 20261023000010_supprime_decrement_atelier_spots.sql, 20261024000000_nettoyage_premium_et_mot_de_passe_hash.sql, 20261024000001_conservation_des_donnees.sql, 20261025000000_pre_inscriptions_secours.sql
+-- Contient : 20261023000002_supprime_membre_et_compte.sql, 20261023000003_offre_et_adhesions.sql, 20261023000004_retire_role_membre_premium.sql, 20261023000005_droits_par_offre.sql, 20261023000006_bloque_validation_impayee.sql, 20261023000007_tarif_adherente.sql, 20261023000008_supprime_tables_de_sauvegarde.sql, 20261023000009_reserve_admin_dispo_aux_admins.sql, 20261023000010_supprime_decrement_atelier_spots.sql, 20261024000000_nettoyage_premium_et_mot_de_passe_hash.sql, 20261024000001_conservation_des_donnees.sql, 20261025000000_pre_inscriptions_secours.sql, 20261025000001_consentements_pre_inscription.sql
 -- Lancer ensuite verifications.sql (tout doit afficher ok = true).
 -- =====================================================================
 
@@ -1030,6 +1030,7 @@ END $$;
 CREATE TABLE IF NOT EXISTS public.pre_inscriptions_secours (
   id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   cree_le        TIMESTAMPTZ NOT NULL DEFAULT now(),
+  prenom         TEXT,
   nom            TEXT NOT NULL DEFAULT 'Sans nom',
   email          TEXT,
   telephone      TEXT,
@@ -1037,6 +1038,8 @@ CREATE TABLE IF NOT EXISTS public.pre_inscriptions_secours (
   atelier_id     UUID,
   atelier_titre  TEXT,
   utilisateur_id UUID,
+  droit_image    BOOLEAN,   -- NULL = pas de réponse
+  accord_whatsapp BOOLEAN,  -- NULL = pas de réponse
   erreur         TEXT
 );
 
@@ -1049,6 +1052,7 @@ LANGUAGE plpgsql
 SET search_path = public, pg_catalog
 AS $$
 BEGIN
+  NEW.prenom         := NULLIF(left(btrim(COALESCE(NEW.prenom, '')), 200), '');
   NEW.nom            := COALESCE(NULLIF(left(btrim(COALESCE(NEW.nom, '')), 200), ''), 'Sans nom');
   NEW.email          := NULLIF(left(btrim(COALESCE(NEW.email, '')), 255), '');
   NEW.telephone      := NULLIF(left(btrim(COALESCE(NEW.telephone, '')), 40), '');
@@ -1158,5 +1162,54 @@ REVOKE EXECUTE ON FUNCTION private.purger_donnees_anciennes() FROM PUBLIC, anon,
 
 COMMENT ON FUNCTION private.purger_donnees_anciennes() IS
   'Purge RGPD : visites 13 mois, journal 12 mois, messages de contact 3 ans, demandes de secours 6 mois, dates de naissance 30 jours après l''atelier, invités anonymisés 3 ans après l''atelier. Renvoie le nombre de lignes traitées.';
+
+-- ---------------------------------------------------------------------
+-- 20261025000001_consentements_pre_inscription.sql
+-- ---------------------------------------------------------------------
+-- =====================================================
+-- Pré-inscription : droit à l'image et groupe WhatsApp
+-- =====================================================
+-- Le formulaire de pré-inscription demande désormais deux réponses explicites (J'autorise / Je n'autorise pas,
+-- J'accepte / Je n'accepte pas) :
+--   * autorisation_image : photos et vidéos prises pendant l'atelier ;
+--   * accord_whatsapp    : ajout au groupe WhatsApp du club.
+-- NULL = pas de réponse (pré-inscriptions faites avant cette date, ou saisies par l'équipe).
+-- La date du consentement est posée par la base (jamais par le navigateur) pour servir de preuve.
+-- Le nom et le prénom étaient déjà deux colonnes distinctes (nom_invite, prenom_invite) : rien à changer.
+-- Ce droit à l'image est propre à l'atelier : il ne remplace pas l'autorisation du bulletin d'adhésion
+-- (table adhesions, vue vue_autorisation_image).
+
+ALTER TABLE public.inscriptions
+  ADD COLUMN IF NOT EXISTS autorisation_image BOOLEAN,
+  ADD COLUMN IF NOT EXISTS accord_whatsapp    BOOLEAN,
+  ADD COLUMN IF NOT EXISTS consentements_le   TIMESTAMPTZ;
+
+COMMENT ON COLUMN public.inscriptions.autorisation_image IS
+  'Droit à l''image donné à la pré-inscription : true = autorise, false = n''autorise pas, NULL = pas de réponse.';
+COMMENT ON COLUMN public.inscriptions.accord_whatsapp IS
+  'Accord pour l''ajout au groupe WhatsApp du club : true = accepte, false = n''accepte pas, NULL = pas de réponse.';
+
+CREATE OR REPLACE FUNCTION private.dater_consentements_inscription()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SET search_path = public, pg_catalog
+AS $$
+BEGIN
+  IF private.est_client_non_admin() THEN
+    NEW.consentements_le := CASE
+      WHEN NEW.autorisation_image IS NOT NULL OR NEW.accord_whatsapp IS NOT NULL THEN now()
+      ELSE NULL
+    END;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+REVOKE EXECUTE ON FUNCTION private.dater_consentements_inscription() FROM PUBLIC;
+
+DROP TRIGGER IF EXISTS trg_dater_consentements_inscription ON public.inscriptions;
+CREATE TRIGGER trg_dater_consentements_inscription
+  BEFORE INSERT ON public.inscriptions
+  FOR EACH ROW EXECUTE FUNCTION private.dater_consentements_inscription();
 
 COMMIT;

@@ -1,16 +1,13 @@
 import { expect, test } from "@playwright/test";
 import { ATELIER_TEST, mockSupabase } from "./supabaseMock";
 import { connecterEn, profilTest } from "./session";
+import { remplirPreInscription, TITRE_MERCI } from "./formulaire";
 
 // Lien d'inscription partageable (/inscription/<atelier>) et garantie qu'aucune pré-inscription
 // n'est perdue : base, puis demande de secours, puis file du navigateur.
 
-const remplir = async (page: import("@playwright/test").Page) => {
-  await page.getByPlaceholder("Marie Dupont").fill("Léa Martin");
-  await page.getByPlaceholder("marie@email.com").fill("lea@exemple.fr");
-  await page.getByPlaceholder("06 12 34 56 78").fill("06 11 22 33 44");
-  await page.getByRole("checkbox").check();
-};
+const remplir = (page: import("@playwright/test").Page) =>
+  remplirPreInscription(page, { prenom: "Léa", nom: "Martin", email: "lea@exemple.fr", tel: "06 11 22 33 44", image: "oui", whatsapp: "oui" });
 const envoyer = (page: import("@playwright/test").Page) =>
   page.getByRole("button", { name: /Envoyer ma pré-inscription/ }).click();
 
@@ -21,7 +18,7 @@ test("le lien d'inscription ouvre directement le formulaire de l'atelier, même 
 
   await remplir(page);
   await envoyer(page); // immédiatement : la demande n'est pas jetée, elle attend le délai minimal
-  await expect(page.getByRole("heading", { name: "Pré-inscription enregistrée !" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: TITRE_MERCI })).toBeVisible();
 
   expect(mock.inserts.inscriptions).toEqual([{
     atelier_id: ATELIER_TEST.id,
@@ -30,6 +27,8 @@ test("le lien d'inscription ouvre directement le formulaire de l'atelier, même 
     email_invite: "lea@exemple.fr",
     telephone_invite: "06 11 22 33 44",
     date_naissance: null,
+    autorisation_image: true,
+    accord_whatsapp: true,
   }]);
   expect(mock.inserts.pre_inscriptions_secours).toBeUndefined();
 });
@@ -48,12 +47,14 @@ test("si l'enregistrement normal échoue, les coordonnées vont dans les demande
   await remplir(page);
   await envoyer(page);
 
-  await expect(page.getByRole("heading", { name: "Pré-inscription enregistrée !" })).toBeVisible();
-  await expect(page.getByText("L'équipe a bien reçu vos coordonnées")).toBeVisible();
+  await expect(page.getByRole("heading", { name: TITRE_MERCI })).toBeVisible();
   expect(mock.inserts.pre_inscriptions_secours).toEqual([expect.objectContaining({
-    nom: "Léa Martin",
+    prenom: "Léa",
+    nom: "Martin",
     email: "lea@exemple.fr",
     telephone: "06 11 22 33 44",
+    droit_image: true,
+    accord_whatsapp: true,
     atelier_id: ATELIER_TEST.id,
     atelier_titre: ATELIER_TEST.titre,
     utilisateur_id: null,
@@ -100,7 +101,7 @@ test("si la liste des ateliers ne se charge pas, le formulaire du lien reste uti
   await remplir(page);
   await envoyer(page);
 
-  await expect(page.getByRole("heading", { name: "Pré-inscription enregistrée !" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: TITRE_MERCI })).toBeVisible();
   expect(mock.inserts.inscriptions).toEqual([expect.objectContaining({ atelier_id: ATELIER_TEST.id, email_invite: "lea@exemple.fr" })]);
 });
 
@@ -124,7 +125,8 @@ test("l'administratrice voit les demandes à récupérer et les marque comme tra
     secours: [{
       id: "ffffffff-0000-4000-8000-000000000001",
       cree_le: "2026-10-25T10:00:00Z",
-      nom: "Léa Martin",
+      prenom: "Léa",
+      nom: "Martin",
       email: "lea@exemple.fr",
       telephone: "0611223344",
       atelier_titre: ATELIER_TEST.titre,
@@ -140,4 +142,23 @@ test("l'administratrice voit les demandes à récupérer et les marque comme tra
   await zone.getByRole("button", { name: "Traitée" }).click();
   await expect(zone).toHaveCount(0);
   expect(mock.deletes.pre_inscriptions_secours).toEqual(["?id=eq.ffffffff-0000-4000-8000-000000000001"]);
+});
+
+test("droit à l'image et WhatsApp : une seule case à la fois, et la réponse peut être changée", async ({ page }) => {
+  await mockSupabase(page);
+  await page.goto(`/inscription/${ATELIER_TEST.id}`);
+
+  const autorise = page.getByRole("checkbox", { name: "J'autorise", exact: true });
+  const refuse = page.getByRole("checkbox", { name: "Je n'autorise pas", exact: true });
+  await autorise.check();
+  await refuse.check();
+  await expect(autorise).not.toBeChecked();
+  await expect(refuse).toBeChecked();
+  await refuse.uncheck();
+  await expect(refuse).not.toBeChecked();
+
+  await expect(page.getByText("Les modalités de paiement te seront envoyées après validation de ton inscription.")).toBeVisible();
+  await expect(page.getByText("Inscription et paiement au plus tard le vendredi précédant l’atelier.")).toBeVisible();
+  await expect(page.getByText("L’atelier est maintenu à partir de 5 participants minimum.")).toBeVisible();
+  await expect(page.getByText("Le Cocooning Club est autorisé à m'ajouter au groupe WhatsApp")).toBeVisible();
 });

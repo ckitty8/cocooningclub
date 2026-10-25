@@ -20,6 +20,10 @@ $$;
 DROP FUNCTION IF EXISTS private.purger_donnees_anciennes();
 -- Filet de sécurité des pré-inscriptions (20261025000000) : supprime les demandes de secours encore non traitées.
 DROP TABLE IF EXISTS public.pre_inscriptions_secours;
+-- Droit à l'image et WhatsApp de la pré-inscription (20261025000001) : les réponses déjà données sont perdues.
+DROP TRIGGER IF EXISTS trg_dater_consentements_inscription ON public.inscriptions;
+DROP FUNCTION IF EXISTS private.dater_consentements_inscription();
+ALTER TABLE public.inscriptions DROP COLUMN IF EXISTS autorisation_image, DROP COLUMN IF EXISTS accord_whatsapp, DROP COLUMN IF EXISTS consentements_le;
 DROP FUNCTION IF EXISTS private.preparer_pre_inscription_secours();
 ALTER TABLE public.ateliers DROP COLUMN IF EXISTS tarif_adherent;
 DROP TRIGGER  IF EXISTS trg_verifier_validation_impayee ON public.inscriptions;

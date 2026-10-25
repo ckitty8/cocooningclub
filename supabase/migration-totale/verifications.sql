@@ -34,6 +34,8 @@ WITH controles(controle, ok) AS (
     ('Table pre_inscriptions_secours (filet de sécurité des pré-inscriptions)', to_regclass('public.pre_inscriptions_secours') IS NOT NULL),
     ('RLS activée sur pre_inscriptions_secours', COALESCE((SELECT relrowsecurity FROM pg_class WHERE oid = to_regclass('public.pre_inscriptions_secours')), false)),
     ('Un visiteur peut déposer une demande de secours mais pas la relire', COALESCE(has_table_privilege('anon', 'public.pre_inscriptions_secours', 'INSERT') AND NOT has_table_privilege('anon', 'public.pre_inscriptions_secours', 'SELECT'), false)),
+    ('Colonnes inscriptions.autorisation_image, accord_whatsapp et consentements_le', (SELECT count(*) FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'inscriptions' AND column_name IN ('autorisation_image', 'accord_whatsapp', 'consentements_le')) = 3),
+    ('Déclencheur de datation des consentements', EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_dater_consentements_inscription' AND tgrelid = 'public.inscriptions'::regclass)),
     ('Au moins les 3 formules du bulletin',   CASE WHEN to_regclass('public.formules') IS NULL THEN false ELSE ((xpath('/row/c/text()', query_to_xml('SELECT count(*) AS c FROM public.formules', false, true, '')))[1]::text)::int >= 3 END),
     ('Formules rattachées à des espaces',     CASE WHEN to_regclass('public.formule_espaces') IS NULL THEN false ELSE ((xpath('/row/c/text()', query_to_xml('SELECT count(*) AS c FROM public.formule_espaces', false, true, '')))[1]::text)::int >= 4 END)
 )
