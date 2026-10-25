@@ -7,7 +7,7 @@ const NotFound = () => {
   const { pathname } = useLocation();
 
   return (
-    <div className="theme-creme flex min-h-screen flex-col bg-background text-foreground">
+    <div className="theme-vitrine flex min-h-screen flex-col bg-background text-foreground">
       <SiteHeader />
 
       <main className="container mx-auto max-w-2xl flex-1 px-6 pb-16 pt-32 text-center md:pb-24 md:pt-40">

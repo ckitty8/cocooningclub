@@ -26,7 +26,7 @@ const Rubrique = ({ titre, children }: { titre: string; children: React.ReactNod
 );
 
 const MentionsLegales = () => (
-  <div className="theme-creme flex min-h-screen flex-col bg-background text-foreground">
+  <div className="theme-vitrine flex min-h-screen flex-col bg-background text-foreground">
     <SiteHeader />
 
     <main className="container mx-auto max-w-3xl flex-1 px-6 pb-16 pt-32 md:pb-20 md:pt-36">

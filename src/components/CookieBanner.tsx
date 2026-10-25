@@ -55,7 +55,7 @@ const CookieBanner = () => {
     <div
       role="dialog"
       aria-label="Cookies et mesure d'audience"
-      className="theme-creme fixed inset-x-4 bottom-4 z-50 rounded-2xl border bg-card p-5 text-foreground shadow-xl md:max-w-md"
+      className="theme-vitrine fixed inset-x-4 bottom-4 z-50 rounded-2xl border bg-card p-5 text-foreground shadow-xl md:max-w-md"
     >
       <h2 className="font-brand text-lg text-foreground">Cookies et mesure d'audience</h2>
       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
