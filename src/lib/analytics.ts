@@ -79,12 +79,16 @@ export const appliquerChoix = (audience: boolean): void => {
   }
 };
 
+/** Une seule page « /inscription » dans les rapports, quel que soit l'atelier (comme le comptage interne). */
+const cheminPourGoogle = (chemin: string): string => chemin.replace(/^\/inscription\/[^/]+/, "/inscription");
+
 /** Pages vues envoyées à Google Analytics, seulement après acceptation et jamais depuis une page privée. */
 export const suivrePage = (chemin: string): void => {
   if (!ID_MESURE || !audienceAutorisee() || !window.gtag || pagePrivee(chemin)) return;
+  const page = cheminPourGoogle(chemin);
   window.gtag("event", "page_view", {
-    page_path: chemin,
-    page_location: window.location.origin + chemin,
+    page_path: page,
+    page_location: window.location.origin + page,
     page_title: document.title,
   });
 };

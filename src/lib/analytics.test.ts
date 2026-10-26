@@ -70,7 +70,7 @@ describe("Google Analytics avec un identifiant de mesure", () => {
     expect(commandes().pop()).toEqual(["consent", "update", { analytics_storage: "denied" }]);
   });
 
-  it("les pages vues ne partent qu'après acceptation, et jamais depuis une page privée", async () => {
+  it("les pages vues ne partent qu'après acceptation, jamais depuis une page privée, et les inscriptions sont regroupées", async () => {
     const ga = await charger();
     const consentement = await import("./consentement");
     const pagesVues = () => commandes().filter(a => a[0] === "event").map(a => (a[2] as { page_path: string }).page_path);
@@ -85,6 +85,6 @@ describe("Google Analytics avec un identifiant de mesure", () => {
       ga.suivrePage(privee);
     }
     ga.suivrePage("/inscription/abc");
-    expect(pagesVues()).toEqual(["/calendrier", "/inscription/abc"]);
+    expect(pagesVues()).toEqual(["/calendrier", "/inscription"]);
   });
 });
