@@ -5,6 +5,8 @@ Ces actions ont été faites sur la base partagée (preview + production) avec l
 
 ## 26/10/2026
 
+Contrôle en lecture seule de Claude (26/10) : les migrations `20261025000000` et `20261025000001` étaient déjà appliquées (table `pre_inscriptions_secours` avec 2 politiques et RLS, dépôt ouvert aux visiteurs sans lecture, déclencheurs, colonnes `autorisation_image` / `accord_whatsapp` / `consentements_le`, purge à jour). Rien n'a été rejoué.
+
 | Action | Détail | Retour arrière |
 |---|---|---|
 | Migration `20261026000003_documents_admins.sql` appliquée par Claude (outil Supabase `execute_sql`, projet CocooningClubBDD) à la demande de l'utilisatrice | `ALTER TYPE acces_document ADD VALUE 'admins'` (documents réservés aux administrateurs). Contrôle après : valeurs `membres, tous, admins` ; seule politique de lecture des membres inchangée (`acces IN ('tous','membres')`) ; 1 document existant, non modifié. | Bloc « Documents admins » de `retour-arriere.sql` (les documents `admins` repassent en `membres` ; une valeur d'enum ne se retire pas). |

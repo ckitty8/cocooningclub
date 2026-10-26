@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { accesVisiblesDansEspaceMembre } from "@/lib/accesDocuments";
 import { Link } from "react-router-dom";
 import MembreLayout from "@/components/membre/MembreLayout";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,7 +44,7 @@ interface DocResume {
 const formatTime = (t: string) => t.slice(0, 5);
 
 const Dashboard = () => {
-  const { profile } = useAuth();
+  const { profile, role } = useAuth();
   const [loading, setLoading] = useState(true);
   const [upcomingMine, setUpcomingMine] = useState<InscriptionWithAtelier[]>([]);
   const [upcomingAllCount, setUpcomingAllCount] = useState(0);
@@ -73,13 +74,17 @@ const Dashboard = () => {
           .select("id, ateliers!inner(date_atelier)", { count: "exact", head: true })
           .eq("utilisateur_id", profile.id)
           .lt("ateliers.date_atelier", today),
-        supabase
-          .from("documents")
-          .select("id, titre, description, type, fichier_url, lien_externe, created_at")
-          .eq("type", "magazine")
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle(),
+        (() => {
+          const visibles = accesVisiblesDansEspaceMembre(role);
+          const requete = supabase
+            .from("documents")
+            .select("id, titre, description, type, fichier_url, lien_externe, created_at")
+            .eq("type", "magazine");
+          return (visibles ? requete.in("acces", visibles) : requete)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+        })(),
       ]);
 
       const ins = ((insRes.data ?? []) as unknown as InscriptionWithAtelier[])
@@ -95,7 +100,7 @@ const Dashboard = () => {
     };
 
     fetchAll();
-  }, [profile]);
+  }, [profile, role]);
 
   if (loading) {
     return (

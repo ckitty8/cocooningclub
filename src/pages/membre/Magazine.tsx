@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { accesVisiblesDansEspaceMembre, type AccesDocument } from "@/lib/accesDocuments";
+import { useAuth } from "@/hooks/useAuth";
 import MembreLayout from "@/components/membre/MembreLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -8,7 +10,7 @@ import {
 } from "lucide-react";
 
 type DocType = "magazine" | "guide" | "lien_externe";
-type DocAcces = "membres" | "tous";
+type DocAcces = AccesDocument;
 
 interface Doc {
   id: string;
@@ -35,6 +37,7 @@ const typeLabel: Record<DocType, string> = {
 };
 
 const Magazine = () => {
+  const { role } = useAuth();
   const [items, setItems] = useState<Doc[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewer, setViewer] = useState<{ titre: string; url: string } | null>(null);
@@ -44,17 +47,20 @@ const Magazine = () => {
       // Pas de filtre par type : la RLS limite déjà aux docs auxquels le
       // membre a accès (via le champ `acces`). On affiche donc tout ce
       // que l'admin a publié pour ce niveau d'accès, peu importe le type.
-      const { data, error } = await supabase
+      // Un membre (réel ou simulé par le créateur) ne voit que « membres » et « tous » ; une administratrice voit tout.
+      const visibles = accesVisiblesDansEspaceMembre(role);
+      const requete = supabase
         .from("documents")
         .select("id, titre, description, type, fichier_chemin, lien_externe, url_image, acces, created_at")
         .order("created_at", { ascending: false });
+      const { data, error } = await (visibles ? requete.in("acces", visibles) : requete);
 
       if (error) toast.error(messageErreurServeur(error));
       else setItems((data ?? []) as Doc[]);
       setLoading(false);
     };
     fetch();
-  }, []);
+  }, [role]);
 
   const handleOpen = async (d: Doc) => {
     if (d.lien_externe) {

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { ACCES_DOCUMENTS, AIDES_ACCES, LIBELLES_ACCES, type AccesDocument } from "@/lib/accesDocuments";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
@@ -8,7 +9,7 @@ import { compressImage } from "@/utils/compressImage";
 import { Plus, Pencil, Trash2, X, ExternalLink, FileText, BookOpen, Newspaper, Image as ImageIcon, type LucideIcon } from "lucide-react";
 
 type DocType = "magazine" | "guide" | "lien_externe";
-type DocAcces = "membres" | "tous" | "admins";
+type DocAcces = AccesDocument;
 
 interface Document {
   id: string;
@@ -35,11 +36,7 @@ const typeLabel: Record<DocType, string> = {
   lien_externe: "Lien externe",
 };
 
-const accesLabel: Record<DocAcces, string> = {
-  membres: "Membres uniquement",
-  tous:    "Tous les membres",
-  admins:  "Administrateurs uniquement",
-};
+const accesLabel = LIBELLES_ACCES;
 
 const emptyForm = {
   titre: "", description: "", type: "guide" as DocType,
@@ -331,13 +328,9 @@ const Documents = () => {
                   <label className="block text-sm font-medium mb-1.5">Accès</label>
                   <select value={form.acces} onChange={e => setForm(f => ({ ...f, acces: e.target.value as DocAcces }))}
                     className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary">
-                    <option value="membres">Membres uniquement</option>
-                    <option value="tous">Tous les membres</option>
-                    <option value="admins">Administrateurs uniquement</option>
+                    {ACCES_DOCUMENTS.map(a => <option key={a} value={a}>{LIBELLES_ACCES[a]}</option>)}
                   </select>
-                  {form.acces === "admins" && (
-                    <p className="text-xs text-muted-foreground mt-1">Visible et téléchargeable uniquement par les administrateurs (ex. bulletin d'adhésion vierge).</p>
-                  )}
+                  <p className="text-xs text-muted-foreground mt-1">{AIDES_ACCES[form.acces]}</p>
                 </div>
               </div>
               {form.type === "lien_externe" ? (
