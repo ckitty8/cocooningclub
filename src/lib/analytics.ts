@@ -14,6 +14,19 @@ declare global {
 const ID_MESURE = (import.meta.env.VITE_GA_MEASUREMENT_ID as string | undefined)?.trim() || "";
 let scriptAjoute = false;
 
+// Pages d'espace connecté : jamais envoyées à Google Analytics.
+const PAGES_PRIVEES = ["/admin", "/espace-membre", "/login", "/forgot-password", "/reset-password"];
+export const pagePrivee = (chemin: string): boolean => PAGES_PRIVEES.some(p => chemin.startsWith(p));
+
+// Durée du cookie _ga : 13 mois (396 jours), comme annoncé dans la politique de confidentialité
+// (Google Analytics garde 2 ans par défaut).
+const DUREE_COOKIE_SECONDES = 396 * 24 * 60 * 60;
+
+/** Interrupteur officiel de Google : coupe l'envoi d'événements, même pour ceux de la mesure améliorée. */
+const couperMesure = (coupee: boolean): void => {
+  if (ID_MESURE) (window as unknown as Record<string, unknown>)[`ga-disable-${ID_MESURE}`] = coupee;
+};
+
 /** À appeler une fois au démarrage, avant tout chargement de Google : consentement refusé par défaut. */
 export const preparerConsentement = (): void => {
   window.dataLayer = window.dataLayer || [];
@@ -46,6 +59,7 @@ export const appliquerChoix = (audience: boolean): void => {
   if (!window.gtag) preparerConsentement();
   if (audience) {
     if (!ID_MESURE) return;
+    couperMesure(false);
     window.gtag("consent", "update", { analytics_storage: "granted" });
     if (!scriptAjoute) {
       scriptAjoute = true;
@@ -55,20 +69,26 @@ export const appliquerChoix = (audience: boolean): void => {
       document.head.appendChild(script);
       window.gtag("js", new Date());
       // Les pages vues sont envoyées à la main (application à page unique) : voir suivrePage.
-      window.gtag("config", ID_MESURE, { send_page_view: false });
+      window.gtag("config", ID_MESURE, { send_page_view: false, cookie_expires: DUREE_COOKIE_SECONDES });
     }
   } else {
+    // Si Google a été chargé plus tôt dans la session, il reste en mémoire jusqu'au rechargement : on le coupe.
+    couperMesure(true);
     window.gtag("consent", "update", { analytics_storage: "denied" });
     supprimerCookiesGoogle();
   }
 };
 
-/** Pages vues envoyées à Google Analytics, seulement après acceptation. */
+/** Une seule page « /inscription » dans les rapports, quel que soit l'atelier (comme le comptage interne). */
+const cheminPourGoogle = (chemin: string): string => chemin.replace(/^\/inscription\/[^/]+/, "/inscription");
+
+/** Pages vues envoyées à Google Analytics, seulement après acceptation et jamais depuis une page privée. */
 export const suivrePage = (chemin: string): void => {
-  if (!ID_MESURE || !audienceAutorisee() || !window.gtag) return;
+  if (!ID_MESURE || !audienceAutorisee() || !window.gtag || pagePrivee(chemin)) return;
+  const page = cheminPourGoogle(chemin);
   window.gtag("event", "page_view", {
-    page_path: chemin,
-    page_location: window.location.origin + chemin,
+    page_path: page,
+    page_location: window.location.origin + page,
     page_title: document.title,
   });
 };

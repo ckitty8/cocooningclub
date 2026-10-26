@@ -3,9 +3,6 @@ import { Link, useLocation } from "react-router-dom";
 import { appliquerChoix, suivrePage } from "@/lib/analytics";
 import { enregistrerChoix, lireChoix, surDemandeOuverture } from "@/lib/consentement";
 
-// Pages d'espace connecté : jamais envoyées à Google Analytics.
-const PRIVEES = ["/admin", "/espace-membre", "/login", "/forgot-password", "/reset-password"];
-
 const boutonChoix =
   "min-h-10 rounded-full border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90";
 
@@ -38,13 +35,13 @@ const CookieBanner = () => {
 
   // Pages vues Google Analytics à chaque changement de page publique.
   useEffect(() => {
-    if (!PRIVEES.some(p => pathname.startsWith(p))) suivrePage(pathname);
+    suivrePage(pathname);
   }, [pathname]);
 
   const choisir = (valeur: boolean) => {
     enregistrerChoix(valeur);
     appliquerChoix(valeur);
-    if (valeur && !PRIVEES.some(p => pathname.startsWith(p))) suivrePage(pathname);
+    if (valeur) suivrePage(pathname);
     setOuverte(false);
     setPersonnaliser(false);
   };
