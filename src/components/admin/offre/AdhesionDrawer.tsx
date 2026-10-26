@@ -8,7 +8,7 @@ import {
   statutAdhesion, type ModeReglement,
 } from "@/lib/adhesions";
 
-import { autorisationDepuisChamps, bulletinDepuisChamps, champsDepuisBulletin, type ValeursBulletin } from "@/lib/bulletin";
+import { autorisationDepuisChamps, bulletinDepuisChamps, champNaissance, champsDepuisBulletin, type ValeursBulletin } from "@/lib/bulletin";
 import BadgePhotos from "@/components/BadgePhotos";
 import AutorisationsForm from "./AutorisationsForm";
 import { champ, type Adhesion } from "./types";
@@ -33,7 +33,7 @@ const AdhesionDrawer = ({ adhesion, onClose, onDone }: Props) => {
 
   const enregistrerBulletin = async () => {
     setSaving(true);
-    const { error } = await supabase.from("adhesions").update(champsDepuisBulletin(bulletin)).eq("id", adhesion.id);
+    const { error } = await supabase.from("adhesions").update({ ...champsDepuisBulletin(bulletin), ...champNaissance(bulletin, adhesion.date_naissance) }).eq("id", adhesion.id);
     setSaving(false);
     if (error) { console.error("[AdhesionDrawer.bulletin]", error); toast.error("L'enregistrement a échoué."); return; }
     logAction("adhesion.bulletin", "adhesions", adhesion.id, { numero: adhesion.numero, photos: bulletin.photos });
@@ -153,6 +153,7 @@ const AdhesionDrawer = ({ adhesion, onClose, onDone }: Props) => {
             </>
           ) : (
             <ul className="space-y-1 text-muted-foreground">
+              <li>Date de naissance : {adhesion.date_naissance ? dateFr(adhesion.date_naissance) : "non renseignée"}</li>
               <li>Statuts et règlement : {adhesion.engagement_accepte_le ? `acceptés le ${dateFr(adhesion.engagement_accepte_le)}` : "non renseigné"}</li>
               <li>Groupe WhatsApp : {adhesion.whatsapp ? "oui" : "non"}</li>
               <li><BadgePhotos autorisation={autorisationDepuisChamps(adhesion, adhesion.utilisateur_id)} /></li>

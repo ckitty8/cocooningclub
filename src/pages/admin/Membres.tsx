@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
-import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import type { TablesUpdate } from "@/integrations/supabase/types";
 import { useAuth } from "@/hooks/useAuth";
 import { logAction } from "@/utils/logAction";
 import { withTimeout } from "@/utils/withTimeout";
@@ -9,10 +9,17 @@ import { toast } from "sonner";
 import BadgePhotos from "@/components/BadgePhotos";
 import { useAutorisationsImage } from "@/hooks/useAutorisationsImage";
 import { useOffresParPersonne } from "@/hooks/useOffres";
+import { useNaissancesParPersonne } from "@/hooks/useNaissances";
+import { aujourdhuiIso } from "@/lib/adhesions";
+import { dateFr } from "@/lib/dates";
 import OffresPersonne from "@/components/OffrePastille";
 import { nomCourtOffre } from "@/lib/droits";
 import { Plus, Search, Pencil, Trash2, UserX, UserCheck2, X, Eye, EyeOff } from "lucide-react";
 import type { UserRole } from "@/contexts/auth";
+import { creerCompte } from "@/lib/creerCompte";
+import type { NouveauCompte } from "@/lib/nouveauCompte";
+
+type RoleCreable = NouveauCompte["role"];
 
 interface Utilisateur {
   id: string;
@@ -40,8 +47,10 @@ const roleLabel: Record<UserRole, string> = {
   membre:         "Membre",
 };
 
+const AIDE_ROLE_MEMBRE = "Le rôle Membre est attribué à la validation d'une adhésion (Offre & adhésions) : il n'existe pas de membre sans adhésion, hors administrateurs.";
+
 const emptyEditForm = {
-  nom: "", prenom: "", email: "", telephone: "",
+  nom: "", prenom: "", email: "", telephone: "", date_naissance: "",
   debut_abonnement: "", fin_abonnement: "",
   role: "inscrit" as UserRole,
   est_actif: false,
@@ -49,7 +58,7 @@ const emptyEditForm = {
 
 const emptyCreateForm = {
   nom: "", prenom: "", email: "", telephone: "",
-  mot_de_passe: "", role: "inscrit" as UserRole,
+  mot_de_passe: "", role: "inscrit" as RoleCreable,
   debut_abonnement: "", fin_abonnement: "",
   est_actif: false, // Inactif par défaut → pas de mail Supabase envoyé
 };
@@ -79,6 +88,8 @@ const Membres = () => {
   // Offre en cours de chaque personne (adhésion → formule). Absente tant que la migration n'est pas appliquée.
   const { parPersonne: offres, disponible: offresDisponibles } = useOffresParPersonne(null);
   const [filtreOffre, setFiltreOffre] = useState<string>("toutes");
+  // Date de naissance : portée par l'adhésion (saisie avec le bulletin).
+  const { parPersonne: naissances, disponible: naissancesDisponibles, recharger: rechargerNaissances } = useNaissancesParPersonne();
 
   const fetchMembers = async () => {
     try {
@@ -110,75 +121,18 @@ const Membres = () => {
     return matchSearch && matchRole && matchActif && matchOffre;
   });
   const nomsOffres = Array.from(new Set(Array.from(offres.values()).flat().map(o => nomCourtOffre(o.nom)))).sort();
-  const nbColonnes = offresDisponibles ? 7 : 6;
+  const nbColonnes = 6 + (offresDisponibles ? 1 : 0) + (naissancesDisponibles ? 1 : 0);
 
   // ── Création ──────────────────────────────────────────────
   const handleCreate = async () => {
     setCreateError("");
-    if (!createForm.email || !createForm.prenom || !createForm.nom) {
-      setCreateError("Prénom, nom et email sont obligatoires.");
-      return;
-    }
-    // Le mot de passe n'est requis que si on active le compte (signUp Supabase).
-    if (createForm.est_actif) {
-      if (!createForm.mot_de_passe) {
-        setCreateError("Le mot de passe est obligatoire pour activer le compte.");
-        return;
-      }
-      if (createForm.mot_de_passe.length < 6) {
-        setCreateError("Le mot de passe doit contenir au moins 6 caractères.");
-        return;
-      }
-    }
     setSaving(true);
-
-    let authUserId: string | null = null;
-
-    // 1. Si actif → créer le compte Supabase Auth (déclenche le mail de
-    //    confirmation). Si inactif → on saute cette étape, aucun mail.
-    if (createForm.est_actif) {
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: createForm.email,
-        password: createForm.mot_de_passe,
-        options: {
-          emailRedirectTo: `${window.location.origin}/login`,
-        },
-      });
-      if (authError || !authData.user) {
-        setCreateError(authError?.message ?? "Erreur lors de la création du compte.");
-        setSaving(false);
-        return;
-      }
-      authUserId = authData.user.id;
-    }
-
-    // 2. Insérer la ligne utilisateurs.
-    //    - Actif : on lie à l'UUID auth (pour que les RLS auth.uid() = id marchent)
-    //    - Inactif : on laisse Postgres générer un UUID (pas de compte auth associé)
-    const insertPayload: TablesInsert<"utilisateurs"> = {
-      email: createForm.email,
-      nom: createForm.nom,
-      prenom: createForm.prenom,
-      telephone: createForm.telephone || null,
-      role: createForm.role,
-      est_actif: createForm.est_actif,
-      debut_abonnement: createForm.debut_abonnement || null,
-      fin_abonnement: createForm.fin_abonnement || null,
-    };
-    if (authUserId) insertPayload.id = authUserId;
-
-    const { error: dbError } = await supabase.from("utilisateurs").insert(insertPayload);
-
-    if (dbError) {
-      setCreateError(dbError.message);
+    const resultat = await creerCompte(createForm);
+    if (resultat.erreur) {
+      setCreateError(resultat.erreur);
       setSaving(false);
       return;
     }
-
-    logAction("membre.create", "utilisateurs", null, {
-      email: createForm.email, prenom: createForm.prenom, nom: createForm.nom,
-      role: createForm.role, est_actif: createForm.est_actif,
-    });
 
     await fetchMembers();
     setCreateModal(false);
@@ -191,6 +145,7 @@ const Membres = () => {
     setEditForm({
       nom: m.nom, prenom: m.prenom, email: m.email,
       telephone: m.telephone ?? "",
+      date_naissance: naissances.get(m.id)?.date ?? "",
       debut_abonnement: m.debut_abonnement ?? "",
       fin_abonnement: m.fin_abonnement ?? "", role: m.role,
       est_actif: m.est_actif,
@@ -235,6 +190,15 @@ const Membres = () => {
       toast.error(`Erreur : ${error.message}`);
       setSaving(false);
       return;
+    }
+
+    // Date de naissance : écrite sur l'adhésion la plus récente (pas de fiche sans adhésion pour la porter).
+    const naissance = naissances.get(before.id);
+    if (naissancesDisponibles && naissance && editForm.date_naissance !== (naissance.date ?? "")) {
+      const { error: errNaissance } = await supabase.from("adhesions")
+        .update({ date_naissance: editForm.date_naissance || null }).eq("id", naissance.adhesionId);
+      if (errNaissance) toast.error("La fiche est enregistrée, mais pas la date de naissance.");
+      else { logAction("membre.naissance", "adhesions", naissance.adhesionId, { utilisateur_id: before.id }); rechargerNaissances(); }
     }
 
     // Log spécifique si le rôle a changé (action sensible)
@@ -377,6 +341,7 @@ const Membres = () => {
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground">Rôle</th>
                 {offresDisponibles && <th className="text-left px-5 py-3 font-medium text-muted-foreground">Offre en cours</th>}
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground">Statut</th>
+                {naissancesDisponibles && <th className="text-left px-5 py-3 font-medium text-muted-foreground hidden md:table-cell">Naissance</th>}
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground hidden md:table-cell">Consentement</th>
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground hidden lg:table-cell">Abonnement</th>
                 <th className="px-5 py-3" />
@@ -409,6 +374,11 @@ const Membres = () => {
                       {m.est_actif ? "Actif" : "Inactif"}
                     </span>
                   </td>
+                  {naissancesDisponibles && (
+                    <td className="px-5 py-3.5 hidden md:table-cell text-xs text-muted-foreground">
+                      {naissances.get(m.id)?.date ? dateFr(naissances.get(m.id)!.date) : "—"}
+                    </td>
+                  )}
                   <td className="px-5 py-3.5 hidden md:table-cell">
                     <BadgePhotos autorisation={autorisations.get(m.id)} avecLibelle={false} />
                   </td>
@@ -515,14 +485,15 @@ const Membres = () => {
               <div>
                 <label className="block text-sm font-medium mb-1.5">Téléphone</label>
                 <input value={createForm.telephone} onChange={e => setCreateForm(f => ({ ...f, telephone: e.target.value }))} className={fieldClass} />
+                <p className="text-xs text-muted-foreground mt-1">La date de naissance se saisit avec l'adhésion (Offre &amp; adhésions → Ajouter une adhésion).</p>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Rôle</label>
-                <select value={createForm.role} onChange={e => setCreateForm(f => ({ ...f, role: e.target.value as UserRole }))} className={fieldClass}>
+                <select value={createForm.role} onChange={e => setCreateForm(f => ({ ...f, role: e.target.value as RoleCreable }))} className={fieldClass}>
                   <option value="inscrit">Inscrit</option>
-                  <option value="membre">Membre</option>
                   <option value="administrateur">Administrateur</option>
                 </select>
+                <p className="text-xs text-muted-foreground mt-1">{AIDE_ROLE_MEMBRE}</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -574,6 +545,19 @@ const Membres = () => {
                 <label className="block text-sm font-medium mb-1.5">Téléphone</label>
                 <input value={editForm.telephone} onChange={e => setEditForm(f => ({ ...f, telephone: e.target.value }))} className={fieldClass} />
               </div>
+              {naissancesDisponibles && (
+                <div>
+                  <label htmlFor="m-naissance" className="block text-sm font-medium mb-1.5">Date de naissance</label>
+                  <input id="m-naissance" type="date" value={editForm.date_naissance} min="1900-01-01" max={aujourdhuiIso()}
+                    disabled={!naissances.get(editModal.member.id)}
+                    onChange={e => setEditForm(f => ({ ...f, date_naissance: e.target.value }))} className={`${fieldClass} disabled:opacity-60`} />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {naissances.get(editModal.member.id)
+                      ? "Enregistrée sur son adhésion la plus récente."
+                      : "Pas encore d'adhésion : la date se saisit avec l'adhésion (Offre & adhésions)."}
+                  </p>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1.5">Début abonnement</label>
@@ -590,9 +574,10 @@ const Membres = () => {
                     <label className="block text-sm font-medium mb-1.5">Rôle</label>
                     <select value={editForm.role} onChange={e => setEditForm(f => ({ ...f, role: e.target.value as UserRole }))} className={fieldClass}>
                       <option value="inscrit">Inscrit</option>
-                      <option value="membre">Membre</option>
+                      {editModal.member.role === "membre" && <option value="membre">Membre</option>}
                       <option value="administrateur">Administrateur</option>
                     </select>
+                    <p className="text-xs text-muted-foreground mt-1">{AIDE_ROLE_MEMBRE}</p>
                   </div>
 
                   {/* Toggle Actif / Inactif — passer à actif envoie un magic link */}

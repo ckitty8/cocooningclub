@@ -36,6 +36,8 @@ export interface Adhesion {
   autorisation_image: boolean;
   image_supports: string[];
   image_signee_le: string | null;
+  /** Absente tant que la migration 20261026000001 n'est pas appliquée. */
+  date_naissance?: string | null;
   cree_le: string;
   utilisateurs: {
     prenom: string | null;
@@ -55,6 +57,7 @@ export interface MembreChoix {
   nom: string;
   email: string;
   role: string;
+  est_actif?: boolean;
 }
 
 export const champ =

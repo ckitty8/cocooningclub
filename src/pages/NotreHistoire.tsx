@@ -15,7 +15,7 @@ import photoNeon from "@/assets/histoire/neon.webp";
 const SOUVENIRS = [
   { photo: photoRencontres, legende: "Des rencontres", alt: "Deux femmes discutent autour d'une table", rotation: "-rotate-6" },
   { photo: photoIdees, legende: "Des idées", alt: "Mains au travail sur des plans et des idées autour d'un ordinateur", rotation: "rotate-2 translate-y-6" },
-  { photo: photoAventure, legende: "Une aventure collective", alt: "Amis de dos, bras dessus bras dessous, face au coucher de soleil", rotation: "rotate-3" },
+  { photo: photoAventure, legende: "Une aventure collective", alt: "Quatre femmes qui se retrouvent et se serrent dans les bras dans un lieu d'atelier", rotation: "rotate-3" },
 ];
 
 const FONDATRICES = [
@@ -60,7 +60,7 @@ const NotreHistoire = () => {
 
   return (
     <div className="theme-vitrine min-h-screen bg-background text-foreground">
-      <SiteHeader actif="À propos" />
+      <SiteHeader actif="Notre histoire" />
 
       <main>
         {/* Hero : photo de groupe et carte titre */}
@@ -69,11 +69,11 @@ const NotreHistoire = () => {
             src={photoGroupe}
             width={1600}
             height={830}
-            alt="Amis de dos, bras dessus bras dessous, face à un coucher de soleil"
+            alt="Quatre amies de dos, enlacées, face à un coucher de soleil sur la plage"
             className="h-64 w-full object-cover object-left sm:h-80 md:h-[26rem] md:w-[68%]"
           />
           <div className="relative mx-6 -mt-12 rounded-2xl bg-background p-8 shadow-lg md:absolute md:bottom-12 md:right-10 md:top-32 md:mx-0 md:mt-0 md:flex md:w-[40%] md:flex-col md:justify-center lg:p-12">
-            <Surtitre>À propos</Surtitre>
+            <Surtitre>Le Cocooning Club</Surtitre>
             <h1 className="mt-3 font-display text-6xl text-foreground md:text-7xl">Notre histoire</h1>
             <span className="my-5 block h-0.5 w-10 bg-primary" aria-hidden="true" />
             <p className="font-display text-2xl leading-snug text-terracotta md:text-3xl">

@@ -18,6 +18,11 @@ BEGIN
 END
 $$;
 DROP FUNCTION IF EXISTS private.purger_donnees_anciennes();
+-- Date de naissance du bulletin (20261026000001) : les dates saisies sont perdues.
+ALTER TABLE public.adhesions DROP COLUMN IF EXISTS date_naissance;
+-- « Pas de membre sans adhésion » (20261026000000) : le rôle Membre peut de nouveau être attribué sans adhésion.
+DROP TRIGGER IF EXISTS trg_utilisateurs_membre_exige_adhesion ON public.utilisateurs;
+DROP FUNCTION IF EXISTS private.exiger_adhesion_pour_membre();
 -- Filet de sécurité des pré-inscriptions (20261025000000) : supprime les demandes de secours encore non traitées.
 DROP TABLE IF EXISTS public.pre_inscriptions_secours;
 -- Droit à l'image et WhatsApp de la pré-inscription (20261025000001) : les réponses déjà données sont perdues.

@@ -199,3 +199,29 @@ test("les mentions légales sont accessibles depuis le pied de page et nomment l
   await expect(page.getByText(/Vercel Inc\./)).toBeVisible();
   await expect(page.getByText(/Supabase Inc\./)).toBeVisible();
 });
+
+test("le public voit le nombre de places total, jamais les places restantes", async ({ page }) => {
+  await page.goto("/");
+  const carte = page.locator("#ateliers").getByText(`${ATELIER_TEST.places_max} places`, { exact: true }).first();
+  await expect(carte).toBeVisible();
+  await expect(page.getByText(/places restantes/)).toHaveCount(0);
+
+  await page.goto("/calendrier");
+  await expect(page.getByText(`${ATELIER_TEST.places_max} places`, { exact: true }).first()).toBeVisible();
+  await expect(page.getByText(/places restantes/)).toHaveCount(0);
+  await expect(page.getByText(`${ATELIER_TEST.places_disponibles}/${ATELIER_TEST.places_max}`)).toHaveCount(0);
+
+  await page.goto(`/calendrier?atelier=${ATELIER_TEST.id}`);
+  await expect(page.getByRole("dialog").or(page.locator("div.fixed")).getByText(`${ATELIER_TEST.places_max} places`, { exact: true })).toBeVisible();
+  await expect(page.getByText(/places restantes/)).toHaveCount(0);
+});
+
+test("le menu s'appelle « Notre histoire » (plus « À propos ») et mène à la page", async ({ page, isMobile }) => {
+  await page.goto("/");
+  if (isMobile) await page.getByRole("button", { name: "Ouvrir le menu" }).click();
+  const menu = isMobile ? page.locator("#menu-mobile") : page.locator("header");
+  await expect(menu.getByRole("link", { name: "À propos", exact: true })).toHaveCount(0);
+  await menu.getByRole("link", { name: "Notre histoire", exact: true }).first().click();
+  await expect(page).toHaveURL(/\/notre-histoire$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Notre histoire" })).toBeVisible();
+});

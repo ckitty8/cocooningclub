@@ -11,12 +11,12 @@ sur la fiche). Les fichiers sont recadrés et convertis en WebP ; remplacer une 
 | `accueil/creatif.webp` | 8483561 | trois femmes autour d'un atelier de tissus |
 | `accueil/business.webp` | 6457479 | trois femmes qui travaillent sur un canapé |
 | `hero-workshop-960.webp` | 20767663 | table en bois, papiers, ciseaux, ficelle |
-| `histoire/groupe-chapeau.webp` | 4453153 | amis de dos au coucher du soleil |
+| `histoire/groupe-chapeau.webp` | 7954570 | quatre amies de dos, enlacées, au coucher du soleil sur la plage |
 | `histoire/carnet.webp` | 19867906 | carnet, tasse de café et bougie |
 | `histoire/neon.webp` | 27086170 | trois femmes devant un ordinateur |
 | `histoire/rencontres.webp` | 4340080 | deux femmes qui discutent |
 | `histoire/idees.webp` | 8485598 | mains sur des plans autour d'un ordinateur |
-| `histoire/aventure.webp` | 4453155 | amis de dos, bras levés au coucher du soleil |
+| `histoire/aventure.webp` | 8285741 | quatre femmes qui se serrent dans les bras dans un lieu d'atelier |
 | `../../public/og-image.jpg` (moitié gauche) | 20767663 | idem hero |
 
 Photos du club (pas de licence à vérifier) : `accueil/fondatrices.webp` et `accueil/groupe.webp`, fournies par le club.
