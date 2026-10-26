@@ -130,7 +130,7 @@ test("la recherche d'une personne existante retrouve aussi les administratrices 
   await fenetre.getByLabel("Personne *", { exact: true }).fill(ADMIN.nom as string);
   await expect(fenetre.getByRole("option", { name: new RegExp(`${ADMIN.nom}.*administratrice`) })).toBeVisible();
   await fenetre.getByRole("listbox", { name: "Personne" }).selectOption({ index: 0 });
-  await fenetre.getByLabel("Date de naissance").fill("1988-04-12");
+  await fenetre.getByLabel("Date de naissance").pressSequentially("12041988");
   await fenetre.getByRole("button", { name: "Ajouter", exact: true }).click();
   await expect(page.getByText("Adhésion ajoutée, à valider")).toBeVisible();
   expect(mock.inserts.adhesions?.[0]).toMatchObject({ utilisateur_id: ADMIN.id, date_naissance: "1988-04-12" });

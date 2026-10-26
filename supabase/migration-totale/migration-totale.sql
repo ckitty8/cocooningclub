@@ -2,7 +2,7 @@
 -- MIGRATION TOTALE DU SITE : à coller dans le SQL Editor de Supabase.
 -- Fichier généré par `npm run migration:build` : ne pas le modifier à la main.
 -- Tout est exécuté dans une seule transaction : en cas d'erreur, rien n'est appliqué.
--- Contient : 20261023000002_supprime_membre_et_compte.sql, 20261023000003_offre_et_adhesions.sql, 20261023000004_retire_role_membre_premium.sql, 20261023000005_droits_par_offre.sql, 20261023000006_bloque_validation_impayee.sql, 20261023000007_tarif_adherente.sql, 20261023000008_supprime_tables_de_sauvegarde.sql, 20261023000009_reserve_admin_dispo_aux_admins.sql, 20261023000010_supprime_decrement_atelier_spots.sql, 20261024000000_nettoyage_premium_et_mot_de_passe_hash.sql, 20261024000001_conservation_des_donnees.sql, 20261025000000_pre_inscriptions_secours.sql, 20261025000001_consentements_pre_inscription.sql, 20261026000000_membre_exige_adhesion.sql, 20261026000001_date_naissance_adhesion.sql
+-- Contient : 20261023000002_supprime_membre_et_compte.sql, 20261023000003_offre_et_adhesions.sql, 20261023000004_retire_role_membre_premium.sql, 20261023000005_droits_par_offre.sql, 20261023000006_bloque_validation_impayee.sql, 20261023000007_tarif_adherente.sql, 20261023000008_supprime_tables_de_sauvegarde.sql, 20261023000009_reserve_admin_dispo_aux_admins.sql, 20261023000010_supprime_decrement_atelier_spots.sql, 20261024000000_nettoyage_premium_et_mot_de_passe_hash.sql, 20261024000001_conservation_des_donnees.sql, 20261025000000_pre_inscriptions_secours.sql, 20261025000001_consentements_pre_inscription.sql, 20261026000000_membre_exige_adhesion.sql, 20261026000001_date_naissance_adhesion.sql, 20261026000002_fiche_reliee_au_compte_en_cascade.sql
 -- Lancer ensuite verifications.sql (tout doit afficher ok = true).
 -- =====================================================================
 
@@ -1271,5 +1271,36 @@ CREATE TRIGGER trg_utilisateurs_membre_exige_adhesion
 ALTER TABLE public.adhesions
   ADD COLUMN IF NOT EXISTS date_naissance DATE
     CHECK (date_naissance IS NULL OR date_naissance BETWEEN DATE '1900-01-01' AND DATE '2100-01-01');
+
+-- ---------------------------------------------------------------------
+-- 20261026000002_fiche_reliee_au_compte_en_cascade.sql
+-- ---------------------------------------------------------------------
+-- Relier une fiche à son compte de connexion sans casser ce qui la référence.
+--
+-- Une fiche créée « sans connexion » (Membres, ou « Ajouter une adhésion » → Nouvelle personne) a un identifiant
+-- tiré au hasard. Quand la connexion est activée, le déclencheur link_utilisateur_to_auth() (sur auth.users)
+-- remplace cet identifiant par celui du compte de connexion. Or les clés étrangères vers utilisateurs(id)
+-- n'avaient pas ON UPDATE CASCADE : dès que la fiche avait une adhésion (ou une inscription, un avis…),
+-- le remplacement était refusé et la création du compte de connexion échouait.
+--
+-- Correctif : toutes les clés étrangères vers public.utilisateurs(id) suivent maintenant le changement d'identifiant.
+-- Les règles de suppression (CASCADE / SET NULL) restent celles d'origine.
+
+DO $$
+DECLARE
+  c RECORD;
+BEGIN
+  FOR c IN
+    SELECT conrelid::regclass AS table_ref, conname, pg_get_constraintdef(oid) AS def
+      FROM pg_constraint
+     WHERE confrelid = 'public.utilisateurs'::regclass
+       AND contype = 'f'
+       AND confupdtype = 'a'
+  LOOP
+    EXECUTE format('ALTER TABLE %s DROP CONSTRAINT %I', c.table_ref, c.conname);
+    EXECUTE format('ALTER TABLE %s ADD CONSTRAINT %I %s ON UPDATE CASCADE', c.table_ref, c.conname, c.def);
+  END LOOP;
+END;
+$$;
 
 COMMIT;

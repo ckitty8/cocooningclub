@@ -17,6 +17,7 @@ Scénarios qui vérifient les triggers de sécurité sur une base Postgres jetab
 - `20261025000000_pre_inscriptions_secours.sql` : filet de sécurité des pré-inscriptions (table `pre_inscriptions_secours` : dépôt ouvert aux visiteurs, lecture réservée aux administrateurs, champs tronqués, limite large, purge à 6 mois). Test : `pre_inscriptions_secours.test.sql`, sur la base `t` du premier bloc ci-dessous après les trois migrations de sécurité.
 - `20261025000001_consentements_pre_inscription.sql` : droit à l'image et accord WhatsApp de la pré-inscription, date de consentement posée par la base. Test : `consentements_pre_inscription.test.sql` (même base `t`).
 - `20261026000000_membre_exige_adhesion.sql` : pas de membre sans adhésion en cours (déclencheur sur `utilisateurs.role`, administrateurs exemptés). Test : `membre_exige_adhesion.test.sql`, sur la base `o` du bloc « Offre et adhésions », à lancer APRÈS `offre_et_adhesions.test.sql` (son scénario 9b attribue le rôle membre sans adhésion, refusé une fois la migration appliquée).
+- `20261026000002_fiche_reliee_au_compte_en_cascade.sql` : clés étrangères vers `utilisateurs(id)` en `ON UPDATE CASCADE` (une fiche qui a des adhésions peut être reliée à son compte de connexion). Test : `fiche_reliee_au_compte.test.sql`, sur la base `o` après la migration.
 - `20261024000003_renomme_antennes_en_espaces.sql` : renommage de la table, des colonnes (`ateliers`, `formule_espaces`) et des vues, réécriture de `atelier_inclus`.
 
 ```bash
@@ -44,6 +45,8 @@ psql -d o -f supabase/tests/offre_et_adhesions.test.sql
 # Pas de membre sans adhésion : par-dessus la même base, après le test ci-dessus
 psql -d o -v ON_ERROR_STOP=1 -f supabase/migrations/20261026000000_membre_exige_adhesion.sql
 psql -d o -f supabase/tests/membre_exige_adhesion.test.sql
+psql -d o -v ON_ERROR_STOP=1 -f supabase/migrations/20261026000002_fiche_reliee_au_compte_en_cascade.sql
+psql -d o -f supabase/tests/fiche_reliee_au_compte.test.sql
 
 # Droits par offre : base séparée (le setup rejoue 000003), à lancer depuis la racine du dépôt
 createdb d

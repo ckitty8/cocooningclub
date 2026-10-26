@@ -25,6 +25,11 @@ export const creerCompte = async (c: NouveauCompte): Promise<ResultatCreation> =
       options: { emailRedirectTo: `${window.location.origin}/login` },
     });
     if (authError || !authData.user) return { erreur: authError?.message ?? "Erreur lors de la création du compte." };
+    // Adresse déjà inscrite côté connexion (compte créé avant la fiche) : Supabase ne renvoie pas d'erreur mais un
+    // utilisateur factice, sans identité. Créer la fiche avec cet identifiant la laisserait injoignable à la connexion.
+    if (authData.user.identities?.length === 0) {
+      return { erreur: "Cette adresse a déjà un compte de connexion : la fiche ne peut pas être créée d'ici. Demandez à l'équipe technique de la relier à ce compte." };
+    }
     authUserId = authData.user.id;
   }
 

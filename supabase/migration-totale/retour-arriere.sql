@@ -18,6 +18,18 @@ BEGIN
 END
 $$;
 DROP FUNCTION IF EXISTS private.purger_donnees_anciennes();
+-- Fiche reliée au compte en cascade (20261026000002) : les clés étrangères vers utilisateurs(id) redeviennent ON UPDATE NO ACTION
+-- (un changement d'identifiant d'une fiche qui a des adhésions, inscriptions… sera de nouveau refusé).
+DO $$
+DECLARE c RECORD;
+BEGIN
+  FOR c IN SELECT conrelid::regclass AS table_ref, conname, regexp_replace(pg_get_constraintdef(oid), ' ON UPDATE CASCADE', '') AS def
+             FROM pg_constraint WHERE confrelid = 'public.utilisateurs'::regclass AND contype = 'f' AND confupdtype = 'c'
+  LOOP
+    EXECUTE format('ALTER TABLE %s DROP CONSTRAINT %I', c.table_ref, c.conname);
+    EXECUTE format('ALTER TABLE %s ADD CONSTRAINT %I %s', c.table_ref, c.conname, c.def);
+  END LOOP;
+END $$;
 -- Date de naissance du bulletin (20261026000001) : les dates saisies sont perdues.
 ALTER TABLE public.adhesions DROP COLUMN IF EXISTS date_naissance;
 -- « Pas de membre sans adhésion » (20261026000000) : le rôle Membre peut de nouveau être attribué sans adhésion.

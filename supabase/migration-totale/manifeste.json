@@ -15,7 +15,8 @@
     "20261025000000_pre_inscriptions_secours.sql",
     "20261025000001_consentements_pre_inscription.sql",
     "20261026000000_membre_exige_adhesion.sql",
-    "20261026000001_date_naissance_adhesion.sql"
+    "20261026000001_date_naissance_adhesion.sql",
+    "20261026000002_fiche_reliee_au_compte_en_cascade.sql"
   ],
   "migrationsAuDeploiement": [
     "20261024000002_minimisation_date_naissance.sql",
