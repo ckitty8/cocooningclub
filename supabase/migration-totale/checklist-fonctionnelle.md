@@ -76,6 +76,7 @@ Comptes utiles : une administratrice, une membre, une inscrite (rôle `inscrit`)
 
 ## Après : créateur (`christellelab@gmail.com`)
 
+- [ ] Espace créateur : « Coût d'un atelier » (menu « Espace créateur », créateur seulement ; une autre administratrice est renvoyée à l'accueil) : coûts par atelier et par participante, tarifs et public, résultat (excédent / déficit), seuil de rentabilité, prix moyen conseillé et tableau « Selon le remplissage » ; les saisies sont gardées dans le navigateur ; « Partir d'un atelier existant » reprend tarifs et places.
 - [ ] Espace créateur : simulateur de rôle (Inscrit, Membre, Administrateur) et matrice des rôles à jour (ligne « Offre & adhésions », « Mon adhésion »).
 
 ## Sécurité (à vérifier à la main)

@@ -15,6 +15,7 @@ import NotreHistoire from "./pages/NotreHistoire.tsx";
 import Simulateur from "./pages/createur/Simulateur.tsx";
 import DroitsParOffre from "./pages/createur/DroitsParOffre.tsx";
 import MatriceRoles from "./pages/createur/MatriceRoles.tsx";
+import CoutAtelier from "./pages/createur/CoutAtelier.tsx";
 import SimulationBanner from "@/components/SimulationBanner";
 import { ACCES } from "@/lib/roles";
 import { rejouerFile } from "@/lib/preInscriptionSecours";
@@ -160,6 +161,7 @@ const App = () => (
           <Route path="/admin/createur/simulateur" element={<RoleGuard allowedRoles={ACCES.createur} reel><Simulateur /></RoleGuard>} />
           <Route path="/admin/createur/droits"     element={<RoleGuard allowedRoles={ACCES.createur} reel><DroitsParOffre /></RoleGuard>} />
           <Route path="/admin/createur/matrice"    element={<RoleGuard allowedRoles={ACCES.createur} reel><MatriceRoles /></RoleGuard>} />
+          <Route path="/admin/createur/cout-atelier" element={<RoleGuard allowedRoles={ACCES.createur} reel><CoutAtelier /></RoleGuard>} />
 
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

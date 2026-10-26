@@ -40,4 +40,5 @@ export const PAGES: PageAuditee[] = [
   { chemin: "/admin/createur/simulateur", profil: "createur" },
   { chemin: "/admin/createur/droits", profil: "createur" },
   { chemin: "/admin/createur/matrice", profil: "createur" },
+  { chemin: "/admin/createur/cout-atelier", profil: "createur" },
 ];
