@@ -3,6 +3,12 @@
 Ces actions ont été faites sur la base partagée (preview + production) avec l'accord de l'équipe. Elles ne sont
 **pas** à rejouer ; elles sont notées pour la traçabilité et pour pouvoir les annuler.
 
+## 26/10/2026
+
+| Action | Détail | Retour arrière |
+|---|---|---|
+| Migration `20261026000000_membre_exige_adhesion.sql` appliquée par Claude (outil Supabase, projet CocooningClubBDD) à la demande de l'utilisatrice | Déclencheur `trg_utilisateurs_membre_exige_adhesion` : pas de rôle `membre` sans adhésion en cours (administrateurs exemptés). Contrôle avant : 0 membre, 5 administratrices. Contrôle après : fonction `private.exiger_adhesion_pour_membre` (SECURITY DEFINER, fermée à `anon`) et déclencheur actif. | `DROP TRIGGER trg_utilisateurs_membre_exige_adhesion ON public.utilisateurs; DROP FUNCTION private.exiger_adhesion_pour_membre();` (déjà dans `retour-arriere.sql`). |
+
 ## 25/10/2026
 
 | Action | Détail | Retour arrière |
