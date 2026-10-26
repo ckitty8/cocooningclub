@@ -2,7 +2,7 @@
 -- MIGRATION TOTALE DU SITE : à coller dans le SQL Editor de Supabase.
 -- Fichier généré par `npm run migration:build` : ne pas le modifier à la main.
 -- Tout est exécuté dans une seule transaction : en cas d'erreur, rien n'est appliqué.
--- Contient : 20261023000002_supprime_membre_et_compte.sql, 20261023000003_offre_et_adhesions.sql, 20261023000004_retire_role_membre_premium.sql, 20261023000005_droits_par_offre.sql, 20261023000006_bloque_validation_impayee.sql, 20261023000007_tarif_adherente.sql, 20261023000008_supprime_tables_de_sauvegarde.sql, 20261023000009_reserve_admin_dispo_aux_admins.sql, 20261023000010_supprime_decrement_atelier_spots.sql, 20261024000000_nettoyage_premium_et_mot_de_passe_hash.sql, 20261024000001_conservation_des_donnees.sql, 20261025000000_pre_inscriptions_secours.sql, 20261025000001_consentements_pre_inscription.sql, 20261026000000_membre_exige_adhesion.sql
+-- Contient : 20261023000002_supprime_membre_et_compte.sql, 20261023000003_offre_et_adhesions.sql, 20261023000004_retire_role_membre_premium.sql, 20261023000005_droits_par_offre.sql, 20261023000006_bloque_validation_impayee.sql, 20261023000007_tarif_adherente.sql, 20261023000008_supprime_tables_de_sauvegarde.sql, 20261023000009_reserve_admin_dispo_aux_admins.sql, 20261023000010_supprime_decrement_atelier_spots.sql, 20261024000000_nettoyage_premium_et_mot_de_passe_hash.sql, 20261024000001_conservation_des_donnees.sql, 20261025000000_pre_inscriptions_secours.sql, 20261025000001_consentements_pre_inscription.sql, 20261026000000_membre_exige_adhesion.sql, 20261026000001_date_naissance_adhesion.sql
 -- Lancer ensuite verifications.sql (tout doit afficher ok = true).
 -- =====================================================================
 
@@ -1257,5 +1257,19 @@ DROP TRIGGER IF EXISTS trg_utilisateurs_membre_exige_adhesion ON public.utilisat
 CREATE TRIGGER trg_utilisateurs_membre_exige_adhesion
   BEFORE INSERT OR UPDATE OF role ON public.utilisateurs
   FOR EACH ROW EXECUTE FUNCTION private.exiger_adhesion_pour_membre();
+
+-- ---------------------------------------------------------------------
+-- 20261026000001_date_naissance_adhesion.sql
+-- ---------------------------------------------------------------------
+-- Date de naissance de l'adhérente, saisie avec le bulletin d'adhésion.
+--
+-- Elle est portée par l'adhésion (comme le reste du bulletin) et non par la fiche du compte : la colonne
+-- utilisateurs.date_naissance reste supprimée (minimisation, 20261024000002). Facultative : l'équipe
+-- peut ne pas l'avoir au moment de la saisie. Lecture : administrateurs et la personne concernée
+-- (politiques existantes de la table adhesions) ; écriture : administrateurs.
+
+ALTER TABLE public.adhesions
+  ADD COLUMN IF NOT EXISTS date_naissance DATE
+    CHECK (date_naissance IS NULL OR date_naissance BETWEEN DATE '1900-01-01' AND DATE '2100-01-01');
 
 COMMIT;

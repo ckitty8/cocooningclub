@@ -9,6 +9,9 @@ import { toast } from "sonner";
 import BadgePhotos from "@/components/BadgePhotos";
 import { useAutorisationsImage } from "@/hooks/useAutorisationsImage";
 import { useOffresParPersonne } from "@/hooks/useOffres";
+import { useNaissancesParPersonne } from "@/hooks/useNaissances";
+import { aujourdhuiIso } from "@/lib/adhesions";
+import { dateFr } from "@/lib/dates";
 import OffresPersonne from "@/components/OffrePastille";
 import { nomCourtOffre } from "@/lib/droits";
 import { Plus, Search, Pencil, Trash2, UserX, UserCheck2, X, Eye, EyeOff } from "lucide-react";
@@ -47,7 +50,7 @@ const roleLabel: Record<UserRole, string> = {
 const AIDE_ROLE_MEMBRE = "Le rôle Membre est attribué à la validation d'une adhésion (Offre & adhésions) : il n'existe pas de membre sans adhésion, hors administrateurs.";
 
 const emptyEditForm = {
-  nom: "", prenom: "", email: "", telephone: "",
+  nom: "", prenom: "", email: "", telephone: "", date_naissance: "",
   debut_abonnement: "", fin_abonnement: "",
   role: "inscrit" as UserRole,
   est_actif: false,
@@ -85,6 +88,8 @@ const Membres = () => {
   // Offre en cours de chaque personne (adhésion → formule). Absente tant que la migration n'est pas appliquée.
   const { parPersonne: offres, disponible: offresDisponibles } = useOffresParPersonne(null);
   const [filtreOffre, setFiltreOffre] = useState<string>("toutes");
+  // Date de naissance : portée par l'adhésion (saisie avec le bulletin).
+  const { parPersonne: naissances, disponible: naissancesDisponibles, recharger: rechargerNaissances } = useNaissancesParPersonne();
 
   const fetchMembers = async () => {
     try {
@@ -116,7 +121,7 @@ const Membres = () => {
     return matchSearch && matchRole && matchActif && matchOffre;
   });
   const nomsOffres = Array.from(new Set(Array.from(offres.values()).flat().map(o => nomCourtOffre(o.nom)))).sort();
-  const nbColonnes = offresDisponibles ? 7 : 6;
+  const nbColonnes = 6 + (offresDisponibles ? 1 : 0) + (naissancesDisponibles ? 1 : 0);
 
   // ── Création ──────────────────────────────────────────────
   const handleCreate = async () => {
@@ -140,6 +145,7 @@ const Membres = () => {
     setEditForm({
       nom: m.nom, prenom: m.prenom, email: m.email,
       telephone: m.telephone ?? "",
+      date_naissance: naissances.get(m.id)?.date ?? "",
       debut_abonnement: m.debut_abonnement ?? "",
       fin_abonnement: m.fin_abonnement ?? "", role: m.role,
       est_actif: m.est_actif,
@@ -184,6 +190,15 @@ const Membres = () => {
       toast.error(`Erreur : ${error.message}`);
       setSaving(false);
       return;
+    }
+
+    // Date de naissance : écrite sur l'adhésion la plus récente (pas de fiche sans adhésion pour la porter).
+    const naissance = naissances.get(before.id);
+    if (naissancesDisponibles && naissance && editForm.date_naissance !== (naissance.date ?? "")) {
+      const { error: errNaissance } = await supabase.from("adhesions")
+        .update({ date_naissance: editForm.date_naissance || null }).eq("id", naissance.adhesionId);
+      if (errNaissance) toast.error("La fiche est enregistrée, mais pas la date de naissance.");
+      else { logAction("membre.naissance", "adhesions", naissance.adhesionId, { utilisateur_id: before.id }); rechargerNaissances(); }
     }
 
     // Log spécifique si le rôle a changé (action sensible)
@@ -326,6 +341,7 @@ const Membres = () => {
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground">Rôle</th>
                 {offresDisponibles && <th className="text-left px-5 py-3 font-medium text-muted-foreground">Offre en cours</th>}
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground">Statut</th>
+                {naissancesDisponibles && <th className="text-left px-5 py-3 font-medium text-muted-foreground hidden md:table-cell">Naissance</th>}
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground hidden md:table-cell">Consentement</th>
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground hidden lg:table-cell">Abonnement</th>
                 <th className="px-5 py-3" />
@@ -358,6 +374,11 @@ const Membres = () => {
                       {m.est_actif ? "Actif" : "Inactif"}
                     </span>
                   </td>
+                  {naissancesDisponibles && (
+                    <td className="px-5 py-3.5 hidden md:table-cell text-xs text-muted-foreground">
+                      {naissances.get(m.id)?.date ? dateFr(naissances.get(m.id)!.date) : "—"}
+                    </td>
+                  )}
                   <td className="px-5 py-3.5 hidden md:table-cell">
                     <BadgePhotos autorisation={autorisations.get(m.id)} avecLibelle={false} />
                   </td>
@@ -464,6 +485,7 @@ const Membres = () => {
               <div>
                 <label className="block text-sm font-medium mb-1.5">Téléphone</label>
                 <input value={createForm.telephone} onChange={e => setCreateForm(f => ({ ...f, telephone: e.target.value }))} className={fieldClass} />
+                <p className="text-xs text-muted-foreground mt-1">La date de naissance se saisit avec l'adhésion (Offre &amp; adhésions → Ajouter une adhésion).</p>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Rôle</label>
@@ -523,6 +545,19 @@ const Membres = () => {
                 <label className="block text-sm font-medium mb-1.5">Téléphone</label>
                 <input value={editForm.telephone} onChange={e => setEditForm(f => ({ ...f, telephone: e.target.value }))} className={fieldClass} />
               </div>
+              {naissancesDisponibles && (
+                <div>
+                  <label htmlFor="m-naissance" className="block text-sm font-medium mb-1.5">Date de naissance</label>
+                  <input id="m-naissance" type="date" value={editForm.date_naissance} min="1900-01-01" max={aujourdhuiIso()}
+                    disabled={!naissances.get(editModal.member.id)}
+                    onChange={e => setEditForm(f => ({ ...f, date_naissance: e.target.value }))} className={`${fieldClass} disabled:opacity-60`} />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {naissances.get(editModal.member.id)
+                      ? "Enregistrée sur son adhésion la plus récente."
+                      : "Pas encore d'adhésion : la date se saisit avec l'adhésion (Offre & adhésions)."}
+                  </p>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1.5">Début abonnement</label>

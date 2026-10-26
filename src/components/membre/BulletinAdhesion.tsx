@@ -25,6 +25,7 @@ export interface DonneesBulletin {
     autorisation_image: boolean;
     image_supports: string[];
     image_signee_le: string | null;
+    date_naissance?: string | null;
   };
   formule: { nom: string; description: string | null; prix: number; duree_mois: number } | null;
 }
@@ -58,6 +59,7 @@ const BulletinAdhesion = ({ personne, adhesion, formule }: DonneesBulletin) => {
           <div className="grid gap-1 sm:grid-cols-2">
             <Ligne libelle="Nom" valeur={personne.nom} />
             <Ligne libelle="Prénom" valeur={personne.prenom} />
+            <Ligne libelle="Date de naissance" valeur={adhesion.date_naissance ? dateFr(adhesion.date_naissance) : null} />
             <Ligne libelle="Téléphone" valeur={personne.telephone} />
             <Ligne libelle="Adresse e-mail" valeur={personne.email} />
             <Ligne libelle="Commune" valeur={personne.commune} />

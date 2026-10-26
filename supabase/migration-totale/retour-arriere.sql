@@ -18,6 +18,8 @@ BEGIN
 END
 $$;
 DROP FUNCTION IF EXISTS private.purger_donnees_anciennes();
+-- Date de naissance du bulletin (20261026000001) : les dates saisies sont perdues.
+ALTER TABLE public.adhesions DROP COLUMN IF EXISTS date_naissance;
 -- « Pas de membre sans adhésion » (20261026000000) : le rôle Membre peut de nouveau être attribué sans adhésion.
 DROP TRIGGER IF EXISTS trg_utilisateurs_membre_exige_adhesion ON public.utilisateurs;
 DROP FUNCTION IF EXISTS private.exiger_adhesion_pour_membre();

@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
 import { creerCompte } from "@/lib/creerCompte";
 import { MODES_REGLEMENT, type ModeReglement } from "@/lib/adhesions";
-import { bulletinVierge, champsDepuisBulletin, type ValeursBulletin } from "@/lib/bulletin";
+import { bulletinVierge, champNaissance, champsDepuisBulletin, type ValeursBulletin } from "@/lib/bulletin";
 import AutorisationsForm from "./AutorisationsForm";
 import { champ, type Formule, type MembreChoix } from "./types";
 
@@ -35,7 +35,7 @@ const AjoutAdhesionModal = ({ formules, onClose, onSaved }: Props) => {
   const [saving, setSaving] = useState(false);
 
   const chargerMembres = () =>
-    supabase.from("utilisateurs").select("id, prenom, nom, email, role, est_actif").neq("role", "administrateur").order("nom")
+    supabase.from("utilisateurs").select("id, prenom, nom, email, role, est_actif").order("nom")
       .then(({ data }) => setMembres((data as MembreChoix[]) ?? []));
 
   useEffect(() => { chargerMembres(); }, []);
@@ -63,7 +63,7 @@ const AjoutAdhesionModal = ({ formules, onClose, onSaved }: Props) => {
     // 2. Adhésion « à valider ».
     const { data, error } = await supabase
       .from("adhesions")
-      .insert({ utilisateur_id: utilisateurId, formule_id: formuleId, mode_reglement: mode, ...champsDepuisBulletin(bulletin) })
+      .insert({ utilisateur_id: utilisateurId, formule_id: formuleId, mode_reglement: mode, ...champsDepuisBulletin(bulletin), ...champNaissance(bulletin) })
       .select("id")
       .single();
     if (error) {
@@ -115,8 +115,13 @@ const AjoutAdhesionModal = ({ formules, onClose, onSaved }: Props) => {
               <label htmlFor="aj-rech" className="block text-sm font-medium mb-1.5">Personne *</label>
               <input id="aj-rech" value={recherche} onChange={e => setRecherche(e.target.value)} placeholder="Rechercher un nom, un e-mail…" className={champ} />
               <select aria-label="Personne" size={5} value={membreId} onChange={e => setMembreId(e.target.value)} className={`${champ} mt-2`}>
-                {filtres.map(m => <option key={m.id} value={m.id}>{m.prenom} {m.nom} — {m.email}{m.est_actif === false ? " (compte inactif)" : ""}</option>)}
+                {filtres.map(m => <option key={m.id} value={m.id}>{m.prenom} {m.nom} — {m.email}{m.role === "administrateur" ? " (administratrice)" : ""}{m.est_actif === false ? " (compte inactif)" : ""}</option>)}
               </select>
+              {filtres.length === 0 && (
+                <p role="status" className="text-xs text-terracotta mt-1">
+                  {membres.length === 0 ? "Aucun compte pour le moment." : "Aucun compte ne correspond."} Choisissez « Nouvelle personne » pour la créer avec son adhésion.
+                </p>
+              )}
               <p className="text-xs text-muted-foreground mt-1">Elle n'a pas encore de compte ? Choisissez « Nouvelle personne » : son compte sera créé avec l'adhésion.</p>
             </div>
           ) : (

@@ -34,6 +34,11 @@ const Confidentialite = () => {
                 email, téléphone, et, pour certains ateliers, date de naissance.
               </li>
               <li>
+                <span className="text-foreground font-medium">Bulletin d'adhésion (saisi par l'équipe) :</span> vos
+                coordonnées, votre date de naissance (facultative), vos engagements et, si vous l'accordez,
+                votre autorisation photo et vidéo.
+              </li>
+              <li>
                 <span className="text-foreground font-medium">Formulaire de contact :</span> les informations que
                 vous nous transmettez volontairement.
               </li>
@@ -68,6 +73,7 @@ const Confidentialite = () => {
             </p>
             <ul className="list-disc pl-5 space-y-1">
               <li>date de naissance (pour les ateliers qui la demandent) : effacée 30 jours après l'atelier ;</li>
+              <li>bulletin d'adhésion (dont la date de naissance) : conservé avec votre adhésion, tant que votre compte existe ;</li>
               <li>pré-inscriptions sans compte : anonymisées 3 ans après la date de l'atelier (avec vos réponses sur le droit à l'image et le groupe WhatsApp) ;</li>
               <li>pré-inscriptions que le site n'a pas pu enregistrer normalement (copie de secours de vos coordonnées, le temps de vous recontacter) : supprimées après 6 mois ;</li>
               <li>messages envoyés via le formulaire de contact : supprimés après 3 ans ;</li>

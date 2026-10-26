@@ -122,6 +122,29 @@ test("elle ajoute une adhésion en créant la personne en même temps : compte �
   expect(mock.inserts.adhesions?.[0]).toMatchObject({ utilisateur_id: "eeeeeeee-0000-4000-8000-000000000001", formule_id: FORMULES[0].id });
 });
 
+test("la recherche d'une personne existante retrouve aussi les administratrices et enregistre son adhésion", async ({ page }) => {
+  const mock = await ouvrir(page);
+  await page.getByRole("tab", { name: /Adhésions/ }).click();
+  await page.getByRole("button", { name: "Ajouter une adhésion" }).click();
+  const fenetre = page.getByRole("dialog", { name: "Ajouter une adhésion" });
+  await fenetre.getByLabel("Personne *", { exact: true }).fill(ADMIN.nom as string);
+  await expect(fenetre.getByRole("option", { name: new RegExp(`${ADMIN.nom}.*administratrice`) })).toBeVisible();
+  await fenetre.getByRole("listbox", { name: "Personne" }).selectOption({ index: 0 });
+  await fenetre.getByLabel("Date de naissance").fill("1988-04-12");
+  await fenetre.getByRole("button", { name: "Ajouter", exact: true }).click();
+  await expect(page.getByText("Adhésion ajoutée, à valider")).toBeVisible();
+  expect(mock.inserts.adhesions?.[0]).toMatchObject({ utilisateur_id: ADMIN.id, date_naissance: "1988-04-12" });
+});
+
+test("une recherche sans résultat renvoie vers « Nouvelle personne »", async ({ page }) => {
+  await ouvrir(page);
+  await page.getByRole("tab", { name: /Adhésions/ }).click();
+  await page.getByRole("button", { name: "Ajouter une adhésion" }).click();
+  const fenetre = page.getByRole("dialog", { name: "Ajouter une adhésion" });
+  await fenetre.getByLabel("Personne *", { exact: true }).fill("zzzzzz");
+  await expect(fenetre.getByRole("status")).toContainText("Nouvelle personne");
+});
+
 test("une adresse déjà utilisée n'est pas recréée : on renvoie vers la liste", async ({ page }) => {
   const mock = await ouvrir(page, { emailsExistants: [{ id: "dddddddd-0000-4000-8000-000000000001" }] });
   await page.getByRole("tab", { name: /Adhésions/ }).click();

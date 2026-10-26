@@ -1,3 +1,4 @@
+import { aujourdhuiIso } from "@/lib/adhesions";
 import { SUPPORTS_IMAGE, type SupportImage } from "@/lib/autorisationImage";
 import type { ValeursBulletin } from "@/lib/bulletin";
 import { champ } from "./types";
@@ -15,6 +16,11 @@ const AutorisationsForm = ({ valeurs, onChange }: Props) => {
 
   return (
     <div className="space-y-3 text-sm">
+      <div>
+        <label htmlFor="b-naissance" className="block text-xs font-medium mb-1">Date de naissance <span className="font-normal text-muted-foreground">(facultatif)</span></label>
+        <input id="b-naissance" type="date" value={valeurs.naissance} min="1900-01-01" max={aujourdhuiIso()}
+          onChange={e => maj({ naissance: e.target.value })} className={champ} />
+      </div>
       <label className="flex items-start gap-2 cursor-pointer">
         <input type="checkbox" className="mt-0.5" checked={valeurs.engagement} onChange={e => maj({ engagement: e.target.checked })} />
         <span>Statuts et règlement intérieur acceptés</span>

@@ -19,6 +19,7 @@ export type Database = {
           autorisation_image: boolean
           cotisation_recue_le: string | null
           cree_le: string
+          date_naissance: string | null
           date_validation: string | null
           engagement_accepte_le: string | null
           formule_id: string
@@ -38,6 +39,7 @@ export type Database = {
           autorisation_image?: boolean
           cotisation_recue_le?: string | null
           cree_le?: string
+          date_naissance?: string | null
           date_validation?: string | null
           engagement_accepte_le?: string | null
           formule_id: string
@@ -57,6 +59,7 @@ export type Database = {
           autorisation_image?: boolean
           cotisation_recue_le?: string | null
           cree_le?: string
+          date_naissance?: string | null
           date_validation?: string | null
           engagement_accepte_le?: string | null
           formule_id?: string
