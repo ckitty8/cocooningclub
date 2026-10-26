@@ -402,6 +402,9 @@ const Index = () => {
             <p className="text-muted-foreground">
               Réservez votre place, quel que soit l'espace qui vous attire.
             </p>
+            <div className="pt-2">
+              <Bouton to="/calendrier" variante="contour">Voir tous nos événements</Bouton>
+            </div>
           </div>
           {ateliers.length === 0 ? (
             <div className="text-center py-12 border rounded-2xl bg-card max-w-2xl mx-auto">
@@ -430,9 +433,6 @@ const Index = () => {
           ) : (
             <WorkshopCarousel workshops={ateliers} onReserve={openModal} />
           )}
-          <div className="mt-10 text-center">
-            <Bouton to="/calendrier" variante="contour">Voir tous nos événements</Bouton>
-          </div>
         </div>
       </section>
 
