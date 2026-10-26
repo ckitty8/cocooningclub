@@ -40,6 +40,8 @@ const roleLabel: Record<UserRole, string> = {
   membre:         "Membre",
 };
 
+const AIDE_ROLE_MEMBRE = "Le rôle Membre est attribué à la validation d'une adhésion (Offre & adhésions) : il n'existe pas de membre sans adhésion, hors administrateurs.";
+
 const emptyEditForm = {
   nom: "", prenom: "", email: "", telephone: "",
   debut_abonnement: "", fin_abonnement: "",
@@ -520,9 +522,9 @@ const Membres = () => {
                 <label className="block text-sm font-medium mb-1.5">Rôle</label>
                 <select value={createForm.role} onChange={e => setCreateForm(f => ({ ...f, role: e.target.value as UserRole }))} className={fieldClass}>
                   <option value="inscrit">Inscrit</option>
-                  <option value="membre">Membre</option>
                   <option value="administrateur">Administrateur</option>
                 </select>
+                <p className="text-xs text-muted-foreground mt-1">{AIDE_ROLE_MEMBRE}</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -590,9 +592,10 @@ const Membres = () => {
                     <label className="block text-sm font-medium mb-1.5">Rôle</label>
                     <select value={editForm.role} onChange={e => setEditForm(f => ({ ...f, role: e.target.value as UserRole }))} className={fieldClass}>
                       <option value="inscrit">Inscrit</option>
-                      <option value="membre">Membre</option>
+                      {editModal.member.role === "membre" && <option value="membre">Membre</option>}
                       <option value="administrateur">Administrateur</option>
                     </select>
+                    <p className="text-xs text-muted-foreground mt-1">{AIDE_ROLE_MEMBRE}</p>
                   </div>
 
                   {/* Toggle Actif / Inactif — passer à actif envoie un magic link */}

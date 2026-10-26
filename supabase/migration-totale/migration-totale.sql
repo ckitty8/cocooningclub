@@ -2,7 +2,7 @@
 -- MIGRATION TOTALE DU SITE : à coller dans le SQL Editor de Supabase.
 -- Fichier généré par `npm run migration:build` : ne pas le modifier à la main.
 -- Tout est exécuté dans une seule transaction : en cas d'erreur, rien n'est appliqué.
--- Contient : 20261023000002_supprime_membre_et_compte.sql, 20261023000003_offre_et_adhesions.sql, 20261023000004_retire_role_membre_premium.sql, 20261023000005_droits_par_offre.sql, 20261023000006_bloque_validation_impayee.sql, 20261023000007_tarif_adherente.sql, 20261023000008_supprime_tables_de_sauvegarde.sql, 20261023000009_reserve_admin_dispo_aux_admins.sql, 20261023000010_supprime_decrement_atelier_spots.sql, 20261024000000_nettoyage_premium_et_mot_de_passe_hash.sql, 20261024000001_conservation_des_donnees.sql, 20261025000000_pre_inscriptions_secours.sql, 20261025000001_consentements_pre_inscription.sql
+-- Contient : 20261023000002_supprime_membre_et_compte.sql, 20261023000003_offre_et_adhesions.sql, 20261023000004_retire_role_membre_premium.sql, 20261023000005_droits_par_offre.sql, 20261023000006_bloque_validation_impayee.sql, 20261023000007_tarif_adherente.sql, 20261023000008_supprime_tables_de_sauvegarde.sql, 20261023000009_reserve_admin_dispo_aux_admins.sql, 20261023000010_supprime_decrement_atelier_spots.sql, 20261024000000_nettoyage_premium_et_mot_de_passe_hash.sql, 20261024000001_conservation_des_donnees.sql, 20261025000000_pre_inscriptions_secours.sql, 20261025000001_consentements_pre_inscription.sql, 20261026000000_membre_exige_adhesion.sql
 -- Lancer ensuite verifications.sql (tout doit afficher ok = true).
 -- =====================================================================
 
@@ -1211,5 +1211,51 @@ DROP TRIGGER IF EXISTS trg_dater_consentements_inscription ON public.inscription
 CREATE TRIGGER trg_dater_consentements_inscription
   BEFORE INSERT ON public.inscriptions
   FOR EACH ROW EXECUTE FUNCTION private.dater_consentements_inscription();
+
+-- ---------------------------------------------------------------------
+-- 20261026000000_membre_exige_adhesion.sql
+-- ---------------------------------------------------------------------
+-- Règle : il ne peut pas y avoir de membre sans adhésion (sauf les administrateurs).
+--
+-- Un compte ne peut recevoir le rôle `membre`, à la création comme en modification, que s'il a une
+-- adhésion en cours : statut `active` et `valable_jusqu_au` non dépassée. Valable pour tout le monde,
+-- administrateurs compris : la seule porte d'entrée est valider_adhesion() (20261023000003), qui active
+-- l'adhésion AVANT de changer le rôle, dans la même transaction.
+--
+-- Ce qui n'est PAS touché :
+--   - les comptes déjà `membre` sans adhésion (aucune réécriture) : le contrôle ne porte que sur un
+--     changement vers `membre`, pas sur les enregistrements qui laissent le rôle tel quel ;
+--   - les administrateurs, qui n'ont pas besoin d'adhésion ;
+--   - le retour à `inscrit` (échéance, expirer_adhesions()).
+
+CREATE OR REPLACE FUNCTION private.exiger_adhesion_pour_membre()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_catalog
+AS $$
+BEGIN
+  IF NEW.role = 'membre'
+     AND (TG_OP = 'INSERT' OR OLD.role IS DISTINCT FROM 'membre')
+     AND NOT EXISTS (
+       SELECT 1 FROM public.adhesions a
+        WHERE a.utilisateur_id = NEW.id
+          AND a.statut = 'active'
+          AND a.valable_jusqu_au >= CURRENT_DATE
+     )
+  THEN
+    RAISE EXCEPTION 'Le rôle Membre exige une adhésion en cours : saisissez puis validez son adhésion (Offre & adhésions).'
+      USING ERRCODE = '23514';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+REVOKE EXECUTE ON FUNCTION private.exiger_adhesion_pour_membre() FROM PUBLIC;
+
+DROP TRIGGER IF EXISTS trg_utilisateurs_membre_exige_adhesion ON public.utilisateurs;
+CREATE TRIGGER trg_utilisateurs_membre_exige_adhesion
+  BEFORE INSERT OR UPDATE OF role ON public.utilisateurs
+  FOR EACH ROW EXECUTE FUNCTION private.exiger_adhesion_pour_membre();
 
 COMMIT;
