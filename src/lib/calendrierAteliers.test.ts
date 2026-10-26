@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { casesDuMois, chiffresAteliers, moisSuivant } from "./calendrierAteliers";
+import { casesDuMois, chiffresAteliers, moisSuivant, vacancesDuJour } from "./calendrierAteliers";
 
 describe("grille d'un mois", () => {
   it("commence le lundi (novembre 2026 : le 1er est un dimanche)", () => {
@@ -26,5 +26,19 @@ describe("chiffres des ateliers", () => {
   ];
   it("ne compte que les ateliers à venir proposés", () => {
     expect(chiffresAteliers(ateliers, "2026-10-23")).toEqual({ aVenir: 2, placesLibres: 4, brouillons: 1 });
+  });
+});
+
+describe("vacances scolaires dans le calendrier", () => {
+  const toussaint = { id: "v1", nom: "de la Toussaint", date_debut: "2026-10-17", date_fin: "2026-11-02" };
+  it("couvre la période dates incluses", () => {
+    expect(vacancesDuJour([toussaint], "2026-10-17")).toBe(toussaint);
+    expect(vacancesDuJour([toussaint], "2026-10-31")).toBe(toussaint);
+    expect(vacancesDuJour([toussaint], "2026-11-02")).toBe(toussaint);
+  });
+  it("ne couvre pas les jours avant et après", () => {
+    expect(vacancesDuJour([toussaint], "2026-10-16")).toBeUndefined();
+    expect(vacancesDuJour([toussaint], "2026-11-03")).toBeUndefined();
+    expect(vacancesDuJour([], "2026-10-20")).toBeUndefined();
   });
 });

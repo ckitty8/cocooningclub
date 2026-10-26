@@ -34,6 +34,21 @@ test("la vue calendrier place l'atelier à sa date", async ({ page }) => {
   await expect(page).toHaveURL(new RegExp(`/admin/ateliers/${ATELIER_TEST.id}$`));
 });
 
+test("la vue calendrier affiche les vacances scolaires, comme « Gestion des dispo des admins »", async ({ page }) => {
+  const debut = new Date();
+  debut.setDate(1);
+  const fin = new Date(debut.getFullYear(), debut.getMonth() + 1, 0);
+  const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  await mockSupabase(page, { profil: ADMIN, vacances: [{ id: "v1", nom: "de la Toussaint", date_debut: iso(debut), date_fin: iso(fin) }] });
+  await connecterEn(page, ADMIN);
+  await page.goto("/admin/ateliers");
+  await page.getByRole("group", { name: "Affichage des ateliers" }).getByRole("button", { name: "Calendrier" }).click();
+  await expect(page.getByText("Vacances de la Toussaint").first()).toBeVisible();
+  await expect(page.getByText("Vacances scolaires (zone C)")).toBeVisible();
+  await page.getByRole("gridcell").filter({ hasText: "Vacances de la Toussaint" }).first().click();
+  await expect(page.getByText("Vacances scolaires : de la Toussaint")).toBeVisible();
+});
+
 test("la fiche d'un atelier : chiffres, paiement, présence et export", async ({ page }) => {
   const mock = await mockSupabase(page, { profil: ADMIN, inscriptions: [INSCRITE] });
   await connecterEn(page, ADMIN);

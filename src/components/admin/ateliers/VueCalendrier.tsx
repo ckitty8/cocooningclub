@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import {
-  JOURS_COURTS, MOIS_FR, casesDuMois, couleurEspace, moisSuivant,
+  JOURS_COURTS, MOIS_FR, casesDuMois, couleurEspace, moisSuivant, vacancesDuJour, type PeriodeVacances,
 } from "@/lib/calendrierAteliers";
 import { aujourdhuiIso } from "@/lib/adhesions";
 
@@ -23,12 +23,14 @@ interface Props {
   /** Couleur de l'espace d'un atelier. */
   slugDe: (atelierEspaceId: string) => string | undefined;
   onCreer: (dateIso: string) => void;
+  /** Vacances scolaires à afficher en fond de calendrier. */
+  vacances?: PeriodeVacances[];
 }
 
 const heure = (h: string | null) => (h ? h.slice(0, 5) : "");
 
 /** Calendrier mensuel des ateliers : un atelier = une pastille de la couleur de son espace (hachurée si brouillon). */
-const VueCalendrier = ({ ateliers, slugDe, onCreer }: Props) => {
+const VueCalendrier = ({ ateliers, slugDe, onCreer, vacances = [] }: Props) => {
   const auj = aujourdhuiIso();
   const [annee, setAnnee] = useState(Number(auj.slice(0, 4)));
   const [mois, setMois] = useState(Number(auj.slice(5, 7)) - 1);
@@ -41,6 +43,7 @@ const VueCalendrier = ({ ateliers, slugDe, onCreer }: Props) => {
   };
   const duJour = (iso: string) => ateliers.filter(a => a.date_atelier === iso);
   const selection = choisi ? duJour(choisi) : [];
+  const vacancesChoisies = choisi ? vacancesDuJour(vacances, choisi) : undefined;
 
   return (
     <div className="grid gap-5 lg:grid-cols-[1fr_300px] items-start">
@@ -60,10 +63,14 @@ const VueCalendrier = ({ ateliers, slugDe, onCreer }: Props) => {
           {casesDuMois(annee, mois).map((iso, i) => {
             if (!iso) return <div key={i} className="min-h-[76px] sm:min-h-[104px]" />;
             const ateliersDuJour = duJour(iso);
+            const vac = vacancesDuJour(vacances, iso);
+            // Le nom des vacances s'écrit au premier jour de la période et en début de semaine, pour ne pas surcharger.
+            const debutDeLigne = vac && (iso === vac.date_debut || i % 7 === 0 || Number(iso.slice(8)) === 1);
             return (
               <div key={iso} role="gridcell" onClick={() => setChoisi(iso)}
-                className={`min-h-[76px] sm:min-h-[104px] cursor-pointer rounded-xl border bg-card p-1.5 text-xs transition-colors hover:bg-muted/40 ${iso === auj ? "border-primary ring-1 ring-primary" : ""} ${iso === choisi ? "bg-primary/5" : ""}`}>
+                className={`min-h-[76px] sm:min-h-[104px] cursor-pointer rounded-xl border p-1.5 text-xs transition-colors hover:bg-muted/40 ${vac ? "bg-amber-100 border-amber-200" : "bg-card"} ${iso === auj ? "border-primary ring-1 ring-primary" : ""} ${iso === choisi ? "bg-primary/5" : ""}`}>
                 <span className="font-semibold">{Number(iso.slice(8))}</span>
+                {debutDeLigne && <span className="ml-1 text-[10px] font-medium text-amber-900">Vacances {vac.nom}</span>}
                 {ateliersDuJour.map(a => (
                   <Link key={a.id} to={`/admin/ateliers/${a.id}`} onClick={e => e.stopPropagation()}
                     title={`${a.titre}${a.statut === "brouillon" ? " (brouillon)" : ""}`}
@@ -84,6 +91,7 @@ const VueCalendrier = ({ ateliers, slugDe, onCreer }: Props) => {
             <h3 className="font-display text-lg capitalize">
               {new Date(choisi + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}
             </h3>
+            {vacancesChoisies && <p className="mb-1 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-900">Vacances scolaires : {vacancesChoisies.nom}</p>}
             <p className="text-xs text-muted-foreground mb-3">{selection.length === 0 ? "Aucun atelier ce jour-là" : `${selection.length} atelier${selection.length > 1 ? "s" : ""}`}</p>
             <ul className="space-y-2">
               {selection.map(a => (
@@ -108,6 +116,7 @@ const VueCalendrier = ({ ateliers, slugDe, onCreer }: Props) => {
           {[["papotages", "Papotages"], ["creatifs", "Créatifs"], ["business", "Business"]].map(([slug, nom]) => (
             <p key={slug} className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: couleurEspace(slug) }} />{nom}</p>
           ))}
+          <p className="flex items-center gap-2"><span className="h-2.5 w-5 rounded-sm border border-amber-200 bg-amber-100" />Vacances scolaires (zone C)</p>
           <p className="flex items-center gap-2"><span className="h-2.5 w-5 rounded-sm bg-[repeating-linear-gradient(45deg,#b9aea8,#b9aea8_4px,#cfc6c1_4px,#cfc6c1_8px)]" />Brouillon</p>
         </div>
       </aside>
