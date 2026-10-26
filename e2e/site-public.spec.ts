@@ -225,3 +225,14 @@ test("le menu s'appelle « Notre histoire » (plus « À propos ») et mène à 
   await expect(page).toHaveURL(/\/notre-histoire$/);
   await expect(page.getByRole("heading", { level: 1, name: "Notre histoire" })).toBeVisible();
 });
+
+test("sous les prochains ateliers de l'accueil, un bouton mène à la page « Nos événements »", async ({ page }) => {
+  await mockSupabase(page);
+  await page.goto("/");
+  const lien = page.getByRole("link", { name: "Voir tous nos événements" });
+  await lien.scrollIntoViewIfNeeded();
+  await expect(lien).toBeVisible();
+  await lien.click();
+  await expect(page).toHaveURL(/\/calendrier$/);
+  await expect(page).toHaveTitle("Calendrier des ateliers · Cocooning Club");
+});

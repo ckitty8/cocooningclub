@@ -430,6 +430,9 @@ const Index = () => {
           ) : (
             <WorkshopCarousel workshops={ateliers} onReserve={openModal} />
           )}
+          <div className="mt-10 text-center">
+            <Bouton to="/calendrier" variante="contour">Voir tous nos événements</Bouton>
+          </div>
         </div>
       </section>
 
