@@ -4,7 +4,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
 import { creerCompte } from "@/lib/creerCompte";
-import { MODES_REGLEMENT, type ModeReglement } from "@/lib/adhesions";
+import ChampDate from "@/components/ChampDate";
+import { aujourdhuiIso, MODES_REGLEMENT, type ModeReglement } from "@/lib/adhesions";
 import { bulletinVierge, champNaissance, champsDepuisBulletin, type ValeursBulletin } from "@/lib/bulletin";
 import AutorisationsForm from "./AutorisationsForm";
 import { champ, type Formule, type MembreChoix } from "./types";
@@ -32,6 +33,9 @@ const AjoutAdhesionModal = ({ formules, onClose, onSaved }: Props) => {
   const [bulletin, setBulletin] = useState<ValeursBulletin>(bulletinVierge());
   const [commune, setCommune] = useState("");
   const [activite, setActivite] = useState("");
+  // Bulletin signé et cotisation remise : l'adhésion est validée tout de suite (la personne devient membre).
+  const [validerTout, setValiderTout] = useState(true);
+  const [recueLe, setRecueLe] = useState(aujourdhuiIso());
   const [saving, setSaving] = useState(false);
 
   const chargerMembres = () =>
@@ -88,8 +92,25 @@ const AjoutAdhesionModal = ({ formules, onClose, onSaved }: Props) => {
         .eq("id", utilisateurId);
       if (errFiche) toast.error("L'adhésion est enregistrée, mais pas la commune ni l'activité.");
     }
-    setSaving(false);
     logAction("adhesion.create", "adhesions", data.id, { utilisateur_id: utilisateurId, formule_id: formuleId, compte_cree: compteCree });
+
+    // 3. Validation immédiate : même fonction que le bouton « Valider » de la fiche (numéro, dates, rôle « membre »).
+    if (validerTout) {
+      const { error: errValidation } = await supabase.rpc("valider_adhesion", {
+        p_id: data.id, p_mode: mode, p_recue_le: recueLe || null, p_validation: aujourdhuiIso(),
+      });
+      setSaving(false);
+      if (errValidation) {
+        console.error("[AjoutAdhesionModal.valider]", errValidation);
+        toast.error("L'adhésion est ajoutée mais pas validée : ouvrez-la dans la liste pour la valider.");
+      } else {
+        logAction("adhesion.valider", "adhesions", data.id, { utilisateur_id: utilisateurId, a_la_creation: true });
+        toast.success(compteCree ? "Compte créé, adhésion validée : la personne est membre" : "Adhésion validée : la personne est membre");
+      }
+      onSaved();
+      return;
+    }
+    setSaving(false);
     toast.success(compteCree ? "Compte créé et adhésion ajoutée, à valider" : "Adhésion ajoutée, à valider");
     onSaved();
   };
@@ -181,6 +202,24 @@ const AjoutAdhesionModal = ({ formules, onClose, onSaved }: Props) => {
             <select id="aj-mode" value={mode} onChange={e => setMode(e.target.value as ModeReglement)} className={champ}>
               {(Object.keys(MODES_REGLEMENT) as ModeReglement[]).map(m => <option key={m} value={m}>{MODES_REGLEMENT[m]}</option>)}
             </select>
+          </div>
+          <div className="rounded-xl border bg-muted/30 p-3 space-y-2">
+            <label className="flex items-start gap-2 text-sm cursor-pointer">
+              <input type="checkbox" className="mt-0.5" checked={validerTout} onChange={e => setValiderTout(e.target.checked)} />
+              <span>
+                Cotisation reçue : valider l'adhésion tout de suite
+                <span className="block text-xs text-muted-foreground">
+                  La personne devient « membre » et l'offre s'applique aussitôt (valable {formules.find(f => f.id === formuleId)?.duree_mois ?? 12} mois à partir d'aujourd'hui).
+                  Décochez pour la laisser « à valider ».
+                </span>
+              </span>
+            </label>
+            {validerTout && (
+              <div>
+                <label htmlFor="aj-recue" className="block text-xs font-medium mb-1">Cotisation reçue le</label>
+                <ChampDate id="aj-recue" value={recueLe} onChange={setRecueLe} className={champ} />
+              </div>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>

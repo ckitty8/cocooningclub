@@ -1,4 +1,4 @@
-import ChampDateNaissance from "@/components/ChampDateNaissance";
+import ChampDate from "@/components/ChampDate";
 import { SUPPORTS_IMAGE, type SupportImage } from "@/lib/autorisationImage";
 import type { ValeursBulletin } from "@/lib/bulletin";
 import { champ } from "./types";
@@ -18,7 +18,7 @@ const AutorisationsForm = ({ valeurs, onChange }: Props) => {
     <div className="space-y-3 text-sm">
       <div>
         <label htmlFor="b-naissance" className="block text-xs font-medium mb-1">Date de naissance <span className="font-normal text-muted-foreground">(facultatif)</span></label>
-        <ChampDateNaissance id="b-naissance" value={valeurs.naissance} onChange={naissance => maj({ naissance })} className={champ} />
+        <ChampDate id="b-naissance" autoComplete="bday" value={valeurs.naissance} onChange={naissance => maj({ naissance })} className={champ} />
       </div>
       <label className="flex items-start gap-2 cursor-pointer">
         <input type="checkbox" className="mt-0.5" checked={valeurs.engagement} onChange={e => maj({ engagement: e.target.checked })} />

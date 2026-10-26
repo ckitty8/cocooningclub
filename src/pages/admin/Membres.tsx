@@ -10,7 +10,7 @@ import BadgePhotos from "@/components/BadgePhotos";
 import { useAutorisationsImage } from "@/hooks/useAutorisationsImage";
 import { useOffresParPersonne } from "@/hooks/useOffres";
 import { useNaissancesParPersonne } from "@/hooks/useNaissances";
-import ChampDateNaissance from "@/components/ChampDateNaissance";
+import ChampDate from "@/components/ChampDate";
 import { dateFr } from "@/lib/dates";
 import OffresPersonne from "@/components/OffrePastille";
 import { nomCourtOffre } from "@/lib/droits";
@@ -548,7 +548,7 @@ const Membres = () => {
               {naissancesDisponibles && (
                 <div>
                   <label htmlFor="m-naissance" className="block text-sm font-medium mb-1.5">Date de naissance</label>
-                  <ChampDateNaissance id="m-naissance" value={editForm.date_naissance}
+                  <ChampDate id="m-naissance" autoComplete="bday" value={editForm.date_naissance}
                     disabled={!naissances.get(editModal.member.id)}
                     onChange={date_naissance => setEditForm(f => ({ ...f, date_naissance }))} className={`${fieldClass} disabled:opacity-60`} />
                   <p className="text-xs text-muted-foreground mt-1">

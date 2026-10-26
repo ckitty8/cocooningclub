@@ -10,12 +10,14 @@ interface Props {
   onChange: (iso: string) => void;
   className?: string;
   disabled?: boolean;
+  /** Indice du navigateur (« bday » pour une date de naissance). */
+  autoComplete?: string;
 }
 
 const PREMIERE_ANNEE = "1900-01-01";
 
-/** Date de naissance tapée à la main (« jj/mm/aaaa », barres obliques automatiques), sans passer par le champ date du navigateur. */
-const ChampDateNaissance = ({ id, value, onChange, className, disabled }: Props) => {
+/** Date passée tapée à la main (« jj/mm/aaaa », barres obliques automatiques), sans passer par le champ date du navigateur. */
+const ChampDate = ({ id, value, onChange, className, disabled, autoComplete = "off" }: Props) => {
   const [texte, setTexte] = useState(() => saisieDepuisIso(value));
 
   // Une modification venue de l'extérieur (ouverture d'une autre fiche, remise à zéro) remplace le texte ;
@@ -37,7 +39,7 @@ const ChampDateNaissance = ({ id, value, onChange, className, disabled }: Props)
 
   return (
     <>
-      <input id={id} type="text" inputMode="numeric" autoComplete="bday" placeholder="jj/mm/aaaa" maxLength={10}
+      <input id={id} type="text" inputMode="numeric" autoComplete={autoComplete} placeholder="jj/mm/aaaa" maxLength={10}
         value={texte} disabled={disabled} onChange={e => saisir(e.target.value)}
         aria-invalid={invalide} aria-describedby={invalide ? `${id}-erreur` : undefined} className={className} />
       {invalide && <p id={`${id}-erreur`} role="alert" className="text-xs text-destructive mt-1">Date invalide : tapez jour/mois/année (ex. 12/04/1988), pas dans le futur.</p>}
@@ -45,4 +47,4 @@ const ChampDateNaissance = ({ id, value, onChange, className, disabled }: Props)
   );
 };
 
-export default ChampDateNaissance;
+export default ChampDate;
