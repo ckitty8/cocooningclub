@@ -61,7 +61,7 @@ test("elle crée une formule", async ({ page }) => {
   const mock = await ouvrir(page);
   await page.getByRole("button", { name: "Nouvelle formule" }).click();
   const fenetre = page.getByRole("dialog", { name: "Nouvelle formule" });
-  await fenetre.getByLabel("Nom *").fill("Cocooning Business");
+  await fenetre.getByLabel("Nom *", { exact: true }).fill("Cocooning Business");
   await fenetre.getByLabel("Cotisation (€) *").fill("100");
   await fenetre.getByLabel("Business").check();
   await fenetre.getByRole("button", { name: "Enregistrer" }).click();
@@ -74,7 +74,7 @@ test("elle refuse une formule sans tarif valide", async ({ page }) => {
   const mock = await ouvrir(page);
   await page.getByRole("button", { name: "Nouvelle formule" }).click();
   const fenetre = page.getByRole("dialog", { name: "Nouvelle formule" });
-  await fenetre.getByLabel("Nom *").fill("Test");
+  await fenetre.getByLabel("Nom *", { exact: true }).fill("Test");
   await fenetre.getByLabel("Cotisation (€) *").fill("abc");
   await fenetre.getByRole("button", { name: "Enregistrer" }).click();
   await expect(fenetre.getByRole("alert")).toContainText("tarif");
@@ -99,6 +99,42 @@ test("elle valide une adhésion : la date de fin est calculée et la validation 
   expect(mock.rpc.valider_adhesion?.[0]).toEqual({
     p_id: ADHESION_A_VALIDER.id, p_mode: "especes", p_recue_le: "2026-10-22", p_validation: "2026-10-23",
   });
+});
+
+test("elle ajoute une adhésion en créant la personne en même temps : compte « inscrit », adhésion à valider", async ({ page }) => {
+  const mock = await ouvrir(page);
+  await page.getByRole("tab", { name: /Adhésions/ }).click();
+  await page.getByRole("button", { name: "Ajouter une adhésion" }).click();
+  const fenetre = page.getByRole("dialog", { name: "Ajouter une adhésion" });
+  await fenetre.getByRole("button", { name: "Nouvelle personne" }).click();
+  await fenetre.getByLabel("Prénom *", { exact: true }).fill("Toto");
+  await fenetre.getByLabel("Nom *", { exact: true }).fill("Durand");
+  await fenetre.getByLabel("E-mail *").fill("toto@exemple.fr");
+  await fenetre.getByLabel("Téléphone").fill("0611223344");
+  await fenetre.getByLabel("Commune").fill("Gagny");
+  await fenetre.getByLabel("Formule *").selectOption({ label: "Cocooning Créatif — 80 €" });
+  await fenetre.getByRole("button", { name: "Créer le compte et ajouter" }).click();
+
+  await expect(page.getByText("Compte créé et adhésion ajoutée, à valider")).toBeVisible();
+  expect(mock.inserts.utilisateurs?.[0]).toMatchObject({
+    email: "toto@exemple.fr", prenom: "Toto", nom: "Durand", telephone: "0611223344", commune: "Gagny", role: "inscrit", est_actif: false,
+  });
+  expect(mock.inserts.adhesions?.[0]).toMatchObject({ utilisateur_id: "eeeeeeee-0000-4000-8000-000000000001", formule_id: FORMULES[0].id });
+});
+
+test("une adresse déjà utilisée n'est pas recréée : on renvoie vers la liste", async ({ page }) => {
+  const mock = await ouvrir(page, { emailsExistants: [{ id: "dddddddd-0000-4000-8000-000000000001" }] });
+  await page.getByRole("tab", { name: /Adhésions/ }).click();
+  await page.getByRole("button", { name: "Ajouter une adhésion" }).click();
+  const fenetre = page.getByRole("dialog", { name: "Ajouter une adhésion" });
+  await fenetre.getByRole("button", { name: "Nouvelle personne" }).click();
+  await fenetre.getByLabel("Prénom *", { exact: true }).fill("Julie");
+  await fenetre.getByLabel("Nom *", { exact: true }).fill("Martin");
+  await fenetre.getByLabel("E-mail *").fill("julie@exemple.fr");
+  await fenetre.getByRole("button", { name: "Créer le compte et ajouter" }).click();
+  await expect(page.getByText("a déjà un compte")).toBeVisible();
+  expect(mock.inserts.utilisateurs).toBeUndefined();
+  expect(mock.inserts.adhesions).toBeUndefined();
 });
 
 test("l'écran explique qu'il faut appliquer la migration quand les tables n'existent pas encore", async ({ page }) => {

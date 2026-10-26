@@ -115,6 +115,8 @@ export interface OptionsMock {
   sansChoixCookies?: boolean;
   /** Simule une base où la migration de l'offre n'est pas encore appliquée. */
   offreAbsente?: boolean;
+  /** Lignes renvoyées à la recherche d'une adresse e-mail déjà utilisée (par défaut : aucune). */
+  emailsExistants?: Record<string, unknown>[];
   /** Lignes de `pre_inscriptions_secours` (demandes à récupérer, page admin). */
   secours?: Record<string, unknown>[];
 }
@@ -181,6 +183,10 @@ export const mockSupabase = async (page: Page, options: OptionsMock = {}): Promi
     if (req.method() === "PATCH" && table) {
       (mock.updates[table] ??= []).push(corpsJson(req));
       return route.fulfill({ status: 204, body: "" });
+    }
+    // Recherche d'une adresse déjà utilisée (création d'un compte par l'équipe) : aucune par défaut.
+    if (req.method() === "GET" && table === "utilisateurs" && url.search.includes("email=ilike")) {
+      return route.fulfill({ json: options.emailsExistants ?? [] });
     }
     if (table === "utilisateurs" && (options.profil ?? membre)) {
       const profil = options.profil ?? membre;

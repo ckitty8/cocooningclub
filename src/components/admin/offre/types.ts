@@ -55,6 +55,7 @@ export interface MembreChoix {
   nom: string;
   email: string;
   role: string;
+  est_actif?: boolean;
 }
 
 export const champ =

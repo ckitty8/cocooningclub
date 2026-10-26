@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
-import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import type { TablesUpdate } from "@/integrations/supabase/types";
 import { useAuth } from "@/hooks/useAuth";
 import { logAction } from "@/utils/logAction";
 import { withTimeout } from "@/utils/withTimeout";
@@ -13,6 +13,10 @@ import OffresPersonne from "@/components/OffrePastille";
 import { nomCourtOffre } from "@/lib/droits";
 import { Plus, Search, Pencil, Trash2, UserX, UserCheck2, X, Eye, EyeOff } from "lucide-react";
 import type { UserRole } from "@/contexts/auth";
+import { creerCompte } from "@/lib/creerCompte";
+import type { NouveauCompte } from "@/lib/nouveauCompte";
+
+type RoleCreable = NouveauCompte["role"];
 
 interface Utilisateur {
   id: string;
@@ -51,7 +55,7 @@ const emptyEditForm = {
 
 const emptyCreateForm = {
   nom: "", prenom: "", email: "", telephone: "",
-  mot_de_passe: "", role: "inscrit" as UserRole,
+  mot_de_passe: "", role: "inscrit" as RoleCreable,
   debut_abonnement: "", fin_abonnement: "",
   est_actif: false, // Inactif par défaut → pas de mail Supabase envoyé
 };
@@ -117,70 +121,13 @@ const Membres = () => {
   // ── Création ──────────────────────────────────────────────
   const handleCreate = async () => {
     setCreateError("");
-    if (!createForm.email || !createForm.prenom || !createForm.nom) {
-      setCreateError("Prénom, nom et email sont obligatoires.");
-      return;
-    }
-    // Le mot de passe n'est requis que si on active le compte (signUp Supabase).
-    if (createForm.est_actif) {
-      if (!createForm.mot_de_passe) {
-        setCreateError("Le mot de passe est obligatoire pour activer le compte.");
-        return;
-      }
-      if (createForm.mot_de_passe.length < 6) {
-        setCreateError("Le mot de passe doit contenir au moins 6 caractères.");
-        return;
-      }
-    }
     setSaving(true);
-
-    let authUserId: string | null = null;
-
-    // 1. Si actif → créer le compte Supabase Auth (déclenche le mail de
-    //    confirmation). Si inactif → on saute cette étape, aucun mail.
-    if (createForm.est_actif) {
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: createForm.email,
-        password: createForm.mot_de_passe,
-        options: {
-          emailRedirectTo: `${window.location.origin}/login`,
-        },
-      });
-      if (authError || !authData.user) {
-        setCreateError(authError?.message ?? "Erreur lors de la création du compte.");
-        setSaving(false);
-        return;
-      }
-      authUserId = authData.user.id;
-    }
-
-    // 2. Insérer la ligne utilisateurs.
-    //    - Actif : on lie à l'UUID auth (pour que les RLS auth.uid() = id marchent)
-    //    - Inactif : on laisse Postgres générer un UUID (pas de compte auth associé)
-    const insertPayload: TablesInsert<"utilisateurs"> = {
-      email: createForm.email,
-      nom: createForm.nom,
-      prenom: createForm.prenom,
-      telephone: createForm.telephone || null,
-      role: createForm.role,
-      est_actif: createForm.est_actif,
-      debut_abonnement: createForm.debut_abonnement || null,
-      fin_abonnement: createForm.fin_abonnement || null,
-    };
-    if (authUserId) insertPayload.id = authUserId;
-
-    const { error: dbError } = await supabase.from("utilisateurs").insert(insertPayload);
-
-    if (dbError) {
-      setCreateError(dbError.message);
+    const resultat = await creerCompte(createForm);
+    if (resultat.erreur) {
+      setCreateError(resultat.erreur);
       setSaving(false);
       return;
     }
-
-    logAction("membre.create", "utilisateurs", null, {
-      email: createForm.email, prenom: createForm.prenom, nom: createForm.nom,
-      role: createForm.role, est_actif: createForm.est_actif,
-    });
 
     await fetchMembers();
     setCreateModal(false);
@@ -520,7 +467,7 @@ const Membres = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Rôle</label>
-                <select value={createForm.role} onChange={e => setCreateForm(f => ({ ...f, role: e.target.value as UserRole }))} className={fieldClass}>
+                <select value={createForm.role} onChange={e => setCreateForm(f => ({ ...f, role: e.target.value as RoleCreable }))} className={fieldClass}>
                   <option value="inscrit">Inscrit</option>
                   <option value="administrateur">Administrateur</option>
                 </select>
