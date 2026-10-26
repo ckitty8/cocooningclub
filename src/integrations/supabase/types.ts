@@ -1240,7 +1240,7 @@ export type Database = {
       }
     }
     Enums: {
-      acces_document: "membres" | "tous"
+      acces_document: "membres" | "tous" | "admins"
       categorie_idee:
         | "evolution_site"
         | "ateliers"
@@ -1394,7 +1394,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      acces_document: ["membres", "tous"],
+      acces_document: ["membres", "tous", "admins"],
       categorie_idee: [
         "evolution_site",
         "ateliers",

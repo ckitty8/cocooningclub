@@ -18,6 +18,9 @@ BEGIN
 END
 $$;
 DROP FUNCTION IF EXISTS private.purger_donnees_anciennes();
+-- Documents « admins » (20261026000003) : une valeur d'enum ne se retire pas. Les documents réservés aux administrateurs sont
+-- repassés en « membres » (ils redeviennent visibles des membres : à vérifier avant de lancer) ; la valeur reste dans le type, sans effet.
+UPDATE public.documents SET acces = 'membres' WHERE acces::text = 'admins';
 -- Fiche reliée au compte en cascade (20261026000002) : les clés étrangères vers utilisateurs(id) redeviennent ON UPDATE NO ACTION
 -- (un changement d'identifiant d'une fiche qui a des adhésions, inscriptions… sera de nouveau refusé).
 DO $$

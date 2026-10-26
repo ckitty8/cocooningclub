@@ -39,6 +39,7 @@ WITH controles(controle, ok) AS (
     ('Déclencheur « pas de membre sans adhésion »', EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_utilisateurs_membre_exige_adhesion' AND tgrelid = 'public.utilisateurs'::regclass)),
     ('Colonne adhesions.date_naissance (bulletin)', EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'adhesions' AND column_name = 'date_naissance')),
     ('Clés étrangères vers utilisateurs en ON UPDATE CASCADE (fiche reliée à son compte)', NOT EXISTS (SELECT 1 FROM pg_constraint WHERE confrelid = 'public.utilisateurs'::regclass AND contype = 'f' AND confupdtype <> 'c')),
+    ('acces_document accepte « admins » (documents réservés aux administrateurs)', EXISTS (SELECT 1 FROM pg_enum WHERE enumtypid = 'public.acces_document'::regtype AND enumlabel = 'admins')),
     ('Au moins les 3 formules du bulletin',  CASE WHEN to_regclass('public.formules') IS NULL THEN false ELSE ((xpath('/row/c/text()', query_to_xml('SELECT count(*) AS c FROM public.formules', false, true, '')))[1]::text)::int >= 3 END),
     ('Formules rattachées à des espaces',     CASE WHEN to_regclass('public.formule_espaces') IS NULL THEN false ELSE ((xpath('/row/c/text()', query_to_xml('SELECT count(*) AS c FROM public.formule_espaces', false, true, '')))[1]::text)::int >= 4 END)
 )
