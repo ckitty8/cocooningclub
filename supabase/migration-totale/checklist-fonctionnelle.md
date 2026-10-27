@@ -34,6 +34,7 @@ Comptes utiles : une administratrice, une membre, une inscrite (rôle `inscrit`)
 - [ ] **Filet de sécurité** : une pré-inscription ne se perd jamais. Si l'enregistrement normal échoue, la demande apparaît dans le bandeau « Demandes à récupérer » de Pré-inscriptions (bouton « Traitée » pour la retirer) ; si même cela échoue, elle est gardée dans le navigateur et renvoyée au prochain chargement du site.
 
 - [ ] Accueil, « Notre histoire », calendrier (filtres, « Ajouter à mon agenda » télécharge un fichier `.ics`).
+- [ ] Référencement : les pages « Papotages », « Créatifs » et « Business » (`/papotages`, `/creatifs`, `/business`) s'ouvrent depuis les cartes de « Nos espaces » (accueil) et le pied de page, listent les ateliers à venir de leur espace et mènent à la pré-inscription ; en navigation privée, afficher le code source (Ctrl+U) de `/calendrier` : le `<title>` est « Calendrier des ateliers · Le Cocooning Club » (et non celui de l'accueil) ; coller `https://www.lecocooningclub.fr/calendrier` dans un message WhatsApp affiche le bon aperçu.
 - [ ] Pré-inscription à un atelier : champs obligatoires, case CGU obligatoire, message « Pré-inscription enregistrée ».
 - [ ] Pages `/cgu`, `/confidentialite`, 404 sur une adresse inconnue, connexion, mot de passe oublié.
 - [ ] `/admin/offre` et `/espace-membre` renvoient vers la connexion.

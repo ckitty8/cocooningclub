@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Heart, Instagram, Mail } from "lucide-react";
 import { ouvrirChoixCookies } from "@/lib/consentement";
+import { ORDRE_ESPACES, PAGES_ESPACES } from "@/data/pagesEspaces";
 
 const Footer = () => {
   return (
@@ -36,6 +37,13 @@ const Footer = () => {
               <li>
                 <Link to="/calendrier" className="hover:text-terracotta transition-colors">Calendrier</Link>
               </li>
+              {ORDRE_ESPACES.map(slug => (
+                <li key={slug}>
+                  <Link to={PAGES_ESPACES[slug].chemin} className="hover:text-terracotta transition-colors">
+                    {PAGES_ESPACES[slug].nom}
+                  </Link>
+                </li>
+              ))}
               <li>
                 <Link to="/#contact" className="hover:text-terracotta transition-colors">Contact</Link>
               </li>
@@ -76,7 +84,7 @@ const Footer = () => {
 
         {/* Bottom bar */}
         <div className="border-t pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-          <p>© 2026 Cocooning Club · Tous droits réservés</p>
+          <p>© 2026 Le Cocooning Club · Tous droits réservés</p>
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
             <button type="button" onClick={ouvrirChoixCookies} className="inline-block py-1 hover:text-terracotta transition-colors">
               Gérer mes cookies

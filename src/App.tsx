@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { BrowserRouter, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -6,43 +6,47 @@ import RoleGuard from "@/components/RoleGuard";
 import RouteSeo from "@/components/RouteSeo";
 import CookieBanner from "@/components/CookieBanner";
 import Index from "./pages/Index.tsx";
-import Calendrier from "./pages/Calendrier.tsx";
-import Inscription from "./pages/Inscription.tsx";
-import Confidentialite from "./pages/Confidentialite.tsx";
-import Cgu from "./pages/Cgu.tsx";
-import MentionsLegales from "./pages/MentionsLegales.tsx";
-import NotreHistoire from "./pages/NotreHistoire.tsx";
-import Simulateur from "./pages/createur/Simulateur.tsx";
-import DroitsParOffre from "./pages/createur/DroitsParOffre.tsx";
-import MatriceRoles from "./pages/createur/MatriceRoles.tsx";
-import CoutAtelier from "./pages/createur/CoutAtelier.tsx";
 import SimulationBanner from "@/components/SimulationBanner";
 import { ACCES } from "@/lib/roles";
 import { rejouerFile } from "@/lib/preInscriptionSecours";
 import NotFound from "./pages/NotFound.tsx";
-import Login from "./pages/auth/Login.tsx";
-import ForgotPassword from "./pages/auth/ForgotPassword.tsx";
-import ResetPassword from "./pages/auth/ResetPassword.tsx";
-import Dashboard from "./pages/admin/Dashboard.tsx";
-import Membres from "./pages/admin/Membres.tsx";
-import Offre from "./pages/admin/Offre.tsx";
-import FicheAtelier from "./pages/admin/FicheAtelier.tsx";
-import AteliersAdmin from "./pages/admin/Ateliers.tsx";
-import Documents from "./pages/admin/Documents.tsx";
-import Formulaire from "./pages/admin/Formulaire.tsx";
-import PreInscriptions from "./pages/admin/PreInscriptions.tsx";
-import TemplatesMessages from "./pages/admin/TemplatesMessages.tsx";
-import Disponibilites from "./pages/admin/Disponibilites.tsx";
-import BoiteAIdees from "./pages/admin/BoiteAIdees.tsx";
-import MonCompte from "./pages/admin/MonCompte.tsx";
-import AvisAdmin from "./pages/admin/Avis.tsx";
-import MembreDashboard from "./pages/membre/Dashboard.tsx";
-import MembreAteliers from "./pages/membre/Ateliers.tsx";
-import MembreInscriptions from "./pages/membre/Inscriptions.tsx";
-import MembreMagazine from "./pages/membre/Magazine.tsx";
-import MembreMonCompte from "./pages/membre/MonCompte.tsx";
-import MembreBoiteAIdees from "./pages/membre/BoiteAIdees.tsx";
-import MembreMonAdhesion from "./pages/membre/MonAdhesion.tsx";
+
+// Pages chargées à la demande : un visiteur de l'accueil ne télécharge ni l'administration ni l'espace membre
+// (poids du site = vitesse = référencement).
+const Calendrier = lazy(() => import("./pages/Calendrier.tsx"));
+const Inscription = lazy(() => import("./pages/Inscription.tsx"));
+const Confidentialite = lazy(() => import("./pages/Confidentialite.tsx"));
+const Cgu = lazy(() => import("./pages/Cgu.tsx"));
+const MentionsLegales = lazy(() => import("./pages/MentionsLegales.tsx"));
+const NotreHistoire = lazy(() => import("./pages/NotreHistoire.tsx"));
+const EspacePage = lazy(() => import("./pages/EspacePage.tsx"));
+const Simulateur = lazy(() => import("./pages/createur/Simulateur.tsx"));
+const DroitsParOffre = lazy(() => import("./pages/createur/DroitsParOffre.tsx"));
+const MatriceRoles = lazy(() => import("./pages/createur/MatriceRoles.tsx"));
+const CoutAtelier = lazy(() => import("./pages/createur/CoutAtelier.tsx"));
+const Login = lazy(() => import("./pages/auth/Login.tsx"));
+const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword.tsx"));
+const ResetPassword = lazy(() => import("./pages/auth/ResetPassword.tsx"));
+const Dashboard = lazy(() => import("./pages/admin/Dashboard.tsx"));
+const Membres = lazy(() => import("./pages/admin/Membres.tsx"));
+const Offre = lazy(() => import("./pages/admin/Offre.tsx"));
+const FicheAtelier = lazy(() => import("./pages/admin/FicheAtelier.tsx"));
+const AteliersAdmin = lazy(() => import("./pages/admin/Ateliers.tsx"));
+const Documents = lazy(() => import("./pages/admin/Documents.tsx"));
+const Formulaire = lazy(() => import("./pages/admin/Formulaire.tsx"));
+const PreInscriptions = lazy(() => import("./pages/admin/PreInscriptions.tsx"));
+const TemplatesMessages = lazy(() => import("./pages/admin/TemplatesMessages.tsx"));
+const Disponibilites = lazy(() => import("./pages/admin/Disponibilites.tsx"));
+const BoiteAIdees = lazy(() => import("./pages/admin/BoiteAIdees.tsx"));
+const MonCompte = lazy(() => import("./pages/admin/MonCompte.tsx"));
+const AvisAdmin = lazy(() => import("./pages/admin/Avis.tsx"));
+const MembreDashboard = lazy(() => import("./pages/membre/Dashboard.tsx"));
+const MembreAteliers = lazy(() => import("./pages/membre/Ateliers.tsx"));
+const MembreInscriptions = lazy(() => import("./pages/membre/Inscriptions.tsx"));
+const MembreMagazine = lazy(() => import("./pages/membre/Magazine.tsx"));
+const MembreMonCompte = lazy(() => import("./pages/membre/MonCompte.tsx"));
+const MembreBoiteAIdees = lazy(() => import("./pages/membre/BoiteAIdees.tsx"));
+const MembreMonAdhesion = lazy(() => import("./pages/membre/MonAdhesion.tsx"));
 
 
 // Une ancre mal encodée (ex. « #100% ») ne doit pas faire planter la page.
@@ -120,12 +124,16 @@ const App = () => (
         <RenvoiPreInscriptions />
         <SimulationBanner />
         <CookieBanner />
+        <Suspense fallback={<div className="min-h-screen" aria-busy="true" />}>
         <Routes>
           {/* Routes publiques */}
           <Route path="/" element={<Index />} />
           <Route path="/calendrier" element={<Calendrier />} />
           <Route path="/inscription/:id" element={<Inscription />} />
           <Route path="/notre-histoire" element={<NotreHistoire />} />
+          <Route path="/papotages" element={<EspacePage slug="papotages" />} />
+          <Route path="/creatifs" element={<EspacePage slug="creatifs" />} />
+          <Route path="/business" element={<EspacePage slug="business" />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
@@ -167,6 +175,7 @@ const App = () => (
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </Suspense>
       </AuthProvider>
     </BrowserRouter>
   </>
