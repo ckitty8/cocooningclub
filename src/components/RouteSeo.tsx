@@ -12,57 +12,57 @@ interface PageMeta {
 }
 
 const DEFAULT_DESCRIPTION =
-  "Cocooning Club propose des ateliers Papotages, Créatifs et Business à Gagny, Chelles et Le Raincy, dans une ambiance douce et bienveillante. Découvrez les prochains ateliers et pré-inscrivez-vous.";
+  "Le Cocooning Club, association de femmes en Seine-Saint-Denis : ateliers Papotages, Créatifs et Business à Gagny, Chelles et Le Raincy, dans une ambiance douce et bienveillante. Découvrez les prochains ateliers et pré-inscrivez-vous.";
 
 const PUBLIC_PAGES: Record<string, PageMeta> = {
   "/": {
-    title: "Cocooning Club · Ateliers à Gagny, Chelles et Le Raincy",
+    title: "Le Cocooning Club · Ateliers entre femmes à Gagny, Chelles, Le Raincy",
     description: DEFAULT_DESCRIPTION,
     index: true,
   },
   "/calendrier": {
-    title: "Calendrier des ateliers · Cocooning Club",
+    title: "Calendrier des ateliers · Le Cocooning Club",
     description:
-      "Tous les prochains ateliers Papotages, Créatifs et Business du Cocooning Club à Gagny, Chelles et Le Raincy : dates, lieux, places restantes et pré-inscription en ligne.",
+      "Tous les prochains ateliers Papotages, Créatifs et Business organisés par Le Cocooning Club à Gagny, Chelles et Le Raincy : dates, lieux, places restantes et pré-inscription en ligne.",
     index: true,
   },
   "/notre-histoire": {
-    title: "Notre histoire · Cocooning Club",
+    title: "Notre histoire · Le Cocooning Club",
     description:
-      "Comment le Cocooning Club est né d'une envie simple : créer du lien entre femmes. Découvrez notre histoire, les cinq fondatrices et ce qui nous unit.",
+      "Comment Le Cocooning Club est né d'une envie simple : créer du lien entre femmes. Découvrez notre histoire, les cinq fondatrices et ce qui nous unit.",
     index: true,
   },
   "/confidentialite": {
-    title: "Politique de confidentialité · Cocooning Club",
+    title: "Politique de confidentialité · Le Cocooning Club",
     description:
-      "Comment le Cocooning Club collecte, utilise et protège vos données personnelles, et comment exercer vos droits.",
+      "Comment Le Cocooning Club collecte, utilise et protège vos données personnelles, et comment exercer vos droits.",
     index: true,
   },
   "/cgu": {
-    title: "Conditions générales d'utilisation · Cocooning Club",
+    title: "Conditions générales d'utilisation · Le Cocooning Club",
     description:
-      "Conditions d'utilisation du site du Cocooning Club : pré-inscription aux ateliers, paiement, annulation, espace membre, avis et propriété intellectuelle.",
+      "Conditions d'utilisation du site Le Cocooning Club : pré-inscription aux ateliers, paiement, annulation, espace membre, avis et propriété intellectuelle.",
     index: true,
   },
   "/mentions-legales": {
-    title: "Mentions légales · Cocooning Club",
+    title: "Mentions légales · Le Cocooning Club",
     description:
-      "Mentions légales du site du Cocooning Club : éditeur, directrice de la publication, hébergement et propriété intellectuelle.",
+      "Mentions légales du site Le Cocooning Club : éditeur, directrice de la publication, hébergement et propriété intellectuelle.",
     index: true,
   },
-  "/login": { title: "Connexion à l'espace membre · Cocooning Club", index: false },
-  "/forgot-password": { title: "Mot de passe oublié · Cocooning Club", index: false },
-  "/reset-password": { title: "Nouveau mot de passe · Cocooning Club", index: false },
+  "/login": { title: "Connexion à l'espace membre · Le Cocooning Club", index: false },
+  "/forgot-password": { title: "Mot de passe oublié · Le Cocooning Club", index: false },
+  "/reset-password": { title: "Nouveau mot de passe · Le Cocooning Club", index: false },
 };
 
-const NOT_FOUND: PageMeta = { title: "Page introuvable · Cocooning Club", index: false };
+const NOT_FOUND: PageMeta = { title: "Page introuvable · Le Cocooning Club", index: false };
 
 const metaFor = (pathname: string): PageMeta => {
   const path = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
   if (PUBLIC_PAGES[path]) return PUBLIC_PAGES[path];
-  if (path.startsWith("/inscription/")) return { title: "Pré-inscription · Cocooning Club", index: false };
-  if (path.startsWith("/espace-membre")) return { title: "Espace membre · Cocooning Club", index: false };
-  if (path.startsWith("/admin")) return { title: "Administration · Cocooning Club", index: false };
+  if (path.startsWith("/inscription/")) return { title: "Pré-inscription · Le Cocooning Club", index: false };
+  if (path.startsWith("/espace-membre")) return { title: "Espace membre · Le Cocooning Club", index: false };
+  if (path.startsWith("/admin")) return { title: "Administration · Le Cocooning Club", index: false };
   return NOT_FOUND;
 };
 

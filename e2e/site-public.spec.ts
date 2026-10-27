@@ -15,7 +15,7 @@ test.beforeEach(async ({ page }) => {
 test("l'accueil affiche les espaces et les ateliers à venir", async ({ page }) => {
   await page.goto("/");
   await expect(page).toHaveTitle(/Cocooning Club/);
-  await expect(page.getByRole("heading", { level: 1, name: "À propos du Cocooning Club" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Le Cocooning Club" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Trois univers pour se retrouver" })).toBeVisible();
   // Cartes à retournement : le nom de l'espace est dans un titre lisible par les lecteurs d'écran.
   for (const espace of ["Papotages", "Créatifs", "Business"]) {
@@ -132,21 +132,21 @@ test("sur téléphone, le menu de l'en-tête mène au calendrier", async ({ page
   await page.goto("/");
   await page.getByRole("button", { name: "Ouvrir le menu" }).click();
   await page.locator("#menu-mobile").getByRole("link", { name: "Nos événements" }).click();
-  await expect(page).toHaveTitle("Calendrier des ateliers · Cocooning Club");
+  await expect(page).toHaveTitle("Calendrier des ateliers · Le Cocooning Club");
   await expect(page.locator("#menu-mobile")).toBeHidden();
 });
 
 test("le bouton « Notre histoire » de l'accueil mène à la page dédiée", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("link", { name: "Notre histoire", exact: true }).first().click();
-  await expect(page).toHaveTitle("Notre histoire · Cocooning Club");
+  await expect(page).toHaveTitle("Notre histoire · Le Cocooning Club");
   await expect(page.getByRole("heading", { level: 1, name: "Notre histoire" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Cinq femmes, une même envie" })).toBeVisible();
 });
 
 test("le lien partagé d'un atelier ouvre directement sa fiche dans le calendrier", async ({ page }) => {
   await page.goto(`/calendrier?atelier=${ATELIER_TEST.id}`);
-  await expect(page).toHaveTitle("Calendrier des ateliers · Cocooning Club");
+  await expect(page).toHaveTitle("Calendrier des ateliers · Le Cocooning Club");
   await expect(page.getByRole("dialog", { name: ATELIER_TEST.titre })).toBeVisible();
 });
 
@@ -181,7 +181,7 @@ test("une adresse inconnue affiche la page 404, exclue de Google", async ({ page
 
 test("la page de connexion est exclue de Google", async ({ page }) => {
   await page.goto("/login");
-  await expect(page).toHaveTitle("Connexion à l'espace membre · Cocooning Club");
+  await expect(page).toHaveTitle("Connexion à l'espace membre · Le Cocooning Club");
   await expect(page.getByRole("heading", { level: 1, name: "Bon retour parmi nous" })).toBeVisible();
   await expect(page.getByLabel("Email")).toBeVisible();
   await expect(page.getByLabel("Mot de passe", { exact: true })).toBeVisible();
@@ -192,7 +192,7 @@ test("les mentions légales sont accessibles depuis le pied de page et nomment l
   await page.goto("/");
   await page.locator("footer").getByRole("link", { name: "Mentions légales" }).click();
   await expect(page).toHaveURL(/\/mentions-legales$/);
-  await expect(page).toHaveTitle("Mentions légales · Cocooning Club");
+  await expect(page).toHaveTitle("Mentions légales · Le Cocooning Club");
   await expect(page.getByRole("heading", { level: 1, name: "Mentions légales" })).toBeVisible();
   await expect(page.getByText("16 rue Graffan, 93190 Livry-Gargan")).toBeVisible();
   await expect(page.getByText("Maëlle Guennanf")).toBeVisible();
