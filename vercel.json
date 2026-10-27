@@ -50,6 +50,38 @@
   ],
   "rewrites": [
     {
+      "source": "/calendrier",
+      "destination": "/calendrier/index.html"
+    },
+    {
+      "source": "/notre-histoire",
+      "destination": "/notre-histoire/index.html"
+    },
+    {
+      "source": "/papotages",
+      "destination": "/papotages/index.html"
+    },
+    {
+      "source": "/creatifs",
+      "destination": "/creatifs/index.html"
+    },
+    {
+      "source": "/business",
+      "destination": "/business/index.html"
+    },
+    {
+      "source": "/confidentialite",
+      "destination": "/confidentialite/index.html"
+    },
+    {
+      "source": "/cgu",
+      "destination": "/cgu/index.html"
+    },
+    {
+      "source": "/mentions-legales",
+      "destination": "/mentions-legales/index.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

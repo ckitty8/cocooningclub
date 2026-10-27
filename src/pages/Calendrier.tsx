@@ -15,6 +15,7 @@ import { usePublicAteliers } from "@/hooks/usePublicAteliers";
 import { copierLienInscription } from "@/utils/copierLienInscription";
 import { espaceDe } from "@/lib/espaces";
 import AjouterAgenda from "@/components/AjouterAgenda";
+import EvenementsJsonLd from "@/components/EvenementsJsonLd";
 
 const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription, espaces(slug)";
 
@@ -67,6 +68,7 @@ const Calendrier = () => {
   return (
     <div className="theme-vitrine min-h-screen bg-background text-foreground">
       <SiteHeader actif="Nos événements" />
+      <EvenementsJsonLd ateliers={ateliers} />
 
       <main className="pt-20">
         {/* En-tête de page */}

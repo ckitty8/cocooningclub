@@ -278,16 +278,19 @@ const Index = () => {
               {
                 logo: ESPACES_PAR_SLUG.papotages.logo,
                 title: "Papotages",
+                to: "/papotages",
                 desc: "Des rencontres informelles pour échanger, se confier et créer du lien autour d'un café.",
               },
               {
                 logo: ESPACES_PAR_SLUG.creatifs.logo,
                 title: "Créatifs",
+                to: "/creatifs",
                 desc: "Peinture, bougie, macramé, poterie… des ateliers manuels pour se reconnecter à soi.",
               },
               {
                 logo: ESPACES_PAR_SLUG.business.logo,
                 title: "Business",
+                to: "/business",
                 desc: "Entrepreneuriat, développement pro et perso : des ateliers pour avancer entourée.",
               },
             ].map((espace, i) => (
@@ -312,7 +315,16 @@ const Index = () => {
                   </div>
                   {/* Face arrière */}
                   <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-card rounded-2xl p-8 border flex items-center justify-center text-center">
-                    <p className="text-muted-foreground text-sm leading-relaxed">{espace.desc}</p>
+                    <div className="space-y-3">
+                      <p className="text-muted-foreground text-sm leading-relaxed">{espace.desc}</p>
+                      <Link
+                        to={espace.to}
+                        onClick={e => e.stopPropagation()}
+                        className="inline-flex min-h-11 items-center text-sm font-medium text-terracotta underline underline-offset-2"
+                      >
+                        Découvrir l'espace {espace.title}
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </div>
