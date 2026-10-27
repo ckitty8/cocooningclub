@@ -7,6 +7,7 @@ Ces actions ont été faites sur la base partagée (preview + production) avec l
 
 | Action | Détail | Retour arrière |
 |---|---|---|
+| Migration `20261027000001_types_documents.sql` appliquée par Claude (outil Supabase `execute_sql`, projet CocooningClubBDD) à la demande de l'utilisatrice (« push en prod ») | `ALTER TYPE type_document ADD VALUE` : `interne`, `administratif`, `autre`. Contrôle après : valeurs `magazine, guide, lien_externe, interne, administratif, autre` ; 1 document existant, non modifié. | Bloc « Types de documents » de `retour-arriere.sql` (les documents de ces types repassent en `guide` ; une valeur d'enum ne se retire pas). |
 | Migration `20261027000000_hobby_profil.sql` appliquée par Claude (outil Supabase `execute_sql`, projet CocooningClubBDD) avec l'accord de l'utilisatrice | Colonne facultative `utilisateurs.hobby` (TEXT, 200 caractères maximum). Contrôle après : colonne présente, nullable ; aucune donnée touchée. | `ALTER TABLE public.utilisateurs DROP COLUMN hobby;` (déjà dans `retour-arriere.sql`). |
 
 ## 26/10/2026
