@@ -1268,7 +1268,7 @@ export type Database = {
         | "complete"
         | "rembourse"
         | "echoue"
-      type_document: "magazine" | "guide" | "lien_externe"
+      type_document: "magazine" | "guide" | "lien_externe" | "interne" | "administratif" | "autre"
       type_recurrence: "hebdomadaire" | "bimensuel" | "mensuel"
     }
     CompositeTypes: {
@@ -1425,7 +1425,7 @@ export const Constants = {
         "rembourse",
         "echoue",
       ],
-      type_document: ["magazine", "guide", "lien_externe"],
+      type_document: ["magazine", "guide", "lien_externe", "interne", "administratif", "autre"],
       type_recurrence: ["hebdomadaire", "bimensuel", "mensuel"],
     },
   },

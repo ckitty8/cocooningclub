@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
 import { accesVisiblesDansEspaceMembre, type AccesDocument } from "@/lib/accesDocuments";
+import { LIBELLES_TYPE_MEMBRE, type TypeDocument } from "@/lib/typesDocuments";
 import { useAuth } from "@/hooks/useAuth";
 import MembreLayout from "@/components/membre/MembreLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { messageErreurServeur } from "@/utils/messageErreurServeur";
 import {
-  Newspaper, BookOpen, ExternalLink, Loader2, X, Download, type LucideIcon,
+  Newspaper, BookOpen, ExternalLink, FolderLock, FileCheck, FileText, Loader2, X, Download, type LucideIcon,
 } from "lucide-react";
 
-type DocType = "magazine" | "guide" | "lien_externe";
+type DocType = TypeDocument;
 type DocAcces = AccesDocument;
 
 interface Doc {
@@ -28,13 +29,12 @@ const typeIcon: Record<DocType, LucideIcon> = {
   magazine:     Newspaper,
   guide:        BookOpen,
   lien_externe: ExternalLink,
+  interne:      FolderLock,
+  administratif: FileCheck,
+  autre:        FileText,
 };
 
-const typeLabel: Record<DocType, string> = {
-  magazine:     "Magazine",
-  guide:        "Guide",
-  lien_externe: "Ressource",
-};
+const typeLabel = LIBELLES_TYPE_MEMBRE;
 
 const Magazine = () => {
   const { role } = useAuth();

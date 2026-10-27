@@ -18,6 +18,9 @@ BEGIN
 END
 $$;
 DROP FUNCTION IF EXISTS private.purger_donnees_anciennes();
+-- Types de documents (20261027000001) : une valeur d'enum ne se retire pas. Les documents de type « interne »,
+-- « administratif » ou « autre » repassent en « guide » ; les valeurs restent dans le type, sans effet.
+UPDATE public.documents SET type = 'guide' WHERE type::text IN ('interne', 'administratif', 'autre');
 -- Hobby du profil (20261027000000) : les hobbies saisis sont perdus.
 ALTER TABLE public.utilisateurs DROP COLUMN IF EXISTS hobby;
 -- Documents « admins » (20261026000003) : une valeur d'enum ne se retire pas. Les documents réservés aux administrateurs sont
