@@ -4,9 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Valeurs par défaut (page d'accueil) : chaque page les remplace via src/components/RouteSeo.tsx -->
-    <title>Cocooning Club · Ateliers à Gagny, Chelles et Le Raincy</title>
-    <meta name="description" content="Cocooning Club propose des ateliers Papotages, Créatifs et Business à Gagny, Chelles et Le Raincy, dans une ambiance douce et bienveillante. Découvrez les prochains ateliers et pré-inscrivez-vous." />
-    <meta name="author" content="Cocooning Club" />
+    <title>Le Cocooning Club · Ateliers entre femmes à Gagny, Chelles, Le Raincy</title>
+    <meta name="description" content="Le Cocooning Club, association de femmes en Seine-Saint-Denis : ateliers Papotages, Créatifs et Business à Gagny, Chelles et Le Raincy, dans une ambiance douce et bienveillante. Découvrez les prochains ateliers et pré-inscrivez-vous." />
+    <meta name="author" content="Le Cocooning Club" />
     <meta name="theme-color" content="#E8A87C" />
     <link rel="canonical" href="https://www.lecocooningclub.fr/" />
 
@@ -18,35 +18,58 @@
     <link rel="manifest" href="/manifest.json" />
 
     <!-- Open Graph (Facebook, WhatsApp, LinkedIn…) -->
-    <meta property="og:site_name" content="Cocooning Club" />
+    <meta property="og:site_name" content="Le Cocooning Club" />
     <meta property="og:locale" content="fr_FR" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.lecocooningclub.fr/" />
-    <meta property="og:title" content="Cocooning Club · Ateliers à Gagny, Chelles et Le Raincy" />
+    <meta property="og:title" content="Le Cocooning Club · Ateliers entre femmes à Gagny, Chelles, Le Raincy" />
     <meta property="og:description" content="On se parle, on papote, et les connexions se font toutes seules. Ateliers à Gagny, Chelles et Le Raincy." />
     <meta property="og:image" content="https://www.lecocooningclub.fr/og-image.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Cocooning Club : bougies, aquarelle et laine sur une table d'atelier" />
+    <meta property="og:image:alt" content="Le Cocooning Club : bougies, aquarelle et laine sur une table d'atelier" />
 
     <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Cocooning Club · Ateliers à Gagny, Chelles et Le Raincy" />
+    <meta name="twitter:title" content="Le Cocooning Club · Ateliers entre femmes à Gagny, Chelles, Le Raincy" />
     <meta name="twitter:description" content="On se parle, on papote, et les connexions se font toutes seules. Ateliers à Gagny, Chelles et Le Raincy." />
     <meta name="twitter:image" content="https://www.lecocooningclub.fr/og-image.jpg" />
 
-    <!-- Données structurées (Google) -->
+    <!-- Données structurées (Google) : l'organisation et le nom du site affiché dans les résultats -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "Organization",
-        "name": "Cocooning Club",
-        "url": "https://www.lecocooningclub.fr/",
-        "logo": "https://www.lecocooningclub.fr/icon-512.png",
-        "email": "le.cocooning.club@gmail.com",
-        "description": "Ateliers Papotages, Créatifs et Business à Gagny, Chelles et Le Raincy.",
-        "areaServed": ["Gagny", "Chelles", "Le Raincy"],
-        "sameAs": ["https://www.instagram.com/cocooningclub"]
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://www.lecocooningclub.fr/#organisation",
+            "name": "Le Cocooning Club",
+            "alternateName": ["Cocooning Club", "lecocooningclub.fr"],
+            "url": "https://www.lecocooningclub.fr/",
+            "logo": "https://www.lecocooningclub.fr/icon-512.png",
+            "image": "https://www.lecocooningclub.fr/og-image.jpg",
+            "email": "le.cocooning.club@gmail.com",
+            "description": "Association de femmes en Seine-Saint-Denis : ateliers Papotages, Créatifs et Business à Gagny, Chelles et Le Raincy.",
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "16 rue Graffan",
+              "postalCode": "93190",
+              "addressLocality": "Livry-Gargan",
+              "addressCountry": "FR"
+            },
+            "areaServed": ["Gagny", "Chelles", "Le Raincy"],
+            "sameAs": ["https://www.instagram.com/cocooningclub"]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://www.lecocooningclub.fr/#site",
+            "name": "Le Cocooning Club",
+            "alternateName": ["Cocooning Club", "lecocooningclub.fr"],
+            "url": "https://www.lecocooningclub.fr/",
+            "inLanguage": "fr-FR",
+            "publisher": { "@id": "https://www.lecocooningclub.fr/#organisation" }
+          }
+        ]
       }
     </script>
   </head>

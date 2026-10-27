@@ -224,14 +224,15 @@ const Index = () => {
           <div className="space-y-5">
             <Surtitre>À propos</Surtitre>
             <h1 className="font-display text-5xl leading-[1.1] text-foreground sm:text-6xl lg:text-7xl">
-              À propos du Cocooning Club
+              Le Cocooning Club
             </h1>
             <p className="text-lg leading-snug text-terracotta md:text-xl">
               Des rencontres, de la créativité, de l'entraide et surtout, de belles aventures entre femmes !
             </p>
             <p className="text-sm leading-relaxed text-muted-foreground md:text-base">
               Le Cocooning Club est une association née en Seine-Saint-Denis (93) d'une envie simple : rassembler
-              les femmes autour de moments de partage, de créativité et de convivialité.
+              les femmes autour de moments de partage, de créativité et de convivialité, avec des ateliers à
+              Gagny, Chelles et Le Raincy.
             </p>
             <p className="text-sm leading-relaxed text-muted-foreground md:text-base">
               Un club où chacune peut trouver sa place, qu'elle ait envie de papoter autour d'un café, de découvrir
@@ -268,7 +269,8 @@ const Index = () => {
             <span className="mx-auto block h-0.5 w-10 bg-primary" aria-hidden="true" />
             <p className="text-sm leading-relaxed text-muted-foreground md:text-base">
               Trois espaces complémentaires, pensés pour répondre à toutes vos envies : se rencontrer, créer et
-              entreprendre. Toujours dans la même ambiance : bienveillante, conviviale et sans pression.
+              entreprendre, avec des ateliers à Gagny, Chelles et Le Raincy. Toujours dans la même ambiance :
+              bienveillante, conviviale et sans pression.
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
