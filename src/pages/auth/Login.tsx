@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { messageErreurConnexion } from "@/lib/erreurConnexion";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -74,7 +75,7 @@ const Login = () => {
     const { error } = await signIn(email, password);
     if (error) {
       stopAwaiting();
-      setError("Email ou mot de passe incorrect.");
+      setError(messageErreurConnexion(error));
     }
     // En cas de succès, l'effet sur `profile` / `authLoading` prend le relais.
   };

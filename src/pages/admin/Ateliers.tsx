@@ -15,6 +15,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { copierLienInscription } from "@/utils/copierLienInscription";
 import VueCalendrier from "@/components/admin/ateliers/VueCalendrier";
 import { chiffresAteliers } from "@/lib/calendrierAteliers";
+import { useVacancesScolaires } from "@/hooks/useVacancesScolaires";
 import { aujourdhuiIso } from "@/lib/adhesions";
 import { compressImage } from "@/utils/compressImage";
 import { Plus, Pencil, Trash2, Copy, Link2, X, MapPin, Clock, Users, Euro, Search, Image as ImageIcon, LayoutGrid, List, CalendarDays } from "lucide-react";
@@ -81,6 +82,7 @@ const statutColors: Record<Statut, string> = {
 
 const Ateliers = () => {
   const { profile } = useAuth();
+  const vacances = useVacancesScolaires();
   const [affichage, setAffichage] = useState<AffichageAteliers>("cartes");
   const [ateliers, setAteliers] = useState<Atelier[]>([]);
   const colonneTarifAdherent = ateliers.some(a => "tarif_adherent" in a);
@@ -614,6 +616,7 @@ const Ateliers = () => {
           ateliers={filtered}
           slugDe={espaceId => espaces.find(c => c.id === espaceId)?.slug ?? undefined}
           onCreer={dateIso => openAdd(dateIso)}
+          vacances={vacances}
         />
       ) : filtered.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">

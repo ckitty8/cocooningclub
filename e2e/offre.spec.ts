@@ -39,6 +39,11 @@ const ADHESION_ACTIVE = {
   formules: { nom: "Cocooning Complet", couleur: "terracotta", duree_mois: 12 },
 };
 
+const aujourdhui = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+
 const ouvrir = async (page: import("@playwright/test").Page, options = {}) => {
   const mock = await mockSupabase(page, {
     profil: ADMIN, formules: FORMULES, espaces: ESPACES, adhesions: [ADHESION_A_VALIDER, ADHESION_ACTIVE], ...options,
@@ -101,7 +106,7 @@ test("elle valide une adhésion : la date de fin est calculée et la validation 
   });
 });
 
-test("elle ajoute une adhésion en créant la personne en même temps : compte « inscrit », adhésion à valider", async ({ page }) => {
+test("elle ajoute une adhésion en créant la personne en même temps : compte « inscrit », adhésion validée tout de suite", async ({ page }) => {
   const mock = await ouvrir(page);
   await page.getByRole("tab", { name: /Adhésions/ }).click();
   await page.getByRole("button", { name: "Ajouter une adhésion" }).click();
@@ -115,7 +120,10 @@ test("elle ajoute une adhésion en créant la personne en même temps : compte �
   await fenetre.getByLabel("Formule *").selectOption({ label: "Cocooning Créatif — 80 €" });
   await fenetre.getByRole("button", { name: "Créer le compte et ajouter" }).click();
 
-  await expect(page.getByText("Compte créé et adhésion ajoutée, à valider")).toBeVisible();
+  await expect(page.getByText("Compte créé, adhésion validée : la personne est membre")).toBeVisible();
+  expect(mock.rpc.valider_adhesion?.[0]).toEqual({
+    p_id: "eeeeeeee-0000-4000-8000-000000000001", p_mode: "virement", p_recue_le: aujourdhui(), p_validation: aujourdhui(),
+  });
   expect(mock.inserts.utilisateurs?.[0]).toMatchObject({
     email: "toto@exemple.fr", prenom: "Toto", nom: "Durand", telephone: "0611223344", commune: "Gagny", role: "inscrit", est_actif: false,
   });
@@ -130,10 +138,25 @@ test("la recherche d'une personne existante retrouve aussi les administratrices 
   await fenetre.getByLabel("Personne *", { exact: true }).fill(ADMIN.nom as string);
   await expect(fenetre.getByRole("option", { name: new RegExp(`${ADMIN.nom}.*administratrice`) })).toBeVisible();
   await fenetre.getByRole("listbox", { name: "Personne" }).selectOption({ index: 0 });
-  await fenetre.getByLabel("Date de naissance").fill("1988-04-12");
+  await fenetre.getByLabel("Date de naissance").pressSequentially("12041988");
+  await fenetre.getByRole("button", { name: "Ajouter", exact: true }).click();
+  await expect(page.getByText("Adhésion validée : la personne est membre")).toBeVisible();
+  expect(mock.inserts.adhesions?.[0]).toMatchObject({ utilisateur_id: ADMIN.id, date_naissance: "1988-04-12" });
+  expect(mock.rpc.valider_adhesion).toHaveLength(1);
+});
+
+test("décochée, la validation immédiate laisse l'adhésion « à valider »", async ({ page }) => {
+  const mock = await ouvrir(page);
+  await page.getByRole("tab", { name: /Adhésions/ }).click();
+  await page.getByRole("button", { name: "Ajouter une adhésion" }).click();
+  const fenetre = page.getByRole("dialog", { name: "Ajouter une adhésion" });
+  await fenetre.getByLabel("Personne *", { exact: true }).fill(ADMIN.nom as string);
+  await fenetre.getByRole("listbox", { name: "Personne" }).selectOption({ index: 0 });
+  await fenetre.getByLabel("Cotisation reçue : valider l'adhésion tout de suite").uncheck();
   await fenetre.getByRole("button", { name: "Ajouter", exact: true }).click();
   await expect(page.getByText("Adhésion ajoutée, à valider")).toBeVisible();
-  expect(mock.inserts.adhesions?.[0]).toMatchObject({ utilisateur_id: ADMIN.id, date_naissance: "1988-04-12" });
+  expect(mock.inserts.adhesions).toHaveLength(1);
+  expect(mock.rpc.valider_adhesion).toBeUndefined();
 });
 
 test("une recherche sans résultat renvoie vers « Nouvelle personne »", async ({ page }) => {

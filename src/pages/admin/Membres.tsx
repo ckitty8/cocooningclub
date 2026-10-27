@@ -10,7 +10,7 @@ import BadgePhotos from "@/components/BadgePhotos";
 import { useAutorisationsImage } from "@/hooks/useAutorisationsImage";
 import { useOffresParPersonne } from "@/hooks/useOffres";
 import { useNaissancesParPersonne } from "@/hooks/useNaissances";
-import { aujourdhuiIso } from "@/lib/adhesions";
+import ChampDate from "@/components/ChampDate";
 import { dateFr } from "@/lib/dates";
 import OffresPersonne from "@/components/OffrePastille";
 import { nomCourtOffre } from "@/lib/droits";
@@ -548,9 +548,9 @@ const Membres = () => {
               {naissancesDisponibles && (
                 <div>
                   <label htmlFor="m-naissance" className="block text-sm font-medium mb-1.5">Date de naissance</label>
-                  <input id="m-naissance" type="date" value={editForm.date_naissance} min="1900-01-01" max={aujourdhuiIso()}
+                  <ChampDate id="m-naissance" autoComplete="bday" value={editForm.date_naissance}
                     disabled={!naissances.get(editModal.member.id)}
-                    onChange={e => setEditForm(f => ({ ...f, date_naissance: e.target.value }))} className={`${fieldClass} disabled:opacity-60`} />
+                    onChange={date_naissance => setEditForm(f => ({ ...f, date_naissance }))} className={`${fieldClass} disabled:opacity-60`} />
                   <p className="text-xs text-muted-foreground mt-1">
                     {naissances.get(editModal.member.id)
                       ? "Enregistrée sur son adhésion la plus récente."

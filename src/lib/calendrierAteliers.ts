@@ -42,3 +42,14 @@ export const chiffresAteliers = (
     brouillons: ateliers.filter(a => a.statut === "brouillon").length,
   };
 };
+
+export interface PeriodeVacances {
+  id: string;
+  nom: string;
+  date_debut: string;
+  date_fin: string;
+}
+
+/** Période de vacances scolaires qui couvre ce jour (dates incluses), s'il y en a une. */
+export const vacancesDuJour = (vacances: PeriodeVacances[], iso: string): PeriodeVacances | undefined =>
+  vacances.find(v => iso >= v.date_debut && iso <= v.date_fin);

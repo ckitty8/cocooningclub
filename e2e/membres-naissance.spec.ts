@@ -19,8 +19,9 @@ test("Membres : la date de naissance de l'adhésion s'affiche et se corrige depu
 
   await page.getByRole("row", { name: /Christelle/ }).getByTitle("Modifier").click();
   const fiche = page.getByLabel("Date de naissance");
-  await expect(fiche).toHaveValue("1988-04-12");
-  await fiche.fill("1989-05-13");
+  await expect(fiche).toHaveValue("12/04/1988");
+  await fiche.fill("");
+  await fiche.pressSequentially("13051989");
   await page.getByRole("button", { name: "Enregistrer" }).click();
   await expect.poll(() => mock.updates.adhesions?.[0]).toEqual({ date_naissance: "1989-05-13" });
 });

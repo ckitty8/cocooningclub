@@ -117,6 +117,8 @@ export interface OptionsMock {
   offreAbsente?: boolean;
   /** Lignes renvoyées à la recherche d'une adresse e-mail déjà utilisée (par défaut : aucune). */
   emailsExistants?: Record<string, unknown>[];
+  /** Vacances scolaires (table `vacances_scolaires`, zone C). */
+  vacances?: Record<string, unknown>[];
   /** Lignes de `pre_inscriptions_secours` (demandes à récupérer, page admin). */
   secours?: Record<string, unknown>[];
 }
@@ -195,6 +197,7 @@ export const mockSupabase = async (page: Page, options: OptionsMock = {}): Promi
     if (table === "inscriptions" && options.inscriptions) return route.fulfill({ json: options.inscriptions });
     if (table === "formules" && options.formules) return route.fulfill({ json: options.formules });
     if (table === "adhesions" && options.adhesions) return route.fulfill({ json: options.adhesions });
+    if (table === "vacances_scolaires") return route.fulfill({ json: options.vacances ?? [] });
     if (table === "pre_inscriptions_secours") return route.fulfill({ json: options.secours ?? [] });
     if (table === "vue_logs") return route.fulfill({ json: options.logs ?? [] });
     if (table === "vue_autorisation_image") return route.fulfill({ json: options.autorisationsImage ?? [] });

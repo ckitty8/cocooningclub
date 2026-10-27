@@ -158,6 +158,7 @@ export const MATRICE: readonly SectionMatrice[] = [
       { libelle: "Simulateur de rôle", acces: ACCES.createur },
       { libelle: "Matrice des rôles", acces: ACCES.createur },
       { libelle: "Droits par offre", detail: "Gratuit, inclus ou à payer selon l'offre.", acces: ACCES.createur },
+      { libelle: "Simulateur de coût d'atelier", detail: "Lieu, matériel, animation : coût, recettes et seuil de rentabilité.", acces: ACCES.createur },
     ],
   },
   {
