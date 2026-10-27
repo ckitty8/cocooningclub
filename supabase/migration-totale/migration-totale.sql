@@ -2,7 +2,7 @@
 -- MIGRATION TOTALE DU SITE : à coller dans le SQL Editor de Supabase.
 -- Fichier généré par `npm run migration:build` : ne pas le modifier à la main.
 -- Tout est exécuté dans une seule transaction : en cas d'erreur, rien n'est appliqué.
--- Contient : 20261023000002_supprime_membre_et_compte.sql, 20261023000003_offre_et_adhesions.sql, 20261023000004_retire_role_membre_premium.sql, 20261023000005_droits_par_offre.sql, 20261023000006_bloque_validation_impayee.sql, 20261023000007_tarif_adherente.sql, 20261023000008_supprime_tables_de_sauvegarde.sql, 20261023000009_reserve_admin_dispo_aux_admins.sql, 20261023000010_supprime_decrement_atelier_spots.sql, 20261024000000_nettoyage_premium_et_mot_de_passe_hash.sql, 20261024000001_conservation_des_donnees.sql, 20261025000000_pre_inscriptions_secours.sql, 20261025000001_consentements_pre_inscription.sql, 20261026000000_membre_exige_adhesion.sql, 20261026000001_date_naissance_adhesion.sql, 20261026000002_fiche_reliee_au_compte_en_cascade.sql, 20261026000003_documents_admins.sql
+-- Contient : 20261023000002_supprime_membre_et_compte.sql, 20261023000003_offre_et_adhesions.sql, 20261023000004_retire_role_membre_premium.sql, 20261023000005_droits_par_offre.sql, 20261023000006_bloque_validation_impayee.sql, 20261023000007_tarif_adherente.sql, 20261023000008_supprime_tables_de_sauvegarde.sql, 20261023000009_reserve_admin_dispo_aux_admins.sql, 20261023000010_supprime_decrement_atelier_spots.sql, 20261024000000_nettoyage_premium_et_mot_de_passe_hash.sql, 20261024000001_conservation_des_donnees.sql, 20261025000000_pre_inscriptions_secours.sql, 20261025000001_consentements_pre_inscription.sql, 20261026000000_membre_exige_adhesion.sql, 20261026000001_date_naissance_adhesion.sql, 20261026000002_fiche_reliee_au_compte_en_cascade.sql, 20261026000003_documents_admins.sql, 20261027000000_hobby_profil.sql
 -- Lancer ensuite verifications.sql (tout doit afficher ok = true).
 -- =====================================================================
 
@@ -1314,5 +1314,15 @@ $$;
 -- (20260420000002) : un membre ne peut donc ni lister ni télécharger un document « admins ».
 
 ALTER TYPE public.acces_document ADD VALUE IF NOT EXISTS 'admins';
+
+-- ---------------------------------------------------------------------
+-- 20261027000000_hobby_profil.sql
+-- ---------------------------------------------------------------------
+-- Profil de la membre : champ « Hobby » (l'« Activité principale » est la colonne utilisateurs.activite, déjà présente
+-- depuis 20261023000003 et saisie avec le bulletin d'adhésion). Facultatif, modifiable par la membre depuis
+-- « Mon compte » (politiques existantes de la table utilisateurs).
+
+ALTER TABLE public.utilisateurs
+  ADD COLUMN IF NOT EXISTS hobby TEXT CHECK (hobby IS NULL OR length(hobby) <= 200);
 
 COMMIT;

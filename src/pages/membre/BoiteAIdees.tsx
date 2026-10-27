@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import MembreLayout from "@/components/membre/MembreLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -69,7 +70,8 @@ const BoiteAIdees = () => {
   const fetchAll = async () => {
     try {
       const [iRes, rRes] = await Promise.all([
-        supabase.from("idees").select("*").order("cree_le", { ascending: false }),
+        // Les anomalies ont leur propre page (« Signaler un problème ») : elles ne sont plus mélangées aux idées.
+        supabase.from("idees").select("*").neq("categorie", "anomalie_site").order("cree_le", { ascending: false }),
         supabase.from("idee_reactions").select("id, idee_id, reaction"),
       ]);
       setIdees((iRes.data as Idee[]) ?? []);
@@ -167,6 +169,7 @@ const BoiteAIdees = () => {
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
             Propose une idée à l'équipe. Seuls toi et les admins peuvent la voir.
+            Un bug ou un problème ? C'est <Link to="/espace-membre/signaler" className="text-terracotta underline underline-offset-2">ici</Link>.
           </p>
         </div>
         <button
@@ -277,7 +280,7 @@ const BoiteAIdees = () => {
                   onChange={e => setForm({ ...form, categorie: e.target.value as Categorie })}
                   className="w-full rounded-xl border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                  {CATEGORIES.map(c => (
+                  {CATEGORIES.filter(c => c.key !== "anomalie_site").map(c => (
                     <option key={c.key} value={c.key}>{c.emoji} {c.label}</option>
                   ))}
                 </select>

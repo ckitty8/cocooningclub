@@ -137,6 +137,9 @@ const BoiteAIdees = () => {
   };
 
   // Liste filtrée
+  // Anomalies signalées par les membres et pas encore regardées (aucune réaction d'une administratrice).
+  const anomaliesATraiter = idees.filter(i => i.categorie === "anomalie_site" && (reactionsByIdee[i.id] ?? []).length === 0).length;
+
   const filtered = idees.filter(i => {
     if (filterCat !== "all" && i.categorie !== filterCat) return false;
     const rs = reactionsByIdee[i.id] ?? [];
@@ -302,6 +305,17 @@ const BoiteAIdees = () => {
           <option value="non_valide">Avec un "Non validé"</option>
           <option value="a_discuter">Avec un "À discuter"</option>
         </select>
+        <button
+          onClick={() => {
+            const actif = filterCat === "anomalie_site" && filterReact === "none";
+            setFilterCat(actif ? "all" : "anomalie_site");
+            setFilterReact(actif ? "all" : "none");
+          }}
+          aria-pressed={filterCat === "anomalie_site" && filterReact === "none"}
+          className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium ${filterCat === "anomalie_site" && filterReact === "none" ? "bg-foreground text-background border-foreground" : "hover:bg-muted"}`}
+        >
+          🐛 Anomalies à traiter ({anomaliesATraiter})
+        </button>
         <span className="text-xs text-muted-foreground ml-auto">
           {filtered.length} idée{filtered.length > 1 ? "s" : ""}
         </span>
@@ -379,7 +393,7 @@ const BoiteAIdees = () => {
                       className="w-2.5 h-2.5 rounded-full shrink-0"
                       style={{ backgroundColor: authorColor }}
                     />
-                    <span className="font-medium text-foreground">{author?.prenom ?? "—"}</span>
+                    <span className="font-medium text-foreground">{[author?.prenom, author?.nom].filter(Boolean).join(" ") || "—"}</span>
                     <span>·</span>
                     <span>{formatDate(idee.cree_le)}</span>
                   </div>

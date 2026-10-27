@@ -1028,6 +1028,7 @@ export type Database = {
           email: string
           est_actif: boolean
           fin_abonnement: string | null
+          hobby: string | null
           id: string
           modifie_le: string
           nom: string
@@ -1046,6 +1047,7 @@ export type Database = {
           email: string
           est_actif?: boolean
           fin_abonnement?: string | null
+          hobby?: string | null
           id?: string
           modifie_le?: string
           nom: string
@@ -1064,6 +1066,7 @@ export type Database = {
           email?: string
           est_actif?: boolean
           fin_abonnement?: string | null
+          hobby?: string | null
           id?: string
           modifie_le?: string
           nom?: string

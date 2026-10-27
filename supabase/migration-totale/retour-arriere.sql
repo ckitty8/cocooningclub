@@ -18,6 +18,8 @@ BEGIN
 END
 $$;
 DROP FUNCTION IF EXISTS private.purger_donnees_anciennes();
+-- Hobby du profil (20261027000000) : les hobbies saisis sont perdus.
+ALTER TABLE public.utilisateurs DROP COLUMN IF EXISTS hobby;
 -- Documents « admins » (20261026000003) : une valeur d'enum ne se retire pas. Les documents réservés aux administrateurs sont
 -- repassés en « membres » (ils redeviennent visibles des membres : à vérifier avant de lancer) ; la valeur reste dans le type, sans effet.
 UPDATE public.documents SET acces = 'membres' WHERE acces::text = 'admins';

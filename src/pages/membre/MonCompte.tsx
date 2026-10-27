@@ -27,7 +27,7 @@ interface PaiementHistorique {
 
 const MonCompte = () => {
   const { profile, user, roleReel, refreshProfile } = useAuth();
-  const [form, setForm] = useState({ prenom: "", nom: "", email: "", telephone: "" });
+  const [form, setForm] = useState({ prenom: "", nom: "", email: "", telephone: "", activite: "", hobby: "" });
   const [originalEmail, setOriginalEmail] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -49,6 +49,8 @@ const MonCompte = () => {
         nom: profile.nom ?? "",
         email: profile.email ?? "",
         telephone: profile.telephone ?? "",
+        activite: profile.activite ?? "",
+        hobby: profile.hobby ?? "",
       });
       setOriginalEmail(profile.email ?? "");
     }
@@ -83,7 +85,9 @@ const MonCompte = () => {
     form.prenom !== (profile.prenom ?? "") ||
     form.nom !== (profile.nom ?? "") ||
     form.email !== originalEmail ||
-    form.telephone !== (profile.telephone ?? "");
+    form.telephone !== (profile.telephone ?? "") ||
+    form.activite !== (profile.activite ?? "") ||
+    form.hobby !== (profile.hobby ?? "");
   const emailChanged = form.email !== originalEmail;
 
   const handleSave = async () => {
@@ -111,7 +115,10 @@ const MonCompte = () => {
       prenom: form.prenom.trim(),
       nom: form.nom.trim(),
       telephone: form.telephone.trim() || null,
+      activite: form.activite.trim() || null,
     };
+    // Le hobby n'est envoyé que s'il change : l'enregistrement du profil reste possible tant que la colonne n'existe pas en base.
+    if (form.hobby.trim() !== (profile.hobby ?? "")) payload.hobby = form.hobby.trim() || null;
     if (emailChanged) payload.email = form.email.trim();
 
     const { error } = await supabase.from("utilisateurs").update(payload).eq("id", profile.id);
@@ -272,6 +279,18 @@ const MonCompte = () => {
               <div>
                 <label className="text-sm font-medium mb-1.5 flex items-center gap-1.5"><Phone className="w-3.5 h-3.5" /> Téléphone</label>
                 <input type="tel" value={form.telephone} onChange={e => setForm({ ...form, telephone: e.target.value })} className="w-full rounded-xl border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="mc-activite" className="block text-sm font-medium mb-1.5">Activité principale</label>
+                <input id="mc-activite" type="text" value={form.activite} maxLength={150} onChange={e => setForm({ ...form, activite: e.target.value })}
+                  placeholder="Ex. graphiste, infirmière, en reconversion…" className="w-full rounded-xl border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+              </div>
+              <div>
+                <label htmlFor="mc-hobby" className="block text-sm font-medium mb-1.5">Hobby</label>
+                <input id="mc-hobby" type="text" value={form.hobby} maxLength={200} onChange={e => setForm({ ...form, hobby: e.target.value })}
+                  placeholder="Ex. peinture, randonnée, lecture…" className="w-full rounded-xl border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
             </div>
             {emailChanged && (
