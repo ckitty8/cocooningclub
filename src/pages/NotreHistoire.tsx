@@ -4,7 +4,7 @@ import SiteHeader from "@/components/SiteHeader";
 import Footer from "@/components/Footer";
 import { Bouton, GrilleValeurs, Surtitre, TitreSection, type Valeur } from "@/components/vitrine";
 import { trackVisit } from "@/utils/trackVisit";
-import photoGroupe from "@/assets/histoire/groupe-chapeau.webp";
+import photoGroupe from "@/assets/accueil/groupe.webp";
 import photoCarnet from "@/assets/histoire/carnet.webp";
 import photoRencontres from "@/assets/histoire/rencontres.webp";
 import photoIdees from "@/assets/histoire/idees.webp";
@@ -67,12 +67,12 @@ const NotreHistoire = () => {
         <section className="relative pt-20">
           <img
             src={photoGroupe}
-            width={1600}
-            height={830}
-            alt="Quatre amies de dos, enlacées, face à un coucher de soleil sur la plage"
-            className="h-64 w-full object-cover object-left sm:h-80 md:h-[26rem] md:w-[68%]"
+            width={1400}
+            height={1050}
+            alt="Les cinq fondatrices du Cocooning Club souriantes autour d'un bouquet de roses"
+            className="h-64 w-full object-cover object-top sm:h-80 md:h-96 lg:h-[28rem] lg:w-[68%]"
           />
-          <div className="relative mx-6 -mt-12 rounded-2xl bg-background p-8 shadow-lg md:absolute md:bottom-12 md:right-10 md:top-32 md:mx-0 md:mt-0 md:flex md:w-[40%] md:flex-col md:justify-center lg:p-12">
+          <div className="relative mx-6 -mt-12 rounded-2xl bg-background p-8 shadow-lg lg:absolute lg:bottom-12 lg:right-10 lg:top-32 lg:mx-0 lg:mt-0 lg:flex lg:w-[36%] lg:flex-col lg:justify-center lg:p-10">
             <Surtitre>Le Cocooning Club</Surtitre>
             <h1 className="mt-3 font-display text-6xl text-foreground md:text-7xl">Notre histoire</h1>
             <span className="my-5 block h-0.5 w-10 bg-primary" aria-hidden="true" />
