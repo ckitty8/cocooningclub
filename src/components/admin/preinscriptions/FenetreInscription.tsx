@@ -14,8 +14,8 @@ import {
 } from "./types";
 import { dateLongue } from "@/lib/dates";
 
-type Onglet = "infos" | "paiement" | "messages" | "historique";
-type Canal = "mail" | "whatsapp";
+export type Onglet = "infos" | "paiement" | "messages" | "historique";
+export type Canal = "mail" | "whatsapp";
 
 interface Props {
   insc: Inscription;
@@ -33,6 +33,9 @@ interface Props {
   onStatut: (insc: Inscription, statut: StatutInscription) => Promise<boolean>;
   onPaiement: (insc: Inscription, paiement: StatutPaiement) => Promise<void>;
   onModifier: (insc: Inscription) => void;
+  /** Onglet affiché à l'ouverture : « messages » juste après une validation, pour envoyer le message tout de suite. */
+  ongletInitial?: Onglet;
+  canalInitial?: Canal;
 }
 
 interface LigneHistorique {
@@ -64,9 +67,10 @@ const reponseLibelle = (valeur: boolean | null | undefined, oui: string, non: st
 
 const FenetreInscription = ({
   insc, liste, atelier, autorisation, info, templates, occupe, onClose, onNavigate, onStatut, onPaiement, onModifier,
+  ongletInitial = "infos", canalInitial = "mail",
 }: Props) => {
-  const [onglet, setOnglet] = useState<Onglet>("infos");
-  const [canal, setCanal] = useState<Canal>("mail");
+  const [onglet, setOnglet] = useState<Onglet>(ongletInitial);
+  const [canal, setCanal] = useState<Canal>(canalInitial);
   const [sujet, setSujet] = useState("");
   const [corps, setCorps] = useState("");
   const [historique, setHistorique] = useState<LigneHistorique[] | null>(null);
@@ -92,8 +96,9 @@ const FenetreInscription = ({
   }, [modele]);
 
   useEffect(() => {
-    setOnglet("infos");
-  }, [insc.id]);
+    setOnglet(ongletInitial);
+    setCanal(canalInitial);
+  }, [insc.id, ongletInitial, canalInitial]);
 
   // L'historique est lu dans le journal des actions de l'équipe (aucune donnée supplémentaire à enregistrer).
   useEffect(() => {
@@ -108,10 +113,13 @@ const FenetreInscription = ({
     return () => { annule = true; };
   }, [onglet, insc.id, insc.statut, insc.statut_paiement]);
 
-  const envoyer = (voie: Canal, estValide: boolean, texteSujet: string, texteCorps: string) => {
+  const envoyer = (voie: Canal, estValide: boolean, texteSujet: string, texteCorps: string, webmail = false) => {
     if (voie === "mail") {
       if (!id.email) { toast.error("Pas d'email renseigné"); return; }
-      window.location.href = `mailto:${encodeURIComponent(id.email)}?subject=${encodeURIComponent(texteSujet)}&body=${encodeURIComponent(texteCorps)}`;
+      if (webmail) {
+        // Gmail dans le navigateur : le lien « mailto » n'ouvre rien quand aucun logiciel de messagerie n'est configuré.
+        window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(id.email)}&su=${encodeURIComponent(texteSujet)}&body=${encodeURIComponent(texteCorps)}`, "_blank", "noopener,noreferrer");
+      } else window.location.href = `mailto:${encodeURIComponent(id.email)}?subject=${encodeURIComponent(texteSujet)}&body=${encodeURIComponent(texteCorps)}`;
     } else {
       if (!id.telephone) { toast.error("Pas de téléphone renseigné"); return; }
       window.open(`https://wa.me/${telephonePourWhatsApp(id.telephone)}?text=${encodeURIComponent(texteCorps)}`, "_blank", "noopener,noreferrer");
@@ -119,6 +127,12 @@ const FenetreInscription = ({
     logAction(voie === "mail" ? "inscription.mail" : "inscription.whatsapp", "inscriptions", insc.id, {
       prenom: id.prenom, nom: id.nom, atelier: insc.ateliers?.titre, decision: estValide ? "validation" : "refus",
     });
+  };
+
+  // Valider ouvre aussitôt l'onglet « Messages » avec le message de validation prêt à envoyer.
+  const valider = async () => {
+    const ok = await onStatut(insc, "confirme");
+    if (ok) { setCanal("mail"); setOnglet("messages"); }
   };
 
   const validerEtEnvoyer = async () => {
@@ -232,6 +246,12 @@ const FenetreInscription = ({
 
           {onglet === "messages" && (
             <div className="space-y-3 text-sm">
+              {insc.statut === "confirme" && (
+                <p role="status" className="rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-900">
+                  Pré-inscription validée : le message est prêt. Relisez-le puis envoyez-le avec « {canal === "mail" ? "Ouvrir le mail" : "Ouvrir WhatsApp"} »
+                  {canal === "mail" && " (ou « Ouvrir dans Gmail » si votre messagerie ne s'ouvre pas)"}.
+                </p>
+              )}
               {insc.statut === "en_attente" && (
                 <p className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800">
                   La décision n'est pas prise : voici le message de validation. Pour un refus, refusez d'abord la pré-inscription.
@@ -255,13 +275,24 @@ const FenetreInscription = ({
                 <label htmlFor="msg-corps" className="block text-xs font-medium mb-1">Message</label>
                 <textarea id="msg-corps" value={corps} onChange={e => setCorps(e.target.value)} rows={7} className={champ} />
               </div>
-              <button
-                onClick={() => envoyer(canal, valide, sujet, corps)}
-                disabled={canal === "mail" ? !id.email : !id.telephone}
-                className="px-4 py-2 rounded-full text-sm font-medium border hover:bg-muted disabled:opacity-40"
-              >
-                {canal === "mail" ? "Ouvrir le mail" : "Ouvrir WhatsApp"}
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => envoyer(canal, valide, sujet, corps)}
+                  disabled={canal === "mail" ? !id.email : !id.telephone}
+                  className="px-4 py-2 rounded-full text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-40"
+                >
+                  {canal === "mail" ? "Ouvrir le mail" : "Ouvrir WhatsApp"}
+                </button>
+                {canal === "mail" && (
+                  <button
+                    onClick={() => envoyer("mail", valide, sujet, corps, true)}
+                    disabled={!id.email}
+                    className="px-4 py-2 rounded-full text-sm font-medium border hover:bg-muted disabled:opacity-40"
+                  >
+                    Ouvrir dans Gmail
+                  </button>
+                )}
+              </div>
             </div>
           )}
 
@@ -298,7 +329,7 @@ const FenetreInscription = ({
               <button onClick={() => onStatut(insc, "en_attente")} disabled={occupe}
                 className="px-4 py-2 rounded-full text-sm border hover:bg-muted disabled:opacity-40">Remettre en attente</button>
             )}
-            <button onClick={() => onStatut(insc, "confirme")} disabled={occupe || insc.statut === "confirme"}
+            <button onClick={valider} disabled={occupe || insc.statut === "confirme"}
               className="px-4 py-2 rounded-full text-sm border hover:bg-muted disabled:opacity-40">✓ Valider</button>
             <button onClick={validerEtEnvoyer} disabled={occupe || insc.statut === "confirme" || !id.email}
               className="px-5 py-2 rounded-full text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-40"
