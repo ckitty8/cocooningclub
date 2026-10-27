@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import AdminLayout from "@/components/admin/AdminLayout";
 import ListeParAtelier from "@/components/admin/preinscriptions/ListeParAtelier";
 import DemandesSecours from "@/components/admin/preinscriptions/DemandesSecours";
-import FenetreInscription from "@/components/admin/preinscriptions/FenetreInscription";
+import FenetreInscription, { type Canal, type Onglet } from "@/components/admin/preinscriptions/FenetreInscription";
 import type { AtelierListe, InfoDroit, Inscription, StatutInscription, StatutPaiement } from "@/components/admin/preinscriptions/types";
 import { useAutorisationsImage } from "@/hooks/useAutorisationsImage";
 import { useEspaces, useOffresParPersonne, useTarifsAdherent } from "@/hooks/useOffres";
@@ -66,6 +66,12 @@ const PreInscriptions = () => {
   const [recherche, setRecherche] = useState("");
   const [ouvertsManuels, setOuvertsManuels] = useState<Record<string, boolean>>({});
   const [fenetreId, setFenetreId] = useState<string | null>(null);
+  // Onglet et canal affichés à l'ouverture de la fenêtre : « messages » juste après une validation.
+  const [ouverture, setOuverture] = useState<{ onglet: Onglet; canal: Canal }>({ onglet: "infos", canal: "mail" });
+  const ouvrir = (insc: Inscription, onglet: Onglet = "infos", canal: Canal = "mail") => {
+    setOuverture({ onglet, canal });
+    setFenetreId(insc.id);
+  };
   const [actingOn, setActingOn] = useState<string | null>(null);
 
   // Modal ajout / édition
@@ -255,6 +261,7 @@ const PreInscriptions = () => {
     setInscriptions(prev => prev.map(i => i.id === derogation.id ? { ...i, statut: "confirme" } : i));
     toast.success(`Pré-inscription de ${id.prenom} validée sans paiement`);
     setDerogation(null);
+    ouvrir({ ...derogation, statut: "confirme" }, "messages");
   };
 
   const handlePaiement = async (insc: Inscription, paiement: StatutPaiement) => {
@@ -512,8 +519,12 @@ const PreInscriptions = () => {
           autorisations={autorisations}
           droits={droits}
           actingOn={actingOn}
-          onOuvrir={insc => setFenetreId(insc.id)}
-          onStatut={handleChangeStatut}
+          onOuvrir={ouvrir}
+          onStatut={async (insc, statut) => {
+            const ok = await handleChangeStatut(insc, statut);
+            // Validation depuis la liste : le message de validation apparaît tout de suite, prêt à envoyer.
+            if (ok && statut === "confirme") ouvrir({ ...insc, statut: "confirme" }, "messages");
+          }}
         />
       )}
 
@@ -527,7 +538,9 @@ const PreInscriptions = () => {
           templates={templates}
           occupe={actingOn === fenetre.id}
           onClose={() => setFenetreId(null)}
-          onNavigate={insc => setFenetreId(insc.id)}
+          onNavigate={insc => ouvrir(insc)}
+          ongletInitial={ouverture.onglet}
+          canalInitial={ouverture.canal}
           onStatut={handleChangeStatut}
           onPaiement={handlePaiement}
           onModifier={insc => openEditModal(insc)}

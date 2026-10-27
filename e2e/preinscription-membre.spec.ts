@@ -106,8 +106,10 @@ test("depuis « Inscrits » : l'atelier visé est ouvert, validation en un clic,
     p_inscription: LIGNE_ADMIN.id, p_motif: "Règlement en espèces sur place",
   });
 
-  await page.getByRole("button", { name: "Détail de Marie Dupont" }).click();
+  // Après la validation, la fenêtre s'ouvre sur « Messages » avec le message de validation prêt à envoyer.
   const fenetre = page.getByRole("dialog", { name: "Pré-inscription de Marie Dupont" });
+  await expect(fenetre.getByRole("tab", { name: "Messages", selected: true })).toBeVisible();
+  await expect(fenetre.getByText("Pré-inscription validée : le message est prêt")).toBeVisible();
   await fenetre.getByRole("tab", { name: "Historique" }).click();
   await expect(fenetre.getByText("Pré-inscription reçue")).toBeVisible();
   await expect(fenetre.getByText("Pré-inscription validée")).toBeVisible();
@@ -115,4 +117,37 @@ test("depuis « Inscrits » : l'atelier visé est ouvert, validation en un clic,
   await fenetre.getByRole("button", { name: "Fermer" }).click();
   await page.getByRole("button", { name: "Tout afficher" }).click();
   await expect(page.getByText(/Vous arrivez depuis/)).toHaveCount(0);
+});
+
+test("valider depuis la liste fait apparaître le mail de validation, prêt à envoyer", async ({ page }) => {
+  const admin = profilTest({ email: "admin@exemple.fr" });
+  const reglee = { ...LIGNE_ADMIN, statut_paiement: "non_requis" };
+  const modeles = [
+    { cle: "validation_mail_sujet", valeur: "Votre pré-inscription est validée ✨" },
+    { cle: "validation_mail_corps", valeur: "Bonjour {prenom}, votre pré-inscription à « {titre} » du {date} à {heure} ({lieu}) est validée." },
+  ];
+  const mock = await mockSupabase(page, { profil: admin, inscriptions: [reglee], modeles });
+  await connecterEn(page, admin);
+  // Pas de vraie fenêtre : on relève l'adresse que le site ouvre.
+  await page.addInitScript(() => {
+    window.open = (url?: string | URL) => { (window as unknown as { __ouvert?: string }).__ouvert = String(url); return null; };
+  });
+  await page.goto("/admin/pre-inscriptions");
+
+  await page.getByRole("button", { name: "Valider Marie Dupont" }).click();
+  await expect.poll(() => mock.updates.inscriptions?.[0]).toMatchObject({ statut: "confirme" });
+
+  // La fenêtre s'ouvre sur le message : destinataire connu, objet et texte remplis.
+  const fenetre = page.getByRole("dialog", { name: "Pré-inscription de Marie Dupont" });
+  await expect(fenetre.getByRole("tab", { name: "Messages", selected: true })).toBeVisible();
+  await expect(fenetre.getByText("Pré-inscription validée : le message est prêt")).toBeVisible();
+  await expect(fenetre.getByLabel("Objet")).toHaveValue("Votre pré-inscription est validée ✨");
+  await expect(fenetre.getByLabel("Message")).toHaveValue(/Bonjour Marie, votre pré-inscription à « .+ » du .+ à 14:00 \(Gagny\) est validée\./);
+
+  // Gmail dans le navigateur, pour les messageries qui n'ouvrent rien avec un lien « mailto ».
+  await fenetre.getByRole("button", { name: "Ouvrir dans Gmail" }).click();
+  const adresse = await page.evaluate(() => (window as unknown as { __ouvert?: string }).__ouvert ?? "");
+  expect(adresse).toContain("https://mail.google.com/mail/?view=cm");
+  expect(adresse).toContain("to=marie%40exemple.fr");
+  expect(adresse).toContain("su=Votre%20pr%C3%A9-inscription");
 });

@@ -162,3 +162,29 @@ test("droit à l'image et WhatsApp : une seule case à la fois, et la réponse p
   await expect(page.getByText("L’atelier est maintenu à partir de 5 participants minimum.")).toBeVisible();
   await expect(page.getByText("Le Cocooning Club est autorisé à m'ajouter au groupe WhatsApp")).toBeVisible();
 });
+
+test("la fiche de pré-inscription rappelle la date, l'heure et le lieu de l'atelier", async ({ page }) => {
+  await mockSupabase(page);
+  await page.goto(`/inscription/${ATELIER_TEST.id}`);
+  const rappel = page.getByRole("list", { name: "Rappel de l'atelier" });
+  await expect(rappel).toBeVisible();
+  // 14:00 + 2 h de durée.
+  await expect(rappel).toContainText("14h – 16h");
+  await expect(rappel).toContainText(String(new Date(ATELIER_TEST.date_atelier + "T00:00:00").getFullYear()));
+  await expect(rappel).toContainText("Gagny");
+  await expect(rappel.getByRole("link", { name: "1 rue de la Paix, 93220 Gagny" })).toHaveAttribute("href", /google\.com\/maps/);
+});
+
+test("depuis l'accueil, le rappel suit l'atelier choisi dans la liste", async ({ page }) => {
+  await mockSupabase(page);
+  await page.goto("/");
+  await page.getByRole("button", { name: "Pré-inscription" }).first().click();
+  const dialogue = page.getByRole("dialog", { name: "Pré-inscription" });
+  const rappel = dialogue.getByRole("list", { name: "Rappel de l'atelier" });
+  // L'atelier de la carte est présélectionné : son rappel est déjà là.
+  await expect(rappel).toContainText("Gagny");
+  await dialogue.locator("select").selectOption("");
+  await expect(rappel).toHaveCount(0);
+  await dialogue.locator("select").selectOption(ATELIER_TEST.titre);
+  await expect(rappel).toContainText("14h – 16h");
+});

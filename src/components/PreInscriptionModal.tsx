@@ -16,6 +16,7 @@ import {
 } from "@/lib/preInscription";
 import { enregistrerPreInscription, type IssuePreInscription } from "@/lib/preInscriptionSecours";
 import AjouterAgenda from "@/components/AjouterAgenda";
+import RappelAtelier from "@/components/RappelAtelier";
 
 interface PreInscriptionModalProps {
   /** Ateliers proposés dans la liste déroulante. */
@@ -82,6 +83,10 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer, atelierId, en
     resolver: zodResolver(profile ? preInscriptionMembreSchema : preInscriptionSchema),
     defaultValues: valeursInitiales(atelierInitial, profile),
   });
+
+  // Atelier dont la fiche rappelle la date, l'heure et le lieu (imposé par le lien, ou choisi dans la liste).
+  const titreChoisi = watch("workshop");
+  const atelierChoisi = (atelierId ? ateliers.find(a => a.id === atelierId) : ateliers.find(a => a.titre === titreChoisi)) ?? null;
 
   const onSubmit = async (data: PreInscriptionData) => {
     const trouve = (atelierId ? ateliers.find(a => a.id === atelierId) : ateliers.find(a => a.titre === data.workshop)) ?? null;
@@ -163,7 +168,7 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer, atelierId, en
                     <p>Tu recevras un message très bientôt avec les détails pratiques.</p>
                     <p className="text-xs">
                       <span className="font-medium text-foreground">{confirmation.titre}</span>
-                      {confirmation.atelier && <> · {formatDateFr(confirmation.atelier.date_atelier)} à {formatTimeFr(confirmation.atelier.heure_debut)}</>}
+                      {confirmation.atelier && <> · {formatDateFr(confirmation.atelier.date_atelier)} à {formatTimeFr(confirmation.atelier.heure_debut)}{confirmation.atelier.lieu && <> · {confirmation.atelier.lieu}</>}</>}
                     </p>
                   </>
                 )}
@@ -212,6 +217,7 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer, atelierId, en
                   </select>
                 )}
                 {errors.workshop && <p className={erreur}>{errors.workshop.message}</p>}
+                {atelierChoisi && <RappelAtelier atelier={atelierChoisi} />}
               </div>
 
               {watch("workshop") === ATELIER_AVEC_DATE_NAISSANCE && (

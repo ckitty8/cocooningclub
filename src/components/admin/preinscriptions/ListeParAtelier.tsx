@@ -15,8 +15,8 @@ interface Props {
   /** Droit de chaque pré-inscription (par identifiant) ; absent tant que la migration des offres n'est pas appliquée. */
   droits?: Map<string, InfoDroit>;
   actingOn: string | null;
-  onOuvrir: (insc: Inscription) => void;
-  onStatut: (insc: Inscription, statut: StatutInscription) => void;
+  onOuvrir: (insc: Inscription, onglet?: "infos" | "messages", canal?: "mail" | "whatsapp") => void;
+  onStatut: (insc: Inscription, statut: StatutInscription) => void | Promise<void>;
 }
 
 const dateCourte = (iso: string) =>
@@ -108,9 +108,9 @@ const ListeParAtelier = ({ groupes, ouverts, onBasculer, autorisations, droits, 
                         </>
                       ) : (
                         <>
-                          <button onClick={() => onOuvrir(insc)} title="Envoyer un mail" aria-label={`Mail à ${nom}`} disabled={!id.email}
+                          <button onClick={() => onOuvrir(insc, "messages", "mail")} title="Envoyer un mail" aria-label={`Mail à ${nom}`} disabled={!id.email}
                             className={`${boutonLarge} hover:bg-muted`}><Mail className="w-4 h-4" /></button>
-                          <button onClick={() => onOuvrir(insc)} title="Envoyer un WhatsApp" aria-label={`WhatsApp à ${nom}`} disabled={!id.telephone}
+                          <button onClick={() => onOuvrir(insc, "messages", "whatsapp")} title="Envoyer un WhatsApp" aria-label={`WhatsApp à ${nom}`} disabled={!id.telephone}
                             className={`${boutonLarge} hover:bg-muted`}><MessageSquare className="w-4 h-4" /></button>
                           <button onClick={() => onStatut(insc, "en_attente")} disabled={occupe} title="Remettre en attente" aria-label={`Remettre ${nom} en attente`}
                             className={`${boutonLarge} hover:bg-muted`}><RotateCcw className="w-4 h-4" /></button>
