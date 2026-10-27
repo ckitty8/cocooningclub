@@ -9,21 +9,10 @@ import { compressImage } from "@/utils/compressImage";
 import { ROLES } from "@/lib/roles";
 import {
   User, Mail, Phone, Image as ImageIcon, Save, Upload, Trash2, Loader2,
-  Info, Lock, CalendarRange, Receipt, KeyRound,
+  Info, Lock, CalendarRange, KeyRound,
 } from "lucide-react";
 
 const MAX_AVATAR_MB = 2;
-
-interface PaiementHistorique {
-  id: string;
-  paypal_transaction_id: string;
-  montant: number;
-  devise: string;
-  statut: "en_attente" | "complete" | "rembourse" | "echoue";
-  paypal_cree_le: string | null;
-  enregistre_le: string;
-  inscription: { atelier: { titre: string } | null } | null;
-}
 
 const MonCompte = () => {
   const { profile, user, roleReel, refreshProfile } = useAuth();
@@ -38,10 +27,6 @@ const MonCompte = () => {
   const [pwd, setPwd] = useState({ next: "", confirm: "" });
   const [pwdSaving, setPwdSaving] = useState(false);
 
-  // Historique paiements
-  const [paiements, setPaiements] = useState<PaiementHistorique[]>([]);
-  const [loadingPaiements, setLoadingPaiements] = useState(true);
-
   useEffect(() => {
     if (profile) {
       setForm({
@@ -54,20 +39,6 @@ const MonCompte = () => {
       });
       setOriginalEmail(profile.email ?? "");
     }
-  }, [profile]);
-
-  useEffect(() => {
-    if (!profile) return;
-    const loadPaiements = async () => {
-      const { data } = await supabase
-        .from("transactions_paypal")
-        .select("id, paypal_transaction_id, montant, devise, statut, paypal_cree_le, enregistre_le, inscription:inscriptions!inner(utilisateur_id, atelier:ateliers(titre))")
-        .eq("inscriptions.utilisateur_id", profile.id)
-        .order("enregistre_le", { ascending: false });
-      setPaiements(((data ?? []) as unknown as PaiementHistorique[]));
-      setLoadingPaiements(false);
-    };
-    loadPaiements();
   }, [profile]);
 
   if (!profile) {
@@ -214,7 +185,7 @@ const MonCompte = () => {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">Mon compte</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Gérez vos infos personnelles, votre abonnement et l'historique de vos paiements.
+          Gérez vos infos personnelles et votre abonnement.
         </p>
       </div>
 
@@ -369,45 +340,6 @@ const MonCompte = () => {
           <p className="text-xs text-muted-foreground mt-4">
             Pour modifier votre abonnement, contactez l'équipe via la page de contact.
           </p>
-        </div>
-
-        {/* Historique paiements */}
-        <div className="bg-card border rounded-2xl p-5">
-          <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Receipt className="w-4 h-4 text-terracotta" />
-            Historique des paiements
-          </h2>
-          {loadingPaiements ? (
-            <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
-          ) : paiements.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4 text-center">Aucun paiement enregistré.</p>
-          ) : (
-            <ul className="divide-y">
-              {paiements.map(p => (
-                <li key={p.id} className="py-3 flex items-center gap-3 text-sm flex-wrap">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-foreground truncate">
-                      {p.inscription?.atelier?.titre ?? "Atelier"}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {fmtDate(p.paypal_cree_le ?? p.enregistre_le)} · {p.paypal_transaction_id}
-                    </p>
-                  </div>
-                  <span className="font-medium text-foreground">
-                    {p.montant.toFixed(2)} {p.devise}
-                  </span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                    p.statut === "complete" ? "bg-emerald-100 text-emerald-700" :
-                    p.statut === "rembourse" ? "bg-blue-100 text-blue-700" :
-                    p.statut === "echoue" ? "bg-destructive/10 text-destructive" :
-                    "bg-amber-100 text-amber-700"
-                  }`}>
-                    {p.statut === "complete" ? "Payé" : p.statut === "rembourse" ? "Remboursé" : p.statut === "echoue" ? "Échoué" : "En attente"}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
         </div>
 
         {/* Infos système */}
