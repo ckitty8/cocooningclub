@@ -234,5 +234,5 @@ test("sous les prochains ateliers de l'accueil, un bouton mène à la page « No
   await expect(lien).toBeVisible();
   await lien.click();
   await expect(page).toHaveURL(/\/calendrier$/);
-  await expect(page).toHaveTitle("Calendrier des ateliers · Cocooning Club");
+  await expect(page).toHaveTitle("Calendrier des ateliers · Le Cocooning Club");
 });
