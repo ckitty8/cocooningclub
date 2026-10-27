@@ -3,6 +3,12 @@
 Ces actions ont été faites sur la base partagée (preview + production) avec l'accord de l'équipe. Elles ne sont
 **pas** à rejouer ; elles sont notées pour la traçabilité et pour pouvoir les annuler.
 
+## 27/10/2026
+
+| Action | Détail | Retour arrière |
+|---|---|---|
+| Migration `20261027000000_hobby_profil.sql` appliquée par Claude (outil Supabase `execute_sql`, projet CocooningClubBDD) avec l'accord de l'utilisatrice | Colonne facultative `utilisateurs.hobby` (TEXT, 200 caractères maximum). Contrôle après : colonne présente, nullable ; aucune donnée touchée. | `ALTER TABLE public.utilisateurs DROP COLUMN hobby;` (déjà dans `retour-arriere.sql`). |
+
 ## 26/10/2026
 
 Contrôle en lecture seule de Claude (26/10) : les migrations `20261025000000` et `20261025000001` étaient déjà appliquées (table `pre_inscriptions_secours` avec 2 politiques et RLS, dépôt ouvert aux visiteurs sans lecture, déclencheurs, colonnes `autorisation_image` / `accord_whatsapp` / `consentements_le`, purge à jour). Rien n'a été rejoué.
