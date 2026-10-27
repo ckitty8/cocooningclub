@@ -171,8 +171,19 @@ test("la fiche de pré-inscription rappelle la date, l'heure et le lieu de l'ate
   // 14:00 + 2 h de durée.
   await expect(rappel).toContainText("14h – 16h");
   await expect(rappel).toContainText(String(new Date(ATELIER_TEST.date_atelier + "T00:00:00").getFullYear()));
-  await expect(rappel).toContainText("Gagny");
-  await expect(rappel.getByRole("link", { name: "1 rue de la Paix, 93220 Gagny" })).toHaveAttribute("href", /google\.com\/maps/);
+  // Le nom du lieu est le lien vers la carte ; l'adresse s'écrit en clair dessous.
+  await expect(rappel.getByRole("link", { name: "Gagny" })).toHaveAttribute("href", /google\.com\/maps\/search/);
+  await expect(rappel).toContainText("1 rue de la Paix, 93220 Gagny");
+});
+
+test("un lien Google Maps collé dans l'adresse sert de lien au nom du lieu, sans être affiché", async ({ page }) => {
+  const LIEN = "https://www.google.com/maps/place/LE+FLOW+BIEN-ETRE/@48.8776296,2.527403,17z/data=!3m1!4b1!4m6";
+  await mockSupabase(page, { ateliers: [{ ...ATELIER_TEST, lieu: "Le flow", adresse: LIEN }] });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Pré-inscription" }).first().click();
+  const rappel = page.getByRole("dialog", { name: "Pré-inscription" }).getByRole("list", { name: "Rappel de l'atelier" });
+  await expect(rappel.getByRole("link", { name: "Le flow" })).toHaveAttribute("href", LIEN);
+  await expect(rappel).not.toContainText("https://");
 });
 
 test("depuis l'accueil, le rappel suit l'atelier choisi dans la liste", async ({ page }) => {

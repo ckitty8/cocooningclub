@@ -9,25 +9,14 @@ import { compressImage } from "@/utils/compressImage";
 import { ROLES } from "@/lib/roles";
 import {
   User, Mail, Phone, Image as ImageIcon, Save, Upload, Trash2, Loader2,
-  Info, Lock, CalendarRange, Receipt, KeyRound,
+  Info, Lock, CalendarRange, KeyRound,
 } from "lucide-react";
 
 const MAX_AVATAR_MB = 2;
 
-interface PaiementHistorique {
-  id: string;
-  paypal_transaction_id: string;
-  montant: number;
-  devise: string;
-  statut: "en_attente" | "complete" | "rembourse" | "echoue";
-  paypal_cree_le: string | null;
-  enregistre_le: string;
-  inscription: { atelier: { titre: string } | null } | null;
-}
-
 const MonCompte = () => {
   const { profile, user, roleReel, refreshProfile } = useAuth();
-  const [form, setForm] = useState({ prenom: "", nom: "", email: "", telephone: "" });
+  const [form, setForm] = useState({ prenom: "", nom: "", email: "", telephone: "", activite: "", hobby: "" });
   const [originalEmail, setOriginalEmail] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -38,10 +27,6 @@ const MonCompte = () => {
   const [pwd, setPwd] = useState({ next: "", confirm: "" });
   const [pwdSaving, setPwdSaving] = useState(false);
 
-  // Historique paiements
-  const [paiements, setPaiements] = useState<PaiementHistorique[]>([]);
-  const [loadingPaiements, setLoadingPaiements] = useState(true);
-
   useEffect(() => {
     if (profile) {
       setForm({
@@ -49,23 +34,11 @@ const MonCompte = () => {
         nom: profile.nom ?? "",
         email: profile.email ?? "",
         telephone: profile.telephone ?? "",
+        activite: profile.activite ?? "",
+        hobby: profile.hobby ?? "",
       });
       setOriginalEmail(profile.email ?? "");
     }
-  }, [profile]);
-
-  useEffect(() => {
-    if (!profile) return;
-    const loadPaiements = async () => {
-      const { data } = await supabase
-        .from("transactions_paypal")
-        .select("id, paypal_transaction_id, montant, devise, statut, paypal_cree_le, enregistre_le, inscription:inscriptions!inner(utilisateur_id, atelier:ateliers(titre))")
-        .eq("inscriptions.utilisateur_id", profile.id)
-        .order("enregistre_le", { ascending: false });
-      setPaiements(((data ?? []) as unknown as PaiementHistorique[]));
-      setLoadingPaiements(false);
-    };
-    loadPaiements();
   }, [profile]);
 
   if (!profile) {
@@ -83,7 +56,9 @@ const MonCompte = () => {
     form.prenom !== (profile.prenom ?? "") ||
     form.nom !== (profile.nom ?? "") ||
     form.email !== originalEmail ||
-    form.telephone !== (profile.telephone ?? "");
+    form.telephone !== (profile.telephone ?? "") ||
+    form.activite !== (profile.activite ?? "") ||
+    form.hobby !== (profile.hobby ?? "");
   const emailChanged = form.email !== originalEmail;
 
   const handleSave = async () => {
@@ -111,7 +86,10 @@ const MonCompte = () => {
       prenom: form.prenom.trim(),
       nom: form.nom.trim(),
       telephone: form.telephone.trim() || null,
+      activite: form.activite.trim() || null,
     };
+    // Le hobby n'est envoyé que s'il change : l'enregistrement du profil reste possible tant que la colonne n'existe pas en base.
+    if (form.hobby.trim() !== (profile.hobby ?? "")) payload.hobby = form.hobby.trim() || null;
     if (emailChanged) payload.email = form.email.trim();
 
     const { error } = await supabase.from("utilisateurs").update(payload).eq("id", profile.id);
@@ -207,7 +185,7 @@ const MonCompte = () => {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">Mon compte</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Gérez vos infos personnelles, votre abonnement et l'historique de vos paiements.
+          Gérez vos infos personnelles et votre abonnement.
         </p>
       </div>
 
@@ -272,6 +250,18 @@ const MonCompte = () => {
               <div>
                 <label className="text-sm font-medium mb-1.5 flex items-center gap-1.5"><Phone className="w-3.5 h-3.5" /> Téléphone</label>
                 <input type="tel" value={form.telephone} onChange={e => setForm({ ...form, telephone: e.target.value })} className="w-full rounded-xl border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="mc-activite" className="block text-sm font-medium mb-1.5">Activité principale</label>
+                <input id="mc-activite" type="text" value={form.activite} maxLength={150} onChange={e => setForm({ ...form, activite: e.target.value })}
+                  placeholder="Ex. graphiste, infirmière, en reconversion…" className="w-full rounded-xl border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+              </div>
+              <div>
+                <label htmlFor="mc-hobby" className="block text-sm font-medium mb-1.5">Hobby</label>
+                <input id="mc-hobby" type="text" value={form.hobby} maxLength={200} onChange={e => setForm({ ...form, hobby: e.target.value })}
+                  placeholder="Ex. peinture, randonnée, lecture…" className="w-full rounded-xl border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
             </div>
             {emailChanged && (
@@ -350,45 +340,6 @@ const MonCompte = () => {
           <p className="text-xs text-muted-foreground mt-4">
             Pour modifier votre abonnement, contactez l'équipe via la page de contact.
           </p>
-        </div>
-
-        {/* Historique paiements */}
-        <div className="bg-card border rounded-2xl p-5">
-          <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Receipt className="w-4 h-4 text-terracotta" />
-            Historique des paiements
-          </h2>
-          {loadingPaiements ? (
-            <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
-          ) : paiements.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4 text-center">Aucun paiement enregistré.</p>
-          ) : (
-            <ul className="divide-y">
-              {paiements.map(p => (
-                <li key={p.id} className="py-3 flex items-center gap-3 text-sm flex-wrap">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-foreground truncate">
-                      {p.inscription?.atelier?.titre ?? "Atelier"}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {fmtDate(p.paypal_cree_le ?? p.enregistre_le)} · {p.paypal_transaction_id}
-                    </p>
-                  </div>
-                  <span className="font-medium text-foreground">
-                    {p.montant.toFixed(2)} {p.devise}
-                  </span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                    p.statut === "complete" ? "bg-emerald-100 text-emerald-700" :
-                    p.statut === "rembourse" ? "bg-blue-100 text-blue-700" :
-                    p.statut === "echoue" ? "bg-destructive/10 text-destructive" :
-                    "bg-amber-100 text-amber-700"
-                  }`}>
-                    {p.statut === "complete" ? "Payé" : p.statut === "rembourse" ? "Remboursé" : p.statut === "echoue" ? "Échoué" : "En attente"}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
         </div>
 
         {/* Infos système */}

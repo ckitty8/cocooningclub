@@ -46,6 +46,7 @@ const MembreInscriptions = lazy(() => import("./pages/membre/Inscriptions.tsx"))
 const MembreMagazine = lazy(() => import("./pages/membre/Magazine.tsx"));
 const MembreMonCompte = lazy(() => import("./pages/membre/MonCompte.tsx"));
 const MembreBoiteAIdees = lazy(() => import("./pages/membre/BoiteAIdees.tsx"));
+const MembreSignaler = lazy(() => import("./pages/membre/Signaler.tsx"));
 const MembreMonAdhesion = lazy(() => import("./pages/membre/MonAdhesion.tsx"));
 
 
@@ -149,6 +150,7 @@ const App = () => (
           <Route path="/espace-membre/mon-adhesion"  element={<RoleGuard allowedRoles={ACCES.espaceMembre}><MembreMonAdhesion /></RoleGuard>} />
           <Route path="/espace-membre/mon-compte"    element={<RoleGuard allowedRoles={ACCES.espaceMembre}><MembreMonCompte /></RoleGuard>} />
           <Route path="/espace-membre/boite-a-idees" element={<RoleGuard allowedRoles={ACCES.espaceMembre}><MembreBoiteAIdees /></RoleGuard>} />
+          <Route path="/espace-membre/signaler" element={<RoleGuard allowedRoles={ACCES.espaceMembre}><MembreSignaler /></RoleGuard>} />
 
           {/* Routes admin protégées */}
           <Route path="/admin/dashboard"         element={<RoleGuard allowedRoles={ACCES.admin}><Dashboard /></RoleGuard>} />

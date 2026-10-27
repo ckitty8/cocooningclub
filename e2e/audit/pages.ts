@@ -27,6 +27,7 @@ export const PAGES: PageAuditee[] = [
   { chemin: "/espace-membre/mon-adhesion", profil: "membre" },
   { chemin: "/espace-membre/mon-compte", profil: "membre" },
   { chemin: "/espace-membre/boite-a-idees", profil: "membre" },
+  { chemin: "/espace-membre/signaler", profil: "membre" },
   { chemin: "/admin/dashboard", profil: "admin" },
   { chemin: "/admin/membres", profil: "admin" },
   { chemin: "/admin/offre", profil: "admin" },

@@ -17,7 +17,9 @@
     "20261026000000_membre_exige_adhesion.sql",
     "20261026000001_date_naissance_adhesion.sql",
     "20261026000002_fiche_reliee_au_compte_en_cascade.sql",
-    "20261026000003_documents_admins.sql"
+    "20261026000003_documents_admins.sql",
+    "20261027000000_hobby_profil.sql",
+    "20261027000001_types_documents.sql"
   ],
   "migrationsAuDeploiement": [
     "20261024000002_minimisation_date_naissance.sql",

@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { ACCES_DOCUMENTS, AIDES_ACCES, LIBELLES_ACCES, type AccesDocument } from "@/lib/accesDocuments";
+import { LIBELLES_TYPE, LIBELLES_TYPE_MENU, TYPES_DOCUMENTS, type TypeDocument } from "@/lib/typesDocuments";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
 import { withTimeout } from "@/utils/withTimeout";
 import { toast } from "sonner";
 import { compressImage } from "@/utils/compressImage";
-import { Plus, Pencil, Trash2, X, ExternalLink, FileText, BookOpen, Newspaper, Image as ImageIcon, type LucideIcon } from "lucide-react";
+import { Plus, Pencil, Trash2, X, ExternalLink, FileText, BookOpen, Newspaper, FolderLock, FileCheck, Image as ImageIcon, type LucideIcon } from "lucide-react";
 
-type DocType = "magazine" | "guide" | "lien_externe";
+type DocType = TypeDocument;
 type DocAcces = AccesDocument;
 
 interface Document {
@@ -28,13 +29,12 @@ const typeIcon: Record<DocType, LucideIcon> = {
   magazine:     Newspaper,
   guide:        BookOpen,
   lien_externe: ExternalLink,
+  interne:      FolderLock,
+  administratif: FileCheck,
+  autre:        FileText,
 };
 
-const typeLabel: Record<DocType, string> = {
-  magazine:     "Magazine",
-  guide:        "Guide",
-  lien_externe: "Lien externe",
-};
+const typeLabel = LIBELLES_TYPE;
 
 const accesLabel = LIBELLES_ACCES;
 
@@ -319,9 +319,7 @@ const Documents = () => {
                   <label className="block text-sm font-medium mb-1.5">Type</label>
                   <select value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value as DocType }))}
                     className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary">
-                    <option value="magazine">Magazine</option>
-                    <option value="guide">Guide</option>
-                    <option value="lien_externe">Lien externe</option>
+                    {TYPES_DOCUMENTS.map(t => <option key={t} value={t}>{LIBELLES_TYPE_MENU[t]}</option>)}
                   </select>
                 </div>
                 <div>

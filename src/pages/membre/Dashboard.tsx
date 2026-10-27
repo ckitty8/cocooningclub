@@ -10,6 +10,7 @@ import {
   Clock, MapPin, Newspaper,
 } from "lucide-react";
 import { dateLongue } from "@/lib/dates";
+import type { TypeDocument } from "@/lib/typesDocuments";
 
 interface AtelierResume {
   id: string;
@@ -34,7 +35,7 @@ interface DocResume {
   id: string;
   titre: string;
   description: string | null;
-  type: "magazine" | "guide" | "lien_externe";
+  type: TypeDocument;
   fichier_url: string | null;
   lien_externe: string | null;
   created_at: string;

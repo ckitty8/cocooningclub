@@ -130,6 +130,7 @@ export const MATRICE: readonly SectionMatrice[] = [
       { libelle: "Mon adhésion", detail: "Récapitulatif et bulletin d'adhésion.", acces: ACCES.espaceMembre },
       { libelle: "Documents", acces: ACCES.espaceMembre },
       { libelle: "Boîte à idées", acces: ACCES.espaceMembre },
+      { libelle: "Signaler un problème", detail: "Remonte dans la boîte à idées des administratrices (catégorie anomalie).", acces: ACCES.espaceMembre },
       { libelle: "Mon compte", acces: ACCES.espaceMembre },
     ],
   },

@@ -11,7 +11,7 @@ sur la fiche). Les fichiers sont recadrés et convertis en WebP ; remplacer une 
 | `accueil/creatif.webp` | 8483561 | trois femmes autour d'un atelier de tissus |
 | `accueil/business.webp` | 6457479 | trois femmes qui travaillent sur un canapé |
 | `hero-workshop-960.webp` | 20767663 | table en bois, papiers, ciseaux, ficelle |
-| `histoire/groupe-chapeau.webp` | 7954570 | quatre amies de dos, enlacées, au coucher du soleil sur la plage |
+| `histoire/groupe-chapeau.webp` | 7954570 | quatre amies de dos, enlacées, au coucher du soleil sur la plage (plus utilisée : l'en-tête de « Notre histoire » montre depuis le 27/10 la vraie photo du club `accueil/groupe.webp`) |
 | `histoire/carnet.webp` | 19867906 | carnet, tasse de café et bougie |
 | `histoire/neon.webp` | 27086170 | trois femmes devant un ordinateur |
 | `histoire/rencontres.webp` | 4340080 | deux femmes qui discutent |

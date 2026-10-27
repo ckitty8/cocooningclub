@@ -17,6 +17,8 @@ export interface Profile {
   telephone: string | null;
   commune?: string | null;
   activite?: string | null;
+  /** Absent tant que la migration 20261027000000 n'est pas appliquée. */
+  hobby?: string | null;
   url_avatar: string | null;
   debut_abonnement: string | null;
   fin_abonnement: string | null;

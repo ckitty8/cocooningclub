@@ -1028,6 +1028,7 @@ export type Database = {
           email: string
           est_actif: boolean
           fin_abonnement: string | null
+          hobby: string | null
           id: string
           modifie_le: string
           nom: string
@@ -1046,6 +1047,7 @@ export type Database = {
           email: string
           est_actif?: boolean
           fin_abonnement?: string | null
+          hobby?: string | null
           id?: string
           modifie_le?: string
           nom: string
@@ -1064,6 +1066,7 @@ export type Database = {
           email?: string
           est_actif?: boolean
           fin_abonnement?: string | null
+          hobby?: string | null
           id?: string
           modifie_le?: string
           nom?: string
@@ -1265,7 +1268,7 @@ export type Database = {
         | "complete"
         | "rembourse"
         | "echoue"
-      type_document: "magazine" | "guide" | "lien_externe"
+      type_document: "magazine" | "guide" | "lien_externe" | "interne" | "administratif" | "autre"
       type_recurrence: "hebdomadaire" | "bimensuel" | "mensuel"
     }
     CompositeTypes: {
@@ -1422,7 +1425,7 @@ export const Constants = {
         "rembourse",
         "echoue",
       ],
-      type_document: ["magazine", "guide", "lien_externe"],
+      type_document: ["magazine", "guide", "lien_externe", "interne", "administratif", "autre"],
       type_recurrence: ["hebdomadaire", "bimensuel", "mensuel"],
     },
   },
