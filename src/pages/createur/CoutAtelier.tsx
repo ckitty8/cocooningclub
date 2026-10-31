@@ -64,7 +64,7 @@ interface AtelierLu {
   titre: string;
   date_atelier: string;
   tarif_standard: number | null;
-  places_max: number;
+  places_max: number | null;
 }
 
 /** Simulateur de coût d'un atelier (espace créateur) : lieu, matériel, animation… contre les recettes selon le public. */
@@ -93,7 +93,7 @@ const CoutAtelier = () => {
     const a = ateliers.find(x => x.id === id);
     if (!a) return;
     const standard = a.tarif_standard ?? 0;
-    maj({ tarifStandard: standard, tarifAdherente: tarifsAdherent.get(a.id) ?? standard, capacite: a.places_max });
+    maj({ tarifStandard: standard, tarifAdherente: tarifsAdherent.get(a.id) ?? standard, ...(a.places_max !== null ? { capacite: a.places_max } : {}) });
   };
 
   const r = useMemo(() => calculerCout(p), [p]);

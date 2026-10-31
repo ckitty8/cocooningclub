@@ -7,6 +7,7 @@ Ces actions ont été faites sur la base partagée (preview + production) avec l
 
 | Action | Détail | Retour arrière |
 |---|---|---|
+| Migration `20261031000001_places_illimitees.sql` appliquée par Claude (outil Supabase `execute_sql`, projet CocooningClubBDD) avec l'accord de l'utilisatrice (option « places illimitées » choisie, qui demande cette migration) | `ateliers.places_max` et `ateliers.places_disponibles` deviennent facultatives (NULL = places illimitées). Contrôle après : les deux colonnes `is_nullable = YES` ; aucune donnée touchée ; contraintes CHECK inchangées. | Bloc « Places illimitées » de `retour-arriere.sql` (les ateliers sans limite repassent à 10 places avant de remettre NOT NULL). |
 | Migration `20261031000000_ateliers_matin_apres_midi.sql` appliquée par Claude (outil Supabase `execute_sql`, projet CocooningClubBDD) avec l'accord de l'utilisatrice | Colonnes facultatives `ateliers.matin` et `ateliers.apres_midi` (TEXT, 300 caractères maximum). Contrôle après : les deux colonnes présentes, nullables ; aucune donnée touchée. | Bloc « Matin / après-midi » de `retour-arriere.sql` (`DROP COLUMN`). |
 
 ## 27/10/2026

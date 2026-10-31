@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { libellePlacesPrises, tauxRemplissage } from "@/lib/placesAtelier";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,8 +18,8 @@ interface Atelier {
   heure_debut: string | null;
   lieu: string | null;
   adresse: string | null;
-  places_max: number;
-  places_disponibles: number;
+  places_max: number | null;
+  places_disponibles: number | null;
   statut: string;
 }
 
@@ -296,7 +297,7 @@ const Dashboard = () => {
           ) : (
             <div className="divide-y">
               {prochainAteliers.map(a => {
-                const taux = a.places_max > 0 ? ((a.places_max - a.places_disponibles) / a.places_max) * 100 : 0;
+                const taux = tauxRemplissage(a.places_max, a.places_disponibles);
                 const complet = a.places_disponibles === 0;
                 return (
                   <div key={a.id} className="px-5 py-4 hover:bg-muted/20 transition-colors">
@@ -332,7 +333,7 @@ const Dashboard = () => {
                         />
                       </div>
                       <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        {a.places_max - a.places_disponibles}/{a.places_max}
+                        {libellePlacesPrises(a.places_max, a.places_disponibles)}
                       </span>
                     </div>
                   </div>

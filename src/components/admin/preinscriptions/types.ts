@@ -45,8 +45,8 @@ export interface AtelierListe {
   lieu: string | null;
   statut: string;
   tarif_standard: number | null;
-  places_max: number;
-  places_disponibles: number;
+  places_max: number | null;
+  places_disponibles: number | null;
   espace_id: string | null;
 }
 

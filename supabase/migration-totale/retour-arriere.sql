@@ -18,6 +18,10 @@ BEGIN
 END
 $$;
 DROP FUNCTION IF EXISTS private.purger_donnees_anciennes();
+-- Places illimitées (20261031000001) : les ateliers sans limite repassent à 10 places (à revoir à la main) avant de rendre les colonnes obligatoires.
+UPDATE public.ateliers SET places_max = 10 WHERE places_max IS NULL;
+UPDATE public.ateliers SET places_disponibles = places_max WHERE places_disponibles IS NULL;
+ALTER TABLE public.ateliers ALTER COLUMN places_max SET NOT NULL, ALTER COLUMN places_disponibles SET NOT NULL;
 -- Matin / après-midi des ateliers Business (20261031000000) : les textes saisis sont perdus.
 ALTER TABLE public.ateliers DROP COLUMN IF EXISTS matin, DROP COLUMN IF EXISTS apres_midi;
 -- Types de documents (20261027000001) : une valeur d'enum ne se retire pas. Les documents de type « interne »,

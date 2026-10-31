@@ -218,8 +218,8 @@ export type Database = {
           modele_id: string | null
           modifie_le: string
           niveau: Database["public"]["Enums"]["niveau_atelier"]
-          places_disponibles: number
-          places_max: number
+          places_disponibles: number | null
+          places_max: number | null
           recurrence: Database["public"]["Enums"]["type_recurrence"] | null
           statut: Database["public"]["Enums"]["statut_atelier"]
           tarif_admin: number | null
@@ -249,8 +249,8 @@ export type Database = {
           modele_id?: string | null
           modifie_le?: string
           niveau?: Database["public"]["Enums"]["niveau_atelier"]
-          places_disponibles?: number
-          places_max?: number
+          places_disponibles?: number | null
+          places_max?: number | null
           recurrence?: Database["public"]["Enums"]["type_recurrence"] | null
           statut?: Database["public"]["Enums"]["statut_atelier"]
           tarif_admin?: number | null
@@ -280,8 +280,8 @@ export type Database = {
           modele_id?: string | null
           modifie_le?: string
           niveau?: Database["public"]["Enums"]["niveau_atelier"]
-          places_disponibles?: number
-          places_max?: number
+          places_disponibles?: number | null
+          places_max?: number | null
           recurrence?: Database["public"]["Enums"]["type_recurrence"] | null
           statut?: Database["public"]["Enums"]["statut_atelier"]
           tarif_admin?: number | null

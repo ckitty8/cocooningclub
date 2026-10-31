@@ -13,6 +13,7 @@ import {
   ExternalLink, X, AlarmClock,
 } from "lucide-react";
 import { dateLongue } from "@/lib/dates";
+import { estComplet } from "@/lib/placesAtelier";
 
 interface Atelier {
   id: string;
@@ -25,8 +26,8 @@ interface Atelier {
   lieu: string | null;
   adresse: string | null;
   url_image: string | null;
-  places_max: number;
-  places_disponibles: number;
+  places_max: number | null;
+  places_disponibles: number | null;
   tarif_standard: number;
   tarif_affichage: string | null;
   lien_paypal: string | null;
@@ -153,7 +154,7 @@ const Ateliers = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {ateliers.map(a => {
             const statutInscription = myInscriptions.get(a.id);
-            const full = a.statut === "complet" || a.places_disponibles <= 0;
+            const full = estComplet(a);
             const closed = isInscriptionsCloses(a);
             const droit = droitDe(a);
             return (
@@ -184,7 +185,7 @@ const Ateliers = () => {
                         ) : a.lieu}
                       </div>
                     )}
-                    <div className="flex items-center gap-2"><Users className="w-3.5 h-3.5" />{a.places_disponibles} / {a.places_max} places</div>
+                    <div className="flex items-center gap-2"><Users className="w-3.5 h-3.5" />{a.places_max === null ? "Places illimitées" : `${a.places_disponibles} / ${a.places_max} places`}</div>
                     {a.tarif_affichage && <div className="flex items-center gap-2"><Euro className="w-3.5 h-3.5" />{a.tarif_affichage}</div>}
                     {a.date_fin_inscription && (
                       <div className="flex items-center gap-2"><AlarmClock className="w-3.5 h-3.5" />Inscriptions jusqu'au {dateLongue(a.date_fin_inscription)}</div>
@@ -270,7 +271,7 @@ const Ateliers = () => {
                 )}
                 <div className="bg-muted/40 rounded-xl p-3">
                   <p className="text-xs text-muted-foreground">Places restantes</p>
-                  <p className="font-medium mt-0.5">{popin.places_disponibles} / {popin.places_max}</p>
+                  <p className="font-medium mt-0.5">{popin.places_max === null ? "Illimitées" : `${popin.places_disponibles} / ${popin.places_max}`}</p>
                 </div>
                 <div className="bg-muted/40 rounded-xl p-3">
                   <p className="text-xs text-muted-foreground">Tarif</p>

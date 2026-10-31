@@ -32,13 +32,13 @@ export const moisSuivant = (annee: number, mois: number, pas: 1 | -1): { annee: 
 
 /** Indicateurs de la page « Ateliers » : ateliers à venir, places libres, brouillons. */
 export const chiffresAteliers = (
-  ateliers: { date_atelier: string; statut: string; places_disponibles: number }[],
+  ateliers: { date_atelier: string; statut: string; places_disponibles: number | null }[],
   aujourdhui: string,
 ) => {
   const aVenir = ateliers.filter(a => a.date_atelier >= aujourdhui && (a.statut === "publie" || a.statut === "complet"));
   return {
     aVenir: aVenir.length,
-    placesLibres: aVenir.reduce((somme, a) => somme + Math.max(0, a.places_disponibles), 0),
+    placesLibres: aVenir.reduce((somme, a) => somme + Math.max(0, a.places_disponibles ?? 0), 0),
     brouillons: ateliers.filter(a => a.statut === "brouillon").length,
   };
 };

@@ -14,6 +14,7 @@ import { trackVisit } from "@/utils/trackVisit";
 import { usePublicAteliers } from "@/hooks/usePublicAteliers";
 import { copierLienInscription } from "@/utils/copierLienInscription";
 import { espaceDe } from "@/lib/espaces";
+import { estComplet } from "@/lib/placesAtelier";
 import AjouterAgenda from "@/components/AjouterAgenda";
 import EvenementsJsonLd from "@/components/EvenementsJsonLd";
 
@@ -142,7 +143,7 @@ const Calendrier = () => {
                         const isSelected = selectedDate &&
                           selectedDate.getTime() === d.getTime() &&
                           popinWorkshop?.id === ws.id;
-                        const full = ws.statut === "complet" || ws.places_disponibles <= 0;
+                        const full = estComplet(ws);
                         const espace = espaceDe(ws);
                         return (
                           <button
@@ -207,9 +208,11 @@ const Calendrier = () => {
                                     ) : ws.lieu}
                                   </span>
                                 )}
-                                <span className="inline-flex items-center gap-1.5">
-                                  <Users className="w-3.5 h-3.5" /> {ws.places_max} places
-                                </span>
+                                {ws.places_max !== null && (
+                                  <span className="inline-flex items-center gap-1.5">
+                                    <Users className="w-3.5 h-3.5" /> {ws.places_max} places
+                                  </span>
+                                )}
                                 {ws.tarif_affichage && (
                                   <span className="inline-flex items-center gap-1.5">
                                     <Euro className="w-3.5 h-3.5" /> {ws.tarif_affichage}
@@ -312,10 +315,12 @@ const Calendrier = () => {
                   <Clock className="w-4 h-4 text-terracotta flex-shrink-0" />
                   <span>{formatTimeFr(popinWorkshop.heure_debut)}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-foreground">
-                  <Users className="w-4 h-4 text-terracotta flex-shrink-0" />
-                  <span>{popinWorkshop.places_max} places</span>
-                </div>
+                {popinWorkshop.places_max !== null && (
+                  <div className="flex items-center gap-2 text-sm text-foreground">
+                    <Users className="w-4 h-4 text-terracotta flex-shrink-0" />
+                    <span>{popinWorkshop.places_max} places</span>
+                  </div>
+                )}
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <Euro className="w-4 h-4 text-terracotta flex-shrink-0" />
                   <span>{popinWorkshop.tarif_affichage}</span>

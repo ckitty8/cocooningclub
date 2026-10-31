@@ -5,6 +5,7 @@ import {
   JOURS_COURTS, MOIS_FR, casesDuMois, couleurEspace, moisSuivant, vacancesDuJour, type PeriodeVacances,
 } from "@/lib/calendrierAteliers";
 import { aujourdhuiIso } from "@/lib/adhesions";
+import { libellePlacesPrises } from "@/lib/placesAtelier";
 
 export interface AtelierCalendrier {
   id: string;
@@ -13,8 +14,8 @@ export interface AtelierCalendrier {
   heure_debut: string | null;
   lieu: string | null;
   statut: string;
-  places_max: number;
-  places_disponibles: number;
+  places_max: number | null;
+  places_disponibles: number | null;
   espace_id: string;
 }
 
@@ -97,7 +98,7 @@ const VueCalendrier = ({ ateliers, slugDe, onCreer, vacances = [] }: Props) => {
               {selection.map(a => (
                 <li key={a.id} className="rounded-xl border p-3 text-sm">
                   <p className="flex items-center gap-2 font-medium"><span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: couleurEspace(slugDe(a.espace_id)) }} />{a.titre}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{heure(a.heure_debut)}{a.lieu ? ` · ${a.lieu}` : ""} · {a.places_max - a.places_disponibles}/{a.places_max} places prises</p>
+                  <p className="text-xs text-muted-foreground mt-1">{heure(a.heure_debut)}{a.lieu ? ` · ${a.lieu}` : ""} · {a.places_max === null ? "places illimitées" : `${libellePlacesPrises(a.places_max, a.places_disponibles)} places prises`}</p>
                   <div className="mt-2 flex gap-2">
                     <Link to={`/admin/ateliers/${a.id}`} className="px-3 py-1 text-xs border rounded-full hover:bg-muted">Fiche</Link>
                     <Link to={`/admin/pre-inscriptions?atelier=${a.id}`} className="px-3 py-1 text-xs border rounded-full hover:bg-muted">Pré-inscriptions</Link>

@@ -12,6 +12,7 @@ import { LIBELLES_PHOTOS, etatPhotos } from "@/lib/autorisationImage";
 import { inscIdentite } from "@/lib/inscriptionIdentite";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { dateLongue } from "@/lib/dates";
+import { placesPrises } from "@/lib/placesAtelier";
 import { copierLienInscription } from "@/utils/copierLienInscription";
 
 interface AtelierFiche {
@@ -26,8 +27,8 @@ interface AtelierFiche {
   duree: string | null;
   lieu: string | null;
   adresse: string | null;
-  places_max: number;
-  places_disponibles: number;
+  places_max: number | null;
+  places_disponibles: number | null;
   tarif_standard: number | null;
   tarif_affichage: string | null;
   niveau: string | null;
@@ -158,7 +159,7 @@ const FicheAtelier = () => {
   }
 
   const kpis: [string, string][] = [
-    [`${atelier.places_max - atelier.places_disponibles} / ${atelier.places_max}`, "places prises"],
+    atelier.places_max === null ? ["Illimitées", "places"] : [`${placesPrises(atelier.places_max, atelier.places_disponibles)} / ${atelier.places_max}`, "places prises"],
     [String(resume.confirmees), "validées"],
     [String(resume.aTraiter), "à traiter"],
     [payant ? `${resume.encaisse} €` : "Gratuit", payant ? `encaissés sur ${resume.attendu} € attendus` : "aucun paiement"],

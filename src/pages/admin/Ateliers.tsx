@@ -3,7 +3,7 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
 import { dureeEntre, heureDeFin } from "@/lib/dureeAtelier";
-import { placesRestantes } from "@/lib/placesAtelier";
+import { estComplet, libellePlacesPrises, placesPrises, placesRestantes, tauxRemplissage } from "@/lib/placesAtelier";
 import { withTimeout } from "@/utils/withTimeout";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { searchAdresse, type AdresseSuggestion } from "@/utils/adresseAutocomplete";
@@ -36,8 +36,9 @@ interface Atelier {
   lieu: string | null;
   adresse: string | null;
   url_image: string | null;
-  places_max: number;
-  places_disponibles: number;
+  /** Null = places illimitées (champ « Places max » laissé vide). */
+  places_max: number | null;
+  places_disponibles: number | null;
   tarif_standard: number | null;
   /** Colonne ajoutée par la migration « tarif adhérente » : absente avant. */
   tarif_adherent?: number | null;
@@ -60,7 +61,7 @@ interface Espace {
 const emptyForm = {
   titre: "", description: "", description_courte: "",
   date_atelier: "", date_fin_inscription: "", heure_debut: "", heure_fin: "", duree: "", lieu: "", adresse: "", url_image: "",
-  places_max: 10, tarif_standard: "", tarif_adherent: "", tarif_affichage: "",
+  places_max: 10 as number | string, tarif_standard: "", tarif_adherent: "", tarif_affichage: "",
   lien_paypal: "", niveau: "" as Niveau | "", statut: "brouillon" as Statut,
   espace_id: "", matin: "", apres_midi: "",
 };
@@ -244,7 +245,7 @@ const Ateliers = () => {
       date_atelier: a.date_atelier, date_fin_inscription: a.date_fin_inscription ?? "",
       heure_debut: a.heure_debut ?? "", heure_fin: a.heure_fin ?? "", duree: a.duree ?? "",
       lieu: a.lieu ?? "", adresse: a.adresse ?? "", url_image: a.url_image ?? "",
-      places_max: a.places_max,
+      places_max: a.places_max ?? "",
       tarif_standard: a.tarif_standard?.toString() ?? "",
       tarif_adherent: a.tarif_adherent?.toString() ?? "",
       tarif_affichage: a.tarif_affichage ?? "",
@@ -265,7 +266,7 @@ const Ateliers = () => {
       date_atelier: a.date_atelier, date_fin_inscription: a.date_fin_inscription ?? "",
       heure_debut: a.heure_debut ?? "", heure_fin: a.heure_fin ?? "", duree: a.duree ?? "",
       lieu: a.lieu ?? "", adresse: a.adresse ?? "", url_image: a.url_image ?? "",
-      places_max: a.places_max,
+      places_max: a.places_max ?? "",
       tarif_standard: a.tarif_standard?.toString() ?? "",
       tarif_adherent: a.tarif_adherent?.toString() ?? "",
       tarif_affichage: a.tarif_affichage ?? "",
@@ -310,6 +311,12 @@ const Ateliers = () => {
       return;
     }
 
+    if (form.places_max !== "" && !(Number(form.places_max) >= 1)) {
+      toast.error("Places max : saisis un nombre d'au moins 1, ou laisse vide pour des places illimitées");
+      setSaving(false);
+      return;
+    }
+
     if (!form.heure_debut) {
       toast.error("L'heure de début est obligatoire");
       setSaving(false);
@@ -328,7 +335,7 @@ const Ateliers = () => {
       lieu: form.lieu || null,
       adresse: form.adresse || null,
       url_image: form.url_image || null,
-      places_max: Number(form.places_max),
+      places_max: form.places_max === "" ? null : Number(form.places_max),
       tarif_standard: form.tarif_standard ? Number(form.tarif_standard) : 0,
       // Écrit seulement si la colonne existe (migration appliquée) ou si un tarif adhérente est saisi.
       ...(colonneTarifAdherent || form.tarif_adherent !== "" ? { tarif_adherent: form.tarif_adherent !== "" ? Number(form.tarif_adherent) : null } : {}),
@@ -382,7 +389,7 @@ const Ateliers = () => {
     } else {
       const { data: ins, error } = await supabase
         .from("ateliers")
-        .insert({ ...payload, places_disponibles: Number(form.places_max) })
+        .insert({ ...payload, places_disponibles: payload.places_max })
         .select("id")
         .single();
       if (error) {
@@ -654,7 +661,6 @@ const Ateliers = () => {
             </thead>
             <tbody>
               {filtered.map((a, i) => {
-                const inscrits = a.places_max - a.places_disponibles;
                 const mois = new Date(a.date_atelier).toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
                 const moisPrecedent = i > 0
                   ? new Date(filtered[i - 1].date_atelier).toLocaleDateString("fr-FR", { month: "long", year: "numeric" })
@@ -691,11 +697,11 @@ const Ateliers = () => {
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">{a.lieu ?? "—"}</td>
                       <td className="px-4 py-3 w-40">
-                        <p className="text-xs mb-1">{inscrits}/{a.places_max}</p>
+                        <p className="text-xs mb-1">{libellePlacesPrises(a.places_max, a.places_disponibles)}</p>
                         <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                           <div
-                            className={`h-full rounded-full ${a.places_disponibles <= 0 ? "bg-amber-600" : "bg-primary"}`}
-                            style={{ width: `${a.places_max > 0 ? Math.min(100, (inscrits / a.places_max) * 100) : 0}%` }}
+                            className={`h-full rounded-full ${estComplet(a) ? "bg-amber-600" : "bg-primary"}`}
+                            style={{ width: `${tauxRemplissage(a.places_max, a.places_disponibles)}%` }}
                           />
                         </div>
                       </td>
@@ -731,7 +737,6 @@ const Ateliers = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filtered.map(a => {
-            const inscrits = a.places_max - a.places_disponibles;
             return (
               <div key={a.id} className="bg-card rounded-2xl border overflow-hidden flex flex-col">
                 {a.url_image && (
@@ -780,12 +785,12 @@ const Ateliers = () => {
                   )}
                   <div className="flex items-center gap-1.5">
                     <Users className="w-3.5 h-3.5 shrink-0" />
-                    <span>{a.places_disponibles}/{a.places_max} places disponibles</span>
+                    <span>{a.places_max === null ? "Places illimitées" : `${a.places_disponibles}/${a.places_max} places disponibles`}</span>
                   </div>
                   <div className="h-1.5 rounded-full bg-muted overflow-hidden" aria-hidden="true">
                     <div
-                      className={`h-full rounded-full ${a.places_disponibles <= 0 ? "bg-amber-600" : "bg-primary"}`}
-                      style={{ width: `${a.places_max > 0 ? Math.min(100, (inscrits / a.places_max) * 100) : 0}%` }}
+                      className={`h-full rounded-full ${estComplet(a) ? "bg-amber-600" : "bg-primary"}`}
+                      style={{ width: `${tauxRemplissage(a.places_max, a.places_disponibles)}%` }}
                     />
                   </div>
                   {(a.tarif_affichage || a.tarif_standard != null) && (
@@ -802,7 +807,7 @@ const Ateliers = () => {
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs border rounded-full hover:bg-muted transition-colors"
                   >
                     <Users className="w-3 h-3" />
-                    Inscrits ({inscrits})
+                    Inscrits{placesPrises(a.places_max, a.places_disponibles) !== null ? ` (${placesPrises(a.places_max, a.places_disponibles)})` : ""}
                   </Link>
                   <button onClick={() => openEdit(a)}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs border rounded-full hover:bg-muted transition-colors flex-1 justify-center">
@@ -950,7 +955,9 @@ const Ateliers = () => {
                 <div>
                   <label className="block text-sm font-medium mb-1.5">Places max</label>
                   <input type="number" min={1} value={form.places_max} onChange={e => f("places_max", e.target.value)}
+                    placeholder="Illimitées"
                     className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
+                  <p className="text-xs text-muted-foreground mt-1">Laisser vide : places illimitées (rien n'est affiché au public).</p>
                 </div>
               </div>
               <div className="relative">

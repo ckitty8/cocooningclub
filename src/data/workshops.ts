@@ -4,8 +4,9 @@ export interface Workshop {
   date_atelier: string;
   heure_debut: string;
   duree: string;
-  places_disponibles: number;
-  places_max: number;
+  /** Null = places illimitées (places max laissé vide). */
+  places_disponibles: number | null;
+  places_max: number | null;
   description: string | null;
   description_courte?: string | null;
   lieu: string | null;
