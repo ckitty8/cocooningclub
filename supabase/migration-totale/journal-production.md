@@ -3,6 +3,12 @@
 Ces actions ont été faites sur la base partagée (preview + production) avec l'accord de l'équipe. Elles ne sont
 **pas** à rejouer ; elles sont notées pour la traçabilité et pour pouvoir les annuler.
 
+## 31/10/2026
+
+| Action | Détail | Retour arrière |
+|---|---|---|
+| Migration `20261031000000_ateliers_matin_apres_midi.sql` appliquée par Claude (outil Supabase `execute_sql`, projet CocooningClubBDD) avec l'accord de l'utilisatrice | Colonnes facultatives `ateliers.matin` et `ateliers.apres_midi` (TEXT, 300 caractères maximum). Contrôle après : les deux colonnes présentes, nullables ; aucune donnée touchée. | Bloc « Matin / après-midi » de `retour-arriere.sql` (`DROP COLUMN`). |
+
 ## 27/10/2026
 
 | Action | Détail | Retour arrière |
