@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, ChevronLeft, ChevronRight, Link2, MapPin, Users, Euro, AlarmClock } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Link2, MapPin, Users, Euro, AlarmClock, Sunrise, Sunset } from "lucide-react";
 import type { Workshop } from "@/data/workshops";
 import { formatDateFr, formatTimeFr } from "@/data/workshops";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
@@ -64,6 +64,20 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
                   <Calendar className="w-4 h-4 text-terracotta flex-shrink-0" />
                   <span>{formatDateFr(ws.date_atelier)} · {formatTimeFr(ws.heure_debut)}</span>
                 </div>
+
+                {ws.matin && (
+                  <div className="flex items-start gap-2 text-sm text-foreground">
+                    <Sunrise className="mt-0.5 w-4 h-4 text-terracotta flex-shrink-0" aria-hidden="true" />
+                    <span><span className="font-medium">Matin :</span> {ws.matin}</span>
+                  </div>
+                )}
+
+                {ws.apres_midi && (
+                  <div className="flex items-start gap-2 text-sm text-foreground">
+                    <Sunset className="mt-0.5 w-4 h-4 text-terracotta flex-shrink-0" aria-hidden="true" />
+                    <span><span className="font-medium">Après-midi :</span> {ws.apres_midi}</span>
+                  </div>
+                )}
 
                 {ws.lieu && (
                   <div className="flex items-center gap-2 text-sm text-foreground">

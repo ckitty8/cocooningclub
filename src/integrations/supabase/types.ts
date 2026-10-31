@@ -213,6 +213,8 @@ export type Database = {
           id: string
           lien_paypal: string | null
           lieu: string | null
+          matin: string | null
+          apres_midi: string | null
           modele_id: string | null
           modifie_le: string
           niveau: Database["public"]["Enums"]["niveau_atelier"]
@@ -242,6 +244,8 @@ export type Database = {
           id?: string
           lien_paypal?: string | null
           lieu?: string | null
+          matin?: string | null
+          apres_midi?: string | null
           modele_id?: string | null
           modifie_le?: string
           niveau?: Database["public"]["Enums"]["niveau_atelier"]
@@ -271,6 +275,8 @@ export type Database = {
           id?: string
           lien_paypal?: string | null
           lieu?: string | null
+          matin?: string | null
+          apres_midi?: string | null
           modele_id?: string | null
           modifie_le?: string
           niveau?: Database["public"]["Enums"]["niveau_atelier"]

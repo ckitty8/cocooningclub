@@ -18,6 +18,8 @@ BEGIN
 END
 $$;
 DROP FUNCTION IF EXISTS private.purger_donnees_anciennes();
+-- Matin / après-midi des ateliers Business (20261031000000) : les textes saisis sont perdus.
+ALTER TABLE public.ateliers DROP COLUMN IF EXISTS matin, DROP COLUMN IF EXISTS apres_midi;
 -- Types de documents (20261027000001) : une valeur d'enum ne se retire pas. Les documents de type « interne »,
 -- « administratif » ou « autre » repassent en « guide » ; les valeurs restent dans le type, sans effet.
 UPDATE public.documents SET type = 'guide' WHERE type::text IN ('interne', 'administratif', 'autre');

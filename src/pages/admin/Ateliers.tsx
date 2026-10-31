@@ -46,6 +46,9 @@ interface Atelier {
   niveau: Niveau | null;
   statut: Statut;
   espace_id: string;
+  /** Colonnes ajoutées par la migration « matin / après-midi » : absentes avant. */
+  matin?: string | null;
+  apres_midi?: string | null;
 }
 
 interface Espace {
@@ -59,7 +62,7 @@ const emptyForm = {
   date_atelier: "", date_fin_inscription: "", heure_debut: "", heure_fin: "", duree: "", lieu: "", adresse: "", url_image: "",
   places_max: 10, tarif_standard: "", tarif_adherent: "", tarif_affichage: "",
   lien_paypal: "", niveau: "" as Niveau | "", statut: "brouillon" as Statut,
-  espace_id: "",
+  espace_id: "", matin: "", apres_midi: "",
 };
 
 // Brouillon persistant : si l'onglet est déchargé par le navigateur (mise en
@@ -86,6 +89,7 @@ const Ateliers = () => {
   const [affichage, setAffichage] = useState<AffichageAteliers>("cartes");
   const [ateliers, setAteliers] = useState<Atelier[]>([]);
   const colonneTarifAdherent = ateliers.some(a => "tarif_adherent" in a);
+  const colonneMatinApresMidi = ateliers.some(a => "matin" in a);
   const [espaces, setEspaces] = useState<Espace[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<{ open: boolean; atelier: Atelier | null }>({ open: false, atelier: null });
@@ -204,7 +208,7 @@ const Ateliers = () => {
         return;
       }
       setModal({ open: true, atelier });
-      setForm(draft.form);
+      setForm({ ...emptyForm, ...draft.form });
     } catch {
       localStorage.removeItem(DRAFT_KEY);
     }
@@ -247,6 +251,7 @@ const Ateliers = () => {
       lien_paypal: a.lien_paypal ?? "",
       niveau: a.niveau ?? "", statut: a.statut,
       espace_id: a.espace_id,
+      matin: a.matin ?? "", apres_midi: a.apres_midi ?? "",
     });
     setModal({ open: true, atelier: a });
   };
@@ -267,9 +272,13 @@ const Ateliers = () => {
       lien_paypal: a.lien_paypal ?? "",
       niveau: a.niveau ?? "", statut: "brouillon",
       espace_id: a.espace_id,
+      matin: a.matin ?? "", apres_midi: a.apres_midi ?? "",
     });
     setModal({ open: true, atelier: null });
   };
+
+  // Les champs « Matin » et « Après-midi » n'existent que pour un atelier de l'espace Business.
+  const espaceBusiness = espaces.find(c => c.id === form.espace_id)?.slug === "business";
 
   const handleSave = async () => {
     setSaving(true);
@@ -328,6 +337,10 @@ const Ateliers = () => {
       niveau: (form.niveau as Niveau) || "debutant",
       statut: form.statut,
       espace_id: form.espace_id,
+      // Matin / après-midi : propres aux ateliers Business ; écrits seulement si la colonne existe (migration appliquée) ou si saisis.
+      ...(colonneMatinApresMidi || form.matin.trim() || form.apres_midi.trim()
+        ? { matin: espaceBusiness ? form.matin.trim() || null : null, apres_midi: espaceBusiness ? form.apres_midi.trim() || null : null }
+        : {}),
     };
     if (modal.atelier) {
       const before = modal.atelier;
@@ -862,6 +875,23 @@ const Ateliers = () => {
                   <p className="text-xs text-amber-600 mt-1">Aucun espace en base. Crée-en un côté Supabase (table espaces) avant de continuer.</p>
                 )}
               </div>
+              {espaceBusiness && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="atelier-matin" className="block text-sm font-medium mb-1.5">Matin</label>
+                    <input id="atelier-matin" value={form.matin} onChange={e => f("matin", e.target.value)} maxLength={300}
+                      placeholder="ex: 9h30 – 12h : ..."
+                      className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
+                  </div>
+                  <div>
+                    <label htmlFor="atelier-apres-midi" className="block text-sm font-medium mb-1.5">Après-midi</label>
+                    <input id="atelier-apres-midi" value={form.apres_midi} onChange={e => f("apres_midi", e.target.value)} maxLength={300}
+                      placeholder="ex: 14h – 17h : ..."
+                      className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
+                  </div>
+                  <p className="sm:col-span-2 text-xs text-muted-foreground -mt-2">Saisie libre. Les deux lignes s'affichent sur la tuile de l'atelier, sur la page d'accueil.</p>
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium mb-1.5">Titre *</label>
                 <input value={form.titre} onChange={e => f("titre", e.target.value)}

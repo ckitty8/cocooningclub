@@ -18,7 +18,7 @@ import { usePublicAteliers } from "@/hooks/usePublicAteliers";
 import { useAntiSpam } from "@/hooks/useAntiSpam";
 import { messageErreurServeur } from "@/utils/messageErreurServeur";
 
-const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, description_courte, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription, espaces(slug)";
+const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, description_courte, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription, matin, apres_midi, espaces(slug)";
 
 
 // ── Formulaire de contact dynamique ──────────────────────

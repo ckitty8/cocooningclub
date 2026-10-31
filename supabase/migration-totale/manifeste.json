@@ -19,7 +19,8 @@
     "20261026000002_fiche_reliee_au_compte_en_cascade.sql",
     "20261026000003_documents_admins.sql",
     "20261027000000_hobby_profil.sql",
-    "20261027000001_types_documents.sql"
+    "20261027000001_types_documents.sql",
+    "20261031000000_ateliers_matin_apres_midi.sql"
   ],
   "migrationsAuDeploiement": [
     "20261024000002_minimisation_date_naissance.sql",

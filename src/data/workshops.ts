@@ -14,6 +14,9 @@ export interface Workshop {
   tarif_standard: number;
   statut: string;
   date_fin_inscription?: string | null;
+  /** Programme libre du matin et de l'après-midi (ateliers Business). */
+  matin?: string | null;
+  apres_midi?: string | null;
   /** Espace de l'atelier (jointure sur `espaces`), si demandé dans la requête. */
   espaces?: { slug: string } | null;
 }
