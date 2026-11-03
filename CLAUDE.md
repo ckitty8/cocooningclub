@@ -10,6 +10,12 @@ Terminer le message à l'utilisatrice par ces deux phrases (avec le vrai hash du
 
 À chaque livraison, donner aussi le lien de la preview Vercel de la branche : `https://cocooningclub-git-<branche avec « / » remplacés par « - »>-ckitty8s-projects.vercel.app` (pour `claude/sharp-fermat-zch983` : `https://cocooningclub-git-claude-sharp-fermat-zch983-ckitty8s-projects.vercel.app`). Claude ne peut pas ouvrir ce domaine depuis son environnement : préciser que la preview met une à deux minutes à se mettre à jour après le push.
 
+## Avant chaque push sur `main`
+
+1. Montrer à l'utilisatrice une maquette PNG des écrans touchés (capture du site en local, ordinateur et mobile).
+2. Lui donner un récap rapide, en points, des évolutions et bugs corrigés qui vont être livrés.
+3. Attendre son « go » avant de pousser sur `main`.
+
 ## Points en attente
 
 
