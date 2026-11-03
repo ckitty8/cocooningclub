@@ -3,6 +3,7 @@
 // de l'atelier sont repris, et un atelier sans lieu est ignoré (le lieu est obligatoire pour Google).
 import type { Workshop } from "@/data/workshops";
 import { SITE_URL } from "./pages";
+import { versTexteBrut } from "@/lib/texteRiche";
 
 const dernierDimanche = (annee: number, mois: number): number => {
   // mois : 0 = janvier. Jour du mois du dernier dimanche.
@@ -76,7 +77,7 @@ export const evenementJsonLd = (atelier: Atelier): Record<string, unknown> | nul
     url,
   };
   if (fin) evenement.endDate = `${ajouterJours(atelier.date_atelier, fin.jours)}T${fin.heure}:00${decalage}`;
-  const description = atelier.description?.trim();
+  const description = versTexteBrut(atelier.description);
   if (description) evenement.description = description;
   if (Number.isFinite(atelier.tarif_standard)) {
     evenement.offers = {

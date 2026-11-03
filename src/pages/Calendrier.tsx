@@ -17,6 +17,7 @@ import { espaceDe } from "@/lib/espaces";
 import { estComplet } from "@/lib/placesAtelier";
 import AjouterAgenda from "@/components/AjouterAgenda";
 import EvenementsJsonLd from "@/components/EvenementsJsonLd";
+import DescriptionAtelier from "@/components/texte/DescriptionAtelier";
 
 const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription, espaces(slug)";
 
@@ -292,9 +293,7 @@ const Calendrier = () => {
 
             {/* Body */}
             <div className="px-6 py-5 space-y-4">
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                {popinWorkshop.description}
-              </p>
+              <DescriptionAtelier texte={popinWorkshop.description} className="text-muted-foreground text-sm leading-relaxed" />
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <MapPin className="w-4 h-4 text-terracotta flex-shrink-0" />

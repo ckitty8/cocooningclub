@@ -14,6 +14,7 @@ import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { dateLongue } from "@/lib/dates";
 import { placesPrises } from "@/lib/placesAtelier";
 import { copierLienInscription } from "@/utils/copierLienInscription";
+import DescriptionAtelier from "@/components/texte/DescriptionAtelier";
 
 interface AtelierFiche {
   id: string;
@@ -214,7 +215,9 @@ const FicheAtelier = () => {
         <div className="grid gap-5 lg:grid-cols-2 text-sm">
           <section className="bg-card border rounded-2xl p-5 space-y-3">
             <h2 className="font-semibold">Description</h2>
-            <p className="text-muted-foreground whitespace-pre-wrap">{atelier.description || atelier.description_courte || "Aucune description."}</p>
+            {atelier.description || atelier.description_courte
+              ? <DescriptionAtelier texte={atelier.description || atelier.description_courte} className="text-muted-foreground" />
+              : <p className="text-muted-foreground">Aucune description.</p>}
           </section>
           <section className="bg-card border rounded-2xl p-5 space-y-2 text-muted-foreground">
             <h2 className="font-semibold text-foreground">Pratique</h2>

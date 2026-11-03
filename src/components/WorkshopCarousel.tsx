@@ -7,6 +7,7 @@ import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { espaceDe } from "@/lib/espaces";
 import AjouterAgenda from "@/components/AjouterAgenda";
 import { copierLienInscription } from "@/utils/copierLienInscription";
+import { versTexteBrut } from "@/lib/texteRiche";
 
 interface WorkshopCarouselProps {
   workshops: Workshop[];
@@ -58,7 +59,7 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
                 <h3 className="font-brand text-xl text-foreground">{ws.titre}</h3>
               </div>
               <div className="p-6 space-y-3 flex-1 flex flex-col">
-                <p className="text-muted-foreground text-sm leading-relaxed mb-2">{ws.description_courte || ws.description}</p>
+                <p className="text-muted-foreground text-sm leading-relaxed mb-2">{ws.description_courte || versTexteBrut(ws.description)}</p>
 
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <Calendar className="w-4 h-4 text-terracotta flex-shrink-0" />

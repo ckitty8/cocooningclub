@@ -19,6 +19,8 @@ import { useVacancesScolaires } from "@/hooks/useVacancesScolaires";
 import { aujourdhuiIso } from "@/lib/adhesions";
 import { compressImage } from "@/utils/compressImage";
 import { Plus, Pencil, Trash2, Copy, Link2, X, MapPin, Clock, Users, Euro, Search, Image as ImageIcon, LayoutGrid, List, CalendarDays } from "lucide-react";
+import EditeurTexteRiche from "@/components/texte/EditeurTexteRiche";
+import { htmlAEnregistrer } from "@/lib/nettoyerHtml";
 
 type Statut = "brouillon" | "publie" | "complet" | "annule" | "termine";
 type Niveau = "debutant" | "intermediaire" | "avance";
@@ -325,7 +327,7 @@ const Ateliers = () => {
 
     const payload = {
       titre: form.titre,
-      description: form.description || null,
+      description: htmlAEnregistrer(form.description),
       description_courte: form.description_courte || null,
       date_atelier: form.date_atelier,
       date_fin_inscription: form.date_fin_inscription || null,
@@ -908,9 +910,10 @@ const Ateliers = () => {
                   className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5">Description complète</label>
-                <textarea value={form.description} onChange={e => f("description", e.target.value)}
-                  rows={3} className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary resize-none" />
+                <span id="libelle-description" className="block text-sm font-medium mb-1.5">Description complète</span>
+                <EditeurTexteRiche libelleId="libelle-description" valeur={form.description}
+                  onChange={html => f("description", html)} />
+                <p className="text-xs text-muted-foreground mt-1">Mise en forme affichée dans le calendrier, l'espace membre et la fiche de l'atelier.</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>

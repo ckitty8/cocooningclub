@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { dateLongue } from "@/lib/dates";
 import { estComplet } from "@/lib/placesAtelier";
+import DescriptionAtelier from "@/components/texte/DescriptionAtelier";
 
 interface Atelier {
   id: string;
@@ -245,7 +246,7 @@ const Ateliers = () => {
               )}
 
               {popin.description && (
-                <p className="text-sm text-muted-foreground mb-4 whitespace-pre-line">{popin.description}</p>
+                <DescriptionAtelier texte={popin.description} className="text-sm text-muted-foreground mb-4" />
               )}
 
               <div className="grid grid-cols-2 gap-3 text-sm mb-5">
