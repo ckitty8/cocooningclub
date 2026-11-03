@@ -9,7 +9,7 @@ import { formatDateFr, formatTimeFr, type Workshop } from "@/data/workshops";
 import { usePublicAteliers } from "@/hooks/usePublicAteliers";
 import { trackVisit } from "@/utils/trackVisit";
 
-const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription, espaces(slug)";
+const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription, matin, apres_midi, creneaux, espaces(slug)";
 
 // Atelier de remplacement quand la liste des ateliers ne se charge pas : le formulaire reste utilisable
 // et la demande est enregistrée avec l'identifiant de l'atelier du lien, jamais perdue.

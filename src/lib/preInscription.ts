@@ -26,6 +26,8 @@ const schemaAvecIdentite = (prenom: z.ZodString, nom: z.ZodString, email: z.ZodS
       .refine(v => v === "" || TELEPHONE_REGEX.test(v), "Numéro de téléphone invalide."),
     workshop: z.string().min(1, "Veuillez choisir un atelier."),
     birthdate: z.string().optional(),
+    /** Créneau choisi (matin, apres_midi, journee) pour un atelier Business qui en propose ; "" sinon. */
+    creneau: z.string().optional(),
     /** Droit à l'image : photos et vidéos de l'atelier. */
     droitImage: reponse,
     /** Autorisation d'être ajoutée au groupe WhatsApp du club. */
@@ -56,6 +58,7 @@ export const valeursInitiales = (atelierTitre = "", profil?: Profile | null): Pr
   phone: profil?.telephone ?? "",
   workshop: atelierTitre,
   birthdate: "",
+  creneau: "",
   droitImage: "",
   whatsapp: "",
   cgu: false,
@@ -74,7 +77,10 @@ export const envoyerPreInscription = (
   data: PreInscriptionData,
   atelierId: string,
   profil: Pick<Profile, "id"> | null,
-  /** Repli si la base n'a pas encore les colonnes de consentement : la pré-inscription passe quand même. */
+  /**
+   * Repli si la base n'a pas encore les dernières colonnes (consentements, créneau) : la pré-inscription
+   * passe quand même ; le créneau choisi est alors perdu pour cette ligne (l'équipe le redemande).
+   */
   sansConsentements = false,
 ) => {
   const complements = {
@@ -83,6 +89,7 @@ export const envoyerPreInscription = (
     ...(sansConsentements ? {} : {
       autorisation_image: reponseEnBooleen(data.droitImage),
       accord_whatsapp: reponseEnBooleen(data.whatsapp),
+      ...(data.creneau ? { creneau: data.creneau } : {}),
     }),
   };
 

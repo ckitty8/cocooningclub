@@ -32,6 +32,14 @@ describe("messages aux pré-inscrites", () => {
     expect(remplirModele("{adresse}|{carte}|{matin}|{tarif}", avecLien)).toBe(`${lien}|${lien}||`);
     expect(remplirModele("{tarif}", { ...insc, ateliers: { ...insc.ateliers, tarif_standard: 0 } })).toBe("Gratuit");
   });
+  it("reprend le créneau choisi et son prix (ateliers Business)", () => {
+    const business = {
+      ...insc, creneau: "matin",
+      ateliers: { ...insc.ateliers, tarif_standard: 0, creneaux: { matin: { debut: "10:00", fin: "13:00", tarif: 25 }, journee: {} } },
+    };
+    expect(remplirModele("{creneau} · {tarif}", business)).toBe("Matinée (10:00 – 13:00) · 25 €");
+    expect(remplirModele("[{creneau}]", insc)).toBe("[]");
+  });
   it("met le numéro au format WhatsApp", () => {
     expect(telephonePourWhatsApp("06 01 02 03 04")).toBe("33601020304");
     expect(telephonePourWhatsApp("+33 6 01 02 03 04")).toBe("33601020304");

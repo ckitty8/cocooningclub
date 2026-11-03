@@ -20,6 +20,8 @@ export interface Inscription {
   statut: StatutInscription;
   statut_paiement: StatutPaiement;
   inscrit_le: string;
+  /** Créneau Business choisi (matin, apres_midi, journee) ; absent avant la migration 20261103000001. */
+  creneau?: string | null;
   /** Toutes les colonnes de l'atelier : les modèles de messages peuvent en reprendre la plupart. */
   ateliers?: (AtelierPourMessage & { id: string; adresse: string | null }) | null;
   utilisateurs?: {
@@ -43,6 +45,8 @@ export interface AtelierListe {
   places_max: number | null;
   places_disponibles: number | null;
   espace_id: string | null;
+  /** Créneaux Business proposés (voir src/lib/creneaux.ts). */
+  creneaux?: unknown;
 }
 
 /** Offre de la personne et droit de l'atelier qui en découle (gratuit, inclus ou à payer). */

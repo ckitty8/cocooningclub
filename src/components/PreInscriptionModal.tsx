@@ -17,6 +17,8 @@ import {
 import { enregistrerPreInscription, type IssuePreInscription } from "@/lib/preInscriptionSecours";
 import AjouterAgenda from "@/components/AjouterAgenda";
 import RappelAtelier from "@/components/RappelAtelier";
+import ChoixCreneau from "@/components/ChoixCreneau";
+import { aDesCreneaux, estCleCreneau, LIBELLE_COURT_CRENEAU, type CleCreneau } from "@/lib/creneaux";
 
 interface PreInscriptionModalProps {
   /** Ateliers proposés dans la liste déroulante. */
@@ -33,6 +35,7 @@ interface PreInscriptionModalProps {
 interface Confirmation {
   atelier: Workshop | null;
   titre: string;
+  creneau: CleCreneau | null;
   issue: IssuePreInscription["issue"];
 }
 
@@ -79,7 +82,7 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer, atelierId, en
   const antiSpam = useAntiSpam();
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
 
-  const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<PreInscriptionData>({
+  const { register, handleSubmit, watch, setValue, setError, clearErrors, formState: { errors, isSubmitting } } = useForm<PreInscriptionData>({
     resolver: zodResolver(profile ? preInscriptionMembreSchema : preInscriptionSchema),
     defaultValues: valeursInitiales(atelierInitial, profile),
   });
@@ -90,6 +93,14 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer, atelierId, en
 
   const onSubmit = async (data: PreInscriptionData) => {
     const trouve = (atelierId ? ateliers.find(a => a.id === atelierId) : ateliers.find(a => a.titre === data.workshop)) ?? null;
+    // Atelier Business à créneaux : le choix (matinée, après-midi, journée) est obligatoire ; il est ignoré sinon.
+    const avecCreneaux = !!trouve && aDesCreneaux(trouve.creneaux);
+    if (avecCreneaux && !estCleCreneau(data.creneau)) {
+      setError("creneau", { message: "Merci de choisir la matinée, l'après-midi ou la journée entière." });
+      return;
+    }
+    if (!avecCreneaux) data = { ...data, creneau: "" };
+    const creneau = estCleCreneau(data.creneau) ? data.creneau : null;
     // Atelier de remplacement (détails indisponibles) : utilisable pour l'envoi, pas pour l'affichage.
     const atelier = trouve && trouve.date_atelier ? trouve : null;
     const demande = {
@@ -101,7 +112,7 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer, atelierId, en
 
     // Robot sûr (champ piège rempli) : on simule une réussite sans rien enregistrer.
     if (!profile && antiSpam.piegeRempli()) {
-      setConfirmation({ atelier, titre: demande.atelierTitre, issue: "enregistree" });
+      setConfirmation({ atelier, titre: demande.atelierTitre, creneau, issue: "enregistree" });
       return;
     }
 
@@ -121,7 +132,7 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer, atelierId, en
     }
 
     // Les places ne sont décomptées qu'à la validation par l'équipe (trigger en base).
-    setConfirmation({ atelier, titre: demande.atelierTitre, issue: issue.issue });
+    setConfirmation({ atelier, titre: demande.atelierTitre, creneau, issue: issue.issue });
   };
 
   return (
@@ -168,6 +179,7 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer, atelierId, en
                     <p>Tu recevras un message très bientôt avec les détails pratiques.</p>
                     <p className="text-xs">
                       <span className="font-medium text-foreground">{confirmation.titre}</span>
+                      {confirmation.creneau && <> · {LIBELLE_COURT_CRENEAU[confirmation.creneau]}</>}
                       {confirmation.atelier && <> · {formatDateFr(confirmation.atelier.date_atelier)} à {formatTimeFr(confirmation.atelier.heure_debut)}{confirmation.atelier.lieu && <> · {confirmation.atelier.lieu}</>}</>}
                     </p>
                   </>
@@ -219,6 +231,15 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer, atelierId, en
                 {errors.workshop && <p className={erreur}>{errors.workshop.message}</p>}
                 {atelierChoisi && <RappelAtelier atelier={atelierChoisi} />}
               </div>
+
+              {atelierChoisi && aDesCreneaux(atelierChoisi.creneaux) && (
+                <ChoixCreneau
+                  atelier={atelierChoisi}
+                  valeur={watch("creneau") ?? ""}
+                  onChoisir={cle => { setValue("creneau", cle); clearErrors("creneau"); }}
+                  erreur={errors.creneau?.message}
+                />
+              )}
 
               {watch("workshop") === ATELIER_AVEC_DATE_NAISSANCE && (
                 <div>

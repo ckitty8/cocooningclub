@@ -18,6 +18,8 @@ export interface Workshop {
   /** Programme libre du matin et de l'après-midi (ateliers Business). */
   matin?: string | null;
   apres_midi?: string | null;
+  /** Créneaux d'inscription (matinée, après-midi, journée) des ateliers Business : voir src/lib/creneaux.ts. */
+  creneaux?: unknown;
   /** Espace de l'atelier (jointure sur `espaces`), si demandé dans la requête. */
   espaces?: { slug: string } | null;
 }

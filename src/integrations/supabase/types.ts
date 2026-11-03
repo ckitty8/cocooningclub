@@ -244,6 +244,7 @@ export type Database = {
       }
       ateliers: {
         Row: {
+          creneaux: Json | null
           adresse: string | null
           espace_id: string
           cree_le: string
@@ -275,6 +276,7 @@ export type Database = {
           url_image: string | null
         }
         Insert: {
+          creneaux?: Json | null
           adresse?: string | null
           espace_id: string
           cree_le?: string
@@ -306,6 +308,7 @@ export type Database = {
           url_image?: string | null
         }
         Update: {
+          creneaux?: Json | null
           adresse?: string | null
           espace_id?: string
           cree_le?: string
@@ -766,6 +769,7 @@ export type Database = {
       }
       inscriptions: {
         Row: {
+          creneau: string | null
           accord_whatsapp: boolean | null
           autorisation_image: boolean | null
           consentements_le: string | null
@@ -784,6 +788,7 @@ export type Database = {
           utilisateur_id: string | null
         }
         Insert: {
+          creneau?: string | null
           accord_whatsapp?: boolean | null
           autorisation_image?: boolean | null
           consentements_le?: string | null
@@ -802,6 +807,7 @@ export type Database = {
           utilisateur_id?: string | null
         }
         Update: {
+          creneau?: string | null
           accord_whatsapp?: boolean | null
           autorisation_image?: boolean | null
           consentements_le?: string | null
@@ -845,6 +851,7 @@ export type Database = {
       }
       pre_inscriptions_secours: {
         Row: {
+          creneau: string | null
           accord_whatsapp: boolean | null
           droit_image: boolean | null
           prenom: string | null
@@ -860,6 +867,7 @@ export type Database = {
           utilisateur_id: string | null
         }
         Insert: {
+          creneau?: string | null
           accord_whatsapp?: boolean | null
           droit_image?: boolean | null
           prenom?: string | null
@@ -875,6 +883,7 @@ export type Database = {
           utilisateur_id?: string | null
         }
         Update: {
+          creneau?: string | null
           accord_whatsapp?: boolean | null
           droit_image?: boolean | null
           prenom?: string | null
@@ -1276,6 +1285,7 @@ export type Database = {
       depublier_ateliers_passes: { Args: never; Returns: number }
       expirer_adhesions: { Args: never; Returns: number }
       is_admin: { Args: never; Returns: boolean }
+      places_creneaux: { Args: { p_atelier: string }; Returns: { matin: number; apres_midi: number }[] }
       supprimer_membre: { Args: { p_id: string }; Returns: undefined }
       valider_sans_paiement: { Args: { p_inscription: string; p_motif: string }; Returns: undefined }
       valider_adhesion: {

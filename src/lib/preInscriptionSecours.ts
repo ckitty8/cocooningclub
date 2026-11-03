@@ -37,9 +37,9 @@ type ErreurServeur = { code?: string; message?: string } | null;
 export const estDoublon = (error: ErreurServeur): boolean =>
   error?.code === "P0001" && /existe déjà/i.test(error.message ?? "");
 
-/** La base n'a pas (encore) les colonnes du droit à l'image / WhatsApp (migration 20261025000001 à appliquer). */
+/** La base n'a pas (encore) les colonnes du droit à l'image / WhatsApp ou du créneau (migrations 20261025000001, 20261103000001). */
 const colonneConsentementAbsente = (error: ErreurServeur): boolean =>
-  error?.code === "PGRST204" || error?.code === "42703" || /autorisation_image|accord_whatsapp|consentements_le/.test(error?.message ?? "");
+  error?.code === "PGRST204" || error?.code === "42703" || /autorisation_image|accord_whatsapp|consentements_le|creneau/.test(error?.message ?? "");
 
 const texteErreur = (e: unknown): string => {
   if (e && typeof e === "object" && "message" in e) {
@@ -97,7 +97,7 @@ const identite = (d: DemandePreInscription) => ({
 
 const deposerEnSecours = async (d: DemandePreInscription, erreur: string) => {
   const { prenom, nom, email } = identite(d);
-  return supabase.from("pre_inscriptions_secours").insert({
+  const ligne = {
     prenom: prenom || null,
     nom,
     email: email || null,
@@ -109,7 +109,12 @@ const deposerEnSecours = async (d: DemandePreInscription, erreur: string) => {
     droit_image: d.data.droitImage ? reponseEnBooleen(d.data.droitImage) : null,
     accord_whatsapp: d.data.whatsapp ? reponseEnBooleen(d.data.whatsapp) : null,
     erreur,
-  });
+  };
+  if (!d.data.creneau) return supabase.from("pre_inscriptions_secours").insert(ligne);
+  const res = await supabase.from("pre_inscriptions_secours").insert({ ...ligne, creneau: d.data.creneau });
+  // Colonne « creneau » absente (migration pas encore appliquée) : le choix est gardé dans le texte de l'erreur.
+  if (!res.error) return res;
+  return supabase.from("pre_inscriptions_secours").insert({ ...ligne, erreur: `${erreur} · créneau choisi : ${d.data.creneau}` });
 };
 
 /**

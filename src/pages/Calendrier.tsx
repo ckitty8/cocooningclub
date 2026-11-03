@@ -19,7 +19,7 @@ import AjouterAgenda from "@/components/AjouterAgenda";
 import EvenementsJsonLd from "@/components/EvenementsJsonLd";
 import DescriptionAtelier from "@/components/texte/DescriptionAtelier";
 
-const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription, espaces(slug)";
+const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription, matin, apres_midi, creneaux, espaces(slug)";
 
 const FRENCH_DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 

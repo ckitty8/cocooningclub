@@ -4,6 +4,7 @@ import type { GroupeAtelier } from "@/lib/preInscriptions";
 import { OffrePastille } from "@/components/OffrePastille";
 import { euros } from "@/lib/droits";
 import { libellePlacesPrises } from "@/lib/placesAtelier";
+import { aDesCreneaux, estCleCreneau, LIBELLE_COURT_CRENEAU, lireCreneaux, placesPrisesParCreneau } from "@/lib/creneaux";
 import { ROLES_BADGE, STATUT_BADGE, STATUT_LABEL, type AtelierListe, type InfoDroit, type Inscription, type StatutInscription, reponseLibelle } from "./types";
 
 interface Props {
@@ -15,7 +16,26 @@ interface Props {
   actingOn: string | null;
   onOuvrir: (insc: Inscription, onglet?: "infos" | "messages", canal?: "mail" | "whatsapp") => void;
   onStatut: (insc: Inscription, statut: StatutInscription) => void | Promise<void>;
+  /** Toutes les pré-inscriptions (sans filtre) : compteurs de places par créneau des ateliers Business. */
+  toutes?: Inscription[];
 }
+
+/** « Matinée : 6 / 8 » (pré-inscriptions validées / places), une pastille par demi-journée proposée. */
+const CompteursCreneaux = ({ atelier, toutes }: { atelier: AtelierListe; toutes: Inscription[] }) => {
+  const c = lireCreneaux(atelier.creneaux);
+  const pris = placesPrisesParCreneau(toutes.filter(i => i.atelier_id === atelier.id && i.statut === "confirme").map(i => i.creneau));
+  const pastille = "rounded-full border bg-background px-2 py-0.5";
+  return (
+    <span className="mt-1 flex flex-wrap gap-1.5 font-body text-xs text-muted-foreground">
+      {(["matin", "apres_midi"] as const).filter(k => c[k] || c.journee).map(k => (
+        <span key={k} className={pastille}>
+          {LIBELLE_COURT_CRENEAU[k]} : {pris[k]}{c[k]?.places != null ? ` / ${c[k]?.places}` : ""}
+        </span>
+      ))}
+      {c.journee && <span className={pastille}>dont journée entière : {pris.journee}</span>}
+    </span>
+  );
+};
 
 const dateCourte = (iso: string) =>
   new Date(iso + "T00:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
@@ -28,7 +48,7 @@ const bouton = "flex h-8 w-8 items-center justify-center rounded-full border tra
 const boutonLarge = "hidden sm:flex h-8 w-8 items-center justify-center rounded-full border transition-colors disabled:opacity-40";
 
 /** Accordéon : un bloc par atelier, avec ses pré-inscriptions et des actions rapides. */
-const ListeParAtelier = ({ groupes, ouverts, onBasculer, droits, actingOn, onOuvrir, onStatut }: Props) => (
+const ListeParAtelier = ({ groupes, ouverts, onBasculer, droits, actingOn, onOuvrir, onStatut, toutes = [] }: Props) => (
   <div className="space-y-3">
     {groupes.map(({ atelier, items, aTraiter, total }) => {
       const ouvert = !!ouverts[atelier.id];
@@ -46,6 +66,7 @@ const ListeParAtelier = ({ groupes, ouverts, onBasculer, droits, actingOn, onOuv
                 <span className="font-body text-xs text-muted-foreground">
                   {dateCourte(atelier.date_atelier)} · {total} pré-inscription{total > 1 ? "s" : ""} · {atelier.places_max === null ? "places illimitées" : `${libellePlacesPrises(atelier.places_max, atelier.places_disponibles)} places prises`}
                 </span>
+                {aDesCreneaux(atelier.creneaux) && <CompteursCreneaux atelier={atelier} toutes={toutes} />}
               </span>
               <span className={`font-body shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${aTraiter > 0 ? STATUT_BADGE.en_attente : "bg-green-100 text-green-700"}`}>
                 {aTraiter > 0 ? `${aTraiter} à traiter` : "Tout est traité"}
@@ -75,6 +96,9 @@ const ListeParAtelier = ({ groupes, ouverts, onBasculer, droits, actingOn, onOuv
                         <span className="flex flex-wrap items-center gap-2">
                           <span className="font-medium">{nom}</span>
                           {role && <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-medium ${role.cls}`}>{role.label}</span>}
+                          {estCleCreneau(insc.creneau) && (
+                            <span className="rounded-full bg-espace-business/15 px-2 py-0.5 text-xs font-medium text-foreground">{LIBELLE_COURT_CRENEAU[insc.creneau]}</span>
+                          )}
                           {droits?.get(insc.id)?.offres.map(o => <OffrePastille key={o.formule_id} offre={o} />)}
                         </span>
                         <span className="block text-xs text-muted-foreground truncate">{id.email ?? id.telephone ?? "—"} · reçue le {depuis(insc.inscrit_le)}</span>

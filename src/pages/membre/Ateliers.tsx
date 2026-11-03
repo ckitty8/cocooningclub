@@ -62,7 +62,8 @@ const Ateliers = () => {
     const [aRes, iRes] = await Promise.all([
       supabase
         .from("ateliers")
-        .select("id, titre, description, description_courte, date_atelier, heure_debut, duree, lieu, adresse, url_image, places_max, places_disponibles, tarif_standard, tarif_affichage, lien_paypal, date_fin_inscription, statut, espace_id")
+        // Toutes les colonnes : le formulaire de pré-inscription lit aussi les créneaux Business (matin, après-midi, journée).
+        .select("*")
         .in("statut", ["publie", "complet"])
         .gte("date_atelier", today)
         .order("date_atelier"),

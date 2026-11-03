@@ -1,3 +1,4 @@
+import { estCleCreneau, LIBELLE_COURT_CRENEAU } from "@/lib/creneaux";
 import { useCallback, useEffect, useState } from "react";
 import { Check, LifeBuoy, Mail, Phone } from "lucide-react";
 import { toast } from "sonner";
@@ -67,6 +68,7 @@ const DemandesSecours = () => {
                   WhatsApp : {d.accord_whatsapp === null ? "non renseigné" : d.accord_whatsapp ? "accepte" : "n'accepte pas"}
                 </p>
               )}
+              {estCleCreneau(d.creneau) && <p className="text-xs text-muted-foreground">Créneau : <span className="font-medium text-foreground">{LIBELLE_COURT_CRENEAU[d.creneau]}</span></p>}
               {d.erreur && <p className="text-xs text-muted-foreground">Cause : {d.erreur}</p>}
             </div>
             <button

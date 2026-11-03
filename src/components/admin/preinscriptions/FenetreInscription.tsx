@@ -8,7 +8,11 @@ import { detailPhotos, type AutorisationImage } from "@/lib/autorisationImage";
 import { OffrePastille } from "@/components/OffrePastille";
 import { euros, nomCourtOffre } from "@/lib/droits";
 import { inscIdentite } from "@/lib/inscriptionIdentite";
-import { clesModele, remplirModele, telephonePourWhatsApp } from "@/lib/messagesInscription";
+import { clesModele, remplirModele, telephonePourWhatsApp, valeursMessage } from "@/lib/messagesInscription";
+import { aDesCreneaux, estCleCreneau } from "@/lib/creneaux";
+
+/** « Matinée (10:00 – 13:00) » : même texte que la variable {creneau} des messages. */
+const libelleCreneauInscription = (insc: Parameters<typeof valeursMessage>[0]) => valeursMessage(insc)["{creneau}"];
 import {
   ROLES_BADGE, STATUT_BADGE, STATUT_LABEL, type AtelierListe, type InfoDroit, type Inscription, type StatutInscription, type StatutPaiement, reponseLibelle,
 } from "./types";
@@ -199,6 +203,12 @@ const FenetreInscription = ({
                     <p className="text-foreground font-medium">{insc.ateliers.titre}</p>
                     <p className="flex items-center gap-2"><Calendar className="w-4 h-4 shrink-0" />{dateLongue(insc.ateliers.date_atelier)} · {insc.ateliers.heure_debut.slice(0, 5)}</p>
                     {insc.ateliers.lieu && <p className="flex items-center gap-2"><MapPin className="w-4 h-4 shrink-0" />{insc.ateliers.lieu}</p>}
+                    {estCleCreneau(insc.creneau) && (
+                      <p>Créneau : <span className="font-medium text-foreground">{libelleCreneauInscription(insc)}</span></p>
+                    )}
+                    {!estCleCreneau(insc.creneau) && aDesCreneaux(insc.ateliers.creneaux) && (
+                      <p className="text-amber-700">Créneau non renseigné : à choisir avec « Modifier ».</p>
+                    )}
                   </>
                 )}
                 <p className="font-medium text-foreground pt-2">Consentement photo et vidéo</p>

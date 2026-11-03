@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { aDesCreneaux, creneauxProposes, estCleCreneau, horairesCreneau, LIBELLE_COURT_CRENEAU, tarifsAvecCreneau } from "@/lib/creneaux";
 import AdminLayout from "@/components/admin/AdminLayout";
 import ListeParAtelier from "@/components/admin/preinscriptions/ListeParAtelier";
 import DemandesSecours from "@/components/admin/preinscriptions/DemandesSecours";
@@ -30,6 +31,11 @@ interface AtelierMinimal {
   heure_debut: string | null;
   statut: string;
   tarif_standard: number | null;
+  /** Créneaux Business (migration 20261103000001) : absents avant. */
+  creneaux?: unknown;
+  duree?: string | null;
+  matin?: string | null;
+  apres_midi?: string | null;
 }
 
 const PIERRE_ORACLE_TITRE = "Atelier Créatif — Pierre & Oracle";
@@ -84,6 +90,8 @@ const PreInscriptions = () => {
     email: "",
     telephone: "",
     date_naissance: "",
+    /** Créneau Business choisi ("" = aucun / atelier sans créneau). */
+    creneau: "",
     statut: "confirme" as "confirme" | "en_attente" | "annule",
     statut_paiement: "non_requis" as "non_requis" | "en_attente" | "paye",
   });
@@ -105,14 +113,14 @@ const PreInscriptions = () => {
         // Liste des ateliers proposables : tous sauf annulés / terminés.
         supabase
           .from("ateliers")
-          .select("id, titre, date_atelier, heure_debut, statut, tarif_standard")
+          .select("*")
           .in("statut", ["brouillon", "publie", "complet"])
           .gte("date_atelier", today)
           .order("date_atelier"),
         // Tous les ateliers : un bloc par atelier dans l'accordéon.
         supabase
           .from("ateliers")
-          .select("id, titre, date_atelier, heure_debut, lieu, statut, tarif_standard, places_max, places_disponibles, espace_id")
+          .select("*")
           .order("date_atelier"),
       ]));
 
@@ -187,6 +195,9 @@ const PreInscriptions = () => {
     [groupes, ouvertsManuels, cible],
   );
 
+  // La colonne « creneau » n'existe qu'une fois la migration 20261103000001 appliquée.
+  const colonneCreneau = inscriptions.some(i => "creneau" in i);
+
   const counts = useMemo(() => ({
     en_attente: inscriptions.filter(i => i.statut === "en_attente").length,
     confirme:   inscriptions.filter(i => i.statut === "confirme").length,
@@ -201,7 +212,9 @@ const PreInscriptions = () => {
       const atelier = ateliersListe.find(a => a.id === i.atelier_id);
       if (!atelier) continue;
       const offresPersonne = i.utilisateur_id ? offres.get(i.utilisateur_id) ?? [] : [];
-      carte.set(i.id, { droit: droitAtelier({ ...atelier, tarif_adherent: tarifsAdherent.get(atelier.id) ?? null }, espaces, offresPersonne), offres: offresPersonne });
+      // Le prix du créneau choisi (s'il est saisi) remplace celui de l'atelier.
+      const avecTarifs = tarifsAvecCreneau({ ...atelier, tarif_adherent: tarifsAdherent.get(atelier.id) ?? null }, i.creneau);
+      carte.set(i.id, { droit: droitAtelier(avecTarifs, espaces, offresPersonne), offres: offresPersonne });
     }
     return carte;
   }, [inscriptions, ateliersListe, espaces, offres, offresDisponibles, tarifsAdherent]);
@@ -277,7 +290,7 @@ const PreInscriptions = () => {
     setEditingInscription(null);
     setNewForm({
       atelier_id: ateliersDispo[0]?.id ?? "",
-      prenom: "", nom: "", email: "", telephone: "", date_naissance: "",
+      prenom: "", nom: "", email: "", telephone: "", date_naissance: "", creneau: "",
       statut: "confirme",
       statut_paiement: "non_requis",
     });
@@ -294,6 +307,7 @@ const PreInscriptions = () => {
       email: id.email ?? "",
       telephone: id.telephone ?? "",
       date_naissance: insc.date_naissance ?? "",
+      creneau: insc.creneau ?? "",
       statut: insc.statut,
       statut_paiement: insc.statut_paiement ?? "non_requis",
     });
@@ -320,6 +334,14 @@ const PreInscriptions = () => {
       toast.error("Date de naissance requise pour cet atelier");
       return;
     }
+    // Atelier Business à créneaux : la matinée, l'après-midi ou la journée doit être choisie.
+    const avecCreneaux = aDesCreneaux(atelier?.creneaux);
+    if (avecCreneaux && !estCleCreneau(newForm.creneau)) {
+      toast.error("Choisis le créneau : matinée, après-midi ou journée entière");
+      return;
+    }
+    // Écrit seulement si la colonne existe (migration appliquée) ou si un créneau est choisi.
+    const champCreneau = colonneCreneau || avecCreneaux ? { creneau: avecCreneaux ? newForm.creneau : null } : {};
 
     setNewSaving(true);
 
@@ -353,6 +375,7 @@ const PreInscriptions = () => {
         date_naissance: newForm.date_naissance || null,
         statut: newForm.statut,
         statut_paiement: newForm.statut_paiement,
+        ...champCreneau,
       };
       if (newForm.statut === "annule" && editingInscription.statut !== "annule") {
         payload.annule_le = new Date().toISOString();
@@ -382,7 +405,7 @@ const PreInscriptions = () => {
     } else {
       // INSERT : statut_paiement initial dérivé du tarif si non explicitement
       // forcé via la liste déroulante.
-      const isPaid = (atelier?.tarif_standard ?? 0) > 0;
+      const isPaid = ((atelier ? tarifsAvecCreneau(atelier, newForm.creneau) : undefined)?.tarif_standard ?? 0) > 0;
       const statutPaiement = newForm.statut_paiement !== "non_requis"
         ? newForm.statut_paiement
         : (isPaid ? "en_attente" : "non_requis");
@@ -406,6 +429,7 @@ const PreInscriptions = () => {
         date_naissance: newForm.date_naissance || null,
         statut: newForm.statut,
         statut_paiement: statutPaiement,
+        ...champCreneau,
       }).select("id").single();
 
       if (error) {
@@ -524,6 +548,7 @@ const PreInscriptions = () => {
             // Validation depuis la liste : le message de validation apparaît tout de suite, prêt à envoyer.
             if (ok && statut === "confirme") ouvrir({ ...insc, statut: "confirme" }, "messages");
           }}
+          toutes={inscriptions}
         />
       )}
 
@@ -675,6 +700,29 @@ const PreInscriptions = () => {
                   className="w-full rounded-xl border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
+
+              {(() => {
+                const atelier = ateliersDispo.find(a => a.id === newForm.atelier_id)
+                  ?? (editingInscription?.atelier_id === newForm.atelier_id ? editingInscription?.ateliers ?? undefined : undefined);
+                const proposes = atelier ? creneauxProposes(atelier) : [];
+                if (proposes.length === 0) return null;
+                return (
+                  <div>
+                    <label htmlFor="insc-creneau" className="block text-sm font-medium mb-1.5">Créneau *</label>
+                    <select
+                      id="insc-creneau"
+                      value={newForm.creneau}
+                      onChange={e => setNewForm({ ...newForm, creneau: e.target.value })}
+                      className="w-full rounded-xl border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="">— Choisir un créneau —</option>
+                      {proposes.map(c => (
+                        <option key={c.cle} value={c.cle}>{LIBELLE_COURT_CRENEAU[c.cle]}{horairesCreneau(c) && ` (${horairesCreneau(c)})`}</option>
+                      ))}
+                    </select>
+                  </div>
+                );
+              })()}
 
               {/* Date de naissance si atelier = Pierre & Oracle */}
               {(() => {

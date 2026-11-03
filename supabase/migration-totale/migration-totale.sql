@@ -2,7 +2,7 @@
 -- MIGRATION TOTALE DU SITE : à coller dans le SQL Editor de Supabase.
 -- Fichier généré par `npm run migration:build` : ne pas le modifier à la main.
 -- Tout est exécuté dans une seule transaction : en cas d'erreur, rien n'est appliqué.
--- Contient : 20261023000002_supprime_membre_et_compte.sql, 20261023000003_offre_et_adhesions.sql, 20261023000004_retire_role_membre_premium.sql, 20261023000005_droits_par_offre.sql, 20261023000006_bloque_validation_impayee.sql, 20261023000007_tarif_adherente.sql, 20261023000008_supprime_tables_de_sauvegarde.sql, 20261023000009_reserve_admin_dispo_aux_admins.sql, 20261023000010_supprime_decrement_atelier_spots.sql, 20261024000000_nettoyage_premium_et_mot_de_passe_hash.sql, 20261024000001_conservation_des_donnees.sql, 20261025000000_pre_inscriptions_secours.sql, 20261025000001_consentements_pre_inscription.sql, 20261026000000_membre_exige_adhesion.sql, 20261026000001_date_naissance_adhesion.sql, 20261026000002_fiche_reliee_au_compte_en_cascade.sql, 20261026000003_documents_admins.sql, 20261027000000_hobby_profil.sql, 20261027000001_types_documents.sql, 20261031000000_ateliers_matin_apres_midi.sql, 20261031000001_places_illimitees.sql, 20261103000000_nos_offres.sql
+-- Contient : 20261023000002_supprime_membre_et_compte.sql, 20261023000003_offre_et_adhesions.sql, 20261023000004_retire_role_membre_premium.sql, 20261023000005_droits_par_offre.sql, 20261023000006_bloque_validation_impayee.sql, 20261023000007_tarif_adherente.sql, 20261023000008_supprime_tables_de_sauvegarde.sql, 20261023000009_reserve_admin_dispo_aux_admins.sql, 20261023000010_supprime_decrement_atelier_spots.sql, 20261024000000_nettoyage_premium_et_mot_de_passe_hash.sql, 20261024000001_conservation_des_donnees.sql, 20261025000000_pre_inscriptions_secours.sql, 20261025000001_consentements_pre_inscription.sql, 20261026000000_membre_exige_adhesion.sql, 20261026000001_date_naissance_adhesion.sql, 20261026000002_fiche_reliee_au_compte_en_cascade.sql, 20261026000003_documents_admins.sql, 20261027000000_hobby_profil.sql, 20261027000001_types_documents.sql, 20261031000000_ateliers_matin_apres_midi.sql, 20261031000001_places_illimitees.sql, 20261103000000_nos_offres.sql, 20261103000001_creneaux_business.sql
 -- Lancer ensuite verifications.sql (tout doit afficher ok = true).
 -- =====================================================================
 
@@ -1500,5 +1500,74 @@ UPDATE public.formules SET
     'Et surtout, des moments pour créer, s''entraider et avancer ensemble !'
   ]
 WHERE nom = 'Cocooning Complet' AND rythme IS NULL;
+
+-- ---------------------------------------------------------------------
+-- 20261103000001_creneaux_business.sql
+-- ---------------------------------------------------------------------
+-- Créneaux d'inscription des ateliers Business : la matinée, l'après-midi ou la journée entière.
+--
+-- 1. ateliers.creneaux (JSON, facultatif) : créneaux proposés, une clé par créneau coché dans Admin → Ateliers :
+--      {"matin":      {"debut": "10:00", "fin": "13:00", "places": 8, "tarif": 25, "tarif_adherent": 20},
+--       "apres_midi": {"debut": "14:00", "fin": "17:00", "places": null, ...},
+--       "journee":    {"tarif": 40, "tarif_adherent": 30}}
+--    Tarifs facultatifs (absents = tarifs de l'atelier) ; places null = illimitées ; la journée entière prend
+--    une place le matin ET une l'après-midi. NULL = pas de créneau (inscription à l'atelier comme avant).
+-- 2. inscriptions.creneau : créneau choisi par la personne (NULL pour les ateliers sans créneau et les anciennes lignes).
+--    Le déclencheur private.proteger_inscriptions ne le touche pas : la personne le choisit à l'inscription,
+--    puis ne peut plus le modifier (seule l'annulation lui est permise) ; une administratrice peut le changer.
+-- 3. pre_inscriptions_secours.creneau : le choix est gardé aussi dans le filet de sécurité (aucune contrainte).
+-- 4. public.places_creneaux(atelier) : places prises (pré-inscriptions validées) le matin et l'après-midi,
+--    lisible par les visiteurs (le formulaire grise un créneau complet) sans exposer les inscriptions.
+-- Rien ne change pour les droits : une adhérente dont la formule couvre Business a l'atelier inclus quel que soit le créneau.
+-- Ajout pur, rejouable : l'ancien code du site continue de fonctionner.
+
+ALTER TABLE public.ateliers
+  ADD COLUMN IF NOT EXISTS creneaux JSONB;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'ateliers_creneaux_objet' AND conrelid = 'public.ateliers'::regclass) THEN
+    ALTER TABLE public.ateliers ADD CONSTRAINT ateliers_creneaux_objet
+      CHECK (creneaux IS NULL OR (jsonb_typeof(creneaux) = 'object' AND length(creneaux::text) <= 2000));
+  END IF;
+END
+$$;
+
+COMMENT ON COLUMN public.ateliers.creneaux IS
+  'Créneaux proposés à l''inscription (ateliers Business) : {matin, apres_midi : {debut, fin, places, tarif, tarif_adherent}, journee : {tarif, tarif_adherent}} ; NULL = aucun.';
+
+ALTER TABLE public.inscriptions
+  ADD COLUMN IF NOT EXISTS creneau TEXT;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'inscriptions_creneau_valide' AND conrelid = 'public.inscriptions'::regclass) THEN
+    ALTER TABLE public.inscriptions ADD CONSTRAINT inscriptions_creneau_valide
+      CHECK (creneau IS NULL OR creneau IN ('matin', 'apres_midi', 'journee'));
+  END IF;
+END
+$$;
+
+COMMENT ON COLUMN public.inscriptions.creneau IS 'Créneau choisi : matin, apres_midi ou journee ; NULL = atelier sans créneau.';
+
+ALTER TABLE public.pre_inscriptions_secours
+  ADD COLUMN IF NOT EXISTS creneau TEXT;
+
+CREATE OR REPLACE FUNCTION public.places_creneaux(p_atelier UUID)
+RETURNS TABLE (matin INTEGER, apres_midi INTEGER)
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+  SELECT
+    count(*) FILTER (WHERE i.creneau IN ('matin', 'journee'))::integer,
+    count(*) FILTER (WHERE i.creneau IN ('apres_midi', 'journee'))::integer
+  FROM public.inscriptions i
+  WHERE i.atelier_id = p_atelier AND i.statut = 'confirme';
+$$;
+
+REVOKE ALL ON FUNCTION public.places_creneaux(UUID) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.places_creneaux(UUID) TO anon, authenticated;
 
 COMMIT;

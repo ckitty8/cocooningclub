@@ -18,6 +18,11 @@ BEGIN
 END
 $$;
 DROP FUNCTION IF EXISTS private.purger_donnees_anciennes();
+-- Créneaux Business (20261103000001) : les créneaux des ateliers et les créneaux choisis sont perdus.
+DROP FUNCTION IF EXISTS public.places_creneaux(UUID);
+ALTER TABLE public.inscriptions DROP CONSTRAINT IF EXISTS inscriptions_creneau_valide, DROP COLUMN IF EXISTS creneau;
+ALTER TABLE public.pre_inscriptions_secours DROP COLUMN IF EXISTS creneau;
+ALTER TABLE public.ateliers DROP CONSTRAINT IF EXISTS ateliers_creneaux_objet, DROP COLUMN IF EXISTS creneaux;
 -- Page Nos offres (20261103000000) : table des questions et colonnes de contenu supprimées ; les noms des formules
 -- (L'Espace Chill, L'Espace Business, Chill + Business) et leur ordre restent (à renommer à la main si besoin).
 DROP TABLE IF EXISTS public.bon_a_savoir;

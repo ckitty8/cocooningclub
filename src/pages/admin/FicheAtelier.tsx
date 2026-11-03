@@ -7,6 +7,7 @@ import BadgePhotos from "@/components/BadgePhotos";
 import { useAutorisationsImage } from "@/hooks/useAutorisationsImage";
 import { supabase } from "@/integrations/supabase/client";
 import { ESPACES_PAR_SLUG } from "@/lib/espaces";
+import { aDesCreneaux, estCleCreneau, LIBELLE_COURT_CRENEAU } from "@/lib/creneaux";
 import { csvInscrites, resumeInscrites } from "@/lib/ficheAtelier";
 import { LIBELLES_PHOTOS, etatPhotos } from "@/lib/autorisationImage";
 import { inscIdentite } from "@/lib/inscriptionIdentite";
@@ -18,6 +19,8 @@ import DescriptionAtelier from "@/components/texte/DescriptionAtelier";
 
 interface AtelierFiche {
   id: string;
+  /** Créneaux Business (voir src/lib/creneaux.ts). */
+  creneaux?: unknown;
   titre: string;
   description: string | null;
   description_courte: string | null;
@@ -39,6 +42,8 @@ interface AtelierFiche {
 
 interface Inscrite {
   id: string;
+  /** Créneau Business choisi (matin, apres_midi, journee). */
+  creneau?: string | null;
   utilisateur_id: string | null;
   prenom_invite: string | null;
   nom_invite: string | null;
@@ -126,11 +131,13 @@ const FicheAtelier = () => {
 
   const exporter = () => {
     if (!atelier) return;
-    const colonnes = ["Prénom", "Nom", "E-mail", "Téléphone", "Statut", "Paiement", "Présente", "Consentement photo"];
+    const avecCreneaux = aDesCreneaux(atelier.creneaux);
+    const colonnes = ["Prénom", "Nom", "E-mail", "Téléphone", ...(avecCreneaux ? ["Créneau"] : []), "Statut", "Paiement", "Présente", "Consentement photo"];
     const lignes = inscrites.map(i => {
       const ident = inscIdentite(i);
       return {
         "Prénom": ident.prenom, "Nom": ident.nom, "E-mail": ident.email ?? "", "Téléphone": ident.telephone ?? "",
+        "Créneau": estCleCreneau(i.creneau) ? LIBELLE_COURT_CRENEAU[i.creneau] : "",
         "Statut": STATUTS[i.statut], "Paiement": i.statut_paiement === "paye" ? "Payé" : i.statut_paiement === "non_requis" ? "Gratuit" : "Non payé",
         "Présente": i.present ? "Oui" : "Non",
         "Consentement photo": i.utilisateur_id ? LIBELLES_PHOTOS[etatPhotos(autorisations.get(i.utilisateur_id))] : LIBELLES_PHOTOS.inconnu,
@@ -302,6 +309,7 @@ const FicheAtelier = () => {
                         <td className="px-4 py-3">
                           <p className="font-medium">{ident.prenom} {ident.nom}</p>
                           <p className="text-xs text-muted-foreground">{ident.email ?? ident.telephone ?? "—"}</p>
+                          {estCleCreneau(i.creneau) && <p className="text-xs font-medium text-foreground">{LIBELLE_COURT_CRENEAU[i.creneau]}</p>}
                         </td>
                         <td className="px-4 py-3"><span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${BADGE_STATUT[i.statut]}`}>{STATUTS[i.statut]}</span></td>
                         <td className="px-4 py-3"><BadgePhotos autorisation={i.utilisateur_id ? autorisations.get(i.utilisateur_id) : undefined} avecLibelle={false} /></td>

@@ -2,6 +2,7 @@
 import { inscIdentite, type InscriptionIdentifiable } from "./inscriptionIdentite";
 import { heureDeFin } from "./dureeAtelier";
 import { adresseLisible, estLien, googleMapsSearchUrl } from "@/utils/googleMaps";
+import { creneauxProposes, estCleCreneau, horairesCreneau, LIBELLE_COURT_CRENEAU, tarifsAvecCreneau } from "./creneaux";
 
 /** Champs de l'atelier repris dans les messages ; seuls titre, date et heure sont toujours présents. */
 export interface AtelierPourMessage {
@@ -20,10 +21,14 @@ export interface AtelierPourMessage {
   apres_midi?: string | null;
   date_fin_inscription?: string | null;
   espaces?: { nom: string } | null;
+  /** Créneaux Business proposés (voir src/lib/creneaux.ts). */
+  creneaux?: unknown;
 }
 
 export interface InscriptionPourMessage extends InscriptionIdentifiable {
   ateliers?: AtelierPourMessage | null;
+  /** Créneau choisi (matin, apres_midi, journee) pour un atelier Business qui en propose. */
+  creneau?: string | null;
 }
 
 /** Variables utilisables dans les modèles, dans l'ordre où l'écran « Modèles de messages » les propose. */
@@ -33,6 +38,7 @@ export const VARIABLES_MESSAGE = [
   { key: "{titre}", desc: "Titre de l'atelier" },
   { key: "{espace}", desc: "Espace (Papotages, Créatifs, Business)" },
   { key: "{date}", desc: "Date de l'atelier" },
+  { key: "{creneau}", desc: "Créneau choisi et ses horaires (ateliers Business)" },
   { key: "{heure}", desc: "Heure de début" },
   { key: "{heure_fin}", desc: "Heure de fin" },
   { key: "{duree}", desc: "Durée" },
@@ -59,8 +65,17 @@ const prix = (montant: number | null | undefined): string => {
 };
 
 /** Valeur de chaque variable pour une pré-inscription (texte vide quand l'atelier n'a pas l'information). */
+/** « Matinée (10:00 – 13:00) », ou "" si la pré-inscription n'a pas de créneau. */
+const libelleCreneau = (insc: InscriptionPourMessage): string => {
+  if (!estCleCreneau(insc.creneau)) return "";
+  const c = insc.ateliers ? creneauxProposes(insc.ateliers).find(x => x.cle === insc.creneau) : undefined;
+  const horaires = c ? horairesCreneau(c) : "";
+  return `${LIBELLE_COURT_CRENEAU[insc.creneau]}${horaires ? ` (${horaires})` : ""}`;
+};
+
 export const valeursMessage = (insc: InscriptionPourMessage): Record<string, string> => {
-  const a = insc.ateliers;
+  // Le prix du créneau choisi (s'il est saisi) remplace celui de l'atelier.
+  const a = insc.ateliers ? tarifsAvecCreneau({ ...insc.ateliers, tarif_standard: insc.ateliers.tarif_standard ?? null }, insc.creneau) : insc.ateliers;
   const id = inscIdentite(insc);
   const adresse = a?.adresse?.trim() ?? "";
   const pourCarte = adresse || a?.lieu?.trim() || "";
@@ -70,6 +85,7 @@ export const valeursMessage = (insc: InscriptionPourMessage): Record<string, str
     "{nom}": id.nom,
     "{titre}": a?.titre ?? "",
     "{espace}": a?.espaces?.nom ?? "",
+    "{creneau}": libelleCreneau(insc),
     "{date}": a?.date_atelier ? dateLongue(a.date_atelier) : "",
     "{heure}": heureCourte(a?.heure_debut),
     "{heure_fin}": heureCourte(fin),

@@ -1,4 +1,7 @@
 import { Fragment, useEffect, useRef, useState } from "react";
+import TableauCreneaux from "@/components/admin/TableauCreneaux";
+import { depuisSaisie, saisieCreneauxVide, verifierSaisie, versSaisie, type SaisieCreneaux } from "@/lib/creneaux";
+import type { Json } from "@/integrations/supabase/types";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
@@ -52,6 +55,8 @@ interface Atelier {
   /** Colonnes ajoutées par la migration « matin / après-midi » : absentes avant. */
   matin?: string | null;
   apres_midi?: string | null;
+  /** Créneaux d'inscription (migration 20261103000001) : absente avant. */
+  creneaux?: unknown;
 }
 
 interface Espace {
@@ -66,6 +71,7 @@ const emptyForm = {
   places_max: 10 as number | string, tarif_standard: "", tarif_adherent: "", tarif_affichage: "",
   lien_paypal: "", niveau: "" as Niveau | "", statut: "brouillon" as Statut,
   espace_id: "", matin: "", apres_midi: "",
+  creneaux: saisieCreneauxVide() as SaisieCreneaux,
 };
 
 // Brouillon persistant : si l'onglet est déchargé par le navigateur (mise en
@@ -93,6 +99,7 @@ const Ateliers = () => {
   const [ateliers, setAteliers] = useState<Atelier[]>([]);
   const colonneTarifAdherent = ateliers.some(a => "tarif_adherent" in a);
   const colonneMatinApresMidi = ateliers.some(a => "matin" in a);
+  const colonneCreneaux = ateliers.some(a => "creneaux" in a);
   const [espaces, setEspaces] = useState<Espace[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<{ open: boolean; atelier: Atelier | null }>({ open: false, atelier: null });
@@ -211,7 +218,7 @@ const Ateliers = () => {
         return;
       }
       setModal({ open: true, atelier });
-      setForm({ ...emptyForm, ...draft.form });
+      setForm({ ...emptyForm, ...draft.form, creneaux: { ...saisieCreneauxVide(), ...(draft.form?.creneaux ?? {}) } });
     } catch {
       localStorage.removeItem(DRAFT_KEY);
     }
@@ -255,6 +262,7 @@ const Ateliers = () => {
       niveau: a.niveau ?? "", statut: a.statut,
       espace_id: a.espace_id,
       matin: a.matin ?? "", apres_midi: a.apres_midi ?? "",
+      creneaux: versSaisie(a.creneaux),
     });
     setModal({ open: true, atelier: a });
   };
@@ -276,6 +284,7 @@ const Ateliers = () => {
       niveau: a.niveau ?? "", statut: "brouillon",
       espace_id: a.espace_id,
       matin: a.matin ?? "", apres_midi: a.apres_midi ?? "",
+      creneaux: versSaisie(a.creneaux),
     });
     setModal({ open: true, atelier: null });
   };
@@ -319,6 +328,13 @@ const Ateliers = () => {
       return;
     }
 
+    const erreurCreneaux = espaceBusiness ? verifierSaisie(form.creneaux) : null;
+    if (erreurCreneaux) {
+      toast.error(erreurCreneaux);
+      setSaving(false);
+      return;
+    }
+
     if (!form.heure_debut) {
       toast.error("L'heure de début est obligatoire");
       setSaving(false);
@@ -349,6 +365,10 @@ const Ateliers = () => {
       // Matin / après-midi : propres aux ateliers Business ; écrits seulement si la colonne existe (migration appliquée) ou si saisis.
       ...(colonneMatinApresMidi || form.matin.trim() || form.apres_midi.trim()
         ? { matin: espaceBusiness ? form.matin.trim() || null : null, apres_midi: espaceBusiness ? form.apres_midi.trim() || null : null }
+        : {}),
+      // Créneaux d'inscription (Business) : écrits seulement si la colonne existe (migration appliquée) ou si un créneau est coché.
+      ...(colonneCreneaux || (espaceBusiness && depuisSaisie(form.creneaux))
+        ? { creneaux: espaceBusiness ? (depuisSaisie(form.creneaux) as Json | null) : null }
         : {}),
     };
     if (modal.atelier) {
@@ -896,7 +916,10 @@ const Ateliers = () => {
                       placeholder="ex: 14h – 17h : ..."
                       className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                   </div>
-                  <p className="sm:col-span-2 text-xs text-muted-foreground -mt-2">Saisie libre. Les deux lignes s'affichent sur la tuile de l'atelier, sur la page d'accueil.</p>
+                  <p className="sm:col-span-2 text-xs text-muted-foreground -mt-2">Saisie libre. Les deux lignes s'affichent sur la tuile de l'atelier, sur la page d'accueil, et sous chaque créneau du formulaire d'inscription.</p>
+                  <div className="sm:col-span-2">
+                    <TableauCreneaux valeur={form.creneaux} onChange={c => setForm(prev => ({ ...prev, creneaux: c }))} />
+                  </div>
                 </div>
               )}
               <div>
