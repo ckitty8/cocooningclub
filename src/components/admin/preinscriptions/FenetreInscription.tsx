@@ -248,8 +248,8 @@ const FenetreInscription = ({
             <div className="space-y-3 text-sm">
               {insc.statut === "confirme" && (
                 <p role="status" className="rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-900">
-                  Pré-inscription validée : le message est prêt. Relisez-le puis envoyez-le avec « {canal === "mail" ? "Ouvrir le mail" : "Ouvrir WhatsApp"} »
-                  {canal === "mail" && " (ou « Ouvrir dans Gmail » si votre messagerie ne s'ouvre pas)"}.
+                  Pré-inscription validée : le message est prêt. Relisez-le puis envoyez-le avec « {canal === "mail" ? "Ouvrir dans Gmail" : "Ouvrir WhatsApp"} »
+                  {canal === "mail" && " (ou « Ouvrir le mail » pour votre logiciel de messagerie)"}.
                 </p>
               )}
               {insc.statut === "en_attente" && (
@@ -276,20 +276,21 @@ const FenetreInscription = ({
                 <textarea id="msg-corps" value={corps} onChange={e => setCorps(e.target.value)} rows={7} className={champ} />
               </div>
               <div className="flex flex-wrap gap-2">
+                {/* Gmail en premier : c'est la messagerie du club ; « Ouvrir le mail » ouvre le logiciel par défaut de l'ordinateur (souvent Outlook). */}
                 <button
-                  onClick={() => envoyer(canal, valide, sujet, corps)}
+                  onClick={() => (canal === "mail" ? envoyer("mail", valide, sujet, corps, true) : envoyer(canal, valide, sujet, corps))}
                   disabled={canal === "mail" ? !id.email : !id.telephone}
                   className="px-4 py-2 rounded-full text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-40"
                 >
-                  {canal === "mail" ? "Ouvrir le mail" : "Ouvrir WhatsApp"}
+                  {canal === "mail" ? "Ouvrir dans Gmail" : "Ouvrir WhatsApp"}
                 </button>
                 {canal === "mail" && (
                   <button
-                    onClick={() => envoyer("mail", valide, sujet, corps, true)}
+                    onClick={() => envoyer("mail", valide, sujet, corps)}
                     disabled={!id.email}
                     className="px-4 py-2 rounded-full text-sm font-medium border hover:bg-muted disabled:opacity-40"
                   >
-                    Ouvrir dans Gmail
+                    Ouvrir le mail
                   </button>
                 )}
               </div>

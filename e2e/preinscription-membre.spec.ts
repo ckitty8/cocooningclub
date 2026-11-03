@@ -144,7 +144,9 @@ test("valider depuis la liste fait apparaître le mail de validation, prêt à e
   await expect(fenetre.getByLabel("Objet")).toHaveValue("Votre pré-inscription est validée ✨");
   await expect(fenetre.getByLabel("Message")).toHaveValue(/Bonjour Marie, votre pré-inscription à « .+ » du .+ à 14:00 \(Gagny\) est validée\./);
 
-  // Gmail dans le navigateur, pour les messageries qui n'ouvrent rien avec un lien « mailto ».
+  // Gmail (messagerie du club) est le bouton principal, avant « Ouvrir le mail » (logiciel de l'ordinateur).
+  const boutonsMail = fenetre.getByRole("button", { name: /^Ouvrir (dans Gmail|le mail)$/ });
+  await expect(boutonsMail).toHaveText(["Ouvrir dans Gmail", "Ouvrir le mail"]);
   await fenetre.getByRole("button", { name: "Ouvrir dans Gmail" }).click();
   const adresse = await page.evaluate(() => (window as unknown as { __ouvert?: string }).__ouvert ?? "");
   expect(adresse).toContain("https://mail.google.com/mail/?view=cm");
