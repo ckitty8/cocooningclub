@@ -15,10 +15,12 @@ interface Props {
   offre: OffrePublique;
   /** Aperçu de l'administration : la carte en cours de modification est entourée. */
   surlignee?: boolean;
+  /** Accueil : seulement le prix, le rythme et les activités avec leurs lieux ; le reste est sur la page « Nos offres ». */
+  resume?: boolean;
 }
 
-/** Carte d'une offre d'adhésion : bandeau, prix, rythme, activités et lieux, ce qui est compris, bouton d'adhésion. */
-const CarteOffre = ({ offre, surlignee = false }: Props) => {
+/** Carte d'une offre d'adhésion : bandeau, prix, rythme, activités et lieux, puis (sauf en résumé) ce qui est compris et le bouton d'adhésion. */
+const CarteOffre = ({ offre, surlignee = false, resume = false }: Props) => {
   const barre = prixBarreAffiche(offre);
   const gain = economie(offre);
   const titreId = `offre-${offre.id || "apercu"}`;
@@ -92,7 +94,7 @@ const CarteOffre = ({ offre, surlignee = false }: Props) => {
           </ul>
         )}
 
-        {offre.compris.length > 0 && (
+        {!resume && offre.compris.length > 0 && (
           <div className="mt-5">
             <p className="mb-2 text-xs font-semibold uppercase tracking-[0.15em] text-terracotta">Ce qui est compris</p>
             <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-foreground marker:text-primary">
@@ -101,27 +103,29 @@ const CarteOffre = ({ offre, surlignee = false }: Props) => {
           </div>
         )}
 
-        <div className="mt-auto pt-6">
-          {offre.lien_helloasso ? (
-            <a
-              href={offre.lien_helloasso}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex min-h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-primary/90"
-            >
-              J'adhère en ligne
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </a>
-          ) : (
-            <Link
-              to="/#contact"
-              className="flex min-h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-primary/90"
-            >
-              J'adhère
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
-          )}
-        </div>
+        {!resume && (
+          <div className="mt-auto pt-6">
+            {offre.lien_helloasso ? (
+              <a
+                href={offre.lien_helloasso}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex min-h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-primary/90"
+              >
+                J'adhère en ligne
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </a>
+            ) : (
+              <Link
+                to="/#contact"
+                className="flex min-h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-primary/90"
+              >
+                J'adhère
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+            )}
+          </div>
+        )}
       </div>
     </article>
   );

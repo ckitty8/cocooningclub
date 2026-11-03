@@ -48,6 +48,12 @@ test("l'accueil affiche les offres et mène à la page", async ({ page }) => {
   await page.goto("/");
   const section = page.locator("#offres");
   await expect(section.locator("article h3")).toHaveText(["L'Espace Chill", "L'Espace Business", "Chill + Business"]);
+  // Sur l'accueil, les cartes s'arrêtent au prix et aux lieux : le détail est sur la page « Nos offres ».
+  const chill = section.getByRole("article", { name: "L'Espace Chill" });
+  await expect(chill.getByText("80 €")).toBeVisible();
+  await expect(chill.getByRole("link", { name: "Le Flow bien-être, Gagny" })).toBeVisible();
+  await expect(section.getByText("Ce qui est compris")).toHaveCount(0);
+  await expect(section.getByRole("link", { name: /J'adhère/ })).toHaveCount(0);
   await section.getByRole("link", { name: "Tout savoir sur nos offres" }).click();
   await expect(page).toHaveURL(/\/nos-offres$/);
 });

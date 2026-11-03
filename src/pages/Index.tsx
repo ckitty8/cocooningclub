@@ -348,7 +348,7 @@ const Index = () => {
                 L'Espace Chill pour souffler et créer, l'Espace Business pour faire avancer tes projets, ou les deux réunis.
               </p>
             </div>
-            <GrilleOffres offres={offres} />
+            <GrilleOffres offres={offres} resume />
             <NoteOffres />
             <div className="mt-8 text-center">
               <Bouton to="/nos-offres" variante="contour">Tout savoir sur nos offres</Bouton>
