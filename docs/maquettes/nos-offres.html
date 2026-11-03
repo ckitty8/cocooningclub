@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maquette Nos offres</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@400;500;700&family=DM+Sans:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --peche:#fbe3d5; --creme:#fff8f3; --texte:#634033; --texte2:#6b4a40; --bord:#e3d7cf;
+    --primary:#b95b43; --terracotta:#9a4936;
+    --papotages:#ce8f7e; --creatifs:#82947a; --business:#9e6678;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#3a2a26;font-family:'DM Sans',sans-serif;color:var(--texte)}
+  .note-maquette{max-width:1180px;margin:24px auto 0;padding:0 16px;color:#f6e6dc;font-size:14px;line-height:1.5}
+  .note-maquette b{color:#fff}
+  .cadre{max-width:1180px;margin:12px auto 40px;background:var(--peche);border-radius:10px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+  .etiquette{display:inline-block;background:#fff3;color:#fff;border:1px dashed #fff8;border-radius:6px;padding:2px 8px;font-size:12px;margin:0 0 6px}
+
+  /* En-tête */
+  header{display:flex;align-items:center;justify-content:space-between;padding:14px 40px;border-bottom:1px solid var(--bord);background:#fbe3d5f2}
+  .logo{display:flex;align-items:center;gap:12px;font-family:'Playfair Display',serif;font-size:27px;color:var(--terracotta)}
+  .logo span.tasse{width:56px;height:56px;border-radius:50%;background:var(--creme);display:grid;place-items:center;font-size:28px}
+  nav{display:flex;gap:26px;align-items:center;font-size:14px}
+  nav a{color:#634033cc;text-decoration:none;padding:4px 0;border-bottom:1px solid transparent}
+  nav a.actif{color:var(--terracotta);border-color:var(--primary)}
+  nav a.nouveau{position:relative}
+  nav a.nouveau::after{content:"nouveau";position:absolute;top:-14px;right:-20px;font-size:9px;background:var(--primary);color:#fff;border-radius:6px;padding:1px 5px}
+  nav .membre{border:1px solid #634033 4d;border:1px solid rgba(99,64,51,.3);border-radius:999px;padding:6px 16px}
+
+  /* Héros */
+  .heros{text-align:center;padding:64px 24px 28px}
+  .surtitre{font-size:12px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--terracotta);margin:0}
+  h1{font-family:'Great Vibes',cursive;font-weight:400;font-size:72px;line-height:1.1;margin:10px 0 8px}
+  .accroche{max-width:640px;margin:0 auto;font-size:17px;line-height:1.6;color:var(--texte2)}
+  .pastilles{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:22px}
+  .pastille{background:var(--creme);border:1px solid var(--bord);border-radius:999px;padding:6px 14px;font-size:13px}
+
+  /* Cartes */
+  .offres{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;padding:28px 40px 12px;align-items:stretch}
+  .carte{background:var(--creme);border:1px solid var(--bord);border-radius:22px;display:flex;flex-direction:column;overflow:hidden;position:relative}
+  .carte .bandeau{color:#fff;text-align:center;letter-spacing:.25em;text-transform:uppercase;font-size:13px;font-weight:600;padding:12px}
+  .chill .bandeau{background:var(--papotages)}
+  .business .bandeau{background:var(--business)}
+  .duo .bandeau{background:var(--primary)}
+  .duo{border:2px solid var(--primary);transform:translateY(-10px);box-shadow:0 14px 30px rgba(154,73,54,.18)}
+  .ruban{position:absolute;top:52px;right:16px;background:#fff;color:var(--terracotta);border:1px solid var(--primary);border-radius:999px;font-size:11px;font-weight:600;padding:3px 10px}
+  .corps{padding:22px 24px 24px;display:flex;flex-direction:column;flex:1}
+  .nom{font-family:'Great Vibes',cursive;font-size:40px;text-align:center;margin:4px 0 2px}
+  .prix{text-align:center;margin:6px 0 2px}
+  .prix strong{font-family:'Playfair Display',serif;font-size:42px;font-weight:700}
+  .prix span{font-size:15px;color:var(--texte2)}
+  .barre{text-align:center;font-size:14px;color:var(--texte2);min-height:20px}
+  .barre s{color:#8a6a60}
+  .economie{display:inline-block;background:#f3dcd3;color:var(--terracotta);border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600;margin-left:6px}
+  .rythme{text-align:center;font-family:'Playfair Display',serif;font-style:italic;font-size:16px;margin:10px 0 16px;color:var(--texte2)}
+  ul.contenu{list-style:none;padding:0;margin:0 0 18px;border-top:1px dashed var(--bord)}
+  ul.contenu li{padding:12px 0;border-bottom:1px dashed var(--bord);display:flex;gap:12px}
+  .puce{width:12px;height:12px;border-radius:50%;margin-top:5px;flex:none}
+  .p-pap{background:var(--papotages)} .p-cre{background:var(--creatifs)} .p-bus{background:var(--business)}
+  .ligne1{display:flex;justify-content:space-between;gap:8px;font-weight:500}
+  .ligne1 em{font-style:normal;font-size:13px;color:var(--terracotta);white-space:nowrap}
+  .lieu{font-size:13px;color:var(--texte2);margin-top:2px}
+  .lieu a{color:var(--terracotta)}
+  .sep{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--texte2);margin:6px 0 0}
+  .bouton{margin-top:auto;display:block;text-align:center;border-radius:999px;padding:12px 18px;font-size:14px;font-weight:500;text-decoration:none}
+  .plein{background:var(--primary);color:#fff}
+  .contour{border:1px solid rgba(99,64,51,.3);color:var(--texte)}
+  .notes{text-align:center;font-size:13px;color:var(--texte2);padding:16px 24px 0;line-height:1.7}
+
+  /* Comment adhérer */
+  .etapes{padding:56px 40px 24px;text-align:center}
+  .etapes h2,.faq h2{font-family:'Great Vibes',cursive;font-weight:400;font-size:54px;margin:6px 0 26px}
+  .grille3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;text-align:left}
+  .etape{background:var(--creme);border:1px solid var(--bord);border-radius:18px;padding:22px}
+  .num{width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;display:grid;place-items:center;font-weight:600;margin-bottom:10px}
+  .etape h3{font-family:'Playfair Display',serif;font-size:19px;margin:0 0 6px}
+  .etape p{margin:0;font-size:14px;line-height:1.6;color:var(--texte2)}
+
+  .faq{padding:40px 40px 20px;text-align:center}
+  .faq details{max-width:760px;margin:0 auto 10px;background:var(--creme);border:1px solid var(--bord);border-radius:14px;padding:14px 18px;text-align:left}
+  .faq summary{font-weight:500;cursor:pointer}
+  .faq p{margin:8px 0 0;font-size:14px;color:var(--texte2);line-height:1.6}
+  .cta{margin:36px 40px 48px;background:var(--creme);border-radius:22px;padding:34px;text-align:center;border:1px solid var(--bord)}
+  .cta h2{font-family:'Great Vibes',cursive;font-weight:400;font-size:46px;margin:0 0 8px}
+  .cta .boutons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+  .cta .bouton{display:inline-block;min-width:220px}
+  footer{background:#f6d4c3;padding:18px 40px;font-size:13px;color:var(--texte2);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  .question{outline:2px dashed #c27a1a;outline-offset:3px;border-radius:4px}
+
+  /* Version mobile */
+  .mobile-titre{max-width:1180px;margin:0 auto;padding:0 16px;color:#f6e6dc}
+  .telephone{width:390px;margin:12px auto 60px;background:var(--peche);border-radius:30px;overflow:hidden;border:10px solid #1d1412;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+  .telephone header{padding:10px 16px}
+  .telephone .logo{font-size:19px}
+  .telephone .logo span.tasse{width:40px;height:40px;font-size:20px}
+  .burger{font-size:24px}
+  .telephone .heros{padding:36px 16px 10px}
+  .telephone h1{font-size:54px}
+  .telephone .accroche{font-size:15px}
+  .defile{display:flex;gap:14px;overflow-x:auto;padding:24px 16px 10px;scroll-snap-type:x mandatory}
+  .defile .carte{min-width:300px;scroll-snap-align:center}
+  .defile .duo{transform:none}
+  .points{display:flex;gap:6px;justify-content:center;padding-bottom:8px}
+  .points i{width:8px;height:8px;border-radius:50%;background:#d9b7a8} .points i.on{background:var(--primary)}
+  .telephone .notes{padding:8px 16px 26px}
+  @media (max-width:900px){.offres,.grille3{grid-template-columns:1fr}.duo{transform:none}nav{display:none}}
+</style>
+</head>
+<body>
+
+<div class="note-maquette">
+  <span class="etiquette">MAQUETTE — version ordinateur</span><br>
+  Page <b>/nos-offres</b>, ajoutée au menu entre « Nos espaces » et « Nos événements ». Contenu repris de l'affiche (image 1).
+  Les zones <span style="outline:2px dashed #c27a1a;padding:0 4px">entourées en orange</span> sont des questions à valider.
+</div>
+
+<div class="cadre">
+  <header>
+    <div class="logo"><span class="tasse">☕</span>Le Cocooning Club</div>
+    <nav>
+      <a href="#">Accueil</a>
+      <a href="#">Nos espaces</a>
+      <a href="#" class="actif nouveau">Nos offres</a>
+      <a href="#">Nos événements</a>
+      <a href="#">Notre histoire</a>
+      <a href="#">Contact</a>
+      <a href="#" class="membre">Espace membre</a>
+    </nav>
+  </header>
+
+  <section class="heros">
+    <p class="surtitre">Adhésion annuelle à l'association</p>
+    <h1>Nos offres</h1>
+    <p class="accroche">Choisis l'univers qui te ressemble : l'Espace Chill pour souffler et créer, l'Espace Business pour faire avancer tes projets, ou les deux réunis.</p>
+    <div class="pastilles">
+      <span class="pastille">☕ Café Papotages en accès libre*</span>
+      <span class="pastille">💻 Coworking en accès libre*</span>
+      <span class="pastille">📅 Adhésion valable 12 mois</span>
+    </div>
+  </section>
+
+  <section class="offres">
+    <!-- Chill -->
+    <article class="carte chill">
+      <div class="bandeau">L'Espace Chill</div>
+      <div class="corps">
+        <div class="prix"><strong>80 €</strong> <span>/ an</span></div>
+        <div class="barre">&nbsp;</div>
+        <p class="rythme">1 café et 1 atelier par mois</p>
+        <ul class="contenu">
+          <li><span class="puce p-pap"></span><div>
+            <div class="ligne1">Café Papotages <em>Accès libre*</em></div>
+            <div class="lieu">📍 <a href="#">Le Flow bien-être</a>, Gagny</div></div></li>
+          <li><span class="puce p-cre"></span><div>
+            <div class="ligne1">Atelier créatif <em>Inclus</em></div>
+            <div class="lieu">📍 Gagny, lieu à définir</div></div></li>
+        </ul>
+        <a class="bouton contour" href="#">Découvrir les ateliers créatifs</a>
+      </div>
+    </article>
+
+    <!-- Duo -->
+    <article class="carte duo">
+      <div class="bandeau">Chill + Business</div>
+      <span class="ruban">Le plus complet</span>
+      <div class="corps">
+        <div class="prix"><strong>150 €</strong> <span>/ an</span></div>
+        <div class="barre">au lieu de <s>180 €</s> <span class="economie">30 € d'économie</span></div>
+        <p class="rythme">Les deux univers réunis</p>
+        <ul class="contenu">
+          <li><span class="puce p-pap"></span><div><div class="ligne1">Café Papotages <em>Accès libre*</em></div><div class="lieu">📍 Le Flow bien-être, Gagny</div></div></li>
+          <li><span class="puce p-cre"></span><div><div class="ligne1">Atelier créatif <em>Inclus</em></div><div class="lieu">📍 Gagny, lieu à définir</div></div></li>
+          <li><span class="puce p-bus"></span><div><div class="ligne1">Coworking <em>Accès libre*</em></div><div class="lieu">📍 La Picorette, Le Raincy</div></div></li>
+          <li><span class="puce p-bus"></span><div><div class="ligne1">Création de contenu <em>Inclus</em></div><div class="lieu">📍 La Picorette, Le Raincy</div></div></li>
+        </ul>
+        <a class="bouton plein" href="#">Je veux adhérer</a>
+      </div>
+    </article>
+
+    <!-- Business -->
+    <article class="carte business">
+      <div class="bandeau">L'Espace Business</div>
+      <div class="corps">
+        <div class="prix"><strong>100 €</strong> <span>/ an</span></div>
+        <div class="barre">&nbsp;</div>
+        <p class="rythme">2 jeudis par mois</p>
+        <ul class="contenu">
+          <li><span class="puce p-bus"></span><div>
+            <div class="ligne1">Coworking <em>Accès libre*</em></div>
+            <div class="lieu">📍 <a href="#">La Picorette</a>, Le Raincy</div></div></li>
+          <li><span class="puce p-bus"></span><div>
+            <div class="ligne1">Création de contenu <em>Inclus</em></div>
+            <div class="lieu">📍 <a href="#">La Picorette</a>, Le Raincy</div></div></li>
+        </ul>
+        <a class="bouton contour" href="#">Découvrir l'espace Business</a>
+      </div>
+    </article>
+  </section>
+
+  <p class="notes">Prix TTC · Adhésion de 12 mois à compter de sa validation, renouvellement manuel.<br>
+    *Consommation sur place obligatoire.</p>
+
+  <section class="etapes">
+    <p class="surtitre">Comment adhérer ?</p>
+    <h2>En trois étapes</h2>
+    <div class="grille3">
+      <div class="etape"><div class="num">1</div><h3>Je remplis le bulletin</h3>
+        <p>Le bulletin d'adhésion se remplit sur papier, lors d'un événement du club <span class="question">(ou à télécharger ici ?)</span>.</p></div>
+      <div class="etape"><div class="num">2</div><h3>Je règle ma cotisation</h3>
+        <p>En ligne <span class="question">via HelloAsso</span>, par virement ou en espèces.</p></div>
+      <div class="etape"><div class="num">3</div><h3>Mon adhésion est validée</h3>
+        <p>Une administratrice valide l'adhésion : elle est valable 12 mois et je la retrouve dans mon espace membre.</p></div>
+    </div>
+  </section>
+
+  <section class="faq">
+    <p class="surtitre">Questions fréquentes</p>
+    <h2>Bon à savoir</h2>
+    <details open><summary>Le Café Papotages et le Coworking sont-ils ouverts sans adhésion ?</summary>
+      <p class="question">Oui, ils sont en accès libre, avec une consommation sur place obligatoire. (À confirmer : accès libre pour toutes, ou seulement pour les adhérentes ?)</p></details>
+    <details><summary>Je suis adhérente Chill, puis-je venir à un atelier Business ?</summary>
+      <p>Oui : tu le règles à l'unité, au prix adhérente. Tu peux passer à l'offre Chill + Business à ton renouvellement.</p></details>
+    <details><summary>Je ne suis pas adhérente, puis-je participer à un atelier ?</summary>
+      <p>Oui, au prix non-adhérente, en t'inscrivant depuis « Nos événements ».</p></details>
+  </section>
+
+  <section class="cta">
+    <h2>Une question avant d'adhérer ?</h2>
+    <p style="color:var(--texte2);margin:0">Écris-nous, on te répond avec plaisir.</p>
+    <div class="boutons">
+      <a class="bouton plein" href="#">Nous contacter</a>
+      <a class="bouton contour" href="#">Voir les prochains événements</a>
+    </div>
+  </section>
+
+  <footer><span>© Le Cocooning Club · Livry-Gargan</span><span>Nos offres · Nos espaces · Mentions légales · CGU · Gérer mes cookies</span></footer>
+</div>
+
+<div class="mobile-titre"><span class="etiquette">MAQUETTE — version mobile (390 px)</span><br>
+  Les trois cartes défilent de côté, la carte « Chill + Business » s'affiche en premier.</div>
+<div class="telephone">
+  <header><div class="logo"><span class="tasse">☕</span>Le Cocooning Club</div><span class="burger">☰</span></header>
+  <section class="heros">
+    <p class="surtitre">Adhésion annuelle</p>
+    <h1>Nos offres</h1>
+    <p class="accroche">Choisis l'univers qui te ressemble, ou réunis les deux.</p>
+  </section>
+  <div class="defile">
+    <article class="carte duo">
+      <div class="bandeau">Chill + Business</div><span class="ruban">Le plus complet</span>
+      <div class="corps">
+        <div class="prix"><strong>150 €</strong> <span>/ an</span></div>
+        <div class="barre">au lieu de <s>180 €</s> <span class="economie">−30 €</span></div>
+        <p class="rythme">Les deux univers réunis</p>
+        <ul class="contenu">
+          <li><span class="puce p-pap"></span><div><div class="ligne1">Café Papotages <em>Accès libre*</em></div><div class="lieu">📍 Le Flow bien-être, Gagny</div></div></li>
+          <li><span class="puce p-cre"></span><div><div class="ligne1">Atelier créatif <em>Inclus</em></div><div class="lieu">📍 Gagny, lieu à définir</div></div></li>
+          <li><span class="puce p-bus"></span><div><div class="ligne1">Coworking <em>Accès libre*</em></div><div class="lieu">📍 La Picorette, Le Raincy</div></div></li>
+          <li><span class="puce p-bus"></span><div><div class="ligne1">Création de contenu <em>Inclus</em></div><div class="lieu">📍 La Picorette, Le Raincy</div></div></li>
+        </ul>
+        <a class="bouton plein" href="#">Je veux adhérer</a>
+      </div>
+    </article>
+    <article class="carte chill">
+      <div class="bandeau">L'Espace Chill</div>
+      <div class="corps"><div class="prix"><strong>80 €</strong> <span>/ an</span></div><p class="rythme">1 café et 1 atelier par mois</p>
+        <ul class="contenu"><li><span class="puce p-pap"></span><div><div class="ligne1">Café Papotages <em>Accès libre*</em></div></div></li></ul></div>
+    </article>
+  </div>
+  <div class="points"><i class="on"></i><i></i><i></i></div>
+  <p class="notes">Prix TTC · *Consommation sur place obligatoire.</p>
+</div>
+
+</body>
+</html>
