@@ -31,7 +31,7 @@ const MentionsLegales = () => (
 
     <main className="container mx-auto max-w-3xl flex-1 px-6 pb-16 pt-32 md:pb-20 md:pt-36">
       <h1 className="mb-2 font-brand text-3xl text-foreground md:text-5xl">Mentions légales</h1>
-      <p className="mb-10 text-sm text-muted-foreground">Dernière mise à jour : 24 octobre 2026</p>
+      <p className="mb-10 text-sm text-muted-foreground">Dernière mise à jour : 3 novembre 2026</p>
 
       <div className="space-y-8 text-sm leading-relaxed text-muted-foreground md:text-base">
         <Rubrique titre="1. Éditeur du site">
@@ -41,6 +41,7 @@ const MentionsLegales = () => (
           </p>
           <ul className="list-disc space-y-1 pl-5">
             <li>Siège social : 16 rue Graffan, 93190 Livry-Gargan</li>
+            <li>Numéro RNA (répertoire national des associations) : W932014498</li>
             <li>Contact : <Mail /></li>
           </ul>
         </Rubrique>
