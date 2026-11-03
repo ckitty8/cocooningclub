@@ -5,7 +5,7 @@ import { logAction } from "@/utils/logAction";
 import { dureeEntre, heureDeFin } from "@/lib/dureeAtelier";
 import { estComplet, libellePlacesPrises, placesPrises, placesRestantes, tauxRemplissage } from "@/lib/placesAtelier";
 import { withTimeout } from "@/utils/withTimeout";
-import { googleMapsSearchUrl } from "@/utils/googleMaps";
+import { googleMapsSearchUrl, nomDeLieu } from "@/utils/googleMaps";
 import { searchAdresse, type AdresseSuggestion } from "@/utils/adresseAutocomplete";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
@@ -332,7 +332,8 @@ const Ateliers = () => {
       heure_debut: form.heure_debut,
       heure_fin: form.heure_fin || null,
       duree: form.duree || "2 hours",
-      lieu: form.lieu || null,
+      // Lieu vide mais adresse choisie dans les suggestions : on reprend le nom de l'établissement (sinon rien ne s'afficherait sur le site).
+      lieu: form.lieu.trim() || nomDeLieu(form.adresse) || null,
       adresse: form.adresse || null,
       url_image: form.url_image || null,
       places_max: form.places_max === "" ? null : Number(form.places_max),
@@ -490,7 +491,7 @@ const Ateliers = () => {
   };
 
   const selectAdresseSuggestion = (label: string) => {
-    f("adresse", label);
+    setForm(prev => ({ ...prev, adresse: label, lieu: prev.lieu.trim() ? prev.lieu : nomDeLieu(label) ?? prev.lieu }));
     setAdresseSuggestions([]);
     setShowAdresseSuggestions(false);
   };
