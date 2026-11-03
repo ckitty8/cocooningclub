@@ -1,3 +1,4 @@
+import type { AtelierPourMessage } from "@/lib/messagesInscription";
 import type { DroitAtelier, OffreEnCours } from "@/lib/droits";
 
 export type StatutInscription = "en_attente" | "confirme" | "annule";
@@ -19,14 +20,8 @@ export interface Inscription {
   statut: StatutInscription;
   statut_paiement: StatutPaiement;
   inscrit_le: string;
-  ateliers?: {
-    id: string;
-    titre: string;
-    date_atelier: string;
-    heure_debut: string;
-    lieu: string | null;
-    adresse: string | null;
-  } | null;
+  /** Toutes les colonnes de l'atelier : les modèles de messages peuvent en reprendre la plupart. */
+  ateliers?: (AtelierPourMessage & { id: string; adresse: string | null }) | null;
   utilisateurs?: {
     prenom: string | null;
     nom: string | null;

@@ -97,7 +97,7 @@ const PreInscriptions = () => {
       const [inscRes, tplRes, atelRes, listeRes] = await withTimeout(Promise.all([
         supabase
           .from("inscriptions")
-          .select("*, ateliers(id, titre, date_atelier, heure_debut, lieu, adresse), utilisateurs(prenom, nom, email, telephone, role)")
+          .select("*, ateliers(*, espaces(nom)), utilisateurs(prenom, nom, email, telephone, role)")
           .order("inscrit_le", { ascending: false }),
         supabase
           .from("parametres_messages")

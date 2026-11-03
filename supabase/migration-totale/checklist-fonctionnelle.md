@@ -81,6 +81,7 @@ Comptes utiles : une administratrice, une membre, une inscrite (rôle `inscrit`)
 - [ ] **Blocage des validations impayées** : dans Pré-inscriptions, valider une inscription dont le paiement est « En attente » ouvre la fenêtre « Valider sans paiement » (motif obligatoire) ; après validation, l'action `inscription.validate_sans_paiement` et le motif apparaissent dans le journal. Valider une inscription « Payé » ou « Non requis » reste en un clic. Une inscription créée à la main en « Confirmée » + paiement « En attente » est refusée.
 - [ ] Après validation, la personne voit « Mon adhésion » et le consentement correct chez les admins (Membres, Inscrits, Pré-inscriptions).
 - [ ] Boîte à idées : idées avec prénom de l'auteur ; Témoignages, Documents, Formulaire de contact, Modèles de messages : aucune régression.
+- [ ] Modèles de messages : les variables de l'atelier ({adresse}, {carte}, {heure_fin}, {tarif}…) sont proposées ; validées sur une pré-inscription, elles sont remplacées dans le message (Pré-inscriptions → Messages).
 
 - [ ] Les tables `inscriptions_backup_20260430` et `transactions_paypal_backup_20260430` n'existent plus (`verifications.sql`) ; rien d'autre ne change à l'écran.
 - [ ] Admin → Ateliers : créer un atelier à une date où aucune administratrice n'est disponible affiche toujours l'avertissement ; un visiteur ne peut pas appeler `admin_dispo_le` (erreur de droits).
