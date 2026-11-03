@@ -35,6 +35,9 @@ const Footer = () => {
                 <Link to="/#ateliers" className="hover:text-terracotta transition-colors">Nos Ateliers</Link>
               </li>
               <li>
+                <Link to="/nos-offres" className="hover:text-terracotta transition-colors">Nos offres</Link>
+              </li>
+              <li>
                 <Link to="/calendrier" className="hover:text-terracotta transition-colors">Calendrier</Link>
               </li>
               {ORDRE_ESPACES.map(slug => (

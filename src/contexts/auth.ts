@@ -39,7 +39,7 @@ export interface AuthContextType {
   simulation: RoleSimulable | null;
   /** Démarre (rôle) ou arrête (null) la simulation. Sans effet pour un autre compte que le créateur. */
   simuler: (role: RoleSimulable | null) => void;
-  /** Offre simulée (Business, Créatif, Complet ou aucune) : n'a d'effet que pendant la simulation d'une adhérente. */
+  /** Offre simulée (Chill, Business, Chill + Business ou aucune) : n'a d'effet que pendant la simulation d'une adhérente. */
   offreSimulee: OffreSimulee | null;
   simulerOffre: (offre: OffreSimulee | null) => void;
   loading: boolean;

@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { writeFileSync, mkdirSync } from "node:fs";
-import { mockSupabase } from "../supabaseMock";
+import { OFFRES_TEST, QUESTION_TEST, mockSupabase } from "../supabaseMock";
 import { connecterEn, profilTest } from "../session";
 import { ciblesTropPetites, contrastesInsuffisants, debordements } from "./mesures";
 import { PAGES } from "./pages";
@@ -24,7 +24,7 @@ test("audit contraste et mise en page", async ({ page }) => {
   for (const { chemin, profil } of PAGES) {
     const utilisateur = profil === "membre" ? MEMBRE : profil === "createur" ? CREATEUR : profil === "admin" ? ADMIN : undefined;
     await page.unrouteAll();
-    await mockSupabase(page, { profil: utilisateur, sansChoixCookies: true }); // la bannière fait partie de ce qu'on mesure
+    await mockSupabase(page, { profil: utilisateur, sansChoixCookies: true, formules: OFFRES_TEST, bonASavoir: [QUESTION_TEST] }); // la bannière fait partie de ce qu'on mesure
     if (utilisateur) await connecterEn(page, utilisateur);
     for (const largeur of LARGEURS) {
       await page.setViewportSize({ width: largeur, height: 900 });

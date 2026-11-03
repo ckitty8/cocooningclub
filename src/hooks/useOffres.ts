@@ -80,7 +80,7 @@ export const useOffresParPersonne = (moi: string | null) => {
 
 /**
  * Offres de la personne connectée (espace membre). Pendant une simulation du créateur, l'offre
- * simulée remplace les données réelles : on voit le site comme une adhérente Business, Créatif ou Complet.
+ * simulée remplace les données réelles : on voit le site comme une adhérente Chill, Business ou Chill + Business.
  */
 export const useMesOffres = () => {
   const { profile, offreSimulee: simulee } = useAuth();

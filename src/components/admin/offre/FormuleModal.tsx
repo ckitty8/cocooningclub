@@ -1,21 +1,34 @@
 import { useState } from "react";
-import { X } from "lucide-react";
+import { Eye, Plus, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
 import { COULEURS_FORMULE, MODES_REGLEMENT, type CouleurFormule, type ModeReglement } from "@/lib/adhesions";
-import FormuleCard from "./FormuleCard";
+import CarteOffre from "@/components/offres/CarteOffre";
+import {
+  ESPACES_OFFRE, lignesCompris, lireActivites, versOffre,
+  type ActiviteOffre, type QuestionBonASavoir, type SlugEspaceOffre,
+} from "@/lib/offres";
+import ApercuOffres from "./ApercuOffres";
 import { champ, type Espace, type Formule } from "./types";
 
 interface Props {
   /** Formule à modifier, ou modèle d'une nouvelle formule (id vide). */
   formule: Formule;
   espaces: Espace[];
+  /** Toutes les formules (pour l'aperçu de la page complète). */
+  formules?: Formule[];
+  /** Questions « Bon à savoir » (aperçu). */
+  questions?: QuestionBonASavoir[];
+  /** false tant que la migration 20261103000000 n'est pas appliquée : les champs de la page « Nos offres » sont masqués. */
+  contenuDisponible?: boolean;
   onClose: () => void;
   onSaved: () => void;
 }
 
-const FormuleModal = ({ formule, espaces, onClose, onSaved }: Props) => {
+const nombre = (texte: string) => Number(texte.replace(",", "."));
+
+const FormuleModal = ({ formule, espaces, formules = [], questions = [], contenuDisponible = true, onClose, onSaved }: Props) => {
   const creation = !formule.id;
   const [nom, setNom] = useState(formule.nom);
   const [description, setDescription] = useState(formule.description ?? "");
@@ -26,12 +39,22 @@ const FormuleModal = ({ formule, espaces, onClose, onSaved }: Props) => {
   const [modes, setModes] = useState<string[]>(formule.modes_reglement);
   const [espacesIds, setEspacesIds] = useState<string[]>(formule.formule_espaces.map(fe => fe.espace_id));
   const [active, setActive] = useState(formule.est_active);
+  const [rythme, setRythme] = useState(formule.rythme ?? "");
+  const [prixBarre, setPrixBarre] = useState(formule.prix_barre === null || formule.prix_barre === undefined ? "" : String(formule.prix_barre));
+  const [miseEnAvant, setMiseEnAvant] = useState(formule.mise_en_avant ?? false);
+  const [activites, setActivites] = useState<ActiviteOffre[]>(lireActivites(formule.activites));
+  const [compris, setCompris] = useState((formule.compris ?? []).join("\n"));
+  const [apercuOuvert, setApercuOuvert] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const changerActivite = (i: number, champActivite: keyof ActiviteOffre, valeur: string) =>
+    setActivites(liste => liste.map((a, k) => (k === i ? { ...a, [champActivite]: valeur } : a)));
 
   const bascule = (liste: string[], valeur: string) =>
     liste.includes(valeur) ? liste.filter(v => v !== valeur) : [...liste, valeur];
 
-  const prixNombre = Number(prix.replace(",", "."));
+  const prixNombre = nombre(prix);
+  const prixBarreNombre = prixBarre.trim() ? nombre(prixBarre) : null;
   const dureeNombre = Number(duree);
   const erreur =
     !nom.trim() ? "Le nom est obligatoire."
@@ -39,6 +62,8 @@ const FormuleModal = ({ formule, espaces, onClose, onSaved }: Props) => {
     : !(Number.isInteger(dureeNombre) && dureeNombre >= 1 && dureeNombre <= 60) ? "La durée doit être comprise entre 1 et 60 mois."
     : lien.trim() && !/^https:\/\//i.test(lien.trim()) ? "Le lien HelloAsso doit commencer par https://"
     : modes.length === 0 ? "Choisissez au moins un mode de règlement."
+    : prixBarreNombre !== null && !(Number.isFinite(prixBarreNombre) && prixBarreNombre >= 0) ? "Le prix barré doit être un montant positif."
+    : rythme.length > 120 ? "Le rythme ne doit pas dépasser 120 caractères."
     : null;
 
   const apercu: Formule = {
@@ -49,6 +74,21 @@ const FormuleModal = ({ formule, espaces, onClose, onSaved }: Props) => {
     est_active: active,
     formule_espaces: espacesIds.map(espace_id => ({ espace_id })),
   };
+
+  // Contenu public de la carte, tel qu'il sera enregistré.
+  const contenu = {
+    rythme: rythme.trim() || null,
+    prix_barre: prixBarreNombre !== null && Number.isFinite(prixBarreNombre) ? prixBarreNombre : null,
+    mise_en_avant: miseEnAvant,
+    activites: activites.filter(a => a.nom.trim()).map(a => ({ nom: a.nom.trim(), lieu: a.lieu.trim(), espace: a.espace })),
+    compris: lignesCompris(compris),
+  };
+  const offreApercu = versOffre({ ...apercu, ...contenu, id: formule.id || "nouvelle" } as unknown as Record<string, unknown>);
+  // Page complète : les autres formules proposées, et celle-ci à sa place (même si elle n'est pas encore proposée).
+  const offresPage = [
+    ...formules.filter(f => f.est_active && f.id !== formule.id).map(f => versOffre(f as unknown as Record<string, unknown>)),
+    ...(active ? [offreApercu] : []),
+  ];
 
   const enregistrer = async () => {
     if (erreur) { toast.error(erreur); return; }
@@ -62,6 +102,7 @@ const FormuleModal = ({ formule, espaces, onClose, onSaved }: Props) => {
       lien_helloasso: lien.trim() || null,
       modes_reglement: modes,
       est_active: active,
+      ...(contenuDisponible ? contenu : {}),
     };
     try {
       let id = formule.id;
@@ -103,7 +144,7 @@ const FormuleModal = ({ formule, espaces, onClose, onSaved }: Props) => {
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="f-nom" className="block text-sm font-medium mb-1.5">Nom *</label>
-                <input id="f-nom" value={nom} onChange={e => setNom(e.target.value)} maxLength={80} placeholder="Cocooning Créatif" className={champ} />
+                <input id="f-nom" value={nom} onChange={e => setNom(e.target.value)} maxLength={80} placeholder="L'Espace Chill" className={champ} />
               </div>
               <div>
                 <label htmlFor="f-couleur" className="block text-sm font-medium mb-1.5">Couleur</label>
@@ -130,6 +171,63 @@ const FormuleModal = ({ formule, espaces, onClose, onSaved }: Props) => {
               </div>
             </div>
             <p className="-mt-2 text-xs text-muted-foreground">La durée court à partir de la date de validation de l'adhésion.</p>
+
+            {contenuDisponible ? (
+              <div className="space-y-4 rounded-2xl border bg-card p-4">
+                <p className="text-sm font-semibold">Carte de la page « Nos offres »</p>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="f-rythme" className="block text-sm font-medium mb-1.5">Rythme</label>
+                    <input id="f-rythme" value={rythme} onChange={e => setRythme(e.target.value)} maxLength={120} placeholder="2 jeudis par mois" className={champ} />
+                  </div>
+                  <div>
+                    <label htmlFor="f-barre" className="block text-sm font-medium mb-1.5">Prix barré (€, facultatif)</label>
+                    <input id="f-barre" value={prixBarre} onChange={e => setPrixBarre(e.target.value)} inputMode="decimal" placeholder="180" className={champ} />
+                  </div>
+                </div>
+
+                <fieldset>
+                  <legend className="block text-sm font-medium mb-2">Activités et lieux</legend>
+                  <div className="space-y-2">
+                    {activites.map((a, i) => (
+                      <div key={i} className="grid gap-2 sm:grid-cols-[1fr_1fr_130px_auto]">
+                        <input aria-label={`Activité ${i + 1}`} value={a.nom} onChange={e => changerActivite(i, "nom", e.target.value)} placeholder="Coworking*" className={champ} />
+                        <input aria-label={`Lieu de l'activité ${i + 1}`} value={a.lieu} onChange={e => changerActivite(i, "lieu", e.target.value)} placeholder="La Picorette, Le Raincy" className={champ} />
+                        <select aria-label={`Couleur de l'activité ${i + 1}`} value={a.espace} onChange={e => changerActivite(i, "espace", e.target.value as SlugEspaceOffre)} className={champ}>
+                          {(Object.keys(ESPACES_OFFRE) as SlugEspaceOffre[]).map(slug => <option key={slug} value={slug}>{ESPACES_OFFRE[slug]}</option>)}
+                        </select>
+                        <button type="button" onClick={() => setActivites(liste => liste.filter((_, k) => k !== i))}
+                          aria-label={`Retirer l'activité ${i + 1}`} className="flex h-10 w-10 items-center justify-center rounded-xl border hover:bg-muted">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <button type="button" onClick={() => setActivites(liste => [...liste, { nom: "", lieu: "", espace: "papotages" }])}
+                    disabled={activites.length >= 12}
+                    className="mt-2 inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-medium hover:bg-muted disabled:opacity-50">
+                    <Plus className="h-3.5 w-3.5" /> Ajouter une activité
+                  </button>
+                  <p className="mt-1 text-xs text-muted-foreground">Un astérisque (*) renvoie à « Consommation sur place obligatoire ». Un lieu « à définir » n'a pas de lien vers la carte.</p>
+                </fieldset>
+
+                <div>
+                  <label htmlFor="f-compris" className="block text-sm font-medium mb-1.5">Ce qui est compris <span className="font-normal text-muted-foreground">(une ligne par point)</span></label>
+                  <textarea id="f-compris" value={compris} onChange={e => setCompris(e.target.value)} rows={6} className={champ}
+                    placeholder={"La location de la salle pour nos journées de création.\nLe magazine du club."} />
+                </div>
+
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input type="checkbox" checked={miseEnAvant} onChange={e => setMiseEnAvant(e.target.checked)} />
+                  Mettre en avant (« Le plus complet »)
+                </label>
+              </div>
+            ) : (
+              <p className="rounded-2xl border border-yellow-300 bg-yellow-50 p-3 text-xs text-yellow-900">
+                Le contenu de la page « Nos offres » (rythme, activités, ce qui est compris) sera modifiable ici après la
+                migration <code>20261103000000_nos_offres.sql</code>.
+              </p>
+            )}
 
             <fieldset>
               <legend className="block text-sm font-medium mb-2">Espaces inclus</legend>
@@ -162,13 +260,15 @@ const FormuleModal = ({ formule, espaces, onClose, onSaved }: Props) => {
 
             <label className="flex items-center gap-2 text-sm cursor-pointer">
               <input type="checkbox" checked={active} onChange={e => setActive(e.target.checked)} />
-              Formule proposée sur la page d'adhésion
+              Formule proposée sur la page « Nos offres »
             </label>
           </div>
 
           <aside>
-            <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Aperçu sur le site</p>
-            <FormuleCard formule={apercu} espaces={espaces} />
+            <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Aperçu de la carte</p>
+            <div className="theme-vitrine rounded-2xl bg-background p-3">
+              <div className="pointer-events-none"><CarteOffre offre={offreApercu} /></div>
+            </div>
           </aside>
         </div>
 
@@ -176,6 +276,10 @@ const FormuleModal = ({ formule, espaces, onClose, onSaved }: Props) => {
           <p className="text-sm text-destructive" role="alert">{erreur && nom ? erreur : ""}</p>
           <div className="flex gap-2">
             <button onClick={onClose} className="px-4 py-2 border rounded-full text-sm hover:bg-muted">Annuler</button>
+            <button type="button" onClick={() => setApercuOuvert(true)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 border border-primary rounded-full text-sm text-terracotta hover:bg-muted">
+              <Eye className="h-4 w-4" aria-hidden="true" /> Prévisualiser
+            </button>
             <button onClick={enregistrer} disabled={saving}
               className="px-5 py-2 rounded-full text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50">
               {saving ? "Enregistrement…" : "Enregistrer"}
@@ -183,6 +287,9 @@ const FormuleModal = ({ formule, espaces, onClose, onSaved }: Props) => {
           </div>
         </div>
       </div>
+      {apercuOuvert && (
+        <ApercuOffres offres={offresPage} questions={questions} surligneeId={offreApercu.id} onClose={() => setApercuOuvert(false)} />
+      )}
     </div>
   );
 };

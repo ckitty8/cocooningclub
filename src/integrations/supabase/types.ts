@@ -106,6 +106,11 @@ export type Database = {
           nom: string
           ordre: number
           prix: number
+          rythme: string | null
+          prix_barre: number | null
+          mise_en_avant: boolean
+          activites: Json
+          compris: string[]
         }
         Insert: {
           cree_le?: string
@@ -120,6 +125,11 @@ export type Database = {
           nom: string
           ordre?: number
           prix: number
+          rythme?: string | null
+          prix_barre?: number | null
+          mise_en_avant?: boolean
+          activites?: Json
+          compris?: string[]
         }
         Update: {
           cree_le?: string
@@ -134,6 +144,41 @@ export type Database = {
           nom?: string
           ordre?: number
           prix?: number
+          rythme?: string | null
+          prix_barre?: number | null
+          mise_en_avant?: boolean
+          activites?: Json
+          compris?: string[]
+        }
+        Relationships: []
+      }
+      bon_a_savoir: {
+        Row: {
+          id: string
+          question: string
+          reponse: string
+          est_publiee: boolean
+          ordre: number
+          cree_le: string
+          modifie_le: string
+        }
+        Insert: {
+          id?: string
+          question: string
+          reponse?: string
+          est_publiee?: boolean
+          ordre?: number
+          cree_le?: string
+          modifie_le?: string
+        }
+        Update: {
+          id?: string
+          question?: string
+          reponse?: string
+          est_publiee?: boolean
+          ordre?: number
+          cree_le?: string
+          modifie_le?: string
         }
         Relationships: []
       }

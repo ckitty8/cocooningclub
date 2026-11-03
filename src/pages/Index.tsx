@@ -15,6 +15,8 @@ import photoAtelier from "@/assets/hero-workshop-960.webp";
 import { ESPACES_PAR_SLUG } from "@/lib/espaces";
 import { trackVisit } from "@/utils/trackVisit";
 import { usePublicAteliers } from "@/hooks/usePublicAteliers";
+import { useOffresPubliques } from "@/hooks/useOffresPubliques";
+import { GrilleOffres, NoteOffres } from "@/components/offres/ContenuNosOffres";
 import { useAntiSpam } from "@/hooks/useAntiSpam";
 import { messageErreurServeur } from "@/utils/messageErreurServeur";
 
@@ -183,6 +185,7 @@ const VALEURS: Valeur[] = [
 const Index = () => {
   const { ateliers, setAteliers, loading: ateliersLoading, error: ateliersError, reload: reloadAteliers } =
     usePublicAteliers(ATELIERS_COLUMNS);
+  const { offres } = useOffresPubliques({ avecQuestions: false });
   // Titre de l'atelier présélectionné dans la fenêtre de pré-inscription
   // ("" = aucun), ou null quand la fenêtre est fermée.
   const [preInscription, setPreInscription] = useState<string | null>(null);
@@ -332,6 +335,27 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Nos offres (adhésion) : masquée tant qu'aucune formule n'est proposée */}
+      {offres.length > 0 && (
+        <section className="scroll-mt-20 pb-20 md:pb-24" id="offres" aria-labelledby="titre-offres">
+          <div className="container mx-auto px-6">
+            <div className="mx-auto mb-12 max-w-2xl space-y-4 text-center">
+              <Surtitre>Adhésion annuelle</Surtitre>
+              <TitreSection><span id="titre-offres">Nos offres</span></TitreSection>
+              <span className="mx-auto block h-0.5 w-10 bg-primary" aria-hidden="true" />
+              <p className="text-sm leading-relaxed text-muted-foreground md:text-base">
+                L'Espace Chill pour souffler et créer, l'Espace Business pour faire avancer tes projets, ou les deux réunis.
+              </p>
+            </div>
+            <GrilleOffres offres={offres} />
+            <NoteOffres />
+            <div className="mt-8 text-center">
+              <Bouton to="/nos-offres" variante="contour">Tout savoir sur nos offres</Bouton>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Notre histoire */}
       <section className="grid bg-card md:grid-cols-2">

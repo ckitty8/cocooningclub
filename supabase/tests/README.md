@@ -20,6 +20,7 @@ Scénarios qui vérifient les triggers de sécurité sur une base Postgres jetab
 - `20261026000002_fiche_reliee_au_compte_en_cascade.sql` : clés étrangères vers `utilisateurs(id)` en `ON UPDATE CASCADE` (une fiche qui a des adhésions peut être reliée à son compte de connexion). Test : `fiche_reliee_au_compte.test.sql`, sur la base `o` après la migration.
 - `20261026000003_documents_admins.sql` : accès « admins » des documents (réservés aux administrateurs). Test : `documents_admins.test.sql`, sur une base `t6` : `nettoyage_premium.setup.sql`, puis `20261024000000_nettoyage_premium_et_mot_de_passe_hash.sql`, puis la migration.
 - `20261031000001_places_illimitees.sql` : `ateliers.places_max` / `places_disponibles` facultatives (places illimitées) ; le déclencheur des places laisse NULL. Test : `places_illimitees.test.sql`, base jetable autonome (`createdb p && psql -d p -f supabase/tests/places_illimitees.test.sql`, depuis la racine du dépôt).
+- `20261103000000_nos_offres.sql` : contenu des cartes de la page « Nos offres » (colonnes `rythme`, `prix_barre`, `mise_en_avant`, `activites`, `compris` des formules), table `bon_a_savoir` (lecture publique des questions publiées, modification par les administrateurs) et noms de l'affiche. Test : `nos_offres.test.sql`, sur la base `o` du bloc « Offre et adhésions » après `20261024000003_renomme_antennes_en_espaces.sql` puis la migration.
 - `20261024000003_renomme_antennes_en_espaces.sql` : renommage de la table, des colonnes (`ateliers`, `formule_espaces`) et des vues, réécriture de `atelier_inclus`.
 
 ```bash

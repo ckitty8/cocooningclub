@@ -6,6 +6,8 @@ import FormuleCard from "@/components/admin/offre/FormuleCard";
 import FormuleModal from "@/components/admin/offre/FormuleModal";
 import AdhesionDrawer from "@/components/admin/offre/AdhesionDrawer";
 import AjoutAdhesionModal from "@/components/admin/offre/AjoutAdhesionModal";
+import OngletBonASavoir from "@/components/admin/offre/OngletBonASavoir";
+import { versOffre, type QuestionBonASavoir } from "@/lib/offres";
 import type { Adhesion, Espace, Formule } from "@/components/admin/offre/types";
 import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
@@ -15,8 +17,9 @@ import {
   statutAdhesion, type StatutAffiche,
 } from "@/lib/adhesions";
 import { dateFr } from "@/lib/dates";
+import { nomCourtOffre } from "@/lib/droits";
 
-type Onglet = "formules" | "adhesions";
+type Onglet = "formules" | "adhesions" | "bon_a_savoir";
 type Filtre = "a_valider" | "en_cours" | "expire_bientot" | "expiree" | "toutes";
 
 const FILTRES: { cle: Filtre; libelle: string }[] = [
@@ -55,6 +58,8 @@ const Offre = () => {
   const [adhesions, setAdhesions] = useState<Adhesion[]>([]);
   const [loading, setLoading] = useState(true);
   const [migrationManquante, setMigrationManquante] = useState(false);
+  const [questions, setQuestions] = useState<QuestionBonASavoir[]>([]);
+  const [questionsDisponibles, setQuestionsDisponibles] = useState(false);
 
   const [filtre, setFiltre] = useState<Filtre>("a_valider");
   const [recherche, setRecherche] = useState("");
@@ -71,13 +76,17 @@ const Offre = () => {
       // Filet de secours : les adhésions échues ramènent la personne à « inscrit ». Non bloquant.
       await withTimeout(supabase.rpc("expirer_adhesions")).catch(() => undefined);
 
-      const [fRes, eRes, aRes] = await withTimeout(Promise.all([
+      const [fRes, eRes, aRes, qRes] = await withTimeout(Promise.all([
         supabase.from("formules").select("*, formule_espaces(espace_id)").order("ordre"),
         supabase.from("espaces").select("id, nom, slug").order("ordre_affichage"),
         supabase.from("adhesions")
           .select("*, utilisateurs(prenom, nom, email, telephone, role, commune, activite), formules(nom, couleur, duree_mois)")
           .order("cree_le", { ascending: false }),
+        supabase.from("bon_a_savoir").select("id, question, reponse, est_publiee, ordre").order("ordre"),
       ]));
+      // Table des questions absente tant que la migration 20261103000000 n'est pas appliquée : onglet en attente.
+      setQuestionsDisponibles(!qRes.error);
+      setQuestions(qRes.error ? [] : (qRes.data ?? []));
       const erreur = fRes.error ?? aRes.error;
       if (erreur) throw erreur;
       setMigrationManquante(false);
@@ -142,7 +151,7 @@ const Offre = () => {
           <h1 className="text-2xl font-bold">Offre & adhésions</h1>
           <p className="text-muted-foreground text-sm mt-1">Configurez vos formules d'adhésion et suivez les adhérentes.</p>
         </div>
-        {!migrationManquante && (
+        {!migrationManquante && onglet !== "bon_a_savoir" && (
           <button
             onClick={() => (onglet === "formules" ? nouvelle() : setAjoutOuvert(true))}
             disabled={onglet === "adhesions" && formules.filter(f => f.est_active).length === 0}
@@ -168,7 +177,7 @@ const Offre = () => {
       ) : (
         <>
           <div role="tablist" className="flex gap-6 border-b mb-5">
-            {([["formules", "Formules"], ["adhesions", "Adhésions"]] as [Onglet, string][]).map(([cle, libelle]) => (
+            {([["formules", "Formules"], ["adhesions", "Adhésions"], ["bon_a_savoir", "Bon à savoir"]] as [Onglet, string][]).map(([cle, libelle]) => (
               <button key={cle} role="tab" aria-selected={onglet === cle} onClick={() => setOnglet(cle)}
                 className={`pb-2.5 text-sm font-medium border-b-2 -mb-px ${onglet === cle ? "border-primary text-terracotta" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
                 {libelle}
@@ -193,7 +202,14 @@ const Offre = () => {
             ))}
           </div>
 
-          {onglet === "formules" ? (
+          {onglet === "bon_a_savoir" ? (
+            <OngletBonASavoir
+              questions={questions}
+              offres={formules.filter(f => f.est_active).map(f => versOffre(f as unknown as Record<string, unknown>))}
+              disponible={questionsDisponibles}
+              onChange={charger}
+            />
+          ) : onglet === "formules" ? (
             formules.length === 0 ? (
               <div className="text-center py-16 text-muted-foreground">
                 <p className="text-lg font-medium">Aucune formule</p>
@@ -282,7 +298,7 @@ const Offre = () => {
                           <td className="px-4 py-3">
                             {a.formules && (
                               <span className="px-2.5 py-0.5 rounded-full text-xs font-medium text-white whitespace-nowrap" style={{ backgroundColor: fondFormule(a.formules.couleur) }}>
-                                {a.formules.nom.replace(/^Cocooning\s+/i, "")}
+                                {nomCourtOffre(a.formules.nom)}
                               </span>
                             )}
                           </td>
@@ -314,6 +330,9 @@ const Offre = () => {
         <FormuleModal
           formule={formuleModal}
           espaces={espaces}
+          formules={formules}
+          questions={questions}
+          contenuDisponible={formules.length === 0 || formules.some(f => "compris" in f)}
           onClose={() => setFormuleModal(null)}
           onSaved={() => { setFormuleModal(null); charger(); }}
         />

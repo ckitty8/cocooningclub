@@ -20,6 +20,7 @@ const Cgu = lazy(() => import("./pages/Cgu.tsx"));
 const MentionsLegales = lazy(() => import("./pages/MentionsLegales.tsx"));
 const NotreHistoire = lazy(() => import("./pages/NotreHistoire.tsx"));
 const EspacePage = lazy(() => import("./pages/EspacePage.tsx"));
+const NosOffres = lazy(() => import("./pages/NosOffres.tsx"));
 const Simulateur = lazy(() => import("./pages/createur/Simulateur.tsx"));
 const DroitsParOffre = lazy(() => import("./pages/createur/DroitsParOffre.tsx"));
 const MatriceRoles = lazy(() => import("./pages/createur/MatriceRoles.tsx"));
@@ -132,6 +133,7 @@ const App = () => (
           <Route path="/calendrier" element={<Calendrier />} />
           <Route path="/inscription/:id" element={<Inscription />} />
           <Route path="/notre-histoire" element={<NotreHistoire />} />
+          <Route path="/nos-offres" element={<NosOffres />} />
           <Route path="/papotages" element={<EspacePage slug="papotages" />} />
           <Route path="/creatifs" element={<EspacePage slug="creatifs" />} />
           <Route path="/business" element={<EspacePage slug="business" />} />

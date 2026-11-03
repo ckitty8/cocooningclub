@@ -11,6 +11,7 @@ export const PAGES: PageAuditee[] = [
   { chemin: "/calendrier", profil: "visiteur" },
   { chemin: `/inscription/${ATELIER_TEST.id}`, profil: "visiteur" },
   { chemin: "/notre-histoire", profil: "visiteur" },
+  { chemin: "/nos-offres", profil: "visiteur" },
   { chemin: "/papotages", profil: "visiteur" },
   { chemin: "/creatifs", profil: "visiteur" },
   { chemin: "/business", profil: "visiteur" },
