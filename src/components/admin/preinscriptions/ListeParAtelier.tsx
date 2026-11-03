@@ -1,18 +1,15 @@
 import { Check, ChevronDown, ChevronRight, Mail, MessageSquare, RotateCcw, X } from "lucide-react";
-import BadgePhotos from "@/components/BadgePhotos";
-import type { AutorisationImage } from "@/lib/autorisationImage";
 import { inscIdentite } from "@/lib/inscriptionIdentite";
 import type { GroupeAtelier } from "@/lib/preInscriptions";
 import { OffrePastille } from "@/components/OffrePastille";
 import { euros } from "@/lib/droits";
 import { libellePlacesPrises } from "@/lib/placesAtelier";
-import { ROLES_BADGE, STATUT_BADGE, STATUT_LABEL, type AtelierListe, type InfoDroit, type Inscription, type StatutInscription } from "./types";
+import { ROLES_BADGE, STATUT_BADGE, STATUT_LABEL, type AtelierListe, type InfoDroit, type Inscription, type StatutInscription, reponseLibelle } from "./types";
 
 interface Props {
   groupes: GroupeAtelier<AtelierListe, Inscription>[];
   ouverts: Record<string, boolean>;
   onBasculer: (atelierId: string) => void;
-  autorisations: Map<string, AutorisationImage>;
   /** Droit de chaque pré-inscription (par identifiant) ; absent tant que la migration des offres n'est pas appliquée. */
   droits?: Map<string, InfoDroit>;
   actingOn: string | null;
@@ -31,7 +28,7 @@ const bouton = "flex h-8 w-8 items-center justify-center rounded-full border tra
 const boutonLarge = "hidden sm:flex h-8 w-8 items-center justify-center rounded-full border transition-colors disabled:opacity-40";
 
 /** Accordéon : un bloc par atelier, avec ses pré-inscriptions et des actions rapides. */
-const ListeParAtelier = ({ groupes, ouverts, onBasculer, autorisations, droits, actingOn, onOuvrir, onStatut }: Props) => (
+const ListeParAtelier = ({ groupes, ouverts, onBasculer, droits, actingOn, onOuvrir, onStatut }: Props) => (
   <div className="space-y-3">
     {groupes.map(({ atelier, items, aTraiter, total }) => {
       const ouvert = !!ouverts[atelier.id];
@@ -94,8 +91,10 @@ const ListeParAtelier = ({ groupes, ouverts, onBasculer, autorisations, droits, 
                       </span>
                     )}
 
-                    <span className="hidden lg:block shrink-0">
-                      <BadgePhotos autorisation={insc.utilisateur_id ? autorisations.get(insc.utilisateur_id) : undefined} />
+                    {/* Réponses données sur le formulaire de pré-inscription de cet atelier. */}
+                    <span className="hidden lg:block shrink-0 text-xs leading-relaxed text-muted-foreground">
+                      <span className="block">Droit à l'image : <span className="font-medium text-foreground">{reponseLibelle(insc.autorisation_image, "Autorise", "N'autorise pas")}</span></span>
+                      <span className="block">Groupe WhatsApp : <span className="font-medium text-foreground">{reponseLibelle(insc.accord_whatsapp, "Accepte", "N'accepte pas")}</span></span>
                     </span>
                     <span className={`hidden sm:inline shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUT_BADGE[insc.statut]}`}>{STATUT_LABEL[insc.statut]}</span>
 

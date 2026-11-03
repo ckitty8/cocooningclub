@@ -62,9 +62,17 @@ const LIGNE_ADMIN = {
 
 test("l'administration voit l'identité du membre pré-inscrit, regroupée par atelier", async ({ page }) => {
   const admin = profilTest({ email: "admin@exemple.fr" });
-  await mockSupabase(page, { profil: admin, inscriptions: [LIGNE_ADMIN] });
+  await mockSupabase(page, { profil: admin, inscriptions: [{ ...LIGNE_ADMIN, autorisation_image: true, accord_whatsapp: false }] });
   await connecterEn(page, admin);
   await page.goto("/admin/pre-inscriptions");
+
+  // Sur grand écran, la ligne montre les deux réponses du formulaire (et non plus le consentement du bulletin).
+  if (test.info().project.name === "desktop") {
+    const ligne = page.locator("li").filter({ hasText: "Marie Dupont" }).first();
+    await expect(ligne.getByText("Droit à l'image : Autorise")).toBeVisible();
+    await expect(ligne.getByText("Groupe WhatsApp : N'accepte pas")).toBeVisible();
+    await expect(ligne.getByText(/Consentement/)).toHaveCount(0);
+  }
 
   // L'atelier a une demande à traiter : son bloc est ouvert.
   await expect(page.getByRole("button", { name: new RegExp(ATELIER_TEST.titre) })).toHaveAttribute("aria-expanded", "true");

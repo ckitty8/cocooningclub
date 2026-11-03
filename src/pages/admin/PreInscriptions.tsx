@@ -516,7 +516,6 @@ const PreInscriptions = () => {
           groupes={groupes}
           ouverts={ouverts}
           onBasculer={atelierId => setOuvertsManuels(prev => ({ ...prev, [atelierId]: !ouverts[atelierId] }))}
-          autorisations={autorisations}
           droits={droits}
           actingOn={actingOn}
           onOuvrir={ouvrir}

@@ -68,3 +68,7 @@ export const STATUT_LABEL: Record<StatutInscription, string> = {
   confirme:   "Validée",
   annule:     "Refusée",
 };
+
+/** Réponse à une question à deux cases du formulaire (droit à l'image, groupe WhatsApp) ; null = pas de réponse. */
+export const reponseLibelle = (valeur: boolean | null | undefined, oui: string, non: string) =>
+  valeur === true ? oui : valeur === false ? non : "Non renseigné";
