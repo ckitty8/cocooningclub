@@ -22,7 +22,7 @@ const FormuleCard = ({ formule, espaces, nbActives, onModifier, onDupliquer, onB
     <div className={`bg-card rounded-2xl border overflow-hidden flex flex-col ${formule.est_active ? "" : "opacity-60"}`}>
       <div className="px-5 py-4 text-white" style={{ backgroundColor: fondFormule(formule.couleur) }}>
         <h3 className="font-display text-xl">{formule.nom || "Nom de la formule"}</h3>
-        <p className="text-xs opacity-90 mt-0.5">{formule.description || "Description de la formule"}</p>
+        <p className="text-xs mt-0.5">{formule.description || "Description de la formule"}</p>
       </div>
       <div className="p-5 flex flex-col flex-1">
         <p className="font-display text-3xl text-foreground">

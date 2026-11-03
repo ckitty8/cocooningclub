@@ -94,6 +94,36 @@ const corpsJson = (req: Request) => {
   return brut ? JSON.parse(brut) : null;
 };
 
+// Les trois offres de l'affiche (migration 20261103000000), dans le désordre pour vérifier le tri.
+export const OFFRES_TEST = [
+  {
+    id: "f0000000-0000-4000-8000-000000000003", nom: "Chill + Business", description: null, couleur: "terracotta",
+    prix: 150, prix_barre: 180, mise_en_avant: true, duree_mois: 12, lien_helloasso: null, modes_reglement: ["en_ligne"],
+    est_active: true, ordre: 3, rythme: "Les deux univers réunis", formule_espaces: [],
+    activites: [{ nom: "Coworking*", lieu: "La Picorette, Le Raincy", espace: "business" }],
+    compris: ["Le magazine du club."],
+  },
+  {
+    id: "f0000000-0000-4000-8000-000000000001", nom: "L'Espace Chill", description: null, couleur: "rose",
+    prix: 80, prix_barre: null, mise_en_avant: false, duree_mois: 12, lien_helloasso: "https://www.helloasso.com/associations/test/adhesions/chill",
+    modes_reglement: ["en_ligne"], est_active: true, ordre: 1, rythme: "1 café et 1 atelier par mois", formule_espaces: [],
+    activites: [
+      { nom: "Café Papotages*", lieu: "Le Flow bien-être, Gagny", espace: "papotages" },
+      { nom: "Atelier créatif", lieu: "Gagny, lieu à définir", espace: "creatifs" },
+    ],
+    compris: ["Le matériel nécessaire pour chaque atelier."],
+  },
+  {
+    id: "f0000000-0000-4000-8000-000000000002", nom: "L'Espace Business", description: null, couleur: "mauve",
+    prix: 100, prix_barre: null, mise_en_avant: false, duree_mois: 12, lien_helloasso: null, modes_reglement: ["en_ligne"],
+    est_active: true, ordre: 2, rythme: "2 jeudis par mois", formule_espaces: [],
+    activites: [{ nom: "Création de contenu", lieu: "La Picorette, Le Raincy", espace: "business" }],
+    compris: ["La location de la salle pour nos journées de création."],
+  },
+];
+
+export const QUESTION_TEST = { id: "b0000000-0000-4000-8000-000000000001", question: "Le Café Papotages est-il ouvert à toutes ?", reponse: "Oui, avec une consommation sur place.", est_publiee: true, ordre: 1 };
+
 export interface OptionsMock {
   /** Connecte ce membre : session stockée dans le navigateur + profil renvoyé par la base. */
   membre?: typeof MEMBRE_TEST;
@@ -126,6 +156,8 @@ export interface OptionsMock {
   vacances?: Record<string, unknown>[];
   /** Lignes de `pre_inscriptions_secours` (demandes à récupérer, page admin). */
   secours?: Record<string, unknown>[];
+  /** Questions « Bon à savoir » (table `bon_a_savoir`, page Nos offres). */
+  bonASavoir?: Record<string, unknown>[];
 }
 
 export const mockSupabase = async (page: Page, options: OptionsMock = {}): Promise<MockSupabase> => {
@@ -207,6 +239,7 @@ export const mockSupabase = async (page: Page, options: OptionsMock = {}): Promi
     if (table === "parametres_messages") return route.fulfill({ json: options.modeles ?? [] });
     if (table === "vacances_scolaires") return route.fulfill({ json: options.vacances ?? [] });
     if (table === "pre_inscriptions_secours") return route.fulfill({ json: options.secours ?? [] });
+    if (table === "bon_a_savoir") return route.fulfill({ json: options.bonASavoir ?? [] });
     if (table === "vue_logs") return route.fulfill({ json: options.logs ?? [] });
     if (table === "vue_autorisation_image") return route.fulfill({ json: options.autorisationsImage ?? [] });
     if (table === "espaces" && options.espaces) return route.fulfill({ json: options.espaces });

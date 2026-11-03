@@ -5,6 +5,7 @@ import { Menu, X } from "lucide-react";
 const LIENS = [
   { libelle: "Accueil", to: "/" },
   { libelle: "Nos espaces", to: "/#espaces" },
+  { libelle: "Nos offres", to: "/nos-offres" },
   { libelle: "Nos événements", to: "/calendrier" },
   { libelle: "Notre histoire", to: "/notre-histoire" },
   { libelle: "Contact", to: "/#contact" },
@@ -18,7 +19,7 @@ interface SiteHeaderProps {
 }
 
 // En-tête fixe des pages vitrine et du calendrier. Sous 768 px,
-// les liens passent dans un menu déroulant.
+// les liens passent dans un menu déroulant (sous 1024 px : sept liens ne tiennent pas sur une tablette).
 const SiteHeader = ({ actif }: SiteHeaderProps) => {
   const [menuOuvert, setMenuOuvert] = useState(false);
   const fermerMenu = () => setMenuOuvert(false);
@@ -45,7 +46,7 @@ const SiteHeader = ({ actif }: SiteHeaderProps) => {
           Le Cocooning Club
         </Link>
 
-        <nav aria-label="Navigation principale" className="hidden items-center gap-7 text-sm md:flex">
+        <nav aria-label="Navigation principale" className="hidden items-center gap-6 text-sm lg:flex">
           {LIENS.map(({ libelle, to }) =>
             lien(libelle, to, `border-b py-1 ${libelle === actif ? "border-primary" : "border-transparent"}`),
           )}
@@ -62,14 +63,14 @@ const SiteHeader = ({ actif }: SiteHeaderProps) => {
           aria-label={menuOuvert ? "Fermer le menu" : "Ouvrir le menu"}
           aria-expanded={menuOuvert}
           aria-controls="menu-mobile"
-          className="-mr-2 flex h-11 w-11 items-center justify-center text-foreground md:hidden"
+          className="-mr-2 flex h-11 w-11 items-center justify-center text-foreground lg:hidden"
         >
           {menuOuvert ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </div>
 
       {menuOuvert && (
-        <nav id="menu-mobile" aria-label="Navigation principale" className="border-t px-6 pb-4 md:hidden">
+        <nav id="menu-mobile" aria-label="Navigation principale" className="border-t px-6 pb-4 lg:hidden">
           {LIENS.map(({ libelle, to }) => lien(libelle, to, "flex min-h-11 items-center"))}
           <Link to="/login" onClick={fermerMenu} className="flex min-h-11 items-center text-foreground/80 hover:text-terracotta">
             Espace membre

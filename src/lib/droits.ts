@@ -1,4 +1,4 @@
-// Droits liés aux offres (Business, Créatif, Complet) : un atelier est gratuit, inclus dans l'adhésion ou à payer.
+// Droits liés aux offres (Espace Chill, Espace Business, Chill + Business) : un atelier est gratuit, inclus dans l'adhésion ou à payer.
 //
 // Source de vérité : adhésion en cours → formule → espaces couverts → espace de l'atelier.
 // Le rôle (inscrit / membre / administrateur) ne décide que de l'accès aux pages.
@@ -67,8 +67,8 @@ export const LIBELLES_DROIT: Record<EtatDroit, string> = {
 
 export const euros = (montant: number) => `${Number.isInteger(montant) ? montant : montant.toLocaleString("fr-FR")} €`;
 
-/** « Cocooning Créatif » → « Créatif ». */
-export const nomCourtOffre = (nom: string) => nom.replace(/^Cocooning\s+/i, "");
+/** « L'Espace Chill » → « Chill » (et les anciens noms « Cocooning Créatif » → « Créatif »). */
+export const nomCourtOffre = (nom: string) => nom.replace(/^(Cocooning|L['’]Espace)\s+/i, "");
 
 /** Adhésions actives non échues → offres en cours (les adhésions cumulées donnent la réunion de leurs espaces). */
 export const offresEnCours = (
@@ -94,9 +94,9 @@ export const offresEnCours = (
 export type OffreSimulee = "aucune" | "business" | "creatif" | "complet";
 
 export const OFFRES_SIMULABLES: { code: OffreSimulee; libelle: string; formule: string; couleur: string; slugs: string[] }[] = [
-  { code: "business", libelle: "Adhérente Business", formule: "Cocooning Business", couleur: "mauve", slugs: ["business"] },
-  { code: "creatif", libelle: "Adhérente Créatif", formule: "Cocooning Créatif", couleur: "sauge", slugs: ["creatifs"] },
-  { code: "complet", libelle: "Adhérente Complet", formule: "Cocooning Complet", couleur: "terracotta", slugs: ["business", "creatifs"] },
+  { code: "creatif", libelle: "Adhérente Chill", formule: "L'Espace Chill", couleur: "rose", slugs: ["creatifs"] },
+  { code: "business", libelle: "Adhérente Business", formule: "L'Espace Business", couleur: "mauve", slugs: ["business"] },
+  { code: "complet", libelle: "Adhérente Chill + Business", formule: "Chill + Business", couleur: "terracotta", slugs: ["business", "creatifs"] },
 ];
 
 export const estOffreSimulee = (valeur: unknown): valeur is OffreSimulee =>

@@ -37,10 +37,10 @@ const ouvrir = async (page: import("@playwright/test").Page) => {
 const carte = (page: import("@playwright/test").Page, titre: string) =>
   page.getByRole("main").locator("article, li, div").filter({ hasText: titre }).last();
 
-test("adhérente Créatif : Papotages gratuit, Créatifs inclus, Business à régler", async ({ page }) => {
+test("adhérente Chill : Papotages gratuit, Créatifs inclus, Business à régler", async ({ page }) => {
   await ouvrir(page);
   await page.goto("/admin/createur/simulateur");
-  await page.getByRole("button", { name: "Adhérente Créatif" }).click();
+  await page.getByRole("button", { name: "Adhérente Chill", exact: true }).click();
   await expect(page).toHaveURL(/espace-membre\/ateliers/);
 
   await expect(page.getByText("Votre offre").first()).toBeVisible();
@@ -62,7 +62,7 @@ test("sans adhésion : seul Papotages est gratuit", async ({ page }) => {
 test("adhérente Complet : tout est inclus", async ({ page }) => {
   await ouvrir(page);
   await page.goto("/admin/createur/simulateur");
-  await page.getByRole("button", { name: "Adhérente Complet" }).click();
+  await page.getByRole("button", { name: "Adhérente Chill + Business" }).click();
   await expect(carte(page, "Atelier floral").getByText("Inclus dans votre adhésion")).toBeVisible();
   await expect(carte(page, "Pitch en public").getByText("Inclus dans votre adhésion")).toBeVisible();
 });
@@ -73,12 +73,12 @@ test("la page « Droits par offre » du créateur résume la règle", async ({ p
   await expect(page.getByRole("heading", { level: 1, name: "Droits par offre" })).toBeVisible();
 });
 
-test("deux tarifs : l'adhérente Créatif voit le prix adhérente pour un atelier Business", async ({ page }) => {
+test("deux tarifs : l'adhérente Chill voit le prix adhérente pour un atelier Business", async ({ page }) => {
   const profil = profilTest();
   await mockSupabase(page, { profil, espaces: ESPACES, ateliers: ATELIERS.map(a => ({ ...a, tarif_adherent: 18 })) });
   await connecterEn(page, profil);
   await page.goto("/admin/createur/simulateur");
-  await page.getByRole("button", { name: "Adhérente Créatif" }).click();
+  await page.getByRole("button", { name: "Adhérente Chill", exact: true }).click();
   await expect(carte(page, "Pitch en public").getByText(/18 € à régler/)).toBeVisible();
   await page.getByRole("button", { name: "Quitter" }).click();
   await page.goto("/admin/createur/simulateur");

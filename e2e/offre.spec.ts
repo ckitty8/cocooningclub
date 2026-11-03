@@ -68,7 +68,7 @@ test("elle crée une formule", async ({ page }) => {
   const fenetre = page.getByRole("dialog", { name: "Nouvelle formule" });
   await fenetre.getByLabel("Nom *", { exact: true }).fill("Cocooning Business");
   await fenetre.getByLabel("Cotisation (€) *").fill("100");
-  await fenetre.getByLabel("Business").check();
+  await fenetre.getByRole("checkbox", { name: "Business" }).check();
   await fenetre.getByRole("button", { name: "Enregistrer" }).click();
   await expect(page.getByText("Formule créée")).toBeVisible();
   expect(mock.inserts.formules?.[0]).toMatchObject({ nom: "Cocooning Business", prix: 100, duree_mois: 12 });

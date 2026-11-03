@@ -58,6 +58,10 @@
       "destination": "/notre-histoire/index.html"
     },
     {
+      "source": "/nos-offres",
+      "destination": "/nos-offres/index.html"
+    },
+    {
       "source": "/papotages",
       "destination": "/papotages/index.html"
     },

@@ -18,6 +18,12 @@ export interface Formule {
   est_active: boolean;
   ordre: number;
   formule_espaces: { espace_id: string }[];
+  /** Contenu de la page « Nos offres » (migration 20261103000000) : absent tant qu'elle n'est pas appliquée. */
+  rythme?: string | null;
+  prix_barre?: number | string | null;
+  mise_en_avant?: boolean;
+  activites?: unknown;
+  compris?: string[];
 }
 
 export interface Adhesion {

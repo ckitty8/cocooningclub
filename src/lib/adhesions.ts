@@ -5,11 +5,11 @@ export type ModeReglement = "en_ligne" | "virement" | "especes";
 
 export const COULEURS_FORMULE: Record<CouleurFormule, { libelle: string; fond: string }> = {
   mauve:      { libelle: "Mauve",       fond: "#9e6678" },
-  sauge:      { libelle: "Vert sauge",  fond: "#6f8567" },
+  sauge:      { libelle: "Vert sauge",  fond: "#647a5c" },
   terracotta: { libelle: "Terracotta",  fond: "#b95b43" },
-  rose:       { libelle: "Rose",        fond: "#b9657f" },
+  rose:       { libelle: "Rose",        fond: "#ad5a74" },
   bleu:       { libelle: "Bleu ardoise", fond: "#51708f" },
-  ocre:       { libelle: "Ocre",        fond: "#9a7424" },
+  ocre:       { libelle: "Ocre",        fond: "#8c6820" },
 };
 
 export const MODES_REGLEMENT: Record<ModeReglement, string> = {

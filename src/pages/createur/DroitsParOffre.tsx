@@ -52,7 +52,7 @@ const DroitsParOffre = () => {
           <p>
             {reelles
               ? "Tableau construit à partir de vos formules : il suit les changements faits dans « Offre & adhésions »."
-              : "Aperçu avec les formules du bulletin d'adhésion (Business, Créatif, Complet) : les formules enregistrées s'afficheront ici après la migration."}
+              : "Aperçu avec les formules du bulletin d'adhésion (Espace Chill, Espace Business, Chill + Business) : les formules enregistrées s'afficheront ici après la migration."}
           </p>
         </div>
       </div>

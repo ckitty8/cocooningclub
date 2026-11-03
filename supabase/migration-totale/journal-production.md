@@ -3,6 +3,12 @@
 Ces actions ont été faites sur la base partagée (preview + production) avec l'accord de l'équipe. Elles ne sont
 **pas** à rejouer ; elles sont notées pour la traçabilité et pour pouvoir les annuler.
 
+## 03/11/2026
+
+| Action | Détail | Retour arrière |
+|---|---|---|
+| Migration `20261103000000_nos_offres.sql` appliquée par Claude (outil Supabase `execute_sql`, projet CocooningClubBDD) avec l'accord de l'utilisatrice | Colonnes `formules.rythme`, `prix_barre`, `mise_en_avant`, `activites`, `compris` ; table `bon_a_savoir` (RLS, lecture publique des questions publiées, droits d'écriture retirés aux visiteurs, gestion par les administrateurs). Les 3 formules renommées et remplies d'après l'affiche : « Cocooning Créatif » → « L'Espace Chill » (couleur rose, ordre 1), « Cocooning Business » → « L'Espace Business » (ordre 2), « Cocooning Complet » → « Chill + Business » (ordre 3, prix barré 180 €, mise en avant). Contrôle avant : 3 formules, 1 adhésion (sur Créatif, inchangée). Contrôle après : contrôles de `verifications.sql` ok, 0 question. Le site de production (`main`) ignore les nouvelles colonnes ; il affiche seulement les nouveaux noms. | Bloc « Page Nos offres » de `retour-arriere.sql` (les noms restent : les remettre à la main si besoin). |
+
 ## 31/10/2026
 
 | Action | Détail | Retour arrière |

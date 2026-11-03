@@ -34,6 +34,12 @@ export const PAGES_PUBLIQUES: Record<string, PageSeo> = {
       "Comment Le Cocooning Club est né d'une envie simple : créer du lien entre femmes. Découvrez notre histoire, les cinq fondatrices et ce qui nous unit.",
     index: true,
   },
+  "/nos-offres": {
+    title: "Nos offres d'adhésion · Le Cocooning Club",
+    description:
+      "Les offres d'adhésion du Cocooning Club : Espace Chill, Espace Business ou les deux réunis. Prix, lieux à Gagny et au Raincy, ce qui est compris.",
+    index: true,
+  },
   "/papotages": {
     title: "Papotages : rencontres entre femmes · Le Cocooning Club",
     description:

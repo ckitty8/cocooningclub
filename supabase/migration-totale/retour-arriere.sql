@@ -18,6 +18,11 @@ BEGIN
 END
 $$;
 DROP FUNCTION IF EXISTS private.purger_donnees_anciennes();
+-- Page Nos offres (20261103000000) : table des questions et colonnes de contenu supprimées ; les noms des formules
+-- (L'Espace Chill, L'Espace Business, Chill + Business) et leur ordre restent (à renommer à la main si besoin).
+DROP TABLE IF EXISTS public.bon_a_savoir;
+ALTER TABLE public.formules DROP COLUMN IF EXISTS rythme, DROP COLUMN IF EXISTS prix_barre, DROP COLUMN IF EXISTS mise_en_avant,
+  DROP COLUMN IF EXISTS activites, DROP COLUMN IF EXISTS compris;
 -- Places illimitées (20261031000001) : les ateliers sans limite repassent à 10 places (à revoir à la main) avant de rendre les colonnes obligatoires.
 UPDATE public.ateliers SET places_max = 10 WHERE places_max IS NULL;
 UPDATE public.ateliers SET places_disponibles = places_max WHERE places_disponibles IS NULL;
