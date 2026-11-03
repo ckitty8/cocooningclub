@@ -136,6 +136,14 @@
   .a-modale label.a-case{flex-direction:row;align-items:center;gap:8px}
   .a-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .a-boutons{display:flex;justify-content:flex-end;gap:8px}
+  .apercu{border-color:var(--primary)!important;color:var(--terracotta)}
+  .a-sec.on{background:#f3dcd3}
+  .apercu-fenetre{max-width:1180px;margin:12px auto 60px;border-radius:10px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.35);background:var(--peche)}
+  .apercu-barre{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;background:#634033;color:#fff;padding:12px 18px;font-size:14px}
+  .apercu-page{padding:30px;display:flex;gap:24px;align-items:flex-start}
+  .apercu-page .carte{width:360px;flex:none}
+  .modifiee{outline:3px dashed var(--primary);outline-offset:6px}
+  .apercu-note{font-size:14px;color:var(--texte2);max-width:420px}
 </style>
 </head>
 <body>
@@ -329,7 +337,7 @@
     <a class="on">Offre &amp; adhésions</a>
   </aside>
   <main>
-    <div class="a-tete"><h2>Offre &amp; adhésions</h2><button class="a-btn">+ Nouvelle question</button></div>
+    <div class="a-tete"><h2>Offre &amp; adhésions</h2><span><button class="a-sec apercu">👁 Prévisualiser la page</button> <button class="a-btn">+ Nouvelle question</button></span></div>
     <div class="a-onglets"><span>Formules</span><span>Adhésions</span><span class="on">Bon à savoir</span></div>
     <p class="a-aide">Questions affichées en bas de la page publique « Nos offres », dans cet ordre. Une question « Brouillon » n'est pas visible du public.</p>
     <div class="a-liste">
@@ -343,7 +351,7 @@
     <label>Question<input value="Le Café Papotages est-il ouvert sans adhésion ?"></label>
     <label>Réponse<textarea rows="4">Oui, il est en accès libre, avec une consommation sur place obligatoire.</textarea></label>
     <label class="a-case"><input type="checkbox" checked> Publiée sur la page « Nos offres »</label>
-    <div class="a-boutons"><button class="a-sec">Annuler</button><button class="a-btn">Enregistrer</button></div>
+    <div class="a-boutons"><button class="a-sec">Annuler</button><button class="a-sec apercu">👁 Prévisualiser</button><button class="a-btn">Enregistrer</button></div>
   </div>
 </div>
 
@@ -360,8 +368,35 @@ Ta mise en avant sur notre Instagram, notre site web et notre magazine.
 Et surtout, des moments pour créer ensemble, s'entraider et avancer sur nos projets !</textarea></label>
     <label>Lien de paiement en ligne (HelloAsso)<input placeholder="https://www.helloasso.com/associations/…"></label>
     <label class="a-case"><input type="checkbox" checked> Mettre en avant (« Le plus complet »)</label>
-    <div class="a-boutons"><button class="a-sec">Annuler</button><button class="a-btn">Enregistrer</button></div>
+    <div class="a-boutons"><button class="a-sec">Annuler</button><button class="a-sec apercu">👁 Prévisualiser</button><button class="a-btn">Enregistrer</button></div>
   </div>
+</div>
+
+<div class="mobile-titre"><span class="etiquette">MAQUETTE — clic sur « 👁 Prévisualiser »</span><br>
+  La page « Nos offres » s'ouvre dans une grande fenêtre, telle que le public la verra, avec les modifications en cours (même non enregistrées).
+  Boutons « Ordinateur / Mobile » pour voir les deux tailles. Rien n'est publié tant qu'on n'a pas cliqué sur « Enregistrer ».</div>
+<div class="apercu-fenetre">
+  <div class="apercu-barre"><b>👁 Aperçu — modifications non enregistrées</b>
+    <span><button class="a-sec on">🖥 Ordinateur</button> <button class="a-sec">📱 Mobile</button> <button class="a-sec">Fermer l'aperçu</button> <button class="a-btn">Enregistrer</button></span></div>
+  <div class="apercu-page"><article class="carte business modifiee">
+      <div class="bandeau">L'Espace Business</div>
+      <div class="corps">
+        <div class="prix"><strong>100 €</strong> <span>/ an</span></div>
+        <div class="barre">&nbsp;</div>
+        <p class="rythme">2 jeudis par mois</p>
+        <ul class="contenu"><li><span class="puce p-bus"></span><div><div class="ligne1">Coworking*</div><div class="lieu">📍 <a href="#">La Picorette</a>, Le Raincy</div></div></li><li><span class="puce p-bus"></span><div><div class="ligne1">Création de contenu</div><div class="lieu">📍 <a href="#">La Picorette</a>, Le Raincy</div></div></li></ul>
+        <p class="sep">Ce qui est compris</p>
+        <ul class="inclus">
+          <li>La location de la salle pour nos journées de création.</li>
+          <li>Le matériel nécessaire pour réaliser nos photos et vidéos.</li>
+          <li>Ta mise en avant sur notre Instagram, notre site web et notre magazine.</li>
+          <li>Ton espace adhérente dédié sur notre site internet.</li>
+          <li>Le magazine du club.</li>
+          <li>Et surtout, des moments pour créer ensemble, s'entraider et avancer sur nos projets !</li>
+        </ul>
+        <a class="bouton plein" href="#">J'adhère en ligne</a>
+      </div>
+    </article><p class="apercu-note">La carte modifiée est entourée ; les autres cartes et la section « Bon à savoir » apparaissent autour, comme sur le site.</p></div>
 </div>
 
 </body>
