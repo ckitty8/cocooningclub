@@ -28,28 +28,28 @@ const CarteOffre = ({ offre, surlignee = false, resume = false }: Props) => {
   return (
     <article
       aria-labelledby={titreId}
-      className={`relative flex h-full flex-col overflow-hidden rounded-3xl bg-card ${
+      className={`relative flex h-full flex-col overflow-hidden rounded-2xl bg-card ${
         offre.mise_en_avant ? "border-2 border-primary shadow-lg" : "border"
       } ${surlignee ? "outline-dashed outline-[3px] outline-offset-4 outline-primary" : ""}`}
     >
       <h3
         id={titreId}
-        className="px-4 py-3 text-center font-body text-sm font-semibold uppercase tracking-[0.2em] text-white"
+        className="px-4 py-2.5 text-center font-body text-xs font-semibold uppercase tracking-[0.2em] text-white"
         style={{ backgroundColor: fondFormule(offre.couleur) }}
       >
         {offre.nom || "Nom de l'offre"}
       </h3>
 
-      <div className="flex flex-1 flex-col p-6">
+      <div className="flex flex-1 flex-col p-5">
         {offre.mise_en_avant && (
-          <p className="-mt-2 mb-1 self-end rounded-full border border-primary bg-white px-3 py-0.5 text-xs font-semibold text-terracotta">
+          <p className="-mt-1 mb-1 self-end rounded-full border border-primary bg-white px-3 py-0.5 text-xs font-semibold text-terracotta">
             Le plus complet
           </p>
         )}
 
         <p className="text-center">
-          <span className="font-brand text-5xl font-bold text-foreground">{montant(offre.prix)}</span>
-          <span className="text-muted-foreground"> / an</span>
+          <span className="font-brand text-4xl font-bold text-foreground">{montant(offre.prix)}</span>
+          <span className="text-sm text-muted-foreground"> / an</span>
         </p>
         {barre !== null && (
           <p className="mt-1 text-center text-sm text-muted-foreground">
@@ -61,18 +61,18 @@ const CarteOffre = ({ offre, surlignee = false, resume = false }: Props) => {
             )}
           </p>
         )}
-        {offre.rythme && <p className="mt-3 text-center font-brand text-lg italic text-muted-foreground">{offre.rythme}</p>}
+        {offre.rythme && <p className="mt-2 text-center font-brand text-base italic text-muted-foreground">{offre.rythme}</p>}
         {!offre.rythme && offre.description && <p className="mt-3 text-center text-sm text-muted-foreground">{offre.description}</p>}
 
         {offre.activites.length > 0 && (
-          <ul className="mt-5 divide-y divide-dashed border-y border-dashed" aria-label="Activités">
+          <ul className="mt-4 divide-y divide-dashed border-y border-dashed" aria-label="Activités">
             {offre.activites.map((a, i) => (
-              <li key={`${a.nom}-${i}`} className="flex gap-3 py-3">
-                <span className={`mt-1.5 h-3 w-3 shrink-0 rounded-full ${PASTILLE[a.espace]}`} aria-hidden="true" />
+              <li key={`${a.nom}-${i}`} className="flex gap-2.5 py-2.5">
+                <span className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${PASTILLE[a.espace]}`} aria-hidden="true" />
                 <div className="min-w-0">
-                  <p className="font-medium text-foreground">{a.nom}</p>
+                  <p className="text-sm font-medium text-foreground">{a.nom}</p>
                   {a.lieu && (
-                    <p className="mt-0.5 flex items-center gap-1 text-sm text-muted-foreground">
+                    <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
                       <MapPin className="h-3.5 w-3.5 shrink-0 text-terracotta" aria-hidden="true" />
                       {lieuSurCarte(a.lieu) ? (
                         <a
@@ -95,16 +95,16 @@ const CarteOffre = ({ offre, surlignee = false, resume = false }: Props) => {
         )}
 
         {!resume && offre.compris.length > 0 && (
-          <div className="mt-5">
+          <div className="mt-4">
             <p className="mb-2 text-xs font-semibold uppercase tracking-[0.15em] text-terracotta">Ce qui est compris</p>
-            <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-foreground marker:text-primary">
+            <ul className="list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-foreground marker:text-primary">
               {offre.compris.map((c, i) => <li key={i}>{c}</li>)}
             </ul>
           </div>
         )}
 
         {!resume && (
-          <div className="mt-auto pt-6">
+          <div className="mt-auto pt-5">
             {offre.lien_helloasso ? (
               <a
                 href={offre.lien_helloasso}

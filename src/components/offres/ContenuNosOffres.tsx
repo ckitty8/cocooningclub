@@ -14,7 +14,7 @@ interface GrilleProps {
 
 /** Les cartes d'offre côte à côte (une colonne sur téléphone). Utilisée par la page « Nos offres » et l'accueil. */
 export const GrilleOffres = ({ offres, mobile = false, surligneeId = null, resume = false }: GrilleProps) => (
-  <div className={`grid items-stretch gap-6 ${mobile ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"}`}>
+  <div className={`mx-auto grid max-w-6xl items-stretch gap-6 ${mobile ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"}`}>
     {trierOffres(offres).map(o => <CarteOffre key={o.id || "nouvelle"} offre={o} surlignee={surligneeId === o.id} resume={resume} />)}
   </div>
 );
