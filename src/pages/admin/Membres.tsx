@@ -27,6 +27,8 @@ interface Utilisateur {
   prenom: string;
   email: string;
   telephone: string | null;
+  activite: string | null;
+  hobby?: string | null;
   url_avatar: string | null;
   debut_abonnement: string | null;
   fin_abonnement: string | null;
@@ -51,6 +53,7 @@ const AIDE_ROLE_MEMBRE = "Le rôle Membre est attribué à la validation d'une a
 
 const emptyEditForm = {
   nom: "", prenom: "", email: "", telephone: "", date_naissance: "",
+  activite: "", hobby: "",
   debut_abonnement: "", fin_abonnement: "",
   role: "inscrit" as UserRole,
   est_actif: false,
@@ -112,7 +115,7 @@ const Membres = () => {
 
   const filtered = members.filter(m => {
     const q = search.toLowerCase();
-    const matchSearch = !q || [m.nom, m.prenom, m.email].some(v => v?.toLowerCase().includes(q));
+    const matchSearch = !q || [m.nom, m.prenom, m.email, m.activite, m.hobby].some(v => v?.toLowerCase().includes(q));
     const matchRole = filterRole === "tous" || m.role === filterRole;
     const matchActif = filterActif === "tous" || (filterActif === "actif" ? m.est_actif : !m.est_actif);
     const offresDe = offres.get(m.id) ?? [];
@@ -145,6 +148,7 @@ const Membres = () => {
     setEditForm({
       nom: m.nom, prenom: m.prenom, email: m.email,
       telephone: m.telephone ?? "",
+      activite: m.activite ?? "", hobby: m.hobby ?? "",
       date_naissance: naissances.get(m.id)?.date ?? "",
       debut_abonnement: m.debut_abonnement ?? "",
       fin_abonnement: m.fin_abonnement ?? "", role: m.role,
@@ -181,6 +185,9 @@ const Membres = () => {
       debut_abonnement: editForm.debut_abonnement || null,
       fin_abonnement: editForm.fin_abonnement || null,
     };
+    // Activité et hobby : envoyés seulement s'ils changent (comme dans « Mon compte »).
+    if (editForm.activite.trim() !== (before.activite ?? "")) payload.activite = editForm.activite.trim() || null;
+    if (editForm.hobby.trim() !== (before.hobby ?? "")) payload.hobby = editForm.hobby.trim() || null;
     if (!isSelf) {
       payload.role = editForm.role;
       payload.est_actif = editForm.est_actif;
@@ -357,6 +364,13 @@ const Membres = () => {
                   <td className="px-5 py-3.5">
                     <p className="font-medium">{m.prenom} {m.nom}</p>
                     <p className="text-xs text-muted-foreground">{m.email}</p>
+                    {(m.activite || m.hobby) && (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {m.activite && <span>Activité : {m.activite}</span>}
+                        {m.activite && m.hobby && <span aria-hidden> · </span>}
+                        {m.hobby && <span>Hobby : {m.hobby}</span>}
+                      </p>
+                    )}
                     <div className="mt-1 md:hidden"><BadgePhotos autorisation={autorisations.get(m.id)} /></div>
                   </td>
                   <td className="px-5 py-3.5">
@@ -544,6 +558,14 @@ const Membres = () => {
               <div>
                 <label className="block text-sm font-medium mb-1.5">Téléphone</label>
                 <input value={editForm.telephone} onChange={e => setEditForm(f => ({ ...f, telephone: e.target.value }))} className={fieldClass} />
+              </div>
+              <div>
+                <label htmlFor="m-activite" className="block text-sm font-medium mb-1.5">Activité principale</label>
+                <input id="m-activite" value={editForm.activite} maxLength={150} onChange={e => setEditForm(f => ({ ...f, activite: e.target.value }))} className={fieldClass} />
+              </div>
+              <div>
+                <label htmlFor="m-hobby" className="block text-sm font-medium mb-1.5">Hobby</label>
+                <input id="m-hobby" value={editForm.hobby} maxLength={200} onChange={e => setEditForm(f => ({ ...f, hobby: e.target.value }))} className={fieldClass} />
               </div>
               {naissancesDisponibles && (
                 <div>

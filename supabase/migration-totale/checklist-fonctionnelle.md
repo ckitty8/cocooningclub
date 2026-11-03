@@ -84,6 +84,7 @@ Comptes utiles : une administratrice, une membre, une inscrite (rôle `inscrit`)
 
 - [ ] Les tables `inscriptions_backup_20260430` et `transactions_paypal_backup_20260430` n'existent plus (`verifications.sql`) ; rien d'autre ne change à l'écran.
 - [ ] Admin → Ateliers : créer un atelier à une date où aucune administratrice n'est disponible affiche toujours l'avertissement ; un visiteur ne peut pas appeler `admin_dispo_le` (erreur de droits).
+- [ ] Admin → Membres : « Activité : … · Hobby : … » sous l'e-mail d'une personne qui les a renseignés ; la recherche les trouve ; la fiche les modifie (aucun changement en base).
 - [ ] Admin → Ateliers : la « Description complète » se met en forme (titre, gras, listes, citation, lien, alignement) ; elle s'affiche mise en forme dans le calendrier public, la fiche de l'atelier et l'espace membre ; une ancienne description en texte brut s'affiche et se modifie toujours, retours à la ligne compris (aucun changement en base).
 
 ## Après : créateur (`christellelab@gmail.com`)
