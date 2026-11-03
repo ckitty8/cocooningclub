@@ -116,7 +116,7 @@ export default function EditeurTexteRiche({ valeur, onChange, libelleId, placeho
     content: versHtmlEditeur(valeur),
     editorProps: {
       attributes: {
-        class: "texte-riche min-h-[10rem] max-h-[24rem] overflow-y-auto px-3 py-2.5 text-sm focus:outline-none",
+        class: "texte-riche min-h-[20rem] max-h-[40rem] overflow-y-auto px-3 py-2.5 text-sm focus:outline-none",
         ...(libelleId ? { "aria-labelledby": libelleId } : {}),
         ...(placeholder ? { "aria-placeholder": placeholder } : {}),
         role: "textbox",
