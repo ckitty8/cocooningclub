@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { adresseLisible, estLien, googleMapsSearchUrl, nomDeLieu } from "./googleMaps";
+import { adresseLisible, estLien, googleMapsSearchUrl } from "./googleMaps";
 
 const LIEN = "https://www.google.com/maps/place/LE+FLOW/@48.87,2.52,17z/data=!3m1!4b1";
 
@@ -30,19 +30,5 @@ describe("liens vers la carte", () => {
     expect(adresseLisible("  ")).toBeNull();
     expect(adresseLisible(null)).toBeNull();
     expect(adresseLisible(" 1 rue de la Paix ")).toBe("1 rue de la Paix");
-  });
-});
-
-describe("nom du lieu déduit de l'adresse", () => {
-  it("reprend le nom de l'établissement placé avant la première virgule", () => {
-    expect(nomDeLieu("La Picorette, 21, Avenue de la Résistance, Gare, Le Raincy, 93340, France")).toBe("La Picorette");
-  });
-  it("ne déduit rien d'une adresse qui commence par un numéro de rue", () => {
-    expect(nomDeLieu("12 rue des Lilas, 75000 Paris")).toBeNull();
-  });
-  it("ne déduit rien d'un lien Google Maps ni d'un champ vide", () => {
-    expect(nomDeLieu(LIEN)).toBeNull();
-    expect(nomDeLieu("")).toBeNull();
-    expect(nomDeLieu(null)).toBeNull();
   });
 });

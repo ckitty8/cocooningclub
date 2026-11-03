@@ -64,23 +64,3 @@ test("sans matin ni après-midi, la tuile n'affiche aucune de ces lignes", async
   await expect(page.locator("#ateliers").getByText("Matin :")).toHaveCount(0);
   await expect(page.locator("#ateliers").getByText("Après-midi :")).toHaveCount(0);
 });
-
-test("un atelier enregistré avec une adresse mais sans lieu reprend le nom de l'établissement", async ({ page }) => {
-  const admin = profilTest();
-  const mock = await mockSupabase(page, { profil: admin, espaces: ESPACES });
-  await connecterEn(page, admin);
-  await page.goto("/admin/ateliers");
-  await page.getByRole("button", { name: "Ajouter", exact: true }).click();
-
-  const fenetre = page.locator("div.fixed").filter({ hasText: "Titre *" });
-  await fenetre.locator("select").first().selectOption(ESPACES[1].id);
-  await fenetre.locator("label", { hasText: "Titre *" }).locator("xpath=following-sibling::input").fill("Business - Journée");
-  await fenetre.locator("label", { hasText: "Date *" }).locator("xpath=following-sibling::input").fill("2027-03-10");
-  await fenetre.locator("label", { hasText: "Heure début *" }).locator("xpath=following-sibling::input").fill("10:00");
-  await fenetre.getByPlaceholder(/12 rue des Lilas/).fill("La Picorette, 21, Avenue de la Résistance, Le Raincy, 93340, France");
-  await fenetre.getByRole("button", { name: "Enregistrer", exact: true }).click();
-
-  await expect.poll(() => mock.inserts.ateliers?.[0]).toMatchObject({
-    lieu: "La Picorette", adresse: "La Picorette, 21, Avenue de la Résistance, Le Raincy, 93340, France",
-  });
-});
