@@ -64,7 +64,9 @@ const ListeParAtelier = ({ groupes, ouverts, onBasculer, droits, actingOn, onOuv
               <span className="min-w-0 flex-1">
                 <span className="font-display text-lg leading-tight block">{atelier.titre}</span>
                 <span className="font-body text-xs text-muted-foreground">
-                  {dateCourte(atelier.date_atelier)} · {total} pré-inscription{total > 1 ? "s" : ""} · {atelier.places_max === null ? "places illimitées" : `${libellePlacesPrises(atelier.places_max, atelier.places_disponibles)} places prises`}
+                  {dateCourte(atelier.date_atelier)} · {total} pré-inscription{total > 1 ? "s" : ""}
+                  {/* Atelier à créneaux : les places se comptent par demi-journée (pastilles ci-dessous). */}
+                  {!aDesCreneaux(atelier.creneaux) && <> · {atelier.places_max === null ? "places illimitées" : `${libellePlacesPrises(atelier.places_max, atelier.places_disponibles)} places prises`}</>}
                 </span>
                 {aDesCreneaux(atelier.creneaux) && <CompteursCreneaux atelier={atelier} toutes={toutes} />}
               </span>

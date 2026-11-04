@@ -1,4 +1,4 @@
-import { LIBELLE_COURT_CRENEAU, type SaisieCreneaux } from "@/lib/creneaux";
+import { LIBELLE_CRENEAU, type SaisieCreneaux } from "@/lib/creneaux";
 
 interface Props {
   valeur: SaisieCreneaux;
@@ -33,7 +33,7 @@ const TableauCreneaux = ({ valeur, onChange }: Props) => {
             <div key={cle} className="rounded-lg border bg-background p-3">
               <label className="flex min-h-6 cursor-pointer items-center gap-2 text-sm font-medium">
                 <input type="checkbox" checked={d.actif} onChange={e => maj(cle, { actif: e.target.checked })} className="h-5 w-5 accent-primary" />
-                {LIBELLE_COURT_CRENEAU[cle]}
+                Proposer {LIBELLE_CRENEAU[cle].replace(/^L'/, "l'").replace(/^La /, "la ")}
               </label>
               {d.actif && (
                 <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-5">
@@ -58,7 +58,7 @@ const TableauCreneaux = ({ valeur, onChange }: Props) => {
         <div className="rounded-lg border bg-background p-3">
           <label className="flex min-h-6 cursor-pointer items-center gap-2 text-sm font-medium">
             <input type="checkbox" checked={valeur.journee.actif} onChange={e => maj("journee", { actif: e.target.checked })} className="h-5 w-5 accent-primary" />
-            {LIBELLE_COURT_CRENEAU.journee}
+            Proposer la journée entière
           </label>
           {valeur.journee.actif && (
             <>

@@ -73,11 +73,11 @@ test("admin : les créneaux se cochent dans le formulaire d'un atelier Business,
 
   await fenetre.locator("select").first().selectOption(ESPACES[1].id);
   const creneaux = fenetre.getByRole("group", { name: "Créneaux proposés à l'inscription" });
-  await creneaux.getByRole("checkbox", { name: "Matinée" }).check();
+  await creneaux.getByRole("checkbox", { name: "Proposer la matinée" }).check();
   await creneaux.locator("#creneau-matin-debut").fill("10:00");
   await creneaux.locator("#creneau-matin-fin").fill("13:00");
   await creneaux.locator("#creneau-matin-places").fill("8");
-  await creneaux.getByRole("checkbox", { name: "Journée entière" }).check();
+  await creneaux.getByRole("checkbox", { name: "Proposer la journée entière" }).check();
   await creneaux.locator("#creneau-journee-tarif").fill("40");
 
   await fenetre.locator("label", { hasText: "Titre *" }).locator("xpath=following-sibling::input").fill("Journée Création");
