@@ -18,6 +18,8 @@ import { Plus, Search, Pencil, Trash2, UserX, UserCheck2, X, Eye, EyeOff } from 
 import type { UserRole } from "@/contexts/auth";
 import { creerCompte } from "@/lib/creerCompte";
 import type { NouveauCompte } from "@/lib/nouveauCompte";
+import { regrouperParticipantes, type Participante, type PreInscriptionInvitee } from "@/lib/participantes";
+import { Link } from "react-router-dom";
 
 type RoleCreable = NouveauCompte["role"];
 
@@ -112,6 +114,30 @@ const Membres = () => {
   };
 
   useEffect(() => { fetchMembers(); }, []);
+
+  // Participantes aux ateliers sans compte : pré-inscriptions du formulaire public (aucune fiche `utilisateurs`).
+  const [invitees, setInvitees] = useState<PreInscriptionInvitee[]>([]);
+  useEffect(() => {
+    supabase.from("inscriptions")
+      .select("utilisateur_id, prenom_invite, nom_invite, email_invite, telephone_invite, statut, inscrit_le, autorisation_image, accord_whatsapp, ateliers(titre, date_atelier)")
+      .is("utilisateur_id", null)
+      .order("inscrit_le", { ascending: false })
+      .then(({ data, error }) => {
+        if (error) console.warn("[Membres.participantes] non bloquant :", error);
+        else setInvitees((data as unknown as PreInscriptionInvitee[]) ?? []);
+      });
+  }, []);
+  const participantes = regrouperParticipantes(invitees, members.map(m => m.email).filter(Boolean));
+  const participantesFiltrees = participantes.filter(p => {
+    const q = search.toLowerCase();
+    return !q || [p.prenom, p.nom, p.email, p.telephone, p.dernierAtelier?.titre].some(v => v?.toLowerCase().includes(q));
+  });
+  const voirParticipantes = filterRole === "participantes";
+  const creerDepuis = (p: Participante) => {
+    setCreateForm({ ...emptyCreateForm, prenom: p.prenom, nom: p.nom, email: p.email ?? "", telephone: p.telephone ?? "" });
+    setCreateError("");
+    setCreateModal(true);
+  };
 
   const filtered = members.filter(m => {
     const q = search.toLowerCase();
@@ -300,7 +326,17 @@ const Membres = () => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">Membres</h1>
-          <p className="text-muted-foreground text-sm mt-1">{members.length} profil(s) au total</p>
+          <p className="text-muted-foreground text-sm mt-1">
+            {members.length} profil(s) au total
+            {participantes.length > 0 && (
+              <>
+                {" · "}
+                <button type="button" onClick={() => setFilterRole("participantes")} className="underline hover:text-foreground">
+                  {participantes.length} participante{participantes.length > 1 ? "s" : ""} aux ateliers sans compte
+                </button>
+              </>
+            )}
+          </p>
         </div>
         <button onClick={() => { setCreateForm(emptyCreateForm); setCreateError(""); setCreateModal(true); }}
           className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium hover:opacity-90 transition-opacity">
@@ -321,8 +357,9 @@ const Membres = () => {
           <option value="inscrit">Inscrits</option>
           <option value="membre">Membres</option>
           <option value="administrateur">Admins</option>
+          <option value="participantes">Participantes aux ateliers (sans compte)</option>
         </select>
-        {offresDisponibles && (
+        {offresDisponibles && !voirParticipantes && (
           <select value={filtreOffre} onChange={e => setFiltreOffre(e.target.value)} aria-label="Filtrer par offre"
             className="border rounded-xl px-3 py-2 text-sm bg-card focus:outline-none focus:ring-2 focus:ring-primary">
             <option value="toutes">Toutes les offres</option>
@@ -330,15 +367,71 @@ const Membres = () => {
             <option value="aucune">Sans adhésion</option>
           </select>
         )}
-        <select value={filterActif} onChange={e => setFilterActif(e.target.value)}
+        {!voirParticipantes && <select value={filterActif} onChange={e => setFilterActif(e.target.value)}
           className="border rounded-xl px-3 py-2 text-sm bg-card focus:outline-none focus:ring-2 focus:ring-primary">
           <option value="tous">Tous statuts</option>
           <option value="actif">Actifs</option>
           <option value="inactif">Inactifs</option>
-        </select>
+        </select>}
       </div>
 
-      {/* Table */}
+      {voirParticipantes ? (
+        <div className="bg-card rounded-2xl border overflow-hidden">
+          <p className="px-5 py-3 text-xs text-muted-foreground border-b bg-muted/30">
+            Personnes pré-inscrites à un atelier par le formulaire du site, sans compte sur le site. « Créer un compte » reprend leurs coordonnées (rôle Inscrit) ;
+            pour une adhésion, passer par Offre &amp; adhésions → « Ajouter une adhésion ».
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="border-b bg-muted/30">
+                <tr>
+                  <th className="text-left px-5 py-3 font-medium text-muted-foreground">Participante</th>
+                  <th className="text-left px-5 py-3 font-medium text-muted-foreground hidden md:table-cell">Téléphone</th>
+                  <th className="text-left px-5 py-3 font-medium text-muted-foreground">Dernier atelier</th>
+                  <th className="text-left px-5 py-3 font-medium text-muted-foreground hidden md:table-cell">Pré-inscriptions</th>
+                  <th className="text-left px-5 py-3 font-medium text-muted-foreground hidden lg:table-cell">Réponses du formulaire</th>
+                  <th className="px-5 py-3" />
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {participantesFiltrees.length === 0 ? (
+                  <tr><td colSpan={6} className="text-center py-12 text-muted-foreground">Aucun résultat</td></tr>
+                ) : participantesFiltrees.map(p => (
+                  <tr key={p.cle} className="hover:bg-muted/20 transition-colors">
+                    <td className="px-5 py-3.5">
+                      <p className="font-medium">{p.prenom} {p.nom}</p>
+                      <p className="text-xs text-muted-foreground">{p.email ?? "—"}</p>
+                      {p.telephone && <p className="text-xs text-muted-foreground md:hidden">{p.telephone}</p>}
+                    </td>
+                    <td className="px-5 py-3.5 hidden md:table-cell text-xs text-muted-foreground whitespace-nowrap">{p.telephone ?? "—"}</td>
+                    <td className="px-5 py-3.5">
+                      {p.dernierAtelier ? (
+                        <>
+                          <p>{p.dernierAtelier.titre}</p>
+                          {p.dernierAtelier.date && <p className="text-xs text-muted-foreground">{dateFr(p.dernierAtelier.date)}</p>}
+                        </>
+                      ) : "—"}
+                    </td>
+                    <td className="px-5 py-3.5 hidden md:table-cell text-xs text-muted-foreground whitespace-nowrap">
+                      {p.demandes} demande{p.demandes > 1 ? "s" : ""} · {p.validees} validée{p.validees > 1 ? "s" : ""}
+                    </td>
+                    <td className="px-5 py-3.5 hidden lg:table-cell text-xs text-muted-foreground">
+                      <p>Droit à l'image : {p.autorisationImage === null ? "—" : p.autorisationImage ? "Autorise" : "N'autorise pas"}</p>
+                      <p>Groupe WhatsApp : {p.accordWhatsapp === null ? "—" : p.accordWhatsapp ? "Accepte" : "N'accepte pas"}</p>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <div className="flex flex-wrap items-center gap-2 justify-end">
+                        <Link to="/admin/pre-inscriptions" className="px-3 py-1.5 text-xs border rounded-full hover:bg-muted whitespace-nowrap">Pré-inscriptions</Link>
+                        <button onClick={() => creerDepuis(p)} className="px-3 py-1.5 text-xs border rounded-full hover:bg-muted whitespace-nowrap">Créer un compte</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
       <div className="bg-card rounded-2xl border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -358,7 +451,17 @@ const Membres = () => {
               {loading ? (
                 <tr><td colSpan={nbColonnes} className="text-center py-12 text-muted-foreground">Chargement...</td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={nbColonnes} className="text-center py-12 text-muted-foreground">Aucun résultat</td></tr>
+                <tr><td colSpan={nbColonnes} className="text-center py-12 text-muted-foreground">
+                  Aucun résultat
+                  {filterRole === "inscrit" && participantes.length > 0 && (
+                    <p className="mt-2 text-xs">
+                      Les personnes pré-inscrites à un atelier sans créer de compte ne sont pas des comptes « Inscrit » :{" "}
+                      <button type="button" onClick={() => setFilterRole("participantes")} className="underline hover:text-foreground">
+                        voir les {participantes.length} participante{participantes.length > 1 ? "s" : ""} aux ateliers
+                      </button>
+                    </p>
+                  )}
+                </td></tr>
               ) : filtered.map(m => (
                 <tr key={m.id} className="hover:bg-muted/20 transition-colors">
                   <td className="px-5 py-3.5">
@@ -427,6 +530,7 @@ const Membres = () => {
           </table>
         </div>
       </div>
+      )}
 
       {/* ── Modal création ── */}
       {createModal && (
