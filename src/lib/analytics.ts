@@ -95,4 +95,20 @@ export const suivrePage = (chemin: string): void => {
   });
 };
 
+/**
+ * Événement « pre_inscription » : à appeler UNIQUEMENT quand une pré-inscription vient d'être enregistrée
+ * (jamais au clic, jamais en cas d'erreur ou de doublon). Mêmes règles que les pages vues : rien sans
+ * consentement aux cookies statistiques, rien depuis une page privée (espace membre). Aucune donnée
+ * personnelle : ni nom, ni e-mail, ni téléphone, ni identifiant d'atelier (adresse ramenée à « /inscription »).
+ */
+export const suivrePreInscription = (): void => {
+  const chemin = window.location.pathname;
+  if (!ID_MESURE || !audienceAutorisee() || !window.gtag || pagePrivee(chemin)) return;
+  const page = cheminPourGoogle(chemin);
+  window.gtag("event", "pre_inscription", {
+    page_path: page,
+    page_location: window.location.origin + page,
+  });
+};
+
 export const analyticsConfigure = ID_MESURE !== "";

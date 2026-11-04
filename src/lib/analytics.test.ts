@@ -87,6 +87,36 @@ describe("Google Analytics avec un identifiant de mesure", () => {
     ga.suivrePage("/inscription/abc");
     expect(pagesVues()).toEqual(["/calendrier", "/inscription"]);
   });
+
+  it("pre_inscription : seulement après acceptation, jamais depuis l'espace membre, sans donnée personnelle", async () => {
+    const ga = await charger();
+    const consentement = await import("./consentement");
+    const evenements = () => commandes().filter(a => a[0] === "event" && a[1] === "pre_inscription");
+    const aller = (chemin: string) => window.history.replaceState(null, "", chemin);
+
+    ga.preparerConsentement();
+    aller("/inscription/3f2a-uuid-atelier?email=marie@exemple.fr");
+    ga.suivrePreInscription();
+    expect(evenements()).toEqual([]); // pas de consentement
+
+    consentement.enregistrerChoix(true);
+    ga.suivrePreInscription();
+    aller("/espace-membre/ateliers");
+    ga.suivrePreInscription(); // page privée : rien
+    aller("/calendrier");
+    ga.suivrePreInscription();
+
+    expect(evenements()).toEqual([
+      ["event", "pre_inscription", { page_path: "/inscription", page_location: `${window.location.origin}/inscription` }],
+      ["event", "pre_inscription", { page_path: "/calendrier", page_location: `${window.location.origin}/calendrier` }],
+    ]);
+    expect(JSON.stringify(evenements())).not.toMatch(/@|uuid|email/);
+
+    consentement.enregistrerChoix(false);
+    ga.suivrePreInscription();
+    expect(evenements()).toHaveLength(2); // consentement retiré : plus rien
+    aller("/");
+  });
 });
 
 describe("identifiant de mesure du club", () => {

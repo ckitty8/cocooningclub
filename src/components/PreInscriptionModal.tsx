@@ -15,6 +15,7 @@ import {
   type PreInscriptionData,
 } from "@/lib/preInscription";
 import { enregistrerPreInscription, type IssuePreInscription } from "@/lib/preInscriptionSecours";
+import { suivrePreInscription } from "@/lib/analytics";
 import AjouterAgenda from "@/components/AjouterAgenda";
 import RappelAtelier from "@/components/RappelAtelier";
 
@@ -119,6 +120,10 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer, atelierId, en
       toast.error(issue.message);
       return;
     }
+
+    // Google Analytics : seulement une pré-inscription réellement enregistrée sur le serveur (table des
+    // inscriptions ou demande de secours). Pas pour une demande gardée dans le navigateur (pas encore reçue).
+    if (issue.issue === "enregistree" || issue.issue === "secours") suivrePreInscription();
 
     // Les places ne sont décomptées qu'à la validation par l'équipe (trigger en base).
     setConfirmation({ atelier, titre: demande.atelierTitre, issue: issue.issue });
