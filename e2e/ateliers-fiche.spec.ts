@@ -63,8 +63,8 @@ test("la fiche d'un atelier : chiffres, paiement, présence et export", async ({
   await page.getByRole("button", { name: "Absente" }).click();
   await expect.poll(() => mock.updates.inscriptions?.[1]).toMatchObject({ present: true });
 
-  const [telechargement] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "Export CSV" }).click()]);
-  expect(telechargement.suggestedFilename()).toBe("inscrites-atelier.csv");
+  const [telechargement] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "Exporter en Excel" }).click()]);
+  expect(telechargement.suggestedFilename()).toMatch(/^inscrites-atelier-papotages-cafe-des-copines-\d{4}-\d{2}-\d{2}\.xlsx$/);
 
   await expect(page.getByRole("main").getByRole("link", { name: "Pré-inscriptions" })).toHaveAttribute("href", `/admin/pre-inscriptions?atelier=${ATELIER_TEST.id}`);
   await expect(page.getByRole("main").getByRole("link", { name: "Modifier" })).toHaveAttribute("href", `/admin/ateliers?modifier=${ATELIER_TEST.id}`);

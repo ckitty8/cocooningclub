@@ -1,4 +1,4 @@
-import { Check, ChevronDown, ChevronRight, Mail, MessageSquare, RotateCcw, X } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, FileSpreadsheet, Mail, MessageSquare, RotateCcw, X } from "lucide-react";
 import { inscIdentite } from "@/lib/inscriptionIdentite";
 import type { GroupeAtelier } from "@/lib/preInscriptions";
 import { OffrePastille } from "@/components/OffrePastille";
@@ -15,6 +15,8 @@ interface Props {
   actingOn: string | null;
   onOuvrir: (insc: Inscription, onglet?: "infos" | "messages", canal?: "mail" | "whatsapp") => void;
   onStatut: (insc: Inscription, statut: StatutInscription) => void | Promise<void>;
+  /** Export Excel de toutes les pré-inscriptions d'un atelier. */
+  onExporter?: (atelier: AtelierListe, inscriptions: Inscription[]) => void;
 }
 
 const dateCourte = (iso: string) =>
@@ -28,9 +30,9 @@ const bouton = "flex h-8 w-8 items-center justify-center rounded-full border tra
 const boutonLarge = "hidden sm:flex h-8 w-8 items-center justify-center rounded-full border transition-colors disabled:opacity-40";
 
 /** Accordéon : un bloc par atelier, avec ses pré-inscriptions et des actions rapides. */
-const ListeParAtelier = ({ groupes, ouverts, onBasculer, droits, actingOn, onOuvrir, onStatut }: Props) => (
+const ListeParAtelier = ({ groupes, ouverts, onBasculer, droits, actingOn, onOuvrir, onStatut, onExporter }: Props) => (
   <div className="space-y-3">
-    {groupes.map(({ atelier, items, aTraiter, confirmees, total }) => {
+    {groupes.map(({ atelier, items, aTraiter, confirmees, total, toutes }) => {
       const ouvert = !!ouverts[atelier.id];
       return (
         <section key={atelier.id} className="bg-card rounded-2xl border overflow-hidden">
@@ -53,6 +55,14 @@ const ListeParAtelier = ({ groupes, ouverts, onBasculer, droits, actingOn, onOuv
             </button>
           </h2>
 
+          {ouvert && onExporter && total > 0 && (
+            <div className="flex flex-wrap items-center justify-end gap-2 border-t bg-muted/20 px-5 py-2">
+              <button onClick={() => onExporter(atelier, toutes)} title={`Télécharger les ${total} pré-inscriptions de cet atelier et leurs réponses`}
+                className="font-body flex items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors">
+                <FileSpreadsheet className="h-3.5 w-3.5" aria-hidden="true" /> Exporter en Excel ({total})
+              </button>
+            </div>
+          )}
           {ouvert && (
             <ul className="border-t divide-y">
               {items.length === 0 && (

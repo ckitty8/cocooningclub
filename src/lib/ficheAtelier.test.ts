@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { csvInscrites, resumeInscrites } from "./ficheAtelier";
+import { resumeInscrites } from "./ficheAtelier";
 
 describe("résumé des inscrites", () => {
   const lignes = [
@@ -13,15 +13,5 @@ describe("résumé des inscrites", () => {
   });
   it("un atelier gratuit n'a rien à encaisser", () => {
     expect(resumeInscrites(lignes, 0)).toMatchObject({ attendu: 0, encaisse: 0 });
-  });
-});
-
-describe("export CSV", () => {
-  it("échappe les séparateurs et les guillemets", () => {
-    const csv = csvInscrites([{ Nom: 'Dupont; "Marie"', Email: "m@x.fr" }], ["Nom", "Email"]);
-    expect(csv).toBe('﻿Nom;Email\r\n"Dupont; ""Marie""";m@x.fr');
-  });
-  it("laisse vide une colonne absente", () => {
-    expect(csvInscrites([{ Nom: "A" }], ["Nom", "Email"])).toBe("﻿Nom;Email\r\nA;");
   });
 });

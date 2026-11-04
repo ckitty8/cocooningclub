@@ -28,9 +28,3 @@ export const resumeInscrites = (lignes: LigneInscrite[], tarif: number): ResumeI
     encaisse: confirmees.filter(l => l.statut_paiement === "paye").length * tarif,
   };
 };
-
-const echapper = (valeur: string) => (/[;"\n\r]/.test(valeur) ? `"${valeur.replaceAll('"', '""')}"` : valeur);
-
-/** Fichier CSV (séparateur « ; », avec BOM pour qu'Excel lise bien les accents). */
-export const csvInscrites = (lignes: Record<string, string>[], colonnes: string[]): string =>
-  "﻿" + [colonnes, ...lignes.map(l => colonnes.map(c => l[c] ?? ""))].map(l => l.map(echapper).join(";")).join("\r\n");

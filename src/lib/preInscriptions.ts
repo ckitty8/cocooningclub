@@ -23,6 +23,8 @@ export interface GroupeAtelier<A, I> {
   aTraiter: number;
   /** Toutes les pré-inscriptions de l'atelier. */
   total: number;
+  /** Toutes les lignes de l'atelier, quels que soient les filtres (export). */
+  toutes: I[];
 }
 
 export const periodeDe = (dateAtelier: string, aujourdhui: string): Periode => (dateAtelier >= aujourdhui ? "avenir" : "passes");
@@ -51,7 +53,7 @@ export const grouperParAtelier = <A extends AtelierGroupable, I extends Inscript
     .map(atelier => {
       const toutes = inscriptions.filter(i => i.atelier_id === atelier.id);
       const items = toutes.filter(i => (filtre === "tous" || i.statut === filtre) && (!q || texte(i).toLowerCase().includes(q)));
-      return { atelier, items, aTraiter: toutes.filter(i => i.statut === "en_attente").length, confirmees: toutes.filter(i => i.statut === "confirme").length, total: toutes.length };
+      return { atelier, items, aTraiter: toutes.filter(i => i.statut === "en_attente").length, confirmees: toutes.filter(i => i.statut === "confirme").length, total: toutes.length, toutes };
     })
     .filter(g => g.items.length > 0 || g.atelier.id === cible);
   const sens = periode === "avenir" ? 1 : -1;

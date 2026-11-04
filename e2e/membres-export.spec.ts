@@ -41,3 +41,20 @@ test("Membres : « Envoyer vers Google Drive » télécharge le fichier et ouvre
   expect(fenetre.url()).toContain("drive.google.com");
   await expect(page.getByText(/glisse-le dans l'onglet Google Drive/)).toBeVisible();
 });
+
+test("Pré-inscriptions : chaque atelier s'exporte en Excel avec les réponses du formulaire", async ({ page }) => {
+  const admin = profilTest();
+  await mockSupabase(page, {
+    profil: admin,
+    inscriptions: [{ ...INVITEE, autorisation_image: false, accord_whatsapp: true, date_naissance: null, ateliers: { ...ATELIER_TEST } }],
+  });
+  await connecterEn(page, admin);
+  await page.goto(`/admin/pre-inscriptions?atelier=${ATELIER_TEST.id}`);
+  const [telechargement] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByRole("button", { name: "Exporter en Excel (1)" }).click(),
+  ]);
+  expect(telechargement.suggestedFilename()).toMatch(/^inscrites-atelier-papotages-cafe-des-copines-.*\.xlsx$/);
+  const contenu = readFileSync(await telechargement.path());
+  expect(contenu.subarray(0, 2).toString()).toBe("PK");
+});

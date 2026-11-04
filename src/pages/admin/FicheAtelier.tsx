@@ -2,12 +2,15 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { CircleDashed, Download, Euro, Link2, MapPin, Pencil, Search, UserCheck, UserX } from "lucide-react";
 import { toast } from "sonner";
+import { logAction } from "@/utils/logAction";
 import AdminLayout from "@/components/admin/AdminLayout";
 import BadgePhotos from "@/components/BadgePhotos";
 import { useAutorisationsImage } from "@/hooks/useAutorisationsImage";
 import { supabase } from "@/integrations/supabase/client";
 import { ESPACES_PAR_SLUG } from "@/lib/espaces";
-import { csvInscrites, resumeInscrites } from "@/lib/ficheAtelier";
+import { resumeInscrites } from "@/lib/ficheAtelier";
+import { nomFeuille, nomFichierInscrites, tableauInscrites } from "@/lib/exportInscrites";
+import { fichierExcel, telecharger } from "@/lib/exportMembres";
 import { LIBELLES_PHOTOS, etatPhotos } from "@/lib/autorisationImage";
 import { inscIdentite } from "@/lib/inscriptionIdentite";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
@@ -49,6 +52,8 @@ interface Inscrite {
   statut_paiement: "en_attente" | "paye" | "non_requis";
   present: boolean | null;
   inscrit_le: string;
+  autorisation_image?: boolean | null;
+  accord_whatsapp?: boolean | null;
   utilisateurs: { prenom: string | null; nom: string | null; email: string | null; telephone: string | null; role: string | null } | null;
 }
 
@@ -124,27 +129,28 @@ const FicheAtelier = () => {
     setInscrites(prev => prev.map(x => (x.id === i.id ? { ...x, statut_paiement: suivant } : x)));
   };
 
-  const exporter = () => {
+  const exporter = async () => {
     if (!atelier) return;
-    const colonnes = ["Prénom", "Nom", "E-mail", "Téléphone", "Statut", "Paiement", "Présente", "Consentement photo"];
-    const lignes = inscrites.map(i => {
-      const ident = inscIdentite(i);
-      return {
-        "Prénom": ident.prenom, "Nom": ident.nom, "E-mail": ident.email ?? "", "Téléphone": ident.telephone ?? "",
-        "Statut": STATUTS[i.statut], "Paiement": i.statut_paiement === "paye" ? "Payé" : i.statut_paiement === "non_requis" ? "Gratuit" : "Non payé",
-        "Présente": i.present ? "Oui" : "Non",
-        "Consentement photo": i.utilisateur_id ? LIBELLES_PHOTOS[etatPhotos(autorisations.get(i.utilisateur_id))] : LIBELLES_PHOTOS.inconnu,
-      };
-    });
-    const blob = new Blob([csvInscrites(lignes, colonnes)], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "inscrites-atelier.csv";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    const libelleCompte: Record<string, string> = { administrateur: "Admin", membre: "Membre", inscrit: "Inscrit" };
+    try {
+      const tableau = tableauInscrites(inscrites.map(i => {
+        const ident = inscIdentite(i);
+        return {
+          prenom: ident.prenom, nom: ident.nom, email: ident.email, telephone: ident.telephone,
+          compte: i.utilisateurs?.role ? libelleCompte[i.utilisateurs.role] ?? "Inscrit" : "Sans compte",
+          statut: i.statut, statutPaiement: i.statut_paiement, presente: !!i.present,
+          autorisationImage: i.autorisation_image, accordWhatsapp: i.accord_whatsapp,
+          consentementBulletin: i.utilisateur_id ? LIBELLES_PHOTOS[etatPhotos(autorisations.get(i.utilisateur_id))] : LIBELLES_PHOTOS.inconnu,
+          dateNaissance: ident.dateNaissance, recueLe: i.inscrit_le,
+        };
+      }));
+      const nom = nomFichierInscrites(atelier.titre, atelier.date_atelier);
+      telecharger(await fichierExcel([{ nom: nomFeuille(atelier.titre), tableau }]), nom);
+      logAction("inscription.export", "ateliers", atelier.id, { titre: atelier.titre, lignes: inscrites.length });
+    } catch (err) {
+      console.error("[FicheAtelier.exporter] error:", err);
+      toast.error("L'export a échoué, réessaie.");
+    }
   };
 
   if (loading) {
@@ -250,7 +256,7 @@ const FicheAtelier = () => {
             </div>
             <button onClick={exporter} disabled={inscrites.length === 0}
               className="flex items-center gap-1.5 px-4 py-2 border rounded-full text-sm hover:bg-muted disabled:opacity-40">
-              <Download className="w-4 h-4" /> Export CSV
+              <Download className="w-4 h-4" /> Exporter en Excel
             </button>
           </div>
 

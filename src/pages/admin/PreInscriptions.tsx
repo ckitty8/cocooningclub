@@ -7,7 +7,9 @@ import FenetreInscription, { type Canal, type Onglet } from "@/components/admin/
 import type { AtelierListe, InfoDroit, Inscription, StatutInscription, StatutPaiement } from "@/components/admin/preinscriptions/types";
 import { useAutorisationsImage } from "@/hooks/useAutorisationsImage";
 import { useEspaces, useOffresParPersonne, useTarifsAdherent } from "@/hooks/useOffres";
-import { droitAtelier } from "@/lib/droits";
+import { droitAtelier, euros } from "@/lib/droits";
+import { nomFeuille, nomFichierInscrites, tableauInscrites } from "@/lib/exportInscrites";
+import { fichierExcel, telecharger } from "@/lib/exportMembres";
 import { supabase } from "@/integrations/supabase/client";
 import type { TablesUpdate } from "@/integrations/supabase/types";
 import { logAction } from "@/utils/logAction";
@@ -436,6 +438,32 @@ const PreInscriptions = () => {
     </AdminLayout>
   );
 
+  // Export Excel de toutes les pré-inscriptions d'un atelier, avec les réponses du formulaire.
+  const exporterAtelier = async (atelier: AtelierListe, lignes: Inscription[]) => {
+    const libelleCompte = { administrateur: "Admin", membre: "Membre", inscrit: "Inscrit" } as const;
+    try {
+      const tableau = tableauInscrites([...lignes].sort((a, b) => a.inscrit_le.localeCompare(b.inscrit_le)).map(i => {
+        const id = inscIdentite(i);
+        const d = droits?.get(i.id)?.droit;
+        return {
+          prenom: id.prenom, nom: id.nom, email: id.email, telephone: id.telephone,
+          compte: i.utilisateurs?.role ? libelleCompte[i.utilisateurs.role] : "Sans compte",
+          tarif: !d ? "" : d.etat === "a_payer" ? `À payer${d.montant > 0 ? ` · ${euros(d.montant)}` : ""}` : d.etat === "inclus" ? "Inclus" : "Gratuit",
+          statut: i.statut, statutPaiement: i.statut_paiement,
+          autorisationImage: i.autorisation_image, accordWhatsapp: i.accord_whatsapp,
+          dateNaissance: id.dateNaissance, recueLe: i.inscrit_le,
+        };
+      }));
+      const nom = nomFichierInscrites(atelier.titre, atelier.date_atelier);
+      telecharger(await fichierExcel([{ nom: nomFeuille(atelier.titre), tableau }]), nom);
+      logAction("inscription.export", "ateliers", atelier.id, { titre: atelier.titre, lignes: lignes.length });
+      toast.success(`« ${nom} » est téléchargé.`);
+    } catch (err) {
+      console.error("[PreInscriptions.exporterAtelier] error:", err);
+      toast.error("L'export a échoué, réessaie.");
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="mb-6 flex items-start justify-between gap-4 flex-wrap">
@@ -513,6 +541,7 @@ const PreInscriptions = () => {
         </div>
       ) : (
         <ListeParAtelier
+          onExporter={exporterAtelier}
           groupes={groupes}
           ouverts={ouverts}
           onBasculer={atelierId => setOuvertsManuels(prev => ({ ...prev, [atelierId]: !ouverts[atelierId] }))}
