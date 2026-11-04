@@ -14,7 +14,9 @@ import ChampDate from "@/components/ChampDate";
 import { dateFr } from "@/lib/dates";
 import OffresPersonne from "@/components/OffrePastille";
 import { nomCourtOffre } from "@/lib/droits";
-import { Plus, Search, Pencil, Trash2, UserX, UserCheck2, X, Eye, EyeOff } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, UserX, UserCheck2, X, Eye, EyeOff, FileSpreadsheet, HardDriveUpload } from "lucide-react";
+import { etatPhotos, LIBELLES_PHOTOS } from "@/lib/autorisationImage";
+import { fichierExcel, nomFichierMembres, tableauComptes, tableauParticipantes, telecharger } from "@/lib/exportMembres";
 import type { UserRole } from "@/contexts/auth";
 import { creerCompte } from "@/lib/creerCompte";
 import type { NouveauCompte } from "@/lib/nouveauCompte";
@@ -153,6 +155,46 @@ const Membres = () => {
   });
   const nomsOffres = Array.from(new Set(Array.from(offres.values()).flat().map(o => nomCourtOffre(o.nom)))).sort();
   const nbColonnes = 6 + (offresDisponibles ? 1 : 0) + (naissancesDisponibles ? 1 : 0);
+
+  // ── Export Excel / Google Drive ───────────────────────────
+  // Exporte ce que l'écran montre : la liste des comptes (filtres compris) et, si elle est affichée,
+  // celle des participantes sans compte (« Tous les rôles », « Inscrits » ou « Participantes »).
+  const [exportEnCours, setExportEnCours] = useState(false);
+  const exporter = async (versDrive: boolean) => {
+    // La fenêtre Drive est ouverte tout de suite (sinon le navigateur la bloque), le fichier est préparé ensuite.
+    const fenetreDrive = versDrive ? window.open("https://drive.google.com/drive/my-drive", "_blank") : null;
+    if (fenetreDrive) fenetreDrive.opener = null;
+    setExportEnCours(true);
+    try {
+      const comptes = voirParticipantes ? [] : filtered.map(m => ({
+        prenom: m.prenom, nom: m.nom, email: m.email, telephone: m.telephone, role: roleLabel[m.role],
+        offres: m.role === "administrateur" ? "" : (offres.get(m.id) ?? []).map(o => o.nom).join(", "),
+        actif: m.est_actif,
+        naissance: naissances.get(m.id)?.date ? dateFr(naissances.get(m.id)!.date) : "",
+        activite: m.activite, hobby: m.hobby ?? null,
+        consentementPhotos: LIBELLES_PHOTOS[etatPhotos(autorisations.get(m.id))],
+        creeLe: m.cree_le,
+      }));
+      const avecParticipantes = afficherParticipantes || filterRole === "tous";
+      const blob = await fichierExcel([
+        { nom: "Comptes", tableau: tableauComptes(comptes) },
+        { nom: "Participantes ateliers", tableau: tableauParticipantes(avecParticipantes ? participantesFiltrees : []) },
+      ].filter(f => !(voirParticipantes && f.nom === "Comptes")));
+      const nom = nomFichierMembres();
+      telecharger(blob, nom);
+      logAction("membre.export", "utilisateurs", null, { comptes: comptes.length, participantes: avecParticipantes ? participantesFiltrees.length : 0, drive: versDrive });
+      toast.success(versDrive
+        ? `« ${nom} » est téléchargé : glisse-le dans l'onglet Google Drive qui vient de s'ouvrir.`
+        : `« ${nom} » est téléchargé.`, { duration: 8000 });
+      if (versDrive && !fenetreDrive) toast.info("Le navigateur a bloqué l'ouverture de Google Drive : ouvre drive.google.com pour y déposer le fichier.", { duration: 8000 });
+    } catch (err) {
+      console.error("[Membres.exporter] error:", err);
+      fenetreDrive?.close();
+      toast.error("L'export a échoué, réessaie.");
+    } finally {
+      setExportEnCours(false);
+    }
+  };
 
   // ── Création ──────────────────────────────────────────────
   const handleCreate = async () => {
@@ -325,7 +367,7 @@ const Membres = () => {
 
   return (
     <AdminLayout>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold">Membres</h1>
           <p className="text-muted-foreground text-sm mt-1">
@@ -340,10 +382,22 @@ const Membres = () => {
             )}
           </p>
         </div>
-        <button onClick={() => { setCreateForm(emptyCreateForm); setCreateError(""); setCreateModal(true); }}
-          className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium hover:opacity-90 transition-opacity">
-          <Plus className="w-4 h-4" /> Créer un membre
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button onClick={() => exporter(false)} disabled={exportEnCours || loading}
+            title="Télécharger la liste affichée au format Excel"
+            className="flex items-center gap-2 border bg-card px-4 py-2 rounded-full text-sm font-medium hover:bg-muted transition-colors disabled:opacity-50">
+            <FileSpreadsheet className="w-4 h-4" /> Exporter en Excel
+          </button>
+          <button onClick={() => exporter(true)} disabled={exportEnCours || loading}
+            title="Télécharger le fichier Excel et ouvrir Google Drive pour l'y déposer"
+            className="flex items-center gap-2 border bg-card px-4 py-2 rounded-full text-sm font-medium hover:bg-muted transition-colors disabled:opacity-50">
+            <HardDriveUpload className="w-4 h-4" /> Envoyer vers Google Drive
+          </button>
+          <button onClick={() => { setCreateForm(emptyCreateForm); setCreateError(""); setCreateModal(true); }}
+            className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium hover:opacity-90 transition-opacity">
+            <Plus className="w-4 h-4" /> Créer un membre
+          </button>
+        </div>
       </div>
 
       {/* Filtres */}
