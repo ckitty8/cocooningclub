@@ -1,7 +1,8 @@
 // Google Analytics 4 avec Google Consent Mode v2 : par défaut tout est refusé et rien de Google n'est
 // chargé ; le script n'est ajouté qu'après acceptation de la mesure d'audience (voir lib/consentement.ts).
-// L'identifiant de mesure vient de la variable VITE_GA_MEASUREMENT_ID (réglages de Vercel) ; sans elle,
-// seule la mesure interne existe.
+// Identifiant de mesure du club : G-X361LVXTDW, écrit ici pour que toute version du site (Vercel, IONOS…)
+// l'emporte avec elle. La variable VITE_GA_MEASUREMENT_ID peut le remplacer (tests, autre propriété).
+// C'est le SEUL endroit qui charge Google Analytics : aucune balise gtag dans index.html (pas de doublon).
 import { audienceAutorisee } from "@/lib/consentement";
 
 declare global {
@@ -11,7 +12,8 @@ declare global {
   }
 }
 
-const ID_MESURE = (import.meta.env.VITE_GA_MEASUREMENT_ID as string | undefined)?.trim() || "";
+export const ID_MESURE_CLUB = "G-X361LVXTDW";
+const ID_MESURE = (import.meta.env.VITE_GA_MEASUREMENT_ID as string | undefined)?.trim() || ID_MESURE_CLUB;
 let scriptAjoute = false;
 
 // Pages d'espace connecté : jamais envoyées à Google Analytics.

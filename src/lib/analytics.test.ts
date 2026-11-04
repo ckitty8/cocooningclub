@@ -88,3 +88,23 @@ describe("Google Analytics avec un identifiant de mesure", () => {
     expect(pagesVues()).toEqual(["/calendrier", "/inscription"]);
   });
 });
+
+describe("identifiant de mesure du club", () => {
+  it("utilise G-X361LVXTDW quand aucune variable n'est définie, et seulement après acceptation", async () => {
+    vi.resetModules();
+    vi.stubEnv("VITE_GA_MEASUREMENT_ID", "");
+    window.dataLayer = [];
+    document.head.querySelectorAll('script[src*="googletagmanager"]').forEach(s => s.remove());
+    const m = await import("./analytics");
+    m.preparerConsentement();
+    expect(document.querySelector('script[src*="googletagmanager"]')).toBeNull();
+    m.appliquerChoix(true);
+    expect(document.querySelectorAll('script[src*="gtag/js?id=G-X361LVXTDW"]')).toHaveLength(1);
+    m.appliquerChoix(false);
+    m.appliquerChoix(true);
+    // Accepter, refuser puis accepter de nouveau ne charge jamais une 2e balise.
+    expect(document.querySelectorAll('script[src*="googletagmanager"]')).toHaveLength(1);
+    vi.unstubAllEnvs();
+  });
+});
+

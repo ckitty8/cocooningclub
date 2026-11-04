@@ -34,3 +34,6 @@ supabase/.temp/
 # Playwright
 test-results
 playwright-report
+
+# Archive de la version IONOS (npm run build:ionos)
+/ionos/
