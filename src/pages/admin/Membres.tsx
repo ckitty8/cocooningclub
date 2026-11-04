@@ -331,7 +331,7 @@ const Membres = () => {
             {participantes.length > 0 && (
               <>
                 {" · "}
-                <button type="button" onClick={() => setFilterRole("participantes")} className="underline hover:text-foreground">
+                <button type="button" onClick={() => setFilterRole("participantes")} className="underline hover:text-foreground text-left">
                   {participantes.length} participante{participantes.length > 1 ? "s" : ""} aux ateliers sans compte
                 </button>
               </>
@@ -390,7 +390,7 @@ const Membres = () => {
                   <th className="text-left px-5 py-3 font-medium text-muted-foreground">Dernier atelier</th>
                   <th className="text-left px-5 py-3 font-medium text-muted-foreground hidden md:table-cell">Pré-inscriptions</th>
                   <th className="text-left px-5 py-3 font-medium text-muted-foreground hidden lg:table-cell">Réponses du formulaire</th>
-                  <th className="px-5 py-3" />
+                  <th className="px-5 py-3 hidden sm:table-cell" />
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -402,6 +402,10 @@ const Membres = () => {
                       <p className="font-medium">{p.prenom} {p.nom}</p>
                       <p className="text-xs text-muted-foreground">{p.email ?? "—"}</p>
                       {p.telephone && <p className="text-xs text-muted-foreground md:hidden">{p.telephone}</p>}
+                      <div className="mt-2 flex flex-wrap gap-2 sm:hidden">
+                        <Link to="/admin/pre-inscriptions" className="px-3 py-1.5 text-xs border rounded-full hover:bg-muted whitespace-nowrap">Pré-inscriptions</Link>
+                        <button onClick={() => creerDepuis(p)} className="px-3 py-1.5 text-xs border rounded-full hover:bg-muted whitespace-nowrap">Créer un compte</button>
+                      </div>
                     </td>
                     <td className="px-5 py-3.5 hidden md:table-cell text-xs text-muted-foreground whitespace-nowrap">{p.telephone ?? "—"}</td>
                     <td className="px-5 py-3.5">
@@ -419,7 +423,7 @@ const Membres = () => {
                       <p>Droit à l'image : {p.autorisationImage === null ? "—" : p.autorisationImage ? "Autorise" : "N'autorise pas"}</p>
                       <p>Groupe WhatsApp : {p.accordWhatsapp === null ? "—" : p.accordWhatsapp ? "Accepte" : "N'accepte pas"}</p>
                     </td>
-                    <td className="px-5 py-3.5">
+                    <td className="px-5 py-3.5 hidden sm:table-cell">
                       <div className="flex flex-wrap items-center gap-2 justify-end">
                         <Link to="/admin/pre-inscriptions" className="px-3 py-1.5 text-xs border rounded-full hover:bg-muted whitespace-nowrap">Pré-inscriptions</Link>
                         <button onClick={() => creerDepuis(p)} className="px-3 py-1.5 text-xs border rounded-full hover:bg-muted whitespace-nowrap">Créer un compte</button>

@@ -29,7 +29,7 @@ test("Membres : les personnes pré-inscrites sans compte sont visibles à part e
   await expect(ligne.getByText("Journée Création Instagram")).toBeVisible();
   await expect(page.getByRole("row", { name: /Cristina Canto/ })).toBeVisible();
 
-  await ligne.getByRole("button", { name: "Créer un compte" }).click();
+  await ligne.getByRole("button", { name: "Créer un compte" }).filter({ visible: true }).click();
   const fenetre = page.locator("div.fixed").filter({ hasText: "Créer un membre" });
   await expect(fenetre.locator("input[type=email]")).toHaveValue("sophie.allain@free.fr");
   await expect(fenetre.locator("input").first()).toHaveValue("Sophie");
