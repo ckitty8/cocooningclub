@@ -20,9 +20,9 @@ test("Membres : les personnes pré-inscrites sans compte sont visibles à part e
   await connecterEn(page, admin);
   await page.goto("/admin/membres");
 
-  // Filtre « Inscrits » vide : un lien mène aux participantes.
+  // Le filtre « Inscrits » montre directement les participantes sans compte (aucun compte Inscrit ici).
   await page.locator("select").first().selectOption("inscrit");
-  await page.getByRole("button", { name: "voir les 2 participantes aux ateliers" }).click();
+  await expect(page.getByText("Aucun résultat")).toHaveCount(0);
 
   const ligne = page.getByRole("row", { name: /Sophie Allain/ });
   await expect(ligne).toBeVisible();

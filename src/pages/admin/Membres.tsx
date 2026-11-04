@@ -132,7 +132,9 @@ const Membres = () => {
     const q = search.toLowerCase();
     return !q || [p.prenom, p.nom, p.email, p.telephone, p.dernierAtelier?.titre].some(v => v?.toLowerCase().includes(q));
   });
+  // « Inscrits » montre aussi les participantes sans compte : pour l'équipe, ce sont des inscrites.
   const voirParticipantes = filterRole === "participantes";
+  const afficherParticipantes = voirParticipantes || filterRole === "inscrit";
   const creerDepuis = (p: Participante) => {
     setCreateForm({ ...emptyCreateForm, prenom: p.prenom, nom: p.nom, email: p.email ?? "", telephone: p.telephone ?? "" });
     setCreateError("");
@@ -375,8 +377,8 @@ const Membres = () => {
         </select>}
       </div>
 
-      {voirParticipantes ? (
-        <div className="bg-card rounded-2xl border overflow-hidden">
+      {afficherParticipantes && (
+        <div className="bg-card rounded-2xl border overflow-hidden mb-6">
           <p className="px-5 py-3 text-xs text-muted-foreground border-b bg-muted/30">
             Personnes pré-inscrites à un atelier par le formulaire du site, sans compte sur le site. « Créer un compte » reprend leurs coordonnées (rôle Inscrit) ;
             pour une adhésion, passer par Offre &amp; adhésions → « Ajouter une adhésion ».
@@ -435,7 +437,8 @@ const Membres = () => {
             </table>
           </div>
         </div>
-      ) : (
+      )}
+      {!voirParticipantes && !(filterRole === "inscrit" && !loading && filtered.length === 0 && participantes.length > 0) && (
       <div className="bg-card rounded-2xl border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
