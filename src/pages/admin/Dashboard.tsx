@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { libellePlacesPrises, tauxRemplissage } from "@/lib/placesAtelier";
+import { compterParAtelier, libellePlacesPrises, tauxRemplissage } from "@/lib/placesAtelier";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -21,6 +21,8 @@ interface Atelier {
   places_max: number | null;
   places_disponibles: number | null;
   statut: string;
+  /** Inscriptions confirmées d'un atelier illimité. */
+  inscrites_confirmees?: number;
 }
 
 interface InscriptionEnAttente {
@@ -154,7 +156,15 @@ const Dashboard = () => {
           membres_actifs:    utilisateurs.filter(u => u.role === "membre").length,
           messages_non_lus:  msgsRes.count ?? 0,
         });
-        setProchainAteliers((proAtelRes.data as Atelier[]) ?? []);
+        const prochains = (proAtelRes.data as Atelier[]) ?? [];
+        const illimites = prochains.filter(a => a.places_max === null).map(a => a.id);
+        if (illimites.length) {
+          const { data: confirmees } = await supabase
+            .from("inscriptions").select("atelier_id").eq("statut", "confirme").in("atelier_id", illimites);
+          const compte = compterParAtelier((confirmees as { atelier_id: string | null }[]) ?? []);
+          for (const a of prochains) if (a.places_max === null) a.inscrites_confirmees = compte[a.id] ?? 0;
+        }
+        setProchainAteliers(prochains);
         setInscriptionsAtt((recAttRes.data as unknown as InscriptionEnAttente[]) ?? []);
         setAdmins((adminsRes.data as Admin[]) ?? []);
 
@@ -333,7 +343,7 @@ const Dashboard = () => {
                         />
                       </div>
                       <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        {libellePlacesPrises(a.places_max, a.places_disponibles)}
+                        {libellePlacesPrises(a.places_max, a.places_disponibles, a.inscrites_confirmees)}
                       </span>
                     </div>
                   </div>

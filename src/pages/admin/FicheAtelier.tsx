@@ -160,7 +160,7 @@ const FicheAtelier = () => {
   }
 
   const kpis: [string, string][] = [
-    atelier.places_max === null ? ["Illimitées", "places"] : [`${placesPrises(atelier.places_max, atelier.places_disponibles)} / ${atelier.places_max}`, "places prises"],
+    atelier.places_max === null ? [`${resume.confirmees} / illimitées`, "places prises"] : [`${placesPrises(atelier.places_max, atelier.places_disponibles)} / ${atelier.places_max}`, "places prises"],
     [String(resume.confirmees), "validées"],
     [String(resume.aTraiter), "à traiter"],
     [payant ? `${resume.encaisse} €` : "Gratuit", payant ? `encaissés sur ${resume.attendu} € attendus` : "aucun paiement"],

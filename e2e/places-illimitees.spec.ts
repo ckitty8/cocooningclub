@@ -70,3 +70,20 @@ test("les écrans d'administration affichent « illimitées » pour un atelier s
   await expect(page.getByText("Places illimitées").first()).toBeVisible();
   await expect(page.getByText("NaN")).toHaveCount(0);
 });
+
+test("un atelier illimité affiche quand même le nombre d'inscrites validées côté administration", async ({ page }) => {
+  const admin = profilTest();
+  const inscrite = (n: number) => ({
+    id: `dddddddd-0000-4000-8000-00000000000${n}`, atelier_id: ATELIER_TEST.id, utilisateur_id: null,
+    prenom_invite: "Inès", nom_invite: `Test${n}`, email_invite: `ines${n}@exemple.fr`, statut: "confirme",
+    statut_paiement: "en_attente", inscrit_le: new Date().toISOString(),
+  });
+  await mockSupabase(page, {
+    profil: admin, espaces: ESPACES, inscriptions: [inscrite(1), inscrite(2), inscrite(3)],
+    ateliers: [{ ...ATELIER_TEST, places_max: null, places_disponibles: null, espace_id: ESPACES[0].id }],
+  });
+  await connecterEn(page, admin);
+  await page.goto("/admin/ateliers");
+  await expect(page.getByText("Places illimitées · 3 inscrites").first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "Inscrits (3)" }).first()).toBeVisible();
+});

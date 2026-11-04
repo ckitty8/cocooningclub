@@ -3,7 +3,7 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { logAction } from "@/utils/logAction";
 import { dureeEntre, heureDeFin } from "@/lib/dureeAtelier";
-import { estComplet, libellePlacesPrises, placesPrises, placesRestantes, tauxRemplissage } from "@/lib/placesAtelier";
+import { compterParAtelier, estComplet, libellePlacesPrises, placesPrises, placesRestantes, tauxRemplissage } from "@/lib/placesAtelier";
 import { withTimeout } from "@/utils/withTimeout";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
 import { searchAdresse, type AdresseSuggestion } from "@/utils/adresseAutocomplete";
@@ -38,6 +38,8 @@ interface Atelier {
   lieu: string | null;
   adresse: string | null;
   url_image: string | null;
+  /** Inscriptions confirmées (lu à part, seulement pour les ateliers illimités : le compteur de places ne les suit pas). */
+  inscrites_confirmees?: number;
   /** Null = places illimitées (champ « Places max » laissé vide). */
   places_max: number | null;
   places_disponibles: number | null;
@@ -135,7 +137,19 @@ const Ateliers = () => {
         supabase.from("ateliers").select("*").order("date_atelier")
       );
       if (error) throw error;
-      setAteliers((data as Atelier[]) ?? []);
+      const liste = (data as Atelier[]) ?? [];
+      // Ateliers illimités : le compteur de places ne suit pas les inscrites, on compte les inscriptions confirmées.
+      const illimites = liste.filter(a => a.places_max === null).map(a => a.id);
+      if (illimites.length) {
+        const { data: confirmees, error: errC } = await supabase
+          .from("inscriptions").select("atelier_id").eq("statut", "confirme").in("atelier_id", illimites);
+        if (errC) console.warn("[Ateliers.inscritesConfirmees] non bloquant :", errC);
+        else {
+          const compte = compterParAtelier((confirmees as { atelier_id: string | null }[]) ?? []);
+          for (const a of liste) if (a.places_max === null) a.inscrites_confirmees = compte[a.id] ?? 0;
+        }
+      }
+      setAteliers(liste);
     } catch (err) {
       console.error("[Ateliers.fetchAteliers] error:", err);
       toast.error("Erreur lors du chargement des ateliers");
@@ -699,7 +713,7 @@ const Ateliers = () => {
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">{a.lieu ?? "—"}</td>
                       <td className="px-4 py-3 w-40">
-                        <p className="text-xs mb-1">{libellePlacesPrises(a.places_max, a.places_disponibles)}</p>
+                        <p className="text-xs mb-1">{libellePlacesPrises(a.places_max, a.places_disponibles, a.inscrites_confirmees)}</p>
                         <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                           <div
                             className={`h-full rounded-full ${estComplet(a) ? "bg-amber-600" : "bg-primary"}`}
@@ -787,7 +801,7 @@ const Ateliers = () => {
                   )}
                   <div className="flex items-center gap-1.5">
                     <Users className="w-3.5 h-3.5 shrink-0" />
-                    <span>{a.places_max === null ? "Places illimitées" : `${a.places_disponibles}/${a.places_max} places disponibles`}</span>
+                    <span>{a.places_max === null ? `Places illimitées${a.inscrites_confirmees != null ? ` · ${a.inscrites_confirmees} inscrite${a.inscrites_confirmees > 1 ? "s" : ""}` : ""}` : `${a.places_disponibles}/${a.places_max} places disponibles`}</span>
                   </div>
                   <div className="h-1.5 rounded-full bg-muted overflow-hidden" aria-hidden="true">
                     <div
@@ -809,7 +823,7 @@ const Ateliers = () => {
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs border rounded-full hover:bg-muted transition-colors"
                   >
                     <Users className="w-3 h-3" />
-                    Inscrits{placesPrises(a.places_max, a.places_disponibles) !== null ? ` (${placesPrises(a.places_max, a.places_disponibles)})` : ""}
+                    Inscrits{placesPrises(a.places_max, a.places_disponibles, a.inscrites_confirmees) !== null ? ` (${placesPrises(a.places_max, a.places_disponibles, a.inscrites_confirmees)})` : ""}
                   </Link>
                   <button onClick={() => openEdit(a)}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs border rounded-full hover:bg-muted transition-colors flex-1 justify-center">

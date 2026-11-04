@@ -3,7 +3,7 @@ import { inscIdentite } from "@/lib/inscriptionIdentite";
 import type { GroupeAtelier } from "@/lib/preInscriptions";
 import { OffrePastille } from "@/components/OffrePastille";
 import { euros } from "@/lib/droits";
-import { libellePlacesPrises } from "@/lib/placesAtelier";
+import { phrasePlacesPrises } from "@/lib/placesAtelier";
 import { ROLES_BADGE, STATUT_BADGE, STATUT_LABEL, type AtelierListe, type InfoDroit, type Inscription, type StatutInscription, reponseLibelle } from "./types";
 
 interface Props {
@@ -30,7 +30,7 @@ const boutonLarge = "hidden sm:flex h-8 w-8 items-center justify-center rounded-
 /** Accordéon : un bloc par atelier, avec ses pré-inscriptions et des actions rapides. */
 const ListeParAtelier = ({ groupes, ouverts, onBasculer, droits, actingOn, onOuvrir, onStatut }: Props) => (
   <div className="space-y-3">
-    {groupes.map(({ atelier, items, aTraiter, total }) => {
+    {groupes.map(({ atelier, items, aTraiter, confirmees, total }) => {
       const ouvert = !!ouverts[atelier.id];
       return (
         <section key={atelier.id} className="bg-card rounded-2xl border overflow-hidden">
@@ -44,7 +44,7 @@ const ListeParAtelier = ({ groupes, ouverts, onBasculer, droits, actingOn, onOuv
               <span className="min-w-0 flex-1">
                 <span className="font-display text-lg leading-tight block">{atelier.titre}</span>
                 <span className="font-body text-xs text-muted-foreground">
-                  {dateCourte(atelier.date_atelier)} · {total} pré-inscription{total > 1 ? "s" : ""} · {atelier.places_max === null ? "places illimitées" : `${libellePlacesPrises(atelier.places_max, atelier.places_disponibles)} places prises`}
+                  {dateCourte(atelier.date_atelier)} · {total} pré-inscription{total > 1 ? "s" : ""} · {phrasePlacesPrises(atelier.places_max, atelier.places_disponibles, confirmees)}
                 </span>
               </span>
               <span className={`font-body shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${aTraiter > 0 ? STATUT_BADGE.en_attente : "bg-green-100 text-green-700"}`}>

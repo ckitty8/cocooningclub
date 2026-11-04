@@ -17,6 +17,8 @@ export interface GroupeAtelier<A, I> {
   atelier: A;
   /** Lignes visibles (après filtre de statut et recherche). */
   items: I[];
+  /** Pré-inscriptions validées de l'atelier (tous filtres confondus). */
+  confirmees: number;
   /** Pré-inscriptions « en attente » de l'atelier, quels que soient les filtres. */
   aTraiter: number;
   /** Toutes les pré-inscriptions de l'atelier. */
@@ -49,7 +51,7 @@ export const grouperParAtelier = <A extends AtelierGroupable, I extends Inscript
     .map(atelier => {
       const toutes = inscriptions.filter(i => i.atelier_id === atelier.id);
       const items = toutes.filter(i => (filtre === "tous" || i.statut === filtre) && (!q || texte(i).toLowerCase().includes(q)));
-      return { atelier, items, aTraiter: toutes.filter(i => i.statut === "en_attente").length, total: toutes.length };
+      return { atelier, items, aTraiter: toutes.filter(i => i.statut === "en_attente").length, confirmees: toutes.filter(i => i.statut === "confirme").length, total: toutes.length };
     })
     .filter(g => g.items.length > 0 || g.atelier.id === cible);
   const sens = periode === "avenir" ? 1 : -1;

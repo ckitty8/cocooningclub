@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { estComplet, libellePlacesPrises, placesPrises, placesRestantes, tauxRemplissage } from "./placesAtelier";
+import { compterParAtelier, estComplet, libellePlacesPrises, phrasePlacesPrises, placesPrises, placesRestantes, tauxRemplissage } from "./placesAtelier";
 
 describe("places restantes d'un atelier", () => {
   it("augmenter la capacité d'un atelier sans inscrit libère toutes les places", () => expect(placesRestantes(20, 0)).toBe(20));
@@ -25,5 +25,27 @@ describe("atelier sans limite de places (places max vide)", () => {
     expect(placesPrises(null, null)).toBeNull();
     expect(tauxRemplissage(null, null)).toBe(0);
     expect(tauxRemplissage(10, 4)).toBe(60);
+  });
+});
+
+describe("nombre d'inscrites d'un atelier illimité", () => {
+  it("affiche les inscriptions confirmées quand elles sont connues", () => {
+    expect(placesPrises(null, null, 3)).toBe(3);
+    expect(libellePlacesPrises(null, null, 3)).toBe("3/illimitées");
+    expect(libellePlacesPrises(null, null, 0)).toBe("0/illimitées");
+    expect(tauxRemplissage(null, null)).toBe(0);
+  });
+  it("ne change rien pour un atelier limité", () => {
+    expect(placesPrises(10, 4, 99)).toBe(6);
+    expect(libellePlacesPrises(10, 4, 99)).toBe("6/10");
+  });
+  it("donne une phrase lisible", () => {
+    expect(phrasePlacesPrises(10, 4)).toBe("6/10 places prises");
+    expect(phrasePlacesPrises(null, null)).toBe("places illimitées");
+    expect(phrasePlacesPrises(null, null, 1)).toBe("1 inscrite · places illimitées");
+    expect(phrasePlacesPrises(null, null, 4)).toBe("4 inscrites · places illimitées");
+  });
+  it("compte les inscriptions par atelier", () => {
+    expect(compterParAtelier([{ atelier_id: "a" }, { atelier_id: "b" }, { atelier_id: "a" }, { atelier_id: null }])).toEqual({ a: 2, b: 1 });
   });
 });
