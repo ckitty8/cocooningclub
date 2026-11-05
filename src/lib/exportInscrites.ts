@@ -88,6 +88,7 @@ export interface LigneEmargement {
   prenom: string;
   nom: string;
   telephone: string | null;
+  email: string | null;
   autorisationImage: boolean | null | undefined;
   /** « Payé », « À régler · 15 € »… ; vide si rien à régler. */
   paiement: string;
@@ -101,13 +102,13 @@ const tri = (a: LigneEmargement, b: LigneEmargement) =>
 
 /**
  * Feuille d'émargement prête à imprimer (A4 paysage) : titre, atelier, date / heure / lieu, puis un tableau
- * N° · Nom · Prénom · Téléphone · Droit à l'image · (Paiement) · Signature, trié par nom, avec des lignes
+ * N° · Nom · Prénom · Téléphone · E-mail · Droit à l'image · (Paiement) · Signature, trié par nom, avec des lignes
  * libres à la fin. La colonne Paiement n'apparaît que si au moins une participante a quelque chose à régler.
  */
 export const feuilleEmargement = (atelier: AtelierEmargement, lignes: LigneEmargement[]): FeuilleMiseEnForme => {
   const avecPaiement = lignes.some(l => l.paiement);
-  const entete = ["N°", "Nom", "Prénom", "Téléphone", "Droit à l'image", ...(avecPaiement ? ["Paiement"] : []), "Signature"];
-  const largeurs = [5, 22, 17, 15, 14, ...(avecPaiement ? [15] : []), avecPaiement ? 36 : 46];
+  const entete = ["N°", "Nom", "Prénom", "Téléphone", "E-mail", "Droit à l'image", ...(avecPaiement ? ["Paiement"] : []), "Signature"];
+  const largeurs = [5, 18, 14, 14, 30, 13, ...(avecPaiement ? [13] : []), avecPaiement ? 20 : 26];
   const nb = entete.length;
   const bord = { borderStyle: "thin", borderColor: "#7a6a64", alignVertical: "center" } as const;
   const ligneTitre = (value: string, opts: Record<string, unknown>) =>
@@ -119,6 +120,7 @@ export const feuilleEmargement = (atelier: AtelierEmargement, lignes: LigneEmarg
     { value: l.nom.toUpperCase(), fontWeight: "bold", ...bord },
     { value: l.prenom, ...bord },
     { value: l.telephone ?? "", ...bord },
+    { value: l.email ?? "", ...bord },
     l.autorisationImage == null
       ? { value: "—", align: "center", ...bord }
       : l.autorisationImage

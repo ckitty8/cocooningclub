@@ -475,7 +475,7 @@ const PreInscriptions = () => {
           const id = inscIdentite(i);
           const d = droits?.get(i.id)?.droit;
           return {
-            prenom: id.prenom, nom: id.nom, telephone: id.telephone, autorisationImage: i.autorisation_image,
+            prenom: id.prenom, nom: id.nom, telephone: id.telephone, email: id.email, autorisationImage: i.autorisation_image,
             paiement: d?.etat !== "a_payer" ? "" : i.statut_paiement === "paye" ? "Payé" : `À régler${d.montant > 0 ? ` · ${euros(d.montant)}` : ""}`,
           };
         }),

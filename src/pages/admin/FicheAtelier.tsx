@@ -163,7 +163,7 @@ const FicheAtelier = () => {
         validees.map(i => {
           const ident = inscIdentite(i);
           return {
-            prenom: ident.prenom, nom: ident.nom, telephone: ident.telephone, autorisationImage: i.autorisation_image,
+            prenom: ident.prenom, nom: ident.nom, telephone: ident.telephone, email: ident.email, autorisationImage: i.autorisation_image,
             paiement: !payant ? "" : i.statut_paiement === "paye" ? "Payé" : i.statut_paiement === "non_requis" ? "" : `À régler · ${tarif} €`,
           };
         }),

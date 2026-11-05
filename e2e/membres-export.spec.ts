@@ -84,5 +84,7 @@ test("Pré-inscriptions : les deux boutons coexistent et la feuille d'émargemen
   expect(textes).toContain("Feuille d'émargement");
   expect(textes).toContain("Signature");
   expect(textes).toContain("ALLAIN");
+  expect(textes).toContain("E-mail");
+  expect(textes).toContain("sophie.allain@free.fr");
   expect(textes).not.toContain("ZED"); // en attente : pas sur la feuille d'émargement
 });

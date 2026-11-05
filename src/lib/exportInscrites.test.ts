@@ -31,30 +31,30 @@ describe("feuille d'émargement", () => {
 
   it("trie par nom, ajoute une colonne Signature et des lignes libres, en paysage", () => {
     const f = feuilleEmargement(atelier, [
-      { prenom: "Sophie", nom: "Allain", telephone: "0601", autorisationImage: true, paiement: "" },
-      { prenom: "Laurie", nom: "Mbone", telephone: null, autorisationImage: false, paiement: "" },
-      { prenom: "Cristina", nom: "canto", telephone: null, autorisationImage: null, paiement: "" },
+      { prenom: "Sophie", nom: "Allain", telephone: "0601", email: "sophie@x.fr", autorisationImage: true, paiement: "" },
+      { prenom: "Laurie", nom: "Mbone", telephone: null, email: null, autorisationImage: false, paiement: "" },
+      { prenom: "Cristina", nom: "canto", telephone: null, email: "c@x.fr", autorisationImage: null, paiement: "" },
     ]);
     expect(f.orientation).toBe("landscape");
     expect(f.cellules[0][0]?.value).toBe("Feuille d'émargement");
     expect(f.cellules[1][0]?.value).toBe("Journée Création Instagram");
     expect(f.cellules[2][0]?.value).toBe(atelier.sousTitre);
     expect(f.cellules[3][0]?.value).toBe("3 participantes validées · Le Cocooning Club");
-    expect(valeurs(f.cellules[5])).toEqual(["N°", "Nom", "Prénom", "Téléphone", "Droit à l'image", "Signature"]);
-    expect(valeurs(f.cellules[6])).toEqual([1, "ALLAIN", "Sophie", "0601", "Oui", ""]);
-    expect(valeurs(f.cellules[7])).toEqual([2, "CANTO", "Cristina", "", "—", ""]);
-    expect(valeurs(f.cellules[8])).toEqual([3, "MBONE", "Laurie", "", "Non", ""]);
-    expect(f.cellules[8][4]).toMatchObject({ fontWeight: "bold", textColor: "#b42318" }); // « Non » bien visible
+    expect(valeurs(f.cellules[5])).toEqual(["N°", "Nom", "Prénom", "Téléphone", "E-mail", "Droit à l'image", "Signature"]);
+    expect(valeurs(f.cellules[6])).toEqual([1, "ALLAIN", "Sophie", "0601", "sophie@x.fr", "Oui", ""]);
+    expect(valeurs(f.cellules[7])).toEqual([2, "CANTO", "Cristina", "", "c@x.fr", "—", ""]);
+    expect(valeurs(f.cellules[8])).toEqual([3, "MBONE", "Laurie", "", "", "Non", ""]);
+    expect(f.cellules[8][5]).toMatchObject({ fontWeight: "bold", textColor: "#b42318" }); // « Non » bien visible
     const libres = f.cellules.slice(9, 9 + LIGNES_LIBRES);
     expect(libres.map(l => l[0]?.value)).toEqual([4, 5, 6, 7, 8]);
     expect(libres.every(l => l.slice(1).every(c => c?.value === ""))).toBe(true);
-    expect(f.largeurs).toHaveLength(6);
+    expect(f.largeurs).toHaveLength(7);
   });
 
   it("ajoute la colonne Paiement seulement s'il y a quelque chose à régler", () => {
-    const f = feuilleEmargement(atelier, [{ prenom: "A", nom: "B", telephone: null, autorisationImage: true, paiement: "À régler · 15 €" }]);
-    expect(valeurs(f.cellules[5])).toEqual(["N°", "Nom", "Prénom", "Téléphone", "Droit à l'image", "Paiement", "Signature"]);
-    expect(f.cellules[6][5]?.value).toBe("À régler · 15 €");
+    const f = feuilleEmargement(atelier, [{ prenom: "A", nom: "B", telephone: null, email: null, autorisationImage: true, paiement: "À régler · 15 €" }]);
+    expect(valeurs(f.cellules[5])).toEqual(["N°", "Nom", "Prénom", "Téléphone", "E-mail", "Droit à l'image", "Paiement", "Signature"]);
+    expect(f.cellules[6][6]?.value).toBe("À régler · 15 €");
   });
 
   it("écrit la date, l'heure et le lieu, et nomme le fichier", () => {
