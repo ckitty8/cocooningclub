@@ -8,7 +8,7 @@ import type { AtelierListe, InfoDroit, Inscription, StatutInscription, StatutPai
 import { useAutorisationsImage } from "@/hooks/useAutorisationsImage";
 import { useEspaces, useOffresParPersonne, useTarifsAdherent } from "@/hooks/useOffres";
 import { droitAtelier, euros } from "@/lib/droits";
-import { nomFeuille, nomFichierInscrites, tableauInscrites } from "@/lib/exportInscrites";
+import { feuilleEmargement, nomFeuille, nomFichierEmargement, nomFichierInscrites, sousTitreAtelier, tableauInscrites } from "@/lib/exportInscrites";
 import { fichierExcel, telecharger } from "@/lib/exportMembres";
 import { supabase } from "@/integrations/supabase/client";
 import type { TablesUpdate } from "@/integrations/supabase/types";
@@ -464,6 +464,32 @@ const PreInscriptions = () => {
     }
   };
 
+  // Feuille d'émargement (paysage, à imprimer) : inscrites VALIDÉES, triées par nom, colonne Signature.
+  const emargementAtelier = async (atelier: AtelierListe, lignes: Inscription[]) => {
+    try {
+      const validees = lignes.filter(i => i.statut === "confirme");
+      const detail = lignes.find(i => i.ateliers)?.ateliers;
+      const feuille = feuilleEmargement(
+        { titre: atelier.titre, sousTitre: sousTitreAtelier({ ...atelier, heure_fin: detail?.heure_fin ?? null }) },
+        validees.map(i => {
+          const id = inscIdentite(i);
+          const d = droits?.get(i.id)?.droit;
+          return {
+            prenom: id.prenom, nom: id.nom, telephone: id.telephone, autorisationImage: i.autorisation_image,
+            paiement: d?.etat !== "a_payer" ? "" : i.statut_paiement === "paye" ? "Payé" : `À régler${d.montant > 0 ? ` · ${euros(d.montant)}` : ""}`,
+          };
+        }),
+      );
+      const nom = nomFichierEmargement(atelier.titre, atelier.date_atelier);
+      telecharger(await fichierExcel([feuille]), nom);
+      logAction("inscription.emargement", "ateliers", atelier.id, { titre: atelier.titre, lignes: validees.length });
+      toast.success(`« ${nom} » est téléchargée : ouvre-la dans Excel et imprime-la (format paysage).`);
+    } catch (err) {
+      console.error("[PreInscriptions.emargementAtelier] error:", err);
+      toast.error("La feuille d'émargement n'a pas pu être créée, réessaie.");
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="mb-6 flex items-start justify-between gap-4 flex-wrap">
@@ -542,6 +568,7 @@ const PreInscriptions = () => {
       ) : (
         <ListeParAtelier
           onExporter={exporterAtelier}
+          onEmargement={emargementAtelier}
           groupes={groupes}
           ouverts={ouverts}
           onBasculer={atelierId => setOuvertsManuels(prev => ({ ...prev, [atelierId]: !ouverts[atelierId] }))}

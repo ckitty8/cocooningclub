@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
+import { execSync } from "node:child_process";
 import { ATELIER_TEST, mockSupabase } from "./supabaseMock";
 import { connecterEn, profilTest } from "./session";
 
@@ -57,4 +58,31 @@ test("Pré-inscriptions : chaque atelier s'exporte en Excel avec les réponses d
   expect(telechargement.suggestedFilename()).toMatch(/^inscrites-atelier-papotages-cafe-des-copines-.*\.xlsx$/);
   const contenu = readFileSync(await telechargement.path());
   expect(contenu.subarray(0, 2).toString()).toBe("PK");
+});
+
+test("Pré-inscriptions : les deux boutons coexistent et la feuille d'émargement est en paysage avec une colonne Signature", async ({ page }) => {
+  const admin = profilTest();
+  await mockSupabase(page, {
+    profil: admin,
+    inscriptions: [
+      { ...INVITEE, autorisation_image: false, accord_whatsapp: true, date_naissance: null, ateliers: { ...ATELIER_TEST } },
+      { ...INVITEE, id: "dddddddd-0000-4000-8000-000000000002", prenom_invite: "Inès", nom_invite: "Zed", email_invite: "ines@x.fr", statut: "en_attente", ateliers: { ...ATELIER_TEST } },
+    ],
+  });
+  await connecterEn(page, admin);
+  await page.goto(`/admin/pre-inscriptions?atelier=${ATELIER_TEST.id}`);
+  await expect(page.getByRole("button", { name: "Exporter en Excel (2)" })).toBeVisible();
+  const [telechargement] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByRole("button", { name: "Feuille d'émargement (1)" }).click(),
+  ]);
+  expect(telechargement.suggestedFilename()).toMatch(/^emargement-atelier-papotages-cafe-des-copines-.*\.xlsx$/);
+  const chemin = await telechargement.path();
+  const feuille = execSync(`unzip -p "${chemin}" xl/worksheets/sheet1.xml`).toString();
+  const textes = execSync(`unzip -p "${chemin}" xl/sharedStrings.xml`).toString();
+  expect(feuille).toContain('orientation="landscape"');
+  expect(textes).toContain("Feuille d'émargement");
+  expect(textes).toContain("Signature");
+  expect(textes).toContain("ALLAIN");
+  expect(textes).not.toContain("ZED"); // en attente : pas sur la feuille d'émargement
 });

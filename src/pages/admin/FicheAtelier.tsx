@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { CircleDashed, Download, Euro, Link2, MapPin, Pencil, Search, UserCheck, UserX } from "lucide-react";
+import { CircleDashed, ClipboardSignature, Download, Euro, Link2, MapPin, Pencil, Search, UserCheck, UserX } from "lucide-react";
 import { toast } from "sonner";
 import { logAction } from "@/utils/logAction";
 import AdminLayout from "@/components/admin/AdminLayout";
@@ -9,7 +9,7 @@ import { useAutorisationsImage } from "@/hooks/useAutorisationsImage";
 import { supabase } from "@/integrations/supabase/client";
 import { ESPACES_PAR_SLUG } from "@/lib/espaces";
 import { resumeInscrites } from "@/lib/ficheAtelier";
-import { nomFeuille, nomFichierInscrites, tableauInscrites } from "@/lib/exportInscrites";
+import { feuilleEmargement, nomFeuille, nomFichierEmargement, nomFichierInscrites, sousTitreAtelier, tableauInscrites } from "@/lib/exportInscrites";
 import { fichierExcel, telecharger } from "@/lib/exportMembres";
 import { LIBELLES_PHOTOS, etatPhotos } from "@/lib/autorisationImage";
 import { inscIdentite } from "@/lib/inscriptionIdentite";
@@ -153,6 +153,29 @@ const FicheAtelier = () => {
     }
   };
 
+  // Feuille d'émargement (paysage, à imprimer) : inscrites validées, triées par nom, colonne Signature.
+  const emargement = async () => {
+    if (!atelier) return;
+    try {
+      const validees = inscrites.filter(i => i.statut === "confirme");
+      const feuille = feuilleEmargement(
+        { titre: atelier.titre, sousTitre: sousTitreAtelier(atelier) },
+        validees.map(i => {
+          const ident = inscIdentite(i);
+          return {
+            prenom: ident.prenom, nom: ident.nom, telephone: ident.telephone, autorisationImage: i.autorisation_image,
+            paiement: !payant ? "" : i.statut_paiement === "paye" ? "Payé" : i.statut_paiement === "non_requis" ? "" : `À régler · ${tarif} €`,
+          };
+        }),
+      );
+      telecharger(await fichierExcel([feuille]), nomFichierEmargement(atelier.titre, atelier.date_atelier));
+      logAction("inscription.emargement", "ateliers", atelier.id, { titre: atelier.titre, lignes: validees.length });
+    } catch (err) {
+      console.error("[FicheAtelier.emargement] error:", err);
+      toast.error("La feuille d'émargement n'a pas pu être créée, réessaie.");
+    }
+  };
+
   if (loading) {
     return <AdminLayout><div className="flex justify-center h-48 items-center"><div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div></AdminLayout>;
   }
@@ -257,6 +280,10 @@ const FicheAtelier = () => {
             <button onClick={exporter} disabled={inscrites.length === 0}
               className="flex items-center gap-1.5 px-4 py-2 border rounded-full text-sm hover:bg-muted disabled:opacity-40">
               <Download className="w-4 h-4" /> Exporter en Excel
+            </button>
+            <button onClick={emargement}
+              className="flex items-center gap-1.5 px-4 py-2 border rounded-full text-sm hover:bg-muted">
+              <ClipboardSignature className="w-4 h-4" /> Feuille d'émargement
             </button>
           </div>
 

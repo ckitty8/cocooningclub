@@ -1,4 +1,4 @@
-import { Check, ChevronDown, ChevronRight, FileSpreadsheet, Mail, MessageSquare, RotateCcw, X } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, ClipboardSignature, FileSpreadsheet, Mail, MessageSquare, RotateCcw, X } from "lucide-react";
 import { inscIdentite } from "@/lib/inscriptionIdentite";
 import type { GroupeAtelier } from "@/lib/preInscriptions";
 import { OffrePastille } from "@/components/OffrePastille";
@@ -17,6 +17,8 @@ interface Props {
   onStatut: (insc: Inscription, statut: StatutInscription) => void | Promise<void>;
   /** Export Excel de toutes les pré-inscriptions d'un atelier. */
   onExporter?: (atelier: AtelierListe, inscriptions: Inscription[]) => void;
+  /** Feuille d'émargement (paysage, à imprimer) des pré-inscriptions validées d'un atelier. */
+  onEmargement?: (atelier: AtelierListe, inscriptions: Inscription[]) => void;
 }
 
 const dateCourte = (iso: string) =>
@@ -30,7 +32,7 @@ const bouton = "flex h-8 w-8 items-center justify-center rounded-full border tra
 const boutonLarge = "hidden sm:flex h-8 w-8 items-center justify-center rounded-full border transition-colors disabled:opacity-40";
 
 /** Accordéon : un bloc par atelier, avec ses pré-inscriptions et des actions rapides. */
-const ListeParAtelier = ({ groupes, ouverts, onBasculer, droits, actingOn, onOuvrir, onStatut, onExporter }: Props) => (
+const ListeParAtelier = ({ groupes, ouverts, onBasculer, droits, actingOn, onOuvrir, onStatut, onExporter, onEmargement }: Props) => (
   <div className="space-y-3">
     {groupes.map(({ atelier, items, aTraiter, confirmees, total, toutes }) => {
       const ouvert = !!ouverts[atelier.id];
@@ -61,6 +63,12 @@ const ListeParAtelier = ({ groupes, ouverts, onBasculer, droits, actingOn, onOuv
                 className="font-body flex items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors">
                 <FileSpreadsheet className="h-3.5 w-3.5" aria-hidden="true" /> Exporter en Excel ({total})
               </button>
+              {onEmargement && (
+                <button onClick={() => onEmargement(atelier, toutes)} title={`Feuille à imprimer (paysage) avec les ${confirmees} inscrites validées et une colonne Signature`}
+                  className="font-body flex items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors">
+                  <ClipboardSignature className="h-3.5 w-3.5" aria-hidden="true" /> Feuille d'émargement ({confirmees})
+                </button>
+              )}
             </div>
           )}
           {ouvert && (
