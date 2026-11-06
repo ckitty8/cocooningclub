@@ -663,11 +663,12 @@ const Ateliers = () => {
         </div>
       ) : affichage === "liste" ? (
         <div className="bg-card rounded-2xl border overflow-x-auto">
-          <table className="w-full min-w-[820px] text-sm">
+          <table className="w-full min-w-[940px] text-sm">
             <thead className="border-b bg-muted/30">
               <tr>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Date</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Atelier</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground min-w-[15rem]">Atelier</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Horaires</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Lieu</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Places</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Tarif</th>
@@ -686,7 +687,7 @@ const Ateliers = () => {
                   <Fragment key={a.id}>
                     {mois !== moisPrecedent && (
                       <tr className="bg-background">
-                        <td colSpan={7} className="px-4 py-2 font-display text-base capitalize text-terracotta">{mois}</td>
+                        <td colSpan={8} className="px-4 py-2 font-display text-base capitalize text-terracotta">{mois}</td>
                       </tr>
                     )}
                     <tr className="border-t hover:bg-muted/20 transition-colors">
@@ -698,18 +699,19 @@ const Ateliers = () => {
                           {new Date(a.date_atelier).toLocaleDateString("fr-FR", { weekday: "long" })}
                         </p>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 min-w-[15rem]">
                         <div className="flex items-center gap-3">
                           {logo && <img src={logo} alt="" className="h-7 w-12 object-contain shrink-0" />}
-                          <div>
-                            <Link to={`/admin/ateliers/${a.id}`} className="font-medium leading-snug hover:underline">{a.titre}</Link>
-                            <p className="text-xs text-muted-foreground">
-                              {a.heure_debut ? a.heure_debut.slice(0, 5) : ""}
-                              {a.heure_fin ? ` – ${a.heure_fin.slice(0, 5)}` : ""}
-                              {a.duree ? ` · ${a.duree}` : ""}
-                            </p>
-                          </div>
+                          <Link to={`/admin/ateliers/${a.id}`} className="font-medium leading-snug hover:underline">{a.titre}</Link>
                         </div>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {a.heure_debut ? (
+                          <>
+                            <p>{a.heure_debut.slice(0, 5)}{a.heure_fin ? ` – ${a.heure_fin.slice(0, 5)}` : ""}</p>
+                            {a.duree && <p className="text-xs text-muted-foreground">{a.duree}</p>}
+                          </>
+                        ) : <span className="text-muted-foreground">—</span>}
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">{a.lieu ?? "—"}</td>
                       <td className="px-4 py-3 w-40">
