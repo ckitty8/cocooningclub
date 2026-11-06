@@ -23,6 +23,7 @@ import { lienGoogleAgenda, URL_CALENDRIER_ATELIERS, webcalCalendrier } from "@/l
 import { ateliersPourReseaux, lienWhatsAppMessage, messageWhatsApp } from "@/lib/exportReseaux";
 import EditeurTexteRiche from "@/components/texte/EditeurTexteRiche";
 import { htmlAEnregistrer } from "@/lib/nettoyerHtml";
+import Requis from "@/components/Requis";
 
 type Statut = "brouillon" | "publie" | "complet" | "annule" | "termine";
 type Niveau = "debutant" | "intermediaire" | "avance";
@@ -934,7 +935,7 @@ const Ateliers = () => {
                 <p className="text-xs text-muted-foreground mt-2">JPG, PNG, WebP. Max 5 Mo.</p>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5">Espace *</label>
+                <label className="block text-sm font-medium mb-1.5">Espace<Requis /></label>
                 <select value={form.espace_id} onChange={e => f("espace_id", e.target.value)}
                   className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary">
                   <option value="">— Choisir un espace —</option>
@@ -964,7 +965,7 @@ const Ateliers = () => {
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium mb-1.5">Titre *</label>
+                <label className="block text-sm font-medium mb-1.5">Titre<Requis /></label>
                 <input value={form.titre} onChange={e => f("titre", e.target.value)}
                   className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
@@ -981,7 +982,7 @@ const Ateliers = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Date *</label>
+                  <label className="block text-sm font-medium mb-1.5">Date<Requis /></label>
                   <input type="date" value={form.date_atelier} onChange={e => f("date_atelier", e.target.value)}
                     className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>
@@ -993,7 +994,7 @@ const Ateliers = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Heure début *</label>
+                  <label className="block text-sm font-medium mb-1.5">Heure début<Requis /></label>
                   <input type="time" value={form.heure_debut} onChange={e => handleHeureChange("heure_debut", e.target.value)}
                     className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>

@@ -6,6 +6,7 @@ import { logAction } from "@/utils/logAction";
 import { deplacer, type OffrePublique, type QuestionBonASavoir } from "@/lib/offres";
 import ApercuOffres from "./ApercuOffres";
 import { champ } from "./types";
+import Requis from "@/components/Requis";
 
 interface Props {
   questions: QuestionBonASavoir[];
@@ -143,7 +144,7 @@ const OngletBonASavoir = ({ questions, offres, disponible, onChange }: Props) =>
             </div>
             <div className="space-y-4 p-6">
               <div>
-                <label htmlFor="bas-question" className="mb-1.5 block text-sm font-medium">Question *</label>
+                <label htmlFor="bas-question" className="mb-1.5 block text-sm font-medium">Question<Requis /></label>
                 <input id="bas-question" value={edition.question} maxLength={300} className={champ}
                   onChange={e => setEdition({ ...edition, question: e.target.value })} placeholder="Le Café Papotages est-il ouvert sans adhésion ?" />
               </div>

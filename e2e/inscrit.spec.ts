@@ -24,8 +24,8 @@ test("un simple inscrit se pré-inscrit à un atelier depuis le site public, rat
   await page.goto("/");
   await page.getByRole("button", { name: "Pré-inscription" }).first().click();
   const fenetre = page.getByRole("dialog", { name: "Pré-inscription" });
-  await expect(fenetre.getByLabel("Prénom", { exact: true })).toHaveValue("Julie");
-  await expect(fenetre.getByLabel("Nom", { exact: true })).toHaveValue("Martin");
+  await expect(fenetre.getByLabel("Prénom (obligatoire)", { exact: true })).toHaveValue("Julie");
+  await expect(fenetre.getByLabel("Nom (obligatoire)", { exact: true })).toHaveValue("Martin");
   await remplirPreInscription(fenetre, { tel: "0611223344" });
   await fenetre.getByRole("button", { name: /Envoyer ma pré-inscription/ }).click();
   await expect(page.getByRole("heading", { name: TITRE_MERCI })).toBeVisible();

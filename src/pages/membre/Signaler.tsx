@@ -10,6 +10,7 @@ import {
   CATEGORIE_ANOMALIE, DESCRIPTION_MAX, LIBELLES_SUITE, TITRE_MAX, ZONES_SIGNALEMENT,
   composerDescription, resumeAppareil, suiteDuSignalement, validerSignalement, type Suite,
 } from "@/lib/signalement";
+import Requis from "@/components/Requis";
 
 interface Signalement {
   id: string;
@@ -103,7 +104,7 @@ const Signaler = () => {
             </p>
           )}
           <div>
-            <label htmlFor="sig-titre" className="mb-1.5 block text-sm font-medium">Ce qui ne marche pas *</label>
+            <label htmlFor="sig-titre" className="mb-1.5 block text-sm font-medium">Ce qui ne marche pas<Requis /></label>
             <input id="sig-titre" value={titre} onChange={e => { setTitre(e.target.value); setEnvoye(false); }} maxLength={TITRE_MAX}
               placeholder="Ex. Je n'arrive pas à m'inscrire à un atelier" className={champ} />
           </div>
@@ -115,7 +116,7 @@ const Signaler = () => {
             </select>
           </div>
           <div>
-            <label htmlFor="sig-desc" className="mb-1.5 block text-sm font-medium">Que s'est-il passé ? *</label>
+            <label htmlFor="sig-desc" className="mb-1.5 block text-sm font-medium">Que s'est-il passé ?<Requis /></label>
             <textarea id="sig-desc" value={description} onChange={e => setDescription(e.target.value)} rows={6} maxLength={DESCRIPTION_MAX}
               placeholder="Ce que tu as fait, ce que tu attendais, ce que tu as vu à la place (un message d'erreur, une page vide…)." className={champ} />
           </div>

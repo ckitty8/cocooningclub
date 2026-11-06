@@ -3,6 +3,7 @@ import { CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import AuthLayout from "@/components/auth/AuthLayout";
 import { boutonEnvoi, champ, libelle } from "@/components/auth/classes";
+import Requis from "@/components/Requis";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -48,7 +49,7 @@ const ForgotPassword = () => {
       ) : (
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label htmlFor="email" className={libelle}>Email</label>
+            <label htmlFor="email" className={libelle}>Email<Requis /></label>
             <input
               id="email"
               type="email"

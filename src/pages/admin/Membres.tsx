@@ -22,6 +22,7 @@ import { creerCompte } from "@/lib/creerCompte";
 import type { NouveauCompte } from "@/lib/nouveauCompte";
 import { regrouperParticipantes, type Participante, type PreInscriptionInvitee } from "@/lib/participantes";
 import { Link } from "react-router-dom";
+import Requis from "@/components/Requis";
 
 type RoleCreable = NouveauCompte["role"];
 
@@ -604,16 +605,16 @@ const Membres = () => {
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Prénom *</label>
+                  <label className="block text-sm font-medium mb-1.5">Prénom<Requis /></label>
                   <input value={createForm.prenom} onChange={e => setCreateForm(f => ({ ...f, prenom: e.target.value }))} className={fieldClass} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Nom *</label>
+                  <label className="block text-sm font-medium mb-1.5">Nom<Requis /></label>
                   <input value={createForm.nom} onChange={e => setCreateForm(f => ({ ...f, nom: e.target.value }))} className={fieldClass} />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5">Email *</label>
+                <label className="block text-sm font-medium mb-1.5">Email<Requis /></label>
                 <input type="email" value={createForm.email} onChange={e => setCreateForm(f => ({ ...f, email: e.target.value }))} className={fieldClass} />
               </div>
 
@@ -648,7 +649,7 @@ const Membres = () => {
 
               {createForm.est_actif && (
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Mot de passe temporaire *</label>
+                  <label className="block text-sm font-medium mb-1.5">Mot de passe temporaire<Requis /></label>
                   <div className="relative">
                     <input type={showPassword ? "text" : "password"} value={createForm.mot_de_passe}
                       onChange={e => setCreateForm(f => ({ ...f, mot_de_passe: e.target.value }))}

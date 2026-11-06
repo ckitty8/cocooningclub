@@ -19,6 +19,7 @@ import { useOffresPubliques } from "@/hooks/useOffresPubliques";
 import { GrilleOffres, NoteOffres } from "@/components/offres/ContenuNosOffres";
 import { useAntiSpam } from "@/hooks/useAntiSpam";
 import { messageErreurServeur } from "@/utils/messageErreurServeur";
+import Requis from "@/components/Requis";
 
 const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, description_courte, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription, matin, apres_midi, espaces(slug)";
 
@@ -127,7 +128,7 @@ const ContactForm = () => {
       {fields.map(field => (
         <div key={field.id}>
           <label className="block text-sm font-medium text-foreground mb-1.5">
-            {field.label}{field.obligatoire && " *"}
+            {field.label}{field.obligatoire && <Requis />}
           </label>
           {field.field_type === "textarea" ? (
             <>

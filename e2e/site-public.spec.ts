@@ -64,11 +64,11 @@ test("un membre connecté se pré-inscrit avec son compte, sans délai ni champs
   await page.getByRole("button", { name: "Pré-inscription" }).first().click();
 
   const dialog = page.getByRole("dialog");
-  await expect(dialog.getByLabel("Prénom", { exact: true })).toHaveValue("Marie");
-  await expect(dialog.getByLabel("Nom", { exact: true })).toHaveValue("Dupont");
-  await expect(dialog.getByLabel("Nom", { exact: true })).not.toBeEditable();
-  await expect(dialog.getByLabel("E-mail", { exact: true })).toHaveValue(MEMBRE_TEST.email);
-  await expect(dialog.getByLabel("E-mail", { exact: true })).not.toBeEditable();
+  await expect(dialog.getByLabel("Prénom (obligatoire)", { exact: true })).toHaveValue("Marie");
+  await expect(dialog.getByLabel("Nom (obligatoire)", { exact: true })).toHaveValue("Dupont");
+  await expect(dialog.getByLabel("Nom (obligatoire)", { exact: true })).not.toBeEditable();
+  await expect(dialog.getByLabel("E-mail (obligatoire)", { exact: true })).toHaveValue(MEMBRE_TEST.email);
+  await expect(dialog.getByLabel("E-mail (obligatoire)", { exact: true })).not.toBeEditable();
 
   await dialog.locator("select").selectOption(ATELIER_TEST.titre);
   await remplirPreInscription(dialog, { tel: "0601020304", image: "non", whatsapp: "oui" });
@@ -184,7 +184,7 @@ test("la page de connexion est exclue de Google", async ({ page }) => {
   await expect(page).toHaveTitle("Connexion à l'espace membre · Le Cocooning Club");
   await expect(page.getByRole("heading", { level: 1, name: "Bon retour parmi nous" })).toBeVisible();
   await expect(page.getByLabel("Email")).toBeVisible();
-  await expect(page.getByLabel("Mot de passe", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("Mot de passe (obligatoire)", { exact: true })).toBeVisible();
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex, nofollow");
 });
 

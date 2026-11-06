@@ -18,9 +18,9 @@ test("une membre signale un problème : il part dans la boîte à idées, catég
   await page.goto("/espace-membre/signaler");
   await expect(page.getByRole("heading", { level: 1, name: "Signaler un problème" })).toBeVisible();
 
-  await page.getByLabel("Ce qui ne marche pas *").fill("Impossible de m'inscrire");
+  await page.getByLabel("Ce qui ne marche pas (obligatoire)").fill("Impossible de m'inscrire");
   await page.getByLabel("Où ça se passe ?").selectOption("Ateliers");
-  await page.getByLabel("Que s'est-il passé ? *").fill("Le bouton S'inscrire ne fait rien quand je clique dessus.");
+  await page.getByLabel("Que s'est-il passé ? (obligatoire)").fill("Le bouton S'inscrire ne fait rien quand je clique dessus.");
   await page.getByRole("button", { name: "Envoyer le signalement" }).click();
 
   await expect(page.getByText("ton signalement est bien arrivé")).toBeVisible();
@@ -39,13 +39,13 @@ test("sans la case « Joindre mon navigateur », l'appareil n'est pas envoyé ; 
   await connecterEn(page, MEMBRE);
   await page.goto("/espace-membre/signaler");
 
-  await page.getByLabel("Ce qui ne marche pas *").fill("Page blanche");
-  await page.getByLabel("Que s'est-il passé ? *").fill("court");
+  await page.getByLabel("Ce qui ne marche pas (obligatoire)").fill("Page blanche");
+  await page.getByLabel("Que s'est-il passé ? (obligatoire)").fill("court");
   await page.getByRole("button", { name: "Envoyer le signalement" }).click();
   await expect(page.getByText("Décris ce qui s'est passé")).toBeVisible();
   expect(mock.inserts.idees).toBeUndefined();
 
-  await page.getByLabel("Que s'est-il passé ? *").fill("La page reste blanche après la connexion.");
+  await page.getByLabel("Que s'est-il passé ? (obligatoire)").fill("La page reste blanche après la connexion.");
   await page.getByLabel("Joindre mon navigateur et la taille de mon écran").uncheck();
   await page.getByRole("button", { name: "Envoyer le signalement" }).click();
   await expect.poll(() => mock.inserts.idees?.length).toBe(1);

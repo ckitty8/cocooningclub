@@ -11,11 +11,11 @@ test("la description complète se met en forme dans l'éditeur et s'enregistre e
   await page.goto("/admin/ateliers");
   await page.getByRole("button", { name: "Ajouter", exact: true }).click();
 
-  const fenetre = page.locator("div.fixed").filter({ hasText: "Titre *" });
+  const fenetre = page.locator("div.fixed").filter({ hasText: "Titre (obligatoire)" });
   await fenetre.locator("select").first().selectOption(ESPACE.id);
-  await fenetre.locator("label", { hasText: "Titre *" }).locator("xpath=following-sibling::input").fill("Journée contenus");
-  await fenetre.locator("label", { hasText: "Date *" }).locator("xpath=following-sibling::input").fill("2027-03-10");
-  await fenetre.locator("label", { hasText: "Heure début *" }).locator("xpath=following-sibling::input").fill("10:30");
+  await fenetre.locator("label", { hasText: "Titre (obligatoire)" }).locator("xpath=following-sibling::input").fill("Journée contenus");
+  await fenetre.locator("label", { hasText: "Date (obligatoire)" }).locator("xpath=following-sibling::input").fill("2027-03-10");
+  await fenetre.locator("label", { hasText: "Heure début (obligatoire)" }).locator("xpath=following-sibling::input").fill("10:30");
 
   const editeur = fenetre.getByRole("textbox", { name: "Description complète" });
   await editeur.click();

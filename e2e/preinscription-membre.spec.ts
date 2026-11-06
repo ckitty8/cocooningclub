@@ -24,11 +24,11 @@ test("un membre se pré-inscrit depuis son espace avec les informations de son c
 
   // Fenêtre commune avec l'accueil, identité du compte déjà remplie et non modifiable.
   const fenetre = page.getByRole("dialog", { name: "Pré-inscription" });
-  await expect(fenetre.getByLabel("Prénom", { exact: true })).toHaveValue("Marie");
-  await expect(fenetre.getByLabel("Nom", { exact: true })).toHaveValue("Dupont");
-  await expect(fenetre.getByLabel("Nom", { exact: true })).toHaveAttribute("readonly", "");
-  await expect(fenetre.getByLabel("E-mail", { exact: true })).toHaveValue("marie@exemple.fr");
-  await expect(fenetre.getByLabel("Téléphone", { exact: true })).toHaveValue("0601020304");
+  await expect(fenetre.getByLabel("Prénom (obligatoire)", { exact: true })).toHaveValue("Marie");
+  await expect(fenetre.getByLabel("Nom (obligatoire)", { exact: true })).toHaveValue("Dupont");
+  await expect(fenetre.getByLabel("Nom (obligatoire)", { exact: true })).toHaveAttribute("readonly", "");
+  await expect(fenetre.getByLabel("E-mail (obligatoire)", { exact: true })).toHaveValue("marie@exemple.fr");
+  await expect(fenetre.getByLabel("Téléphone (obligatoire)", { exact: true })).toHaveValue("0601020304");
   await remplirPreInscription(fenetre);
   await fenetre.getByRole("button", { name: /Envoyer ma pré-inscription/ }).click();
   await expect(page.getByRole("heading", { name: TITRE_MERCI })).toBeVisible();

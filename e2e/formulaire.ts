@@ -20,10 +20,10 @@ export interface Reponses {
  */
 export const remplirPreInscription = async (zone: Zone, r: Reponses = {}) => {
   const { prenom, nom, email, tel, image = "oui", whatsapp = "non", cgu = true } = r;
-  if (nom !== undefined) await zone.getByLabel("Nom", { exact: true }).fill(nom);
-  if (prenom !== undefined) await zone.getByLabel("Prénom", { exact: true }).fill(prenom);
-  if (email !== undefined) await zone.getByLabel("E-mail", { exact: true }).fill(email);
-  if (tel !== undefined) await zone.getByLabel("Téléphone", { exact: true }).fill(tel);
+  if (nom !== undefined) await zone.getByLabel("Nom (obligatoire)", { exact: true }).fill(nom);
+  if (prenom !== undefined) await zone.getByLabel("Prénom (obligatoire)", { exact: true }).fill(prenom);
+  if (email !== undefined) await zone.getByLabel("E-mail (obligatoire)", { exact: true }).fill(email);
+  if (tel !== undefined) await zone.getByLabel("Téléphone (obligatoire)", { exact: true }).fill(tel);
   if (image) await zone.getByRole("checkbox", { name: image === "oui" ? "J'autorise" : "Je n'autorise pas", exact: true }).check();
   if (whatsapp) await zone.getByRole("checkbox", { name: whatsapp === "oui" ? "J'accepte" : "Je n'accepte pas", exact: true }).check();
   if (cgu) await zone.getByRole("checkbox", { name: /conditions générales/ }).check();

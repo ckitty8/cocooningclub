@@ -19,6 +19,7 @@ import { enregistrerPreInscription, type IssuePreInscription } from "@/lib/preIn
 import { suivrePreInscription } from "@/lib/analytics";
 import AjouterAgenda from "@/components/AjouterAgenda";
 import RappelAtelier from "@/components/RappelAtelier";
+import Requis from "@/components/Requis";
 import { atelierAvecCreneau, CRENEAUX, estCreneau } from "@/lib/creneau";
 
 interface PreInscriptionModalProps {
@@ -55,7 +56,7 @@ const DeuxCases = ({ legende, children, valeur, onChoisir, libelleOui, libelleNo
   erreurChamp?: FieldError;
 }) => (
   <fieldset className="rounded-xl border bg-muted/30 p-4">
-    <legend className="px-1 text-sm font-medium text-foreground">{legende}</legend>
+    <legend className="px-1 text-sm font-medium text-foreground">{legende}<Requis /></legend>
     <div className="mb-3 space-y-2 text-xs leading-relaxed text-muted-foreground">{children}</div>
     <div className="flex flex-wrap gap-x-6 gap-y-2">
       {([["oui", libelleOui], ["non", libelleNon]] as const).map(([cle, libelle]) => (
@@ -213,8 +214,10 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer, atelierId, en
             <form onSubmit={handleSubmit(onSubmit)} className="relative space-y-4">
               {antiSpam.honeypot}
 
+              <p className="text-xs text-muted-foreground"><span className="text-red-700" aria-hidden="true">*</span> Champ obligatoire</p>
+
               <div>
-                <label className={libelle}>Atelier</label>
+                <label className={libelle}>Atelier<Requis /></label>
                 {atelierId ? (
                   <>
                     <p className="rounded-xl border bg-muted/40 px-4 py-3 text-sm text-foreground">
@@ -239,7 +242,7 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer, atelierId, en
 
               {watch("workshop") === ATELIER_AVEC_DATE_NAISSANCE && (
                 <div>
-                  <label className={libelle}>Date de naissance</label>
+                  <label className={libelle}>Date de naissance<Requis /></label>
                   <input {...register("birthdate")} type="date" className={champ} />
                   {errors.birthdate && <p className={erreur}>{errors.birthdate.message}</p>}
                 </div>
@@ -247,25 +250,25 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer, atelierId, en
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="pi-nom" className={libelle}>Nom</label>
+                  <label htmlFor="pi-nom" className={libelle}>Nom<Requis /></label>
                   <input id="pi-nom" {...register("nom")} readOnly={!!profile} autoComplete="family-name" placeholder="Dupont" className={champ} />
                   {errors.nom && <p className={erreur}>{errors.nom.message}</p>}
                 </div>
                 <div>
-                  <label htmlFor="pi-prenom" className={libelle}>Prénom</label>
+                  <label htmlFor="pi-prenom" className={libelle}>Prénom<Requis /></label>
                   <input id="pi-prenom" {...register("prenom")} readOnly={!!profile} autoComplete="given-name" placeholder="Marie" className={champ} />
                   {errors.prenom && <p className={erreur}>{errors.prenom.message}</p>}
                 </div>
               </div>
 
               <div>
-                <label htmlFor="pi-email" className={libelle}>E-mail</label>
+                <label htmlFor="pi-email" className={libelle}>E-mail<Requis /></label>
                 <input id="pi-email" {...register("email")} autoComplete="email" readOnly={!!profile} type="email" placeholder="marie@email.com" className={champ} />
                 {errors.email && <p className={erreur}>{errors.email.message}</p>}
               </div>
 
               <div>
-                <label htmlFor="pi-tel" className={libelle}>Téléphone</label>
+                <label htmlFor="pi-tel" className={libelle}>Téléphone<Requis /></label>
                 <input id="pi-tel" {...register("phone")} type="tel" autoComplete="tel" placeholder="06 12 34 56 78" className={champ} />
                 {errors.phone && <p className={erreur}>{errors.phone.message}</p>}
               </div>
@@ -278,7 +281,7 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer, atelierId, en
 
               {demandeCreneau && (
                 <fieldset className="rounded-xl border bg-muted/30 p-4">
-                  <legend className="px-1 text-sm font-medium text-foreground">Je serai présente</legend>
+                  <legend className="px-1 text-sm font-medium text-foreground">Je serai présente<Requis /></legend>
                   <div className="flex flex-wrap gap-x-6 gap-y-2">
                     {CRENEAUX.map(c => (
                       <label key={c.valeur} className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
@@ -354,7 +357,7 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer, atelierId, en
                     J'accepte les{" "}
                     <Link to="/cgu" target="_blank" className="text-terracotta underline underline-offset-2">conditions générales d'utilisation</Link>
                     {" "}et la{" "}
-                    <Link to="/confidentialite" target="_blank" className="text-terracotta underline underline-offset-2">politique de confidentialité</Link>.
+                    <Link to="/confidentialite" target="_blank" className="text-terracotta underline underline-offset-2">politique de confidentialité</Link>.<Requis />
                   </span>
                 </label>
                 {errors.cgu && <p className={erreur}>{errors.cgu.message}</p>}

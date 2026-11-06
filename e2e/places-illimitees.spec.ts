@@ -5,11 +5,11 @@ import { connecterEn, profilTest } from "./session";
 const ESPACES = [{ id: "e0000000-0000-4000-8000-000000000001", nom: "Papotages", slug: "papotages" }];
 
 const remplirAtelier = async (page: import("@playwright/test").Page) => {
-  const fenetre = page.locator("div.fixed").filter({ hasText: "Titre *" });
+  const fenetre = page.locator("div.fixed").filter({ hasText: "Titre (obligatoire)" });
   await fenetre.locator("select").first().selectOption(ESPACES[0].id);
-  await fenetre.locator("label", { hasText: "Titre *" }).locator("xpath=following-sibling::input").fill("Papotages - Sans limite");
-  await fenetre.locator("label", { hasText: "Date *" }).locator("xpath=following-sibling::input").fill("2027-03-10");
-  await fenetre.locator("label", { hasText: "Heure début *" }).locator("xpath=following-sibling::input").fill("14:00");
+  await fenetre.locator("label", { hasText: "Titre (obligatoire)" }).locator("xpath=following-sibling::input").fill("Papotages - Sans limite");
+  await fenetre.locator("label", { hasText: "Date (obligatoire)" }).locator("xpath=following-sibling::input").fill("2027-03-10");
+  await fenetre.locator("label", { hasText: "Heure début (obligatoire)" }).locator("xpath=following-sibling::input").fill("14:00");
   return fenetre;
 };
 

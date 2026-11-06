@@ -8,6 +8,7 @@ import {
   Check, X, Star, MessageSquare, Loader2, Trash2, Plus,
   CheckCircle2, XCircle, Clock, User, Calendar,
 } from "lucide-react";
+import Requis from "@/components/Requis";
 
 type StatutModeration = "en_attente" | "approuve" | "rejete";
 
@@ -388,7 +389,7 @@ const Avis = () => {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1.5">Auteur *</label>
+                <label className="block text-sm font-medium mb-1.5">Auteur<Requis /></label>
                 <input
                   type="text"
                   value={addForm.nom_auteur}
@@ -399,7 +400,7 @@ const Avis = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">Note *</label>
+                <label className="block text-sm font-medium mb-1.5">Note<Requis /></label>
                 <div className="flex gap-1">
                   {[1, 2, 3, 4, 5].map(n => (
                     <button
@@ -416,7 +417,7 @@ const Avis = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">Commentaire *</label>
+                <label className="block text-sm font-medium mb-1.5">Commentaire<Requis /></label>
                 <textarea
                   rows={4}
                   value={addForm.commentaire}

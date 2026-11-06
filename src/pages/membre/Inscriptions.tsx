@@ -10,6 +10,7 @@ import {
   CalendarDays, Clock, MapPin, Loader2, Ticket, X,
   CheckCircle2, AlertCircle, ExternalLink, Star, MessageSquare,
 } from "lucide-react";
+import Requis from "@/components/Requis";
 
 type Onglet = "a-venir" | "passees";
 
@@ -323,7 +324,7 @@ const Inscriptions = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5">Ton ressenti *</label>
+                <label className="block text-sm font-medium mb-1.5">Ton ressenti<Requis /></label>
                 <textarea
                   rows={4}
                   value={avisForm.commentaire}

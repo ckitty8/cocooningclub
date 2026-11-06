@@ -106,7 +106,7 @@ test("admin : onglet Bon à savoir, ajout d'une question", async ({ page }) => {
 
   await page.getByRole("button", { name: "Nouvelle question" }).click();
   const fenetre = page.getByRole("dialog", { name: "Nouvelle question" });
-  await fenetre.getByLabel("Question *").fill("Puis-je changer d'offre ?");
+  await fenetre.getByLabel("Question (obligatoire)").fill("Puis-je changer d'offre ?");
   await fenetre.getByLabel("Réponse").fill("Au renouvellement.");
   await fenetre.getByRole("button", { name: "Prévisualiser" }).click();
   const apercu = page.getByRole("dialog", { name: "Aperçu de la page Nos offres" });

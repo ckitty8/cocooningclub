@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import AuthLayout from "@/components/auth/AuthLayout";
 import { pageAccueilDuRole } from "@/lib/roles";
 import { boutonEnvoi, champ, libelle } from "@/components/auth/classes";
+import Requis from "@/components/Requis";
 
 // Filet de sécurité : si fetchProfile reste en attente plus longtemps
 // que ça après un signIn réussi, on débloque l'UI avec un message clair.
@@ -90,7 +91,7 @@ const Login = () => {
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label htmlFor="email" className={libelle}>Email</label>
+          <label htmlFor="email" className={libelle}>Email<Requis /></label>
           <input
             id="email"
             type="email"
@@ -104,7 +105,7 @@ const Login = () => {
         </div>
         <div>
           <div className="mb-1.5 flex items-center justify-between">
-            <label htmlFor="mot-de-passe" className="text-sm font-medium text-foreground">Mot de passe</label>
+            <label htmlFor="mot-de-passe" className="text-sm font-medium text-foreground">Mot de passe<Requis /></label>
             <Link to="/forgot-password" className="inline-block py-1 text-xs text-terracotta transition-colors hover:text-foreground">
               Mot de passe oublié ?
             </Link>

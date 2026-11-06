@@ -9,6 +9,7 @@ import {
   Lightbulb, Plus, X, Loader2, Check, XCircle, MessageCircle, Trash2, Pencil,
   Filter, Sparkles
 } from "lucide-react";
+import Requis from "@/components/Requis";
 
 type Categorie = "evolution_site" | "ateliers" | "anomalie_site" | "membres" | "communication" | "evenements" | "organisation" | "autre";
 type Reaction = "valide" | "non_valide" | "a_discuter";
@@ -499,7 +500,7 @@ const BoiteAIdees = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5">Titre *</label>
+                <label className="block text-sm font-medium mb-1.5">Titre<Requis /></label>
                 <input
                   type="text"
                   value={form.titre}

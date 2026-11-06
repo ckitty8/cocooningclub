@@ -9,6 +9,7 @@ import { aujourdhuiIso, MODES_REGLEMENT, type ModeReglement } from "@/lib/adhesi
 import { bulletinVierge, champNaissance, champsDepuisBulletin, type ValeursBulletin } from "@/lib/bulletin";
 import AutorisationsForm from "./AutorisationsForm";
 import { champ, type Formule, type MembreChoix } from "./types";
+import Requis from "@/components/Requis";
 
 interface Props {
   formules: Formule[];
@@ -133,7 +134,7 @@ const AjoutAdhesionModal = ({ formules, onClose, onSaved }: Props) => {
           </div>
           {personne === "existante" ? (
             <div>
-              <label htmlFor="aj-rech" className="block text-sm font-medium mb-1.5">Personne *</label>
+              <label htmlFor="aj-rech" className="block text-sm font-medium mb-1.5">Personne<Requis /></label>
               <input id="aj-rech" value={recherche} onChange={e => setRecherche(e.target.value)} placeholder="Rechercher un nom, un e-mail…" className={champ} />
               <select aria-label="Personne" size={5} value={membreId} onChange={e => setMembreId(e.target.value)} className={`${champ} mt-2`}>
                 {filtres.map(m => <option key={m.id} value={m.id}>{m.prenom} {m.nom} — {m.email}{m.role === "administrateur" ? " (administratrice)" : ""}{m.est_actif === false ? " (compte inactif)" : ""}</option>)}
@@ -149,16 +150,16 @@ const AjoutAdhesionModal = ({ formules, onClose, onSaved }: Props) => {
             <div className="space-y-3 rounded-xl border bg-muted/30 p-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label htmlFor="aj-prenom" className="block text-sm font-medium mb-1.5">Prénom *</label>
+                  <label htmlFor="aj-prenom" className="block text-sm font-medium mb-1.5">Prénom<Requis /></label>
                   <input id="aj-prenom" value={compte.prenom} onChange={e => setCompte(c => ({ ...c, prenom: e.target.value }))} maxLength={100} className={champ} />
                 </div>
                 <div>
-                  <label htmlFor="aj-nom" className="block text-sm font-medium mb-1.5">Nom *</label>
+                  <label htmlFor="aj-nom" className="block text-sm font-medium mb-1.5">Nom<Requis /></label>
                   <input id="aj-nom" value={compte.nom} onChange={e => setCompte(c => ({ ...c, nom: e.target.value }))} maxLength={100} className={champ} />
                 </div>
               </div>
               <div>
-                <label htmlFor="aj-email" className="block text-sm font-medium mb-1.5">E-mail *</label>
+                <label htmlFor="aj-email" className="block text-sm font-medium mb-1.5">E-mail<Requis /></label>
                 <input id="aj-email" type="email" value={compte.email} onChange={e => setCompte(c => ({ ...c, email: e.target.value }))} className={champ} />
               </div>
               <div>
@@ -176,7 +177,7 @@ const AjoutAdhesionModal = ({ formules, onClose, onSaved }: Props) => {
               </label>
               {compte.est_actif && (
                 <div>
-                  <label htmlFor="aj-mdp" className="block text-sm font-medium mb-1.5">Mot de passe provisoire *</label>
+                  <label htmlFor="aj-mdp" className="block text-sm font-medium mb-1.5">Mot de passe provisoire<Requis /></label>
                   <div className="relative">
                     <input id="aj-mdp" type={voirMotDePasse ? "text" : "password"} value={compte.mot_de_passe}
                       onChange={e => setCompte(c => ({ ...c, mot_de_passe: e.target.value }))} placeholder="6 caractères minimum" className={`${champ} pr-10`} />
@@ -192,7 +193,7 @@ const AjoutAdhesionModal = ({ formules, onClose, onSaved }: Props) => {
             </div>
           )}
           <div>
-            <label htmlFor="aj-formule" className="block text-sm font-medium mb-1.5">Formule *</label>
+            <label htmlFor="aj-formule" className="block text-sm font-medium mb-1.5">Formule<Requis /></label>
             <select id="aj-formule" value={formuleId} onChange={e => setFormuleId(e.target.value)} className={champ}>
               {formules.filter(f => f.est_active).map(f => <option key={f.id} value={f.id}>{f.nom} — {f.prix} €</option>)}
             </select>

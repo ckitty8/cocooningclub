@@ -66,8 +66,8 @@ test("elle crée une formule", async ({ page }) => {
   const mock = await ouvrir(page);
   await page.getByRole("button", { name: "Nouvelle formule" }).click();
   const fenetre = page.getByRole("dialog", { name: "Nouvelle formule" });
-  await fenetre.getByLabel("Nom *", { exact: true }).fill("Cocooning Business");
-  await fenetre.getByLabel("Cotisation (€) *").fill("100");
+  await fenetre.getByLabel("Nom (obligatoire)", { exact: true }).fill("Cocooning Business");
+  await fenetre.getByLabel("Cotisation (€) (obligatoire)").fill("100");
   await fenetre.getByRole("checkbox", { name: "Business" }).check();
   await fenetre.getByRole("button", { name: "Enregistrer" }).click();
   await expect(page.getByText("Formule créée")).toBeVisible();
@@ -79,8 +79,8 @@ test("elle refuse une formule sans tarif valide", async ({ page }) => {
   const mock = await ouvrir(page);
   await page.getByRole("button", { name: "Nouvelle formule" }).click();
   const fenetre = page.getByRole("dialog", { name: "Nouvelle formule" });
-  await fenetre.getByLabel("Nom *", { exact: true }).fill("Test");
-  await fenetre.getByLabel("Cotisation (€) *").fill("abc");
+  await fenetre.getByLabel("Nom (obligatoire)", { exact: true }).fill("Test");
+  await fenetre.getByLabel("Cotisation (€) (obligatoire)").fill("abc");
   await fenetre.getByRole("button", { name: "Enregistrer" }).click();
   await expect(fenetre.getByRole("alert")).toContainText("tarif");
   expect(mock.inserts.formules).toBeUndefined();
@@ -112,12 +112,12 @@ test("elle ajoute une adhésion en créant la personne en même temps : compte �
   await page.getByRole("button", { name: "Ajouter une adhésion" }).click();
   const fenetre = page.getByRole("dialog", { name: "Ajouter une adhésion" });
   await fenetre.getByRole("button", { name: "Nouvelle personne" }).click();
-  await fenetre.getByLabel("Prénom *", { exact: true }).fill("Toto");
-  await fenetre.getByLabel("Nom *", { exact: true }).fill("Durand");
-  await fenetre.getByLabel("E-mail *").fill("toto@exemple.fr");
+  await fenetre.getByLabel("Prénom (obligatoire)", { exact: true }).fill("Toto");
+  await fenetre.getByLabel("Nom (obligatoire)", { exact: true }).fill("Durand");
+  await fenetre.getByLabel("E-mail (obligatoire)").fill("toto@exemple.fr");
   await fenetre.getByLabel("Téléphone").fill("0611223344");
   await fenetre.getByLabel("Commune").fill("Gagny");
-  await fenetre.getByLabel("Formule *").selectOption({ label: "Cocooning Créatif — 80 €" });
+  await fenetre.getByLabel("Formule (obligatoire)").selectOption({ label: "Cocooning Créatif — 80 €" });
   await fenetre.getByRole("button", { name: "Créer le compte et ajouter" }).click();
 
   await expect(page.getByText("Compte créé, adhésion validée : la personne est membre")).toBeVisible();
@@ -135,7 +135,7 @@ test("la recherche d'une personne existante retrouve aussi les administratrices 
   await page.getByRole("tab", { name: /Adhésions/ }).click();
   await page.getByRole("button", { name: "Ajouter une adhésion" }).click();
   const fenetre = page.getByRole("dialog", { name: "Ajouter une adhésion" });
-  await fenetre.getByLabel("Personne *", { exact: true }).fill(ADMIN.nom as string);
+  await fenetre.getByLabel("Personne (obligatoire)", { exact: true }).fill(ADMIN.nom as string);
   await expect(fenetre.getByRole("option", { name: new RegExp(`${ADMIN.nom}.*administratrice`) })).toBeVisible();
   await fenetre.getByRole("listbox", { name: "Personne" }).selectOption({ index: 0 });
   await fenetre.getByLabel("Date de naissance").pressSequentially("12041988");
@@ -150,7 +150,7 @@ test("décochée, la validation immédiate laisse l'adhésion « à valider »",
   await page.getByRole("tab", { name: /Adhésions/ }).click();
   await page.getByRole("button", { name: "Ajouter une adhésion" }).click();
   const fenetre = page.getByRole("dialog", { name: "Ajouter une adhésion" });
-  await fenetre.getByLabel("Personne *", { exact: true }).fill(ADMIN.nom as string);
+  await fenetre.getByLabel("Personne (obligatoire)", { exact: true }).fill(ADMIN.nom as string);
   await fenetre.getByRole("listbox", { name: "Personne" }).selectOption({ index: 0 });
   await fenetre.getByLabel("Cotisation reçue : valider l'adhésion tout de suite").uncheck();
   await fenetre.getByRole("button", { name: "Ajouter", exact: true }).click();
@@ -164,7 +164,7 @@ test("une recherche sans résultat renvoie vers « Nouvelle personne »", async 
   await page.getByRole("tab", { name: /Adhésions/ }).click();
   await page.getByRole("button", { name: "Ajouter une adhésion" }).click();
   const fenetre = page.getByRole("dialog", { name: "Ajouter une adhésion" });
-  await fenetre.getByLabel("Personne *", { exact: true }).fill("zzzzzz");
+  await fenetre.getByLabel("Personne (obligatoire)", { exact: true }).fill("zzzzzz");
   await expect(fenetre.getByRole("status")).toContainText("Nouvelle personne");
 });
 
@@ -174,9 +174,9 @@ test("une adresse déjà utilisée n'est pas recréée : on renvoie vers la list
   await page.getByRole("button", { name: "Ajouter une adhésion" }).click();
   const fenetre = page.getByRole("dialog", { name: "Ajouter une adhésion" });
   await fenetre.getByRole("button", { name: "Nouvelle personne" }).click();
-  await fenetre.getByLabel("Prénom *", { exact: true }).fill("Julie");
-  await fenetre.getByLabel("Nom *", { exact: true }).fill("Martin");
-  await fenetre.getByLabel("E-mail *").fill("julie@exemple.fr");
+  await fenetre.getByLabel("Prénom (obligatoire)", { exact: true }).fill("Julie");
+  await fenetre.getByLabel("Nom (obligatoire)", { exact: true }).fill("Martin");
+  await fenetre.getByLabel("E-mail (obligatoire)").fill("julie@exemple.fr");
   await fenetre.getByRole("button", { name: "Créer le compte et ajouter" }).click();
   await expect(page.getByText("a déjà un compte")).toBeVisible();
   expect(mock.inserts.utilisateurs).toBeUndefined();

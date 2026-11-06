@@ -19,6 +19,7 @@ import { aujourdhuiIso } from "@/lib/adhesions";
 import { withTimeout } from "@/utils/withTimeout";
 import { toast } from "sonner";
 import { Loader2, Pencil, Search, UserPlus, X, CreditCard } from "lucide-react";
+import Requis from "@/components/Requis";
 
 interface Template {
   cle: string;
@@ -623,7 +624,7 @@ const PreInscriptions = () => {
               {inscIdentite(derogation).prenom} {inscIdentite(derogation).nom} n'a pas réglé « {derogation.ateliers?.titre} ».
               Enregistrez d'abord le paiement (onglet Paiement), ou validez quand même en indiquant le motif : il sera inscrit au journal.
             </p>
-            <label htmlFor="motif-derogation" className="block text-sm font-medium mb-1.5">Motif *</label>
+            <label htmlFor="motif-derogation" className="block text-sm font-medium mb-1.5">Motif<Requis /></label>
             <textarea
               id="motif-derogation" value={motifDerogation} onChange={e => setMotifDerogation(e.target.value)} rows={3}
               placeholder="Ex. règlement en espèces sur place, geste commercial…"
@@ -672,7 +673,7 @@ const PreInscriptions = () => {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1.5">Atelier *</label>
+                <label className="block text-sm font-medium mb-1.5">Atelier<Requis /></label>
                 <select
                   value={newForm.atelier_id}
                   onChange={e => setNewForm({ ...newForm, atelier_id: e.target.value })}
@@ -700,7 +701,7 @@ const PreInscriptions = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Prénom *</label>
+                  <label className="block text-sm font-medium mb-1.5">Prénom<Requis /></label>
                   <input
                     type="text"
                     value={newForm.prenom}
@@ -710,7 +711,7 @@ const PreInscriptions = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Nom *</label>
+                  <label className="block text-sm font-medium mb-1.5">Nom<Requis /></label>
                   <input
                     type="text"
                     value={newForm.nom}
@@ -722,7 +723,7 @@ const PreInscriptions = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">Email *</label>
+                <label className="block text-sm font-medium mb-1.5">Email<Requis /></label>
                 <input
                   type="email"
                   value={newForm.email}
@@ -751,7 +752,7 @@ const PreInscriptions = () => {
                 if (atelier?.titre === PIERRE_ORACLE_TITRE) {
                   return (
                     <div>
-                      <label className="block text-sm font-medium mb-1.5">Date de naissance *</label>
+                      <label className="block text-sm font-medium mb-1.5">Date de naissance<Requis /></label>
                       <input
                         type="date"
                         value={newForm.date_naissance}

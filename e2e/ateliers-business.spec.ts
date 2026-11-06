@@ -14,7 +14,7 @@ test("les champs Matin et Après-midi n'existent que pour un atelier Business", 
   await page.goto("/admin/ateliers");
   await page.getByRole("button", { name: "Ajouter", exact: true }).click();
 
-  const fenetre = page.locator("div.fixed").filter({ hasText: "Titre *" });
+  const fenetre = page.locator("div.fixed").filter({ hasText: "Titre (obligatoire)" });
   await expect(fenetre.getByLabel("Matin")).toHaveCount(0);
 
   await fenetre.locator("select").first().selectOption(ESPACES[1].id);
@@ -27,9 +27,9 @@ test("les champs Matin et Après-midi n'existent que pour un atelier Business", 
   await fenetre.locator("select").first().selectOption(ESPACES[1].id);
   await fenetre.getByLabel("Matin").fill("9h30 – 12h : atelier marque personnelle");
   await fenetre.getByLabel("Après-midi").fill("14h – 17h : prise de parole");
-  await fenetre.locator("label", { hasText: "Titre *" }).locator("xpath=following-sibling::input").fill("Business - Journée");
-  await fenetre.locator("label", { hasText: "Date *" }).locator("xpath=following-sibling::input").fill("2027-03-10");
-  await fenetre.locator("label", { hasText: "Heure début *" }).locator("xpath=following-sibling::input").fill("09:30");
+  await fenetre.locator("label", { hasText: "Titre (obligatoire)" }).locator("xpath=following-sibling::input").fill("Business - Journée");
+  await fenetre.locator("label", { hasText: "Date (obligatoire)" }).locator("xpath=following-sibling::input").fill("2027-03-10");
+  await fenetre.locator("label", { hasText: "Heure début (obligatoire)" }).locator("xpath=following-sibling::input").fill("09:30");
   await fenetre.getByRole("button", { name: "Enregistrer", exact: true }).click();
 
   await expect.poll(() => mock.inserts.ateliers?.[0]).toMatchObject({

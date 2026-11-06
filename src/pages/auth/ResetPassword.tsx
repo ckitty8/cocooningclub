@@ -4,6 +4,7 @@ import { CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import AuthLayout from "@/components/auth/AuthLayout";
 import { boutonEnvoi, champ, libelle } from "@/components/auth/classes";
+import Requis from "@/components/Requis";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -81,7 +82,7 @@ const ResetPassword = () => {
     <AuthLayout titre="Nouveau mot de passe" sousTitre="Choisissez un nouveau mot de passe d'au moins 6 caractères.">
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label htmlFor="mot-de-passe" className={libelle}>Nouveau mot de passe</label>
+          <label htmlFor="mot-de-passe" className={libelle}>Nouveau mot de passe<Requis /></label>
           <input
             id="mot-de-passe"
             type="password"
@@ -94,7 +95,7 @@ const ResetPassword = () => {
           />
         </div>
         <div>
-          <label htmlFor="confirmation" className={libelle}>Confirmer le mot de passe</label>
+          <label htmlFor="confirmation" className={libelle}>Confirmer le mot de passe<Requis /></label>
           <input
             id="confirmation"
             type="password"

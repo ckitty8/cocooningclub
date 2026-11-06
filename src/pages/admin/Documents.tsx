@@ -8,6 +8,7 @@ import { withTimeout } from "@/utils/withTimeout";
 import { toast } from "sonner";
 import { compressImage } from "@/utils/compressImage";
 import { Plus, Pencil, Trash2, X, ExternalLink, FileText, BookOpen, Newspaper, FolderLock, FileCheck, Image as ImageIcon, type LucideIcon } from "lucide-react";
+import Requis from "@/components/Requis";
 
 type DocType = TypeDocument;
 type DocAcces = AccesDocument;
@@ -305,7 +306,7 @@ const Documents = () => {
                 <p className="text-xs text-muted-foreground mt-2">JPG, PNG, WebP. Max 5 Mo.</p>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5">Titre *</label>
+                <label className="block text-sm font-medium mb-1.5">Titre<Requis /></label>
                 <input value={form.titre} onChange={e => setForm(f => ({ ...f, titre: e.target.value }))}
                   className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>

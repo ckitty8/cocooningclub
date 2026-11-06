@@ -11,6 +11,7 @@ import {
 } from "@/lib/offres";
 import ApercuOffres from "./ApercuOffres";
 import { champ, type Espace, type Formule } from "./types";
+import Requis from "@/components/Requis";
 
 interface Props {
   /** Formule à modifier, ou modèle d'une nouvelle formule (id vide). */
@@ -143,7 +144,7 @@ const FormuleModal = ({ formule, espaces, formules = [], questions = [], contenu
           <div className="space-y-5">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label htmlFor="f-nom" className="block text-sm font-medium mb-1.5">Nom *</label>
+                <label htmlFor="f-nom" className="block text-sm font-medium mb-1.5">Nom<Requis /></label>
                 <input id="f-nom" value={nom} onChange={e => setNom(e.target.value)} maxLength={80} placeholder="L'Espace Chill" className={champ} />
               </div>
               <div>
@@ -162,11 +163,11 @@ const FormuleModal = ({ formule, espaces, formules = [], questions = [], contenu
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label htmlFor="f-prix" className="block text-sm font-medium mb-1.5">Cotisation (€) *</label>
+                <label htmlFor="f-prix" className="block text-sm font-medium mb-1.5">Cotisation (€)<Requis /></label>
                 <input id="f-prix" value={prix} onChange={e => setPrix(e.target.value)} inputMode="decimal" placeholder="80" className={champ} />
               </div>
               <div>
-                <label htmlFor="f-duree" className="block text-sm font-medium mb-1.5">Durée (mois) *</label>
+                <label htmlFor="f-duree" className="block text-sm font-medium mb-1.5">Durée (mois)<Requis /></label>
                 <input id="f-duree" value={duree} onChange={e => setDuree(e.target.value)} inputMode="numeric" placeholder="12" className={champ} />
               </div>
             </div>

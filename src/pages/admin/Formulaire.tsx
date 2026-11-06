@@ -6,6 +6,7 @@ import { withTimeout } from "@/utils/withTimeout";
 import { logAction } from "@/utils/logAction";
 import { lienGmailReponse } from "@/lib/reponseContact";
 import { Plus, Pencil, Trash2, X, GripVertical, Copy, ArrowLeft, Check, Mail, MailOpen, ChevronDown, ChevronUp, Reply } from "lucide-react";
+import Requis from "@/components/Requis";
 
 interface ContactMessage {
   id: string;
@@ -489,7 +490,7 @@ const Formulaire = () => {
             <h2 className="font-semibold mb-4">Informations générales</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium mb-1.5">Nom *</label>
+                <label className="block text-sm font-medium mb-1.5">Nom<Requis /></label>
                 <input
                   value={formName}
                   onChange={e => setFormName(e.target.value)}
@@ -603,7 +604,7 @@ const Formulaire = () => {
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1.5">Nom *</label>
+                <label className="block text-sm font-medium mb-1.5">Nom<Requis /></label>
                 <input
                   value={newName}
                   onChange={e => setNewName(e.target.value)}
@@ -645,7 +646,7 @@ const Formulaire = () => {
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1.5">Label *</label>
+                <label className="block text-sm font-medium mb-1.5">Label<Requis /></label>
                 <input
                   value={fieldForm.label}
                   onChange={e => setFieldForm(f => ({ ...f, label: e.target.value }))}

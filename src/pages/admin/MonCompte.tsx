@@ -11,6 +11,7 @@ import {
   User, Mail, Image as ImageIcon, Save, Upload, Trash2, Loader2, Info, AlertCircle,
   Phone, CalendarRange,
 } from "lucide-react";
+import Requis from "@/components/Requis";
 
 const MAX_AVATAR_MB = 2;
 
@@ -270,7 +271,7 @@ const MonCompte = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1.5">Prénom *</label>
+                <label className="block text-sm font-medium mb-1.5">Prénom<Requis /></label>
                 <input
                   type="text"
                   value={form.prenom}
@@ -279,7 +280,7 @@ const MonCompte = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5">Nom *</label>
+                <label className="block text-sm font-medium mb-1.5">Nom<Requis /></label>
                 <input
                   type="text"
                   value={form.nom}
@@ -292,7 +293,7 @@ const MonCompte = () => {
             <div>
               <label className="block text-sm font-medium mb-1.5 flex items-center gap-1.5">
                 <Mail className="w-3.5 h-3.5" />
-                Email *
+                <span>Email<Requis /></span>
               </label>
               <input
                 type="email"
