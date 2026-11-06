@@ -463,7 +463,7 @@ const PreInscriptions = () => {
           tarif: !d ? "" : d.etat === "a_payer" ? `À payer${d.montant > 0 ? ` · ${euros(d.montant)}` : ""}` : d.etat === "inclus" ? "Inclus" : "Gratuit",
           statut: i.statut, statutPaiement: i.statut_paiement,
           autorisationImage: i.autorisation_image, accordWhatsapp: i.accord_whatsapp,
-          dateNaissance: id.dateNaissance, recueLe: i.inscrit_le, creneau: i.creneau,
+          dateNaissance: id.dateNaissance, recueLe: i.inscrit_le, creneau: i.creneau, instagram: i.instagram,
         };
       }));
       const nom = nomFichierInscrites(atelier.titre, atelier.date_atelier);

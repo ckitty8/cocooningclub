@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import type { Profile } from "@/contexts/auth";
+import { instagramValide, normaliserInstagram } from "./instagram";
 
 // Pré-inscription à un atelier, partagée par l'accueil et le calendrier.
 // Les statuts (inscription, paiement, présence) sont fixés par la base
@@ -24,6 +25,9 @@ const schemaAvecIdentite = (prenom: z.ZodString, nom: z.ZodString, email: z.ZodS
     email,
     phone: z.string().trim().min(1, "Veuillez indiquer votre numéro de téléphone.")
       .refine(v => v === "" || TELEPHONE_REGEX.test(v), "Numéro de téléphone invalide."),
+    /** Compte Instagram, facultatif (« @moncompte », « moncompte » ou lien du profil). */
+    instagram: z.string().max(200).optional()
+      .refine(v => instagramValide(v), "Identifiant Instagram invalide (exemple : @moncompte)."),
     workshop: z.string().min(1, "Veuillez choisir un atelier."),
     birthdate: z.string().optional(),
     /** Droit à l'image : photos et vidéos de l'atelier. */
@@ -56,6 +60,7 @@ export const valeursInitiales = (atelierTitre = "", profil?: Profile | null): Pr
   nom: profil?.nom ?? "",
   email: profil?.email ?? "",
   phone: profil?.telephone ?? "",
+  instagram: "",
   workshop: atelierTitre,
   birthdate: "",
   droitImage: "",
@@ -77,7 +82,7 @@ export const envoyerPreInscription = (
   data: PreInscriptionData,
   atelierId: string,
   profil: Pick<Profile, "id"> | null,
-  /** Repli si la base n'a pas encore les colonnes de consentement (ou du créneau) : la pré-inscription passe quand même. */
+  /** Repli si la base n'a pas encore les colonnes de consentement (ou du créneau, d'Instagram) : la pré-inscription passe quand même. */
   sansConsentements = false,
 ) => {
   const complements = {
@@ -88,6 +93,7 @@ export const envoyerPreInscription = (
       accord_whatsapp: reponseEnBooleen(data.whatsapp),
       // Envoyé seulement s'il y a une réponse : les autres espaces ne touchent pas à la colonne.
       ...(data.creneau ? { creneau: data.creneau } : {}),
+      ...(normaliserInstagram(data.instagram) ? { instagram: normaliserInstagram(data.instagram) } : {}),
     }),
   };
 

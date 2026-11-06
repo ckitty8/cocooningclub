@@ -117,6 +117,7 @@ const ListeParAtelier = ({ groupes, ouverts, onBasculer, droits, actingOn, onOuv
                       <span className="block">Droit à l'image : <span className="font-medium text-foreground">{reponseLibelle(insc.autorisation_image, "Autorise", "N'autorise pas")}</span></span>
                       <span className="block">Groupe WhatsApp : <span className="font-medium text-foreground">{reponseLibelle(insc.accord_whatsapp, "Accepte", "N'accepte pas")}</span></span>
                       {insc.creneau && <span className="block">Présence prévue : <span className="font-medium text-foreground">{libelleCreneau(insc.creneau)}</span></span>}
+                      {insc.instagram && <span className="block">Instagram : <span className="font-medium text-foreground">{insc.instagram}</span></span>}
                     </span>
                     <span className={`hidden sm:inline shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUT_BADGE[insc.statut]}`}>{STATUT_LABEL[insc.statut]}</span>
                     {onPresence && insc.statut === "confirme" && (

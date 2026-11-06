@@ -767,6 +767,7 @@ export type Database = {
       inscriptions: {
         Row: {
           creneau: string | null
+          instagram: string | null
           accord_whatsapp: boolean | null
           autorisation_image: boolean | null
           consentements_le: string | null
@@ -786,6 +787,7 @@ export type Database = {
         }
         Insert: {
           creneau?: string | null
+          instagram?: string | null
           accord_whatsapp?: boolean | null
           autorisation_image?: boolean | null
           consentements_le?: string | null
@@ -805,6 +807,7 @@ export type Database = {
         }
         Update: {
           creneau?: string | null
+          instagram?: string | null
           accord_whatsapp?: boolean | null
           autorisation_image?: boolean | null
           consentements_le?: string | null
@@ -849,6 +852,7 @@ export type Database = {
       pre_inscriptions_secours: {
         Row: {
           creneau: string | null
+          instagram: string | null
           accord_whatsapp: boolean | null
           droit_image: boolean | null
           prenom: string | null
@@ -865,6 +869,7 @@ export type Database = {
         }
         Insert: {
           creneau?: string | null
+          instagram?: string | null
           accord_whatsapp?: boolean | null
           droit_image?: boolean | null
           prenom?: string | null
@@ -881,6 +886,7 @@ export type Database = {
         }
         Update: {
           creneau?: string | null
+          instagram?: string | null
           accord_whatsapp?: boolean | null
           droit_image?: boolean | null
           prenom?: string | null

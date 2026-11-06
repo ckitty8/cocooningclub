@@ -64,6 +64,32 @@ describe("enregistrerPreInscription", () => {
     expect(envois[1].ligne).toEqual(expect.objectContaining({ email_invite: "lea@exemple.fr" }));
   });
 
+  it("enregistre le compte Instagram « @moncompte », et la pré-inscription passe sans lui si la colonne manque", async () => {
+    const avecInsta = { ...demande, data: { ...demande.data, instagram: "https://www.instagram.com/Lea.Martin/" } };
+    expect(await enregistrerPreInscription(avecInsta)).toEqual({ issue: "enregistree" });
+    expect(envois[0].ligne).toEqual(expect.objectContaining({ instagram: "@lea.martin" }));
+
+    envois.length = 0;
+    let appels = 0;
+    reponses.inscriptions = { get error() { appels += 1; return appels === 1 ? { code: "PGRST204", message: "Could not find the 'instagram' column" } : null; } } as never;
+    expect(await enregistrerPreInscription(avecInsta)).toEqual({ issue: "enregistree" });
+    expect(envois[1].ligne).not.toHaveProperty("instagram");
+    // Seul Instagram est retiré : les réponses droit à l'image / WhatsApp restent.
+    expect(envois[1].ligne).toEqual(expect.objectContaining({ autorisation_image: true, accord_whatsapp: false }));
+  });
+
+  it("demande de secours : Instagram gardé, puis retiré si la colonne manque encore", async () => {
+    const avecInsta = { ...demande, data: { ...demande.data, instagram: "@lea" } };
+    reponses.inscriptions = { error: { code: "XX000", message: "panne" } };
+    // Erreur au 1er envoi de secours seulement (d'après le nombre d'envois, la réponse étant lue plusieurs fois).
+    reponses.pre_inscriptions_secours = { get error() { return envois.filter(e => e.table === "pre_inscriptions_secours").length === 1 ? { code: "PGRST204", message: "Could not find the 'instagram' column" } : null; } } as never;
+    expect(await enregistrerPreInscription(avecInsta)).toEqual({ issue: "secours" });
+    const secours = envois.filter(e => e.table === "pre_inscriptions_secours");
+    expect(secours[0].ligne).toHaveProperty("instagram", "@lea");
+    expect(secours[1].ligne).not.toHaveProperty("instagram");
+    expect(secours[1].ligne).toEqual(expect.objectContaining({ droit_image: true }));
+  });
+
   it("garde aussi en secours une limite d'envois atteinte (la demande n'est pas perdue)", async () => {
     reponses.inscriptions = { error: { code: "P0001", message: "Trop d'envois en peu de temps." } };
     expect((await enregistrerPreInscription(demande)).issue).toBe("secours");

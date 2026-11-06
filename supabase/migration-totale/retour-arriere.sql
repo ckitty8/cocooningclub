@@ -18,6 +18,9 @@ BEGIN
 END
 $$;
 DROP FUNCTION IF EXISTS private.purger_donnees_anciennes();
+-- Instagram de la pré-inscription (20261106000002) : les comptes donnés sont perdus.
+ALTER TABLE public.inscriptions DROP CONSTRAINT IF EXISTS inscriptions_instagram_longueur, DROP COLUMN IF EXISTS instagram;
+ALTER TABLE public.pre_inscriptions_secours DROP COLUMN IF EXISTS instagram;
 -- Journée / matin / après-midi des ateliers Business (20261106000001) : les réponses données sont perdues.
 ALTER TABLE public.inscriptions DROP CONSTRAINT IF EXISTS inscriptions_creneau_valeurs, DROP COLUMN IF EXISTS creneau;
 ALTER TABLE public.pre_inscriptions_secours DROP COLUMN IF EXISTS creneau;

@@ -55,6 +55,7 @@ interface Inscrite {
   autorisation_image?: boolean | null;
   accord_whatsapp?: boolean | null;
   creneau?: string | null;
+  instagram?: string | null;
   utilisateurs: { prenom: string | null; nom: string | null; email: string | null; telephone: string | null; role: string | null } | null;
 }
 
@@ -142,7 +143,7 @@ const FicheAtelier = () => {
           statut: i.statut, statutPaiement: i.statut_paiement, presente: !!i.present,
           autorisationImage: i.autorisation_image, accordWhatsapp: i.accord_whatsapp,
           consentementBulletin: i.utilisateur_id ? LIBELLES_PHOTOS[etatPhotos(autorisations.get(i.utilisateur_id))] : LIBELLES_PHOTOS.inconnu,
-          dateNaissance: ident.dateNaissance, recueLe: i.inscrit_le, creneau: i.creneau,
+          dateNaissance: ident.dateNaissance, recueLe: i.inscrit_le, creneau: i.creneau, instagram: i.instagram,
         };
       }));
       const nom = nomFichierInscrites(atelier.titre, atelier.date_atelier);

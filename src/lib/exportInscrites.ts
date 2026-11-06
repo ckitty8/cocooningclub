@@ -24,6 +24,8 @@ export interface InscriteExport {
   consentementBulletin?: string;
   /** Ateliers Business : journee, matin ou apres_midi. */
   creneau?: string | null;
+  /** Compte Instagram donné dans le formulaire (« @moncompte »). */
+  instagram?: string | null;
 }
 
 const STATUTS = { en_attente: "En attente", confirme: "Validée", annule: "Refusée" } as const;
@@ -43,7 +45,7 @@ const dateHeure = (iso: string) => {
 const reponse = (v: boolean | null | undefined, oui: string, non: string) => (v == null ? "Pas de réponse" : v ? oui : non);
 
 /**
- * Une ligne d'en-tête puis une ligne par inscrite. Colonnes facultatives (tarif, date de naissance, présence)
+ * Une ligne d'en-tête puis une ligne par inscrite. Colonnes facultatives (Instagram, tarif, date de naissance, présence)
  * ajoutées seulement si au moins une ligne les renseigne.
  */
 export const tableauInscrites = (lignes: InscriteExport[]): Tableau => {
@@ -52,15 +54,16 @@ export const tableauInscrites = (lignes: InscriteExport[]): Tableau => {
   const avecPresence = lignes.some(l => l.presente !== undefined);
   const avecBulletin = lignes.some(l => l.consentementBulletin !== undefined);
   const avecCreneau = lignes.some(l => l.creneau);
+  const avecInstagram = lignes.some(l => l.instagram);
   const entete = [
-    "Prénom", "Nom", "E-mail", "Téléphone", "Compte", ...(avecTarif ? ["Tarif"] : []), ...(avecCreneau ? ["Présence prévue"] : []), "Statut", "Paiement",
+    "Prénom", "Nom", "E-mail", "Téléphone", ...(avecInstagram ? ["Instagram"] : []), "Compte", ...(avecTarif ? ["Tarif"] : []), ...(avecCreneau ? ["Présence prévue"] : []), "Statut", "Paiement",
     ...(avecPresence ? ["Présente"] : []), "Droit à l'image", "Groupe WhatsApp", ...(avecBulletin ? ["Consentement photo (bulletin)"] : []),
     ...(avecNaissance ? ["Date de naissance"] : []), "Reçue le",
   ];
   return [
     entete,
     ...lignes.map(l => [
-      l.prenom, l.nom, l.email ?? "", l.telephone ?? "", l.compte, ...(avecTarif ? [l.tarif ?? ""] : []),
+      l.prenom, l.nom, l.email ?? "", l.telephone ?? "", ...(avecInstagram ? [l.instagram ?? ""] : []), l.compte, ...(avecTarif ? [l.tarif ?? ""] : []),
       ...(avecCreneau ? [libelleCreneau(l.creneau)] : []),
       STATUTS[l.statut], PAIEMENTS[l.statutPaiement],
       ...(avecPresence ? [l.presente ? "Oui" : "Non"] : []),

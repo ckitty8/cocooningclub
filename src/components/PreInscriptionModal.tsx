@@ -269,6 +269,12 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer, atelierId, en
                 {errors.phone && <p className={erreur}>{errors.phone.message}</p>}
               </div>
 
+              <div>
+                <label htmlFor="pi-instagram" className={libelle}>Instagram <span className="font-normal text-muted-foreground">(facultatif)</span></label>
+                <input id="pi-instagram" {...register("instagram")} autoComplete="off" autoCapitalize="none" spellCheck={false} placeholder="@moncompte" className={champ} />
+                {errors.instagram && <p className={erreur}>{errors.instagram.message}</p>}
+              </div>
+
               {demandeCreneau && (
                 <fieldset className="rounded-xl border bg-muted/30 p-4">
                   <legend className="px-1 text-sm font-medium text-foreground">Je serai présente</legend>

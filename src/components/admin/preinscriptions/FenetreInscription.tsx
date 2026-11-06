@@ -1,6 +1,7 @@
 import { libelleCreneau } from "@/lib/creneau";
+import { lienInstagram } from "@/lib/instagram";
 import { useEffect, useMemo, useState } from "react";
-import { Calendar, ChevronLeft, ChevronRight, Mail, MapPin, MessageSquare, Pencil, Phone, X } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Instagram, Mail, MapPin, MessageSquare, Pencil, Phone, X } from "lucide-react";
 import { toast } from "sonner";
 import BadgePhotos from "@/components/BadgePhotos";
 import { supabase } from "@/integrations/supabase/client";
@@ -185,6 +186,13 @@ const FenetreInscription = ({
                 <p className="font-medium text-foreground">Coordonnées</p>
                 {id.email && <p className="flex items-center gap-2"><Mail className="w-4 h-4 shrink-0" />{id.email}</p>}
                 {id.telephone && <p className="flex items-center gap-2"><Phone className="w-4 h-4 shrink-0" />{id.telephone}</p>}
+                {insc.instagram && (
+                  <p className="flex items-center gap-2"><Instagram className="w-4 h-4 shrink-0" aria-hidden="true" />
+                    {lienInstagram(insc.instagram)
+                      ? <a href={lienInstagram(insc.instagram)!} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 text-foreground">{insc.instagram}</a>
+                      : insc.instagram}
+                  </p>
+                )}
                 {id.dateNaissance && <p>Date de naissance : {dateLongue(id.dateNaissance)}</p>}
                 <p>Droit à l'image : <span className="font-medium text-foreground">{reponseLibelle(insc.autorisation_image, "Autorise", "N'autorise pas")}</span></p>
                 <p>Groupe WhatsApp : <span className="font-medium text-foreground">{reponseLibelle(insc.accord_whatsapp, "Accepte", "N'accepte pas")}</span></p>

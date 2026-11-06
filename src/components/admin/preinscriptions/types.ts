@@ -19,6 +19,8 @@ export interface Inscription {
   accord_whatsapp?: boolean | null;
   /** Ateliers Business : journee, matin ou apres_midi (null = pas de réponse). */
   creneau?: string | null;
+  /** Compte Instagram donné dans le formulaire (« @moncompte »), facultatif. */
+  instagram?: string | null;
   /** Présence cochée le jour de l'atelier (fiche d'atelier ou liste des pré-inscriptions). */
   present?: boolean | null;
   statut: StatutInscription;

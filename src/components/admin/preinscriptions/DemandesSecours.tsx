@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Check, LifeBuoy, Mail, Phone } from "lucide-react";
+import { Check, Instagram, LifeBuoy, Mail, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -59,6 +59,7 @@ const DemandesSecours = () => {
               <p className="flex flex-wrap items-center gap-x-4 gap-y-0.5 text-muted-foreground">
                 {d.email && <a href={`mailto:${d.email}`} className="flex items-center gap-1 underline underline-offset-2"><Mail className="h-3.5 w-3.5" aria-hidden="true" />{d.email}</a>}
                 {d.telephone && <a href={`tel:${d.telephone}`} className="flex items-center gap-1 underline underline-offset-2"><Phone className="h-3.5 w-3.5" aria-hidden="true" />{d.telephone}</a>}
+                {d.instagram && <span className="flex items-center gap-1"><Instagram className="h-3.5 w-3.5" aria-hidden="true" />{d.instagram}</span>}
                 <span>{dateLongue(d.cree_le.slice(0, 10))}</span>
               </p>
               {(d.droit_image !== null || d.accord_whatsapp !== null) && (

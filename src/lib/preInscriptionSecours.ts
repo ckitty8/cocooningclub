@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Profile } from "@/contexts/auth";
 import { envoyerPreInscription, reponseEnBooleen, type PreInscriptionData } from "@/lib/preInscription";
+import { normaliserInstagram } from "@/lib/instagram";
 
 // Une pré-inscription ne doit jamais être perdue, même si le site ou la base a un problème.
 // Enregistrement en trois temps :
@@ -37,9 +38,9 @@ type ErreurServeur = { code?: string; message?: string } | null;
 export const estDoublon = (error: ErreurServeur): boolean =>
   error?.code === "P0001" && /existe déjà/i.test(error.message ?? "");
 
-/** La base n'a pas (encore) les colonnes du droit à l'image / WhatsApp / créneau (migrations 20261025000001, 20261106000001). */
+/** La base n'a pas (encore) les colonnes du droit à l'image / WhatsApp / créneau / Instagram (migrations 20261025000001, 20261106000001, 20261106000002). */
 const colonneConsentementAbsente = (error: ErreurServeur): boolean =>
-  error?.code === "PGRST204" || error?.code === "42703" || /autorisation_image|accord_whatsapp|consentements_le|creneau/.test(error?.message ?? "");
+  error?.code === "PGRST204" || error?.code === "42703" || /autorisation_image|accord_whatsapp|consentements_le|creneau|instagram/.test(error?.message ?? "");
 
 const texteErreur = (e: unknown): string => {
   if (e && typeof e === "object" && "message" in e) {
@@ -95,14 +96,21 @@ const identite = (d: DemandePreInscription) => ({
   email: d.profil?.email ?? d.data.email,
 });
 
+/** Erreur qui vient de la seule colonne Instagram absente (migration 20261106000002 pas encore appliquée). */
+const colonneInstagramAbsente = (error: ErreurServeur): boolean =>
+  (error?.code === "PGRST204" || error?.code === "42703") && /instagram/.test(error?.message ?? "");
+
+const sansInstagram = (data: PreInscriptionData): PreInscriptionData => ({ ...data, instagram: "" });
+
 const deposerEnSecours = async (d: DemandePreInscription, erreur: string) => {
-  const reponse = await insererSecours(d, erreur, true);
-  // Base pas encore à jour (colonne du créneau absente) : la demande de secours passe quand même, sans le créneau.
-  if (reponse.error && d.data.creneau && colonneConsentementAbsente(reponse.error)) return insererSecours(d, erreur, false);
+  let reponse = await insererSecours(d, erreur, true);
+  if (reponse.error && colonneInstagramAbsente(reponse.error)) reponse = await insererSecours({ ...d, data: sansInstagram(d.data) }, erreur, true);
+  // Base pas encore à jour (colonne du créneau ou d'Instagram absente) : la demande de secours passe quand même, sans eux.
+  if (reponse.error && (d.data.creneau || normaliserInstagram(d.data.instagram)) && colonneConsentementAbsente(reponse.error)) return insererSecours(d, erreur, false);
   return reponse;
 };
 
-const insererSecours = (d: DemandePreInscription, erreur: string, avecCreneau: boolean) => {
+const insererSecours = (d: DemandePreInscription, erreur: string, avecNouveautes: boolean) => {
   const { prenom, nom, email } = identite(d);
   return supabase.from("pre_inscriptions_secours").insert({
     prenom: prenom || null,
@@ -115,7 +123,8 @@ const insererSecours = (d: DemandePreInscription, erreur: string, avecCreneau: b
     utilisateur_id: d.profil?.id ?? null,
     droit_image: d.data.droitImage ? reponseEnBooleen(d.data.droitImage) : null,
     accord_whatsapp: d.data.whatsapp ? reponseEnBooleen(d.data.whatsapp) : null,
-    ...(avecCreneau && d.data.creneau ? { creneau: d.data.creneau } : {}),
+    ...(avecNouveautes && d.data.creneau ? { creneau: d.data.creneau } : {}),
+    ...(avecNouveautes && normaliserInstagram(d.data.instagram) ? { instagram: normaliserInstagram(d.data.instagram) } : {}),
     erreur,
   });
 };
@@ -129,6 +138,8 @@ const tenter = async (d: DemandePreInscription): Promise<IssuePreInscription | n
   try {
     if (d.atelierId) {
       let { error } = await envoyerPreInscription(d.data, d.atelierId, d.profil);
+      // Colonne Instagram pas encore créée : on réessaie sans le compte Instagram seulement (les autres réponses restent).
+      if (error && colonneInstagramAbsente(error)) ({ error } = await envoyerPreInscription(sansInstagram(d.data), d.atelierId, d.profil));
       // Base pas encore à jour (colonnes de consentement absentes) : on enregistre quand même la pré-inscription.
       if (error && colonneConsentementAbsente(error)) ({ error } = await envoyerPreInscription(d.data, d.atelierId, d.profil, true));
       if (!error) return { issue: "enregistree" };
