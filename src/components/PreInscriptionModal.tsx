@@ -18,6 +18,7 @@ import { enregistrerPreInscription, type IssuePreInscription } from "@/lib/preIn
 import { suivrePreInscription } from "@/lib/analytics";
 import AjouterAgenda from "@/components/AjouterAgenda";
 import RappelAtelier from "@/components/RappelAtelier";
+import { atelierAvecCreneau, CRENEAUX, estCreneau } from "@/lib/creneau";
 
 interface PreInscriptionModalProps {
   /** Ateliers proposés dans la liste déroulante. */
@@ -80,7 +81,7 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer, atelierId, en
   const antiSpam = useAntiSpam();
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
 
-  const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<PreInscriptionData>({
+  const { register, handleSubmit, watch, setValue, setError, clearErrors, formState: { errors, isSubmitting } } = useForm<PreInscriptionData>({
     resolver: zodResolver(profile ? preInscriptionMembreSchema : preInscriptionSchema),
     defaultValues: valeursInitiales(atelierInitial, profile),
   });
@@ -88,9 +89,19 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer, atelierId, en
   // Atelier dont la fiche rappelle la date, l'heure et le lieu (imposé par le lien, ou choisi dans la liste).
   const titreChoisi = watch("workshop");
   const atelierChoisi = (atelierId ? ateliers.find(a => a.id === atelierId) : ateliers.find(a => a.titre === titreChoisi)) ?? null;
+  // Ateliers Business : la participante dit si elle vient toute la journée, le matin ou l'après-midi.
+  const demandeCreneau = atelierAvecCreneau(atelierChoisi?.espaces?.slug);
 
   const onSubmit = async (data: PreInscriptionData) => {
     const trouve = (atelierId ? ateliers.find(a => a.id === atelierId) : ateliers.find(a => a.titre === data.workshop)) ?? null;
+    if (atelierAvecCreneau(trouve?.espaces?.slug)) {
+      if (!estCreneau(data.creneau)) {
+        setError("creneau", { type: "required", message: "Merci de choisir une réponse." });
+        return;
+      }
+    } else {
+      data = { ...data, creneau: "" }; // autre espace : pas de créneau, même si l'atelier choisi a changé
+    }
     // Atelier de remplacement (détails indisponibles) : utilisable pour l'envoi, pas pour l'affichage.
     const atelier = trouve && trouve.date_atelier ? trouve : null;
     const demande = {
@@ -257,6 +268,29 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer, atelierId, en
                 <input id="pi-tel" {...register("phone")} type="tel" autoComplete="tel" placeholder="06 12 34 56 78" className={champ} />
                 {errors.phone && <p className={erreur}>{errors.phone.message}</p>}
               </div>
+
+              {demandeCreneau && (
+                <fieldset className="rounded-xl border bg-muted/30 p-4">
+                  <legend className="px-1 text-sm font-medium text-foreground">Je serai présente</legend>
+                  <div className="flex flex-wrap gap-x-6 gap-y-2">
+                    {CRENEAUX.map(c => (
+                      <label key={c.valeur} className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
+                        <input
+                          type="checkbox"
+                          checked={watch("creneau") === c.valeur}
+                          onChange={() => {
+                            setValue("creneau", watch("creneau") === c.valeur ? "" : c.valeur);
+                            clearErrors("creneau");
+                          }}
+                          className="h-6 w-6 shrink-0 accent-primary"
+                        />
+                        {c.libelle}
+                      </label>
+                    ))}
+                  </div>
+                  {errors.creneau && <p className={erreur}>{errors.creneau.message}</p>}
+                </fieldset>
+              )}
 
               <DeuxCases
                 legende="Droit à l'image"

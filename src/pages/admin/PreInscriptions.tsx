@@ -275,6 +275,18 @@ const PreInscriptions = () => {
     toast.success("Paiement mis à jour");
   };
 
+  // Case « Présente » (inscriptions validées) : même colonne que la fiche d'atelier.
+  const handlePresence = async (insc: Inscription, present: boolean) => {
+    setInscriptions(prev => prev.map(i => i.id === insc.id ? { ...i, present } : i));
+    const { error } = await supabase.from("inscriptions").update({ present }).eq("id", insc.id);
+    if (error) {
+      setInscriptions(prev => prev.map(i => i.id === insc.id ? { ...i, present: insc.present } : i));
+      toast.error(`La présence n'a pas pu être enregistrée : ${error.message}`);
+      return;
+    }
+    logAction("inscription.presence", "inscriptions", insc.id, { present });
+  };
+
   const openAddModal = () => {
     setEditingInscription(null);
     setNewForm({
@@ -451,7 +463,7 @@ const PreInscriptions = () => {
           tarif: !d ? "" : d.etat === "a_payer" ? `À payer${d.montant > 0 ? ` · ${euros(d.montant)}` : ""}` : d.etat === "inclus" ? "Inclus" : "Gratuit",
           statut: i.statut, statutPaiement: i.statut_paiement,
           autorisationImage: i.autorisation_image, accordWhatsapp: i.accord_whatsapp,
-          dateNaissance: id.dateNaissance, recueLe: i.inscrit_le,
+          dateNaissance: id.dateNaissance, recueLe: i.inscrit_le, creneau: i.creneau,
         };
       }));
       const nom = nomFichierInscrites(atelier.titre, atelier.date_atelier);
@@ -475,7 +487,7 @@ const PreInscriptions = () => {
           const id = inscIdentite(i);
           const d = droits?.get(i.id)?.droit;
           return {
-            prenom: id.prenom, nom: id.nom, telephone: id.telephone, email: id.email, autorisationImage: i.autorisation_image,
+            prenom: id.prenom, nom: id.nom, telephone: id.telephone, email: id.email, autorisationImage: i.autorisation_image, creneau: i.creneau,
             paiement: d?.etat !== "a_payer" ? "" : i.statut_paiement === "paye" ? "Payé" : `À régler${d.montant > 0 ? ` · ${euros(d.montant)}` : ""}`,
           };
         }),
@@ -569,6 +581,7 @@ const PreInscriptions = () => {
         <ListeParAtelier
           onExporter={exporterAtelier}
           onEmargement={emargementAtelier}
+          onPresence={handlePresence}
           groupes={groupes}
           ouverts={ouverts}
           onBasculer={atelierId => setOuvertsManuels(prev => ({ ...prev, [atelierId]: !ouverts[atelierId] }))}

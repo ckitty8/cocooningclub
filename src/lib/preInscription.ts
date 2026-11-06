@@ -30,6 +30,8 @@ const schemaAvecIdentite = (prenom: z.ZodString, nom: z.ZodString, email: z.ZodS
     droitImage: reponse,
     /** Autorisation d'être ajoutée au groupe WhatsApp du club. */
     whatsapp: reponse,
+    /** Ateliers Business : « journee », « matin » ou « apres_midi » (obligatoire pour ces ateliers, contrôlé par le formulaire). */
+    creneau: z.string().optional(),
     cgu: z.boolean().refine(v => v, "Merci d'accepter les CGU et la politique de confidentialité."),
   }).refine(d => d.workshop !== ATELIER_AVEC_DATE_NAISSANCE || !!d.birthdate?.trim(), {
     message: "La date de naissance est requise pour cet atelier.",
@@ -58,6 +60,7 @@ export const valeursInitiales = (atelierTitre = "", profil?: Profile | null): Pr
   birthdate: "",
   droitImage: "",
   whatsapp: "",
+  creneau: "",
   cgu: false,
 });
 
@@ -74,7 +77,7 @@ export const envoyerPreInscription = (
   data: PreInscriptionData,
   atelierId: string,
   profil: Pick<Profile, "id"> | null,
-  /** Repli si la base n'a pas encore les colonnes de consentement : la pré-inscription passe quand même. */
+  /** Repli si la base n'a pas encore les colonnes de consentement (ou du créneau) : la pré-inscription passe quand même. */
   sansConsentements = false,
 ) => {
   const complements = {
@@ -83,6 +86,8 @@ export const envoyerPreInscription = (
     ...(sansConsentements ? {} : {
       autorisation_image: reponseEnBooleen(data.droitImage),
       accord_whatsapp: reponseEnBooleen(data.whatsapp),
+      // Envoyé seulement s'il y a une réponse : les autres espaces ne touchent pas à la colonne.
+      ...(data.creneau ? { creneau: data.creneau } : {}),
     }),
   };
 

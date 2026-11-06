@@ -54,6 +54,7 @@ interface Inscrite {
   inscrit_le: string;
   autorisation_image?: boolean | null;
   accord_whatsapp?: boolean | null;
+  creneau?: string | null;
   utilisateurs: { prenom: string | null; nom: string | null; email: string | null; telephone: string | null; role: string | null } | null;
 }
 
@@ -141,7 +142,7 @@ const FicheAtelier = () => {
           statut: i.statut, statutPaiement: i.statut_paiement, presente: !!i.present,
           autorisationImage: i.autorisation_image, accordWhatsapp: i.accord_whatsapp,
           consentementBulletin: i.utilisateur_id ? LIBELLES_PHOTOS[etatPhotos(autorisations.get(i.utilisateur_id))] : LIBELLES_PHOTOS.inconnu,
-          dateNaissance: ident.dateNaissance, recueLe: i.inscrit_le,
+          dateNaissance: ident.dateNaissance, recueLe: i.inscrit_le, creneau: i.creneau,
         };
       }));
       const nom = nomFichierInscrites(atelier.titre, atelier.date_atelier);
@@ -163,7 +164,7 @@ const FicheAtelier = () => {
         validees.map(i => {
           const ident = inscIdentite(i);
           return {
-            prenom: ident.prenom, nom: ident.nom, telephone: ident.telephone, email: ident.email, autorisationImage: i.autorisation_image,
+            prenom: ident.prenom, nom: ident.nom, telephone: ident.telephone, email: ident.email, autorisationImage: i.autorisation_image, creneau: i.creneau,
             paiement: !payant ? "" : i.statut_paiement === "paye" ? "Payé" : i.statut_paiement === "non_requis" ? "" : `À régler · ${tarif} €`,
           };
         }),

@@ -37,9 +37,9 @@ type ErreurServeur = { code?: string; message?: string } | null;
 export const estDoublon = (error: ErreurServeur): boolean =>
   error?.code === "P0001" && /existe déjà/i.test(error.message ?? "");
 
-/** La base n'a pas (encore) les colonnes du droit à l'image / WhatsApp (migration 20261025000001 à appliquer). */
+/** La base n'a pas (encore) les colonnes du droit à l'image / WhatsApp / créneau (migrations 20261025000001, 20261106000001). */
 const colonneConsentementAbsente = (error: ErreurServeur): boolean =>
-  error?.code === "PGRST204" || error?.code === "42703" || /autorisation_image|accord_whatsapp|consentements_le/.test(error?.message ?? "");
+  error?.code === "PGRST204" || error?.code === "42703" || /autorisation_image|accord_whatsapp|consentements_le|creneau/.test(error?.message ?? "");
 
 const texteErreur = (e: unknown): string => {
   if (e && typeof e === "object" && "message" in e) {
@@ -96,6 +96,13 @@ const identite = (d: DemandePreInscription) => ({
 });
 
 const deposerEnSecours = async (d: DemandePreInscription, erreur: string) => {
+  const reponse = await insererSecours(d, erreur, true);
+  // Base pas encore à jour (colonne du créneau absente) : la demande de secours passe quand même, sans le créneau.
+  if (reponse.error && d.data.creneau && colonneConsentementAbsente(reponse.error)) return insererSecours(d, erreur, false);
+  return reponse;
+};
+
+const insererSecours = (d: DemandePreInscription, erreur: string, avecCreneau: boolean) => {
   const { prenom, nom, email } = identite(d);
   return supabase.from("pre_inscriptions_secours").insert({
     prenom: prenom || null,
@@ -108,6 +115,7 @@ const deposerEnSecours = async (d: DemandePreInscription, erreur: string) => {
     utilisateur_id: d.profil?.id ?? null,
     droit_image: d.data.droitImage ? reponseEnBooleen(d.data.droitImage) : null,
     accord_whatsapp: d.data.whatsapp ? reponseEnBooleen(d.data.whatsapp) : null,
+    ...(avecCreneau && d.data.creneau ? { creneau: d.data.creneau } : {}),
     erreur,
   });
 };

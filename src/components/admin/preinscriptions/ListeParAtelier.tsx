@@ -4,6 +4,7 @@ import type { GroupeAtelier } from "@/lib/preInscriptions";
 import { OffrePastille } from "@/components/OffrePastille";
 import { euros } from "@/lib/droits";
 import { phrasePlacesPrises } from "@/lib/placesAtelier";
+import { libelleCreneau } from "@/lib/creneau";
 import { ROLES_BADGE, STATUT_BADGE, STATUT_LABEL, type AtelierListe, type InfoDroit, type Inscription, type StatutInscription, reponseLibelle } from "./types";
 
 interface Props {
@@ -19,6 +20,8 @@ interface Props {
   onExporter?: (atelier: AtelierListe, inscriptions: Inscription[]) => void;
   /** Feuille d'émargement (paysage, à imprimer) des pré-inscriptions validées d'un atelier. */
   onEmargement?: (atelier: AtelierListe, inscriptions: Inscription[]) => void;
+  /** Case « Présente » des inscriptions validées. */
+  onPresence?: (insc: Inscription, present: boolean) => void;
 }
 
 const dateCourte = (iso: string) =>
@@ -32,7 +35,7 @@ const bouton = "flex h-8 w-8 items-center justify-center rounded-full border tra
 const boutonLarge = "hidden sm:flex h-8 w-8 items-center justify-center rounded-full border transition-colors disabled:opacity-40";
 
 /** Accordéon : un bloc par atelier, avec ses pré-inscriptions et des actions rapides. */
-const ListeParAtelier = ({ groupes, ouverts, onBasculer, droits, actingOn, onOuvrir, onStatut, onExporter, onEmargement }: Props) => (
+const ListeParAtelier = ({ groupes, ouverts, onBasculer, droits, actingOn, onOuvrir, onStatut, onExporter, onEmargement, onPresence }: Props) => (
   <div className="space-y-3">
     {groupes.map(({ atelier, items, aTraiter, confirmees, total, toutes }) => {
       const ouvert = !!ouverts[atelier.id];
@@ -113,8 +116,16 @@ const ListeParAtelier = ({ groupes, ouverts, onBasculer, droits, actingOn, onOuv
                     <span className="hidden lg:block shrink-0 text-xs leading-relaxed text-muted-foreground">
                       <span className="block">Droit à l'image : <span className="font-medium text-foreground">{reponseLibelle(insc.autorisation_image, "Autorise", "N'autorise pas")}</span></span>
                       <span className="block">Groupe WhatsApp : <span className="font-medium text-foreground">{reponseLibelle(insc.accord_whatsapp, "Accepte", "N'accepte pas")}</span></span>
+                      {insc.creneau && <span className="block">Présence prévue : <span className="font-medium text-foreground">{libelleCreneau(insc.creneau)}</span></span>}
                     </span>
                     <span className={`hidden sm:inline shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUT_BADGE[insc.statut]}`}>{STATUT_LABEL[insc.statut]}</span>
+                    {onPresence && insc.statut === "confirme" && (
+                      <label className="flex shrink-0 cursor-pointer items-center gap-1.5 text-xs font-medium text-foreground" title="Cocher si la personne était présente à l'atelier">
+                        <input type="checkbox" checked={!!insc.present} onChange={e => onPresence(insc, e.target.checked)}
+                          aria-label={`${nom} présente`} className="h-6 w-6 accent-primary" />
+                        Présente
+                      </label>
+                    )}
 
                     <div className="flex shrink-0 items-center gap-1.5">
                       {insc.statut === "en_attente" ? (

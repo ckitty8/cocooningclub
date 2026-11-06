@@ -17,6 +17,10 @@ export interface Inscription {
   autorisation_image?: boolean | null;
   /** Accord pour le groupe WhatsApp (null = pas de réponse). */
   accord_whatsapp?: boolean | null;
+  /** Ateliers Business : journee, matin ou apres_midi (null = pas de réponse). */
+  creneau?: string | null;
+  /** Présence cochée le jour de l'atelier (fiche d'atelier ou liste des pré-inscriptions). */
+  present?: boolean | null;
   statut: StatutInscription;
   statut_paiement: StatutPaiement;
   inscrit_le: string;

@@ -1,3 +1,4 @@
+import { libelleCreneau } from "@/lib/creneau";
 import { useEffect, useMemo, useState } from "react";
 import { Calendar, ChevronLeft, ChevronRight, Mail, MapPin, MessageSquare, Pencil, Phone, X } from "lucide-react";
 import { toast } from "sonner";
@@ -187,6 +188,7 @@ const FenetreInscription = ({
                 {id.dateNaissance && <p>Date de naissance : {dateLongue(id.dateNaissance)}</p>}
                 <p>Droit à l'image : <span className="font-medium text-foreground">{reponseLibelle(insc.autorisation_image, "Autorise", "N'autorise pas")}</span></p>
                 <p>Groupe WhatsApp : <span className="font-medium text-foreground">{reponseLibelle(insc.accord_whatsapp, "Accepte", "N'accepte pas")}</span></p>
+                {insc.creneau && <p>Présence prévue : <span className="font-medium text-foreground">{libelleCreneau(insc.creneau)}</span></p>}
                 <p>Reçue le {dateHeure(insc.inscrit_le)}</p>
                 <button onClick={() => onModifier(insc)} className="inline-flex items-center gap-1.5 mt-1 px-3 py-1.5 text-xs border rounded-full hover:bg-muted text-foreground">
                   <Pencil className="w-3 h-3" /> Modifier

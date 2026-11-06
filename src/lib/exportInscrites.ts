@@ -1,6 +1,7 @@
 // Export Excel des inscrites d'un atelier, avec tout ce qu'elles ont renseigné dans le formulaire.
 // Utilisé par Pré-inscriptions (un bouton par atelier) et par la fiche d'un atelier.
 import type { FeuilleMiseEnForme, Tableau } from "./exportMembres";
+import { CRENEAUX, libelleCreneau } from "./creneau";
 
 export interface InscriteExport {
   prenom: string;
@@ -21,6 +22,8 @@ export interface InscriteExport {
   presente?: boolean | null;
   /** Consentement photo du bulletin d'adhésion (fiche d'atelier) : undefined = colonne absente. */
   consentementBulletin?: string;
+  /** Ateliers Business : journee, matin ou apres_midi. */
+  creneau?: string | null;
 }
 
 const STATUTS = { en_attente: "En attente", confirme: "Validée", annule: "Refusée" } as const;
@@ -48,8 +51,9 @@ export const tableauInscrites = (lignes: InscriteExport[]): Tableau => {
   const avecNaissance = lignes.some(l => l.dateNaissance);
   const avecPresence = lignes.some(l => l.presente !== undefined);
   const avecBulletin = lignes.some(l => l.consentementBulletin !== undefined);
+  const avecCreneau = lignes.some(l => l.creneau);
   const entete = [
-    "Prénom", "Nom", "E-mail", "Téléphone", "Compte", ...(avecTarif ? ["Tarif"] : []), "Statut", "Paiement",
+    "Prénom", "Nom", "E-mail", "Téléphone", "Compte", ...(avecTarif ? ["Tarif"] : []), ...(avecCreneau ? ["Présence prévue"] : []), "Statut", "Paiement",
     ...(avecPresence ? ["Présente"] : []), "Droit à l'image", "Groupe WhatsApp", ...(avecBulletin ? ["Consentement photo (bulletin)"] : []),
     ...(avecNaissance ? ["Date de naissance"] : []), "Reçue le",
   ];
@@ -57,6 +61,7 @@ export const tableauInscrites = (lignes: InscriteExport[]): Tableau => {
     entete,
     ...lignes.map(l => [
       l.prenom, l.nom, l.email ?? "", l.telephone ?? "", l.compte, ...(avecTarif ? [l.tarif ?? ""] : []),
+      ...(avecCreneau ? [libelleCreneau(l.creneau)] : []),
       STATUTS[l.statut], PAIEMENTS[l.statutPaiement],
       ...(avecPresence ? [l.presente ? "Oui" : "Non"] : []),
       reponse(l.autorisationImage, "Autorise", "N'autorise pas"), reponse(l.accordWhatsapp, "Accepte", "N'accepte pas"),
@@ -92,6 +97,8 @@ export interface LigneEmargement {
   autorisationImage: boolean | null | undefined;
   /** « Payé », « À régler · 15 € »… ; vide si rien à régler. */
   paiement: string;
+  /** Ateliers Business : journee, matin ou apres_midi. */
+  creneau?: string | null;
 }
 
 /** Lignes vides en bas de la feuille, pour les participantes venues sans pré-inscription. */
@@ -107,8 +114,9 @@ const tri = (a: LigneEmargement, b: LigneEmargement) =>
  */
 export const feuilleEmargement = (atelier: AtelierEmargement, lignes: LigneEmargement[]): FeuilleMiseEnForme => {
   const avecPaiement = lignes.some(l => l.paiement);
-  const entete = ["N°", "Nom", "Prénom", "Téléphone", "E-mail", "Droit à l'image", ...(avecPaiement ? ["Paiement"] : []), "Signature"];
-  const largeurs = [5, 18, 14, 14, 30, 13, ...(avecPaiement ? [13] : []), avecPaiement ? 20 : 26];
+  const avecCreneau = lignes.some(l => l.creneau);
+  const entete = ["N°", "Nom", "Prénom", "Téléphone", "E-mail", ...(avecCreneau ? ["Présence"] : []), "Droit à l'image", ...(avecPaiement ? ["Paiement"] : []), "Signature"];
+  const largeurs = [5, 18, 14, 14, 30, ...(avecCreneau ? [12] : []), 13, ...(avecPaiement ? [13] : []), avecPaiement ? 20 : 26];
   const nb = entete.length;
   const bord = { borderStyle: "thin", borderColor: "#7a6a64", alignVertical: "center" } as const;
   const ligneTitre = (value: string, opts: Record<string, unknown>) =>
@@ -121,6 +129,7 @@ export const feuilleEmargement = (atelier: AtelierEmargement, lignes: LigneEmarg
     { value: l.prenom, ...bord },
     { value: l.telephone ?? "", ...bord },
     { value: l.email ?? "", ...bord },
+    ...(avecCreneau ? [{ value: CRENEAUX.find(c => c.valeur === l.creneau)?.court ?? "", align: "center", ...bord }] : []),
     l.autorisationImage == null
       ? { value: "—", align: "center", ...bord }
       : l.autorisationImage

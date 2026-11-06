@@ -18,6 +18,9 @@ BEGIN
 END
 $$;
 DROP FUNCTION IF EXISTS private.purger_donnees_anciennes();
+-- Journée / matin / après-midi des ateliers Business (20261106000001) : les réponses données sont perdues.
+ALTER TABLE public.inscriptions DROP CONSTRAINT IF EXISTS inscriptions_creneau_valeurs, DROP COLUMN IF EXISTS creneau;
+ALTER TABLE public.pre_inscriptions_secours DROP COLUMN IF EXISTS creneau;
 -- Espace Coworking (20261106000000) : retiré des formules puis supprimé, seulement s'il n'a encore aucun atelier
 -- (sinon la suppression est refusée : déplacer ou supprimer ces ateliers d'abord).
 DELETE FROM public.formule_espaces WHERE espace_id IN (SELECT id FROM public.espaces WHERE slug = 'coworking')
