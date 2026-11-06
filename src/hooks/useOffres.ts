@@ -36,6 +36,7 @@ export const useTarifsAdherent = (): Map<string, number | null> => {
 
 interface LigneAdhesion {
   utilisateur_id: string;
+  numero?: number | null;
   statut: string;
   valable_jusqu_au: string | null;
   formules: { id: string; nom: string; couleur: string; formule_espaces: { espace_id: string }[] } | null;
@@ -54,7 +55,7 @@ export const useOffresParPersonne = (moi: string | null) => {
     let annule = false;
     const requete = supabase
       .from("adhesions")
-      .select("utilisateur_id, statut, valable_jusqu_au, formules(id, nom, couleur, formule_espaces(espace_id))")
+      .select("utilisateur_id, numero, statut, valable_jusqu_au, formules(id, nom, couleur, formule_espaces(espace_id))")
       .eq("statut", "active")
       .gte("valable_jusqu_au", aujourdhuiIso());
     (moi ? requete.eq("utilisateur_id", moi) : requete).then(({ data, error }) => {
@@ -75,7 +76,17 @@ export const useOffresParPersonne = (moi: string | null) => {
     return carte;
   }, [lignes]);
 
-  return { parPersonne, disponible, charge: lignes !== null };
+  /** N° d'adhérente des adhésions en cours, par personne (le plus récent en premier). */
+  const numeros = useMemo(() => {
+    const carte = new Map<string, number[]>();
+    for (const l of lignes ?? []) {
+      if (l.numero == null) continue;
+      carte.set(l.utilisateur_id, [...(carte.get(l.utilisateur_id) ?? []), l.numero].sort((a, b) => b - a));
+    }
+    return carte;
+  }, [lignes]);
+
+  return { parPersonne, numeros, disponible, charge: lignes !== null };
 };
 
 /**

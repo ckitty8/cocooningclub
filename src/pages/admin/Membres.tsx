@@ -14,6 +14,7 @@ import ChampDate from "@/components/ChampDate";
 import { dateFr } from "@/lib/dates";
 import OffresPersonne from "@/components/OffrePastille";
 import { nomCourtOffre } from "@/lib/droits";
+import { formaterNumero } from "@/lib/adhesions";
 import { Plus, Search, Pencil, Trash2, UserX, UserCheck2, X, Eye, EyeOff, FileSpreadsheet, HardDriveUpload } from "lucide-react";
 import { etatPhotos, LIBELLES_PHOTOS } from "@/lib/autorisationImage";
 import { fichierExcel, nomFichierMembres, tableauComptes, tableauParticipantes, telecharger } from "@/lib/exportMembres";
@@ -94,7 +95,8 @@ const Membres = () => {
     // Consentement photo : lu par relation (dernier bulletin d'adhésion de chaque personne).
   const autorisations = useAutorisationsImage(null);
   // Offre en cours de chaque personne (adhésion → formule). Absente tant que la migration n'est pas appliquée.
-  const { parPersonne: offres, disponible: offresDisponibles } = useOffresParPersonne(null);
+  const { parPersonne: offres, numeros: numerosAdherente, disponible: offresDisponibles } = useOffresParPersonne(null);
+  const numeroDe = (id: string) => (numerosAdherente.get(id) ?? []).map(formaterNumero).join(", ");
   const [filtreOffre, setFiltreOffre] = useState<string>("toutes");
   // Date de naissance : portée par l'adhésion (saisie avec le bulletin).
   const { parPersonne: naissances, disponible: naissancesDisponibles, recharger: rechargerNaissances } = useNaissancesParPersonne();
@@ -146,7 +148,10 @@ const Membres = () => {
 
   const filtered = members.filter(m => {
     const q = search.toLowerCase();
-    const matchSearch = !q || [m.nom, m.prenom, m.email, m.activite, m.hobby].some(v => v?.toLowerCase().includes(q));
+    const chiffres = q.replace(/\D/g, "");
+    const matchSearch = !q || [m.nom, m.prenom, m.email, m.activite, m.hobby].some(v => v?.toLowerCase().includes(q))
+      // Recherche par numéro d'adhérente : « 3 », « 0003 » ou « n° 0003 ».
+      || (chiffres !== "" && /^(n°|no|n)?\s*\d+$/i.test(q.trim()) && (numerosAdherente.get(m.id) ?? []).some(n => n === Number(chiffres)));
     const matchRole = filterRole === "tous" || m.role === filterRole;
     const matchActif = filterActif === "tous" || (filterActif === "actif" ? m.est_actif : !m.est_actif);
     const offresDe = offres.get(m.id) ?? [];
@@ -155,7 +160,7 @@ const Membres = () => {
     return matchSearch && matchRole && matchActif && matchOffre;
   });
   const nomsOffres = Array.from(new Set(Array.from(offres.values()).flat().map(o => nomCourtOffre(o.nom)))).sort();
-  const nbColonnes = 6 + (offresDisponibles ? 1 : 0) + (naissancesDisponibles ? 1 : 0);
+  const nbColonnes = 6 + (offresDisponibles ? 2 : 0) + (naissancesDisponibles ? 1 : 0);
 
   // ── Export Excel / Google Drive ───────────────────────────
   // Exporte ce que l'écran montre : la liste des comptes (filtres compris) et, si elle est affichée,
@@ -168,7 +173,7 @@ const Membres = () => {
     setExportEnCours(true);
     try {
       const comptes = voirParticipantes ? [] : filtered.map(m => ({
-        prenom: m.prenom, nom: m.nom, email: m.email, telephone: m.telephone, role: roleLabel[m.role],
+        prenom: m.prenom, nom: m.nom, email: m.email, telephone: m.telephone, role: roleLabel[m.role], numeroAdherente: numeroDe(m.id),
         offres: m.role === "administrateur" ? "" : (offres.get(m.id) ?? []).map(o => o.nom).join(", "),
         actif: m.est_actif,
         naissance: naissances.get(m.id)?.date ? dateFr(naissances.get(m.id)!.date) : "",
@@ -501,7 +506,8 @@ const Membres = () => {
               <tr>
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground">Membre</th>
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground">Rôle</th>
-                {offresDisponibles && <th className="text-left px-5 py-3 font-medium text-muted-foreground">Offre en cours</th>}
+                {offresDisponibles && <th className="text-left px-5 py-3 font-medium text-muted-foreground whitespace-nowrap">N° d'adhérente</th>}
+                {offresDisponibles && <th className="text-left px-5 py-3 font-medium text-muted-foreground whitespace-nowrap">Offre en cours</th>}
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground">Statut</th>
                 {naissancesDisponibles && <th className="text-left px-5 py-3 font-medium text-muted-foreground hidden md:table-cell">Naissance</th>}
                 <th className="text-left px-5 py-3 font-medium text-muted-foreground hidden md:table-cell">Consentement</th>
@@ -543,6 +549,11 @@ const Membres = () => {
                       {roleLabel[m.role]}
                     </span>
                   </td>
+                  {offresDisponibles && (
+                    <td className="px-5 py-3.5 whitespace-nowrap">
+                      {numeroDe(m.id) ? <span className="font-medium">N° {numeroDe(m.id)}</span> : <span className="text-muted-foreground">—</span>}
+                    </td>
+                  )}
                   {offresDisponibles && (
                     <td className="px-5 py-3.5">
                       {m.role === "administrateur" ? <span className="text-muted-foreground">—</span> : <OffresPersonne offres={offres.get(m.id) ?? []} />}

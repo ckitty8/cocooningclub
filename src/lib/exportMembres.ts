@@ -9,6 +9,8 @@ export interface CompteExport {
   email: string;
   telephone: string | null;
   role: string;
+  /** N° d'adhérente de l'adhésion en cours (« 0003 »), vide sans adhésion. */
+  numeroAdherente: string;
   offres: string;
   actif: boolean;
   naissance: string;
@@ -20,7 +22,7 @@ export interface CompteExport {
 
 export type Tableau = string[][];
 
-export const COLONNES_COMPTES = ["Prénom", "Nom", "E-mail", "Téléphone", "Rôle", "Offre en cours", "Statut", "Naissance", "Activité principale", "Hobby", "Consentement photo", "Compte créé le"];
+export const COLONNES_COMPTES = ["Prénom", "Nom", "E-mail", "Téléphone", "Rôle", "N° d'adhérente", "Offre en cours", "Statut", "Naissance", "Activité principale", "Hobby", "Consentement photo", "Compte créé le"];
 export const COLONNES_PARTICIPANTES = ["Prénom", "Nom", "E-mail", "Téléphone", "Dernier atelier", "Date de l'atelier", "Pré-inscriptions", "Validées", "Droit à l'image", "Groupe WhatsApp", "Dernière demande le"];
 
 const dateCourte = (iso: string | null | undefined): string => {
@@ -33,7 +35,7 @@ const ouiNon = (v: boolean | null, oui: string, non: string) => (v === null ? ""
 export const tableauComptes = (comptes: CompteExport[]): Tableau => [
   COLONNES_COMPTES,
   ...comptes.map(c => [
-    c.prenom, c.nom, c.email, c.telephone ?? "", c.role, c.offres, c.actif ? "Actif" : "Inactif",
+    c.prenom, c.nom, c.email, c.telephone ?? "", c.role, c.numeroAdherente, c.offres, c.actif ? "Actif" : "Inactif",
     c.naissance, c.activite ?? "", c.hobby ?? "", c.consentementPhotos, dateCourte(c.creeLe),
   ]),
 ];
