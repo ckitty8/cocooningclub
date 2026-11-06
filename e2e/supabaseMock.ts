@@ -158,6 +158,8 @@ export interface OptionsMock {
   secours?: Record<string, unknown>[];
   /** Questions « Bon à savoir » (table `bon_a_savoir`, page Nos offres). */
   bonASavoir?: Record<string, unknown>[];
+  /** Messages du formulaire de contact (table `contact_messages`, page admin). */
+  messagesContact?: Record<string, unknown>[];
 }
 
 export const mockSupabase = async (page: Page, options: OptionsMock = {}): Promise<MockSupabase> => {
@@ -240,6 +242,7 @@ export const mockSupabase = async (page: Page, options: OptionsMock = {}): Promi
     if (table === "vacances_scolaires") return route.fulfill({ json: options.vacances ?? [] });
     if (table === "pre_inscriptions_secours") return route.fulfill({ json: options.secours ?? [] });
     if (table === "bon_a_savoir") return route.fulfill({ json: options.bonASavoir ?? [] });
+    if (table === "contact_messages" && options.messagesContact && req.method() === "GET") return route.fulfill({ json: options.messagesContact });
     if (table === "vue_logs") return route.fulfill({ json: options.logs ?? [] });
     if (table === "vue_autorisation_image") return route.fulfill({ json: options.autorisationsImage ?? [] });
     if (table === "espaces" && options.espaces) return route.fulfill({ json: options.espaces });
