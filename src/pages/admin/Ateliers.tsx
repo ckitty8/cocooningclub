@@ -18,7 +18,9 @@ import { chiffresAteliers } from "@/lib/calendrierAteliers";
 import { useVacancesScolaires } from "@/hooks/useVacancesScolaires";
 import { aujourdhuiIso } from "@/lib/adhesions";
 import { compressImage } from "@/utils/compressImage";
-import { Plus, Pencil, Trash2, Copy, Link2, X, MapPin, Clock, Users, Euro, Search, Image as ImageIcon, LayoutGrid, List, CalendarDays } from "lucide-react";
+import { Plus, Pencil, Trash2, Copy, Link2, X, MapPin, Clock, Users, Euro, Search, Image as ImageIcon, LayoutGrid, List, CalendarDays, Share2 } from "lucide-react";
+import { ateliersPourReseaux, feuilleReseaux, nomFichierReseaux } from "@/lib/exportReseaux";
+import { fichierExcel, telecharger } from "@/lib/exportMembres";
 import EditeurTexteRiche from "@/components/texte/EditeurTexteRiche";
 import { htmlAEnregistrer } from "@/lib/nettoyerHtml";
 
@@ -540,6 +542,25 @@ const Ateliers = () => {
     if (imageInputRef.current) imageInputRef.current.value = "";
   };
 
+  // Export « réseaux sociaux » : ateliers à venir publiés (ou complets) parmi ceux affichés (filtres et recherche compris).
+  const exporterReseaux = async () => {
+    const jour = aujourdhuiIso();
+    const liste = ateliersPourReseaux(filtered, jour);
+    if (liste.length === 0) {
+      toast.info("Aucun atelier à venir publié parmi ceux affichés.");
+      return;
+    }
+    try {
+      const nom = nomFichierReseaux(jour);
+      telecharger(await fichierExcel([feuilleReseaux(liste)]), nom);
+      logAction("atelier.export_reseaux", "ateliers", null, { ateliers: liste.length });
+      toast.success(`« ${nom} » est téléchargé (${liste.length} atelier${liste.length > 1 ? "s" : ""}).`);
+    } catch (err) {
+      console.error("[Ateliers.exporterReseaux] error:", err);
+      toast.error("L'export a échoué, réessaie.");
+    }
+  };
+
   return (
     <AdminLayout>
       {/* Header */}
@@ -565,6 +586,11 @@ const Ateliers = () => {
               </button>
             ))}
           </div>
+          <button onClick={exporterReseaux}
+            title="Télécharger le nom, la date, l'heure, le lieu et le lien d'inscription des ateliers à venir affichés"
+            className="flex items-center gap-2 border bg-card px-4 py-2 rounded-full text-sm font-medium hover:bg-muted transition-colors">
+            <Share2 className="w-4 h-4" /> Exporter pour les réseaux
+          </button>
           <button onClick={() => openAdd()}
             className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium hover:opacity-90 transition-opacity">
             <Plus className="w-4 h-4" /> Ajouter

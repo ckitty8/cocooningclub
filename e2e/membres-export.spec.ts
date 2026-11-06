@@ -88,3 +88,28 @@ test("Pré-inscriptions : les deux boutons coexistent et la feuille d'émargemen
   expect(textes).toContain("sophie.allain@free.fr");
   expect(textes).not.toContain("ZED"); // en attente : pas sur la feuille d'émargement
 });
+
+test("Ateliers : « Exporter pour les réseaux » télécharge les ateliers à venir avec leur lien d'inscription", async ({ page }) => {
+  const admin = profilTest();
+  await mockSupabase(page, {
+    profil: admin,
+    ateliers: [
+      { ...ATELIER_TEST, heure_fin: "16:00:00" },
+      { ...ATELIER_TEST, id: "aaaaaaaa-0000-4000-8000-000000000099", titre: "Atelier brouillon", statut: "brouillon" },
+    ],
+  });
+  await connecterEn(page, admin);
+  await page.goto("/admin/ateliers");
+  const [telechargement] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByRole("button", { name: "Exporter pour les réseaux" }).click(),
+  ]);
+  expect(telechargement.suggestedFilename()).toMatch(/^ateliers-reseaux-sociaux-\d{4}-\d{2}-\d{2}\.xlsx$/);
+  const chemin = await telechargement.path();
+  const textes = execSync(`unzip -p "${chemin}" xl/sharedStrings.xml`).toString();
+  const feuille = execSync(`unzip -p "${chemin}" xl/worksheets/sheet1.xml`).toString();
+  expect(textes).toContain(ATELIER_TEST.titre);
+  expect(textes).toContain("14h00 – 16h00");
+  expect(textes).not.toContain("Atelier brouillon");
+  expect(feuille).toContain(`HYPERLINK("https://www.lecocooningclub.fr/inscription/${ATELIER_TEST.id}"`);
+});
