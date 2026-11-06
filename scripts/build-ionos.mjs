@@ -13,7 +13,8 @@ import { join } from "node:path";
 import { loadEnv } from "vite";
 
 const ID_GA = "G-X361LVXTDW";
-const URL_SUPABASE_CLUB = "https://rgdhzmweoxgydvzpdtwm.supabase.co";
+// Projet Supabase du site (« CocooningClubBDD »). Attention : le project_id de supabase/config.toml n'est PAS celui-ci.
+const URL_SUPABASE_CLUB = "https://rakqbuxgzuwrnjangqcy.supabase.co";
 
 const env = { ...loadEnv("production", process.cwd(), "VITE_"), ...Object.fromEntries(Object.entries(process.env).filter(([k]) => k.startsWith("VITE_"))) };
 const erreurs = [];

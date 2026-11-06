@@ -3,6 +3,13 @@
 Ces actions ont été faites sur la base partagée (preview + production) avec l'accord de l'équipe. Elles ne sont
 **pas** à rejouer ; elles sont notées pour la traçabilité et pour pouvoir les annuler.
 
+## 06/11/2026
+
+| Action | Détail | Retour arrière |
+|---|---|---|
+| Migration `20261106000000_espace_coworking.sql` appliquée par Claude (outil Supabase `apply_migration`, projet CocooningClubBDD `rakqbuxgzuwrnjangqcy`) à la demande de l'utilisatrice | Espace `coworking` créé (ordre 3, après Papotages 0, Créatifs 1, Business 2) et rattaché aux formules qui couvraient Business : L'Espace Business et Chill + Business (L'Espace Chill inchangée). Contrôle avant : 3 espaces, 4 rattachements, 12 ateliers. Contrôle après : 4 espaces, 6 rattachements, 12 ateliers, espaces lisibles par les visiteurs. | Bloc « Espace Coworking » de `retour-arriere.sql` (seulement si aucun atelier Coworking). |
+| Migration `20261106000001_creneau_business.sql` appliquée par Claude (même outil, même projet) à la demande de l'utilisatrice | Colonne `inscriptions.creneau` + contrainte `inscriptions_creneau_valeurs` (journee / matin / apres_midi), colonne `pre_inscriptions_secours.creneau`. Contrôle après : colonnes et contrainte présentes. | Bloc « Journée / matin / après-midi » de `retour-arriere.sql` (réponses perdues). |
+
 ## 03/11/2026
 
 | Action | Détail | Retour arrière |
