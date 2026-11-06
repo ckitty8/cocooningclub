@@ -24,11 +24,12 @@ export default {
         // Terracotta assombri pour du petit texte sur fond clair (contraste
         // AA), le terracotta de la charte (#b95b43) restant pour les boutons.
         terracotta: "#9a4936",
-        // Couleur de chacun des trois espaces (charte graphique).
+        // Couleur de chacun des espaces (charte graphique ; coworking ajouté le 06/11).
         espace: {
           papotages: "#ce8f7e",
           creatifs: "#82947a",
           business: "#9e6678",
+          coworking: "#5f7a8a",
         },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

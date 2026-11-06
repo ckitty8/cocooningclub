@@ -32,6 +32,7 @@ const Dashboard = lazy(() => import("./pages/admin/Dashboard.tsx"));
 const Membres = lazy(() => import("./pages/admin/Membres.tsx"));
 const Offre = lazy(() => import("./pages/admin/Offre.tsx"));
 const FicheAtelier = lazy(() => import("./pages/admin/FicheAtelier.tsx"));
+const TableauAteliers = lazy(() => import("./pages/admin/TableauAteliers.tsx"));
 const AteliersAdmin = lazy(() => import("./pages/admin/Ateliers.tsx"));
 const Documents = lazy(() => import("./pages/admin/Documents.tsx"));
 const Formulaire = lazy(() => import("./pages/admin/Formulaire.tsx"));
@@ -159,6 +160,7 @@ const App = () => (
           <Route path="/admin/membres"           element={<RoleGuard allowedRoles={ACCES.admin}><Membres /></RoleGuard>} />
           <Route path="/admin/offre"             element={<RoleGuard allowedRoles={ACCES.admin}><Offre /></RoleGuard>} />
           <Route path="/admin/ateliers"          element={<RoleGuard allowedRoles={ACCES.admin}><AteliersAdmin /></RoleGuard>} />
+          <Route path="/admin/ateliers/tableau-de-bord" element={<RoleGuard allowedRoles={ACCES.admin}><TableauAteliers /></RoleGuard>} />
           <Route path="/admin/ateliers/:id"      element={<RoleGuard allowedRoles={ACCES.admin}><FicheAtelier /></RoleGuard>} />
           <Route path="/admin/pre-inscriptions"  element={<RoleGuard allowedRoles={ACCES.admin}><PreInscriptions /></RoleGuard>} />
           <Route path="/admin/documents"         element={<RoleGuard allowedRoles={ACCES.admin}><Documents /></RoleGuard>} />

@@ -33,6 +33,7 @@ export const PAGES: PageAuditee[] = [
   { chemin: "/admin/membres", profil: "admin" },
   { chemin: "/admin/offre", profil: "admin" },
   { chemin: "/admin/ateliers", profil: "admin" },
+  { chemin: "/admin/ateliers/tableau-de-bord", profil: "admin" },
   { chemin: `/admin/ateliers/${ATELIER_TEST.id}`, profil: "admin" },
   { chemin: "/admin/pre-inscriptions", profil: "admin" },
   { chemin: "/admin/documents", profil: "admin" },

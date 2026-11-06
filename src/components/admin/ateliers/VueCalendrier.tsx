@@ -116,7 +116,7 @@ const VueCalendrier = ({ ateliers, slugDe, onCreer, vacances = [] }: Props) => {
           <p className="text-sm text-muted-foreground">Cliquez sur un jour pour voir ses ateliers ou en créer un.</p>
         )}
         <div className="mt-5 border-t pt-3 text-xs text-muted-foreground space-y-1">
-          {[["papotages", "Papotages"], ["creatifs", "Créatifs"], ["business", "Business"]].map(([slug, nom]) => (
+          {[["papotages", "Papotages"], ["creatifs", "Créatifs"], ["business", "Business"], ["coworking", "Coworking"]].map(([slug, nom]) => (
             <p key={slug} className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: couleurEspace(slug) }} />{nom}</p>
           ))}
           <p className="flex items-center gap-2"><span className="h-2.5 w-5 rounded-sm border border-amber-200 bg-amber-100" />Vacances scolaires (zone C)</p>

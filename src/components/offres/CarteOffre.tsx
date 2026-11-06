@@ -9,6 +9,7 @@ const PASTILLE: Record<SlugEspaceOffre, string> = {
   papotages: "bg-espace-papotages",
   creatifs: "bg-espace-creatifs",
   business: "bg-espace-business",
+  coworking: "bg-espace-coworking",
 };
 
 interface Props {

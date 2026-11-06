@@ -18,6 +18,12 @@ BEGIN
 END
 $$;
 DROP FUNCTION IF EXISTS private.purger_donnees_anciennes();
+-- Espace Coworking (20261106000000) : retiré des formules puis supprimé, seulement s'il n'a encore aucun atelier
+-- (sinon la suppression est refusée : déplacer ou supprimer ces ateliers d'abord).
+DELETE FROM public.formule_espaces WHERE espace_id IN (SELECT id FROM public.espaces WHERE slug = 'coworking')
+  AND NOT EXISTS (SELECT 1 FROM public.ateliers a JOIN public.espaces e ON e.id = a.espace_id WHERE e.slug = 'coworking');
+DELETE FROM public.espaces WHERE slug = 'coworking'
+  AND NOT EXISTS (SELECT 1 FROM public.ateliers a WHERE a.espace_id = public.espaces.id);
 -- Page Nos offres (20261103000000) : table des questions et colonnes de contenu supprimées ; les noms des formules
 -- (L'Espace Chill, L'Espace Business, Chill + Business) et leur ordre restent (à renommer à la main si besoin).
 DROP TABLE IF EXISTS public.bon_a_savoir;

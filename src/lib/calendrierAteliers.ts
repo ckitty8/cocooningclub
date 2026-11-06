@@ -8,6 +8,7 @@ export const COULEUR_ESPACE: Record<string, string> = {
   papotages: "#ce8f7e",
   creatifs: "#6f8567",
   business: "#9e6678",
+  coworking: "#5f7a8a",
 };
 export const couleurEspace = (slug: string | null | undefined): string => COULEUR_ESPACE[slug ?? ""] ?? "#8a6a62";
 
@@ -42,6 +43,39 @@ export const chiffresAteliers = (
     brouillons: ateliers.filter(a => a.statut === "brouillon").length,
   };
 };
+
+export interface LigneEspace {
+  id: string;
+  nom: string;
+  slug: string;
+  /** Publiés ou complets, à partir d'aujourd'hui. */
+  aVenir: number;
+  /** Date passée (terminés ou non), hors brouillons et annulés. */
+  passes: number;
+  brouillons: number;
+  /** Tous les ateliers de l'espace, quel que soit leur statut. */
+  total: number;
+}
+
+/**
+ * Nombre d'ateliers par espace (tableau de bord des ateliers), dans l'ordre des espaces reçus ;
+ * un espace sans atelier apparaît avec des zéros. Les ateliers d'un espace inconnu sont ignorés.
+ */
+export const ateliersParEspace = (
+  ateliers: { date_atelier: string; statut: string; espace_id: string | null }[],
+  espaces: { id: string; nom: string; slug: string }[],
+  aujourdhui: string,
+): LigneEspace[] =>
+  espaces.map(e => {
+    const siens = ateliers.filter(a => a.espace_id === e.id);
+    return {
+      id: e.id, nom: e.nom, slug: e.slug,
+      aVenir: siens.filter(a => a.date_atelier >= aujourdhui && (a.statut === "publie" || a.statut === "complet")).length,
+      passes: siens.filter(a => a.date_atelier < aujourdhui && a.statut !== "brouillon" && a.statut !== "annule").length,
+      brouillons: siens.filter(a => a.statut === "brouillon").length,
+      total: siens.length,
+    };
+  });
 
 export interface PeriodeVacances {
   id: string;

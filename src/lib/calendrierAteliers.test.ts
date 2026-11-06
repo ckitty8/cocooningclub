@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { casesDuMois, chiffresAteliers, moisSuivant, vacancesDuJour } from "./calendrierAteliers";
+import { ateliersParEspace, casesDuMois, chiffresAteliers, couleurEspace, moisSuivant, vacancesDuJour } from "./calendrierAteliers";
 
 describe("grille d'un mois", () => {
   it("commence le lundi (novembre 2026 : le 1er est un dimanche)", () => {
@@ -40,5 +40,31 @@ describe("vacances scolaires dans le calendrier", () => {
     expect(vacancesDuJour([toussaint], "2026-10-16")).toBeUndefined();
     expect(vacancesDuJour([toussaint], "2026-11-03")).toBeUndefined();
     expect(vacancesDuJour([], "2026-10-20")).toBeUndefined();
+  });
+});
+
+describe("ateliers par espace (tableau de bord)", () => {
+  const espaces = [
+    { id: "p", nom: "Papotages", slug: "papotages" },
+    { id: "b", nom: "Business", slug: "business" },
+    { id: "c", nom: "Coworking", slug: "coworking" },
+  ];
+  it("compte à venir, passés, brouillons et total par espace, dans l'ordre des espaces", () => {
+    const l = ateliersParEspace([
+      { date_atelier: "2026-11-10", statut: "publie", espace_id: "p" },
+      { date_atelier: "2026-11-20", statut: "complet", espace_id: "p" },
+      { date_atelier: "2026-10-01", statut: "termine", espace_id: "p" },
+      { date_atelier: "2026-10-02", statut: "annule", espace_id: "p" },
+      { date_atelier: "2026-12-01", statut: "brouillon", espace_id: "b" },
+      { date_atelier: "2026-12-01", statut: "publie", espace_id: "inconnu" },
+    ], espaces, "2026-11-06");
+    expect(l.map(x => [x.slug, x.aVenir, x.passes, x.brouillons, x.total])).toEqual([
+      ["papotages", 2, 1, 0, 4],
+      ["business", 0, 0, 1, 1],
+      ["coworking", 0, 0, 0, 0],
+    ]);
+  });
+  it("donne une couleur au nouvel espace Coworking", () => {
+    expect(couleurEspace("coworking")).toBe("#5f7a8a");
   });
 });

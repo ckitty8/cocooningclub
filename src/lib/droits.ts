@@ -95,8 +95,8 @@ export type OffreSimulee = "aucune" | "business" | "creatif" | "complet";
 
 export const OFFRES_SIMULABLES: { code: OffreSimulee; libelle: string; formule: string; couleur: string; slugs: string[] }[] = [
   { code: "creatif", libelle: "Adhérente Chill", formule: "L'Espace Chill", couleur: "rose", slugs: ["creatifs"] },
-  { code: "business", libelle: "Adhérente Business", formule: "L'Espace Business", couleur: "mauve", slugs: ["business"] },
-  { code: "complet", libelle: "Adhérente Chill + Business", formule: "Chill + Business", couleur: "terracotta", slugs: ["business", "creatifs"] },
+  { code: "business", libelle: "Adhérente Business", formule: "L'Espace Business", couleur: "mauve", slugs: ["business", "coworking"] },
+  { code: "complet", libelle: "Adhérente Chill + Business", formule: "Chill + Business", couleur: "terracotta", slugs: ["business", "coworking", "creatifs"] },
 ];
 
 export const estOffreSimulee = (valeur: unknown): valeur is OffreSimulee =>

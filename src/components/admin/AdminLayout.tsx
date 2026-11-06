@@ -4,16 +4,35 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import {
   LayoutDashboard, Users, CalendarDays, FileText,
-  FormInput, LogOut, Menu, ChevronRight, UserCheck, MessageSquare, CalendarClock, Lightbulb, Star, Eye, Table2, BadgeEuro, Scale, Calculator
+  FormInput, LogOut, Menu, ChevronRight, ChevronDown, UserCheck, MessageSquare, CalendarClock, Lightbulb, Star, Eye, Table2, BadgeEuro, Scale, Calculator
 } from "lucide-react";
 
-const navItems = [
+type BadgeKey = "preinscriptions" | "idees" | "avis";
+interface SousMenu { href: string; label: string }
+interface ElementMenu {
+  href: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  badgeKey?: BadgeKey;
+  /** Sous-menu repliable : le lien du groupe n'est alors qu'un bouton qui plie / déplie. */
+  enfants?: SousMenu[];
+}
+
+const TABLEAU_ATELIERS = "/admin/ateliers/tableau-de-bord";
+/** Lien actif d'un sous-menu : la création des ateliers couvre aussi la fiche d'un atelier (/admin/ateliers/<id>). */
+const sousMenuActif = (href: string, chemin: string) =>
+  href === "/admin/ateliers" ? chemin === href || (chemin.startsWith("/admin/ateliers/") && chemin !== TABLEAU_ATELIERS) : chemin === href;
+
+const navItems: ElementMenu[] = [
   { href: "/admin/dashboard",          label: "Tableau de bord",         icon: LayoutDashboard },
-  { href: "/admin/ateliers",          label: "Ateliers",                 icon: CalendarDays },
-  { href: "/admin/pre-inscriptions",   label: "Pré-inscriptions",         icon: UserCheck, badgeKey: "preinscriptions" as const },
+  { href: "/admin/ateliers",          label: "Ateliers",                 icon: CalendarDays, enfants: [
+    { href: "/admin/ateliers",  label: "Création des ateliers" },
+    { href: TABLEAU_ATELIERS,   label: "Tableau de bord" },
+  ] },
+  { href: "/admin/pre-inscriptions",   label: "Pré-inscriptions",         icon: UserCheck, badgeKey: "preinscriptions" },
   { href: "/admin/disponibilites",     label: "Gestion des dispo des admins",           icon: CalendarClock },
-  { href: "/admin/boite-a-idees",      label: "Boîte à idées",            icon: Lightbulb, badgeKey: "idees" as const },
-  { href: "/admin/avis",               label: "Témoignages",              icon: Star, badgeKey: "avis" as const },
+  { href: "/admin/boite-a-idees",      label: "Boîte à idées",            icon: Lightbulb, badgeKey: "idees" },
+  { href: "/admin/avis",               label: "Témoignages",              icon: Star, badgeKey: "avis" },
   { href: "/admin/documents",          label: "Documents",                icon: FileText },
   { href: "/admin/formulaire",         label: "Formulaire de contact",    icon: FormInput },
   { href: "/admin/messages-templates", label: "Modèles de messages",      icon: MessageSquare },
@@ -41,6 +60,15 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
   const [ideesNouvelles, setIdeesNouvelles] = useState(0);
   const [preInscEnAttente, setPreInscEnAttente] = useState(0);
   const [avisEnAttente, setAvisEnAttente] = useState(0);
+  // Groupes du menu repliés par l'administratrice (mémorisé dans le navigateur) ; ouverts par défaut.
+  const [replies, setReplies] = useState<Record<string, boolean>>(() => {
+    try { return JSON.parse(localStorage.getItem("admin.menu.replies") ?? "{}"); } catch { return {}; }
+  });
+  const basculerGroupe = (href: string) => setReplies(prev => {
+    const suivant = { ...prev, [href]: !prev[href] };
+    try { localStorage.setItem("admin.menu.replies", JSON.stringify(suivant)); } catch { /* stockage indisponible */ }
+    return suivant;
+  });
 
   // Compte des idées créées depuis la dernière visite de la boîte à idées.
   // Réévalué à chaque changement de route pour prendre en compte le passage
@@ -111,7 +139,49 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
       </div>
 
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        {navItems.map(({ href, label, icon: Icon, badgeKey }) => {
+        {navItems.map(({ href, label, icon: Icon, badgeKey, enfants }) => {
+          if (enfants) {
+            const dansLeGroupe = enfants.some(e => sousMenuActif(e.href, location.pathname));
+            // Le groupe qui contient la page affichée reste toujours ouvert.
+            const ouvert = dansLeGroupe || !replies[href];
+            return (
+              <div key={href}>
+                <button
+                  type="button"
+                  onClick={() => basculerGroupe(href)}
+                  aria-expanded={ouvert}
+                  className={`flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                    dansLeGroupe ? "text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  }`}
+                >
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span className="flex-1 text-left">{label}</span>
+                  {ouvert ? <ChevronDown className="w-3.5 h-3.5 opacity-70" /> : <ChevronRight className="w-3.5 h-3.5 opacity-70" />}
+                </button>
+                {ouvert && (
+                  <div className="ml-5 mt-1 space-y-1 border-l pl-2">
+                    {enfants.map(e => {
+                      const actif = sousMenuActif(e.href, location.pathname);
+                      return (
+                        <Link
+                          key={e.href}
+                          to={e.href}
+                          onClick={() => setSidebarOpen(false)}
+                          aria-current={actif ? "page" : undefined}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
+                            actif ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                          }`}
+                        >
+                          <span className="flex-1">{e.label}</span>
+                          {actif && <ChevronRight className="w-3 h-3 opacity-70" />}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          }
           const active = location.pathname === href;
           const badgeCount =
             badgeKey === "idees" ? ideesNouvelles :

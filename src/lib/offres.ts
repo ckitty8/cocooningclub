@@ -3,12 +3,13 @@
 // est compris, mise en avant) viennent de la migration 20261103000000 : tant qu'elles manquent, la carte s'affiche
 // avec le seul nom, le prix et la description.
 
-export type SlugEspaceOffre = "papotages" | "creatifs" | "business";
+export type SlugEspaceOffre = "papotages" | "creatifs" | "business" | "coworking";
 
 export const ESPACES_OFFRE: Record<SlugEspaceOffre, string> = {
   papotages: "Papotages",
   creatifs: "Créatifs",
   business: "Business",
+  coworking: "Coworking",
 };
 
 export interface ActiviteOffre {
