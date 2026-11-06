@@ -18,9 +18,8 @@ import { chiffresAteliers } from "@/lib/calendrierAteliers";
 import { useVacancesScolaires } from "@/hooks/useVacancesScolaires";
 import { aujourdhuiIso } from "@/lib/adhesions";
 import { compressImage } from "@/utils/compressImage";
-import { Plus, Pencil, Trash2, Copy, Link2, X, MapPin, Clock, Users, Euro, Search, Image as ImageIcon, LayoutGrid, List, CalendarDays, Share2 } from "lucide-react";
-import { ateliersPourReseaux, feuilleReseaux, nomFichierReseaux } from "@/lib/exportReseaux";
-import { fichierExcel, telecharger } from "@/lib/exportMembres";
+import { Plus, Pencil, Trash2, Copy, Link2, X, MapPin, Clock, Users, Euro, Search, Image as ImageIcon, LayoutGrid, List, CalendarDays, MessageCircle } from "lucide-react";
+import { ateliersPourReseaux, lienWhatsAppMessage, messageWhatsApp } from "@/lib/exportReseaux";
 import EditeurTexteRiche from "@/components/texte/EditeurTexteRiche";
 import { htmlAEnregistrer } from "@/lib/nettoyerHtml";
 
@@ -542,22 +541,28 @@ const Ateliers = () => {
     if (imageInputRef.current) imageInputRef.current.value = "";
   };
 
-  // Export « réseaux sociaux » : ateliers à venir publiés (ou complets) parmi ceux affichés (filtres et recherche compris).
-  const exporterReseaux = async () => {
-    const jour = aujourdhuiIso();
-    const liste = ateliersPourReseaux(filtered, jour);
+  // Message WhatsApp des ateliers à venir publiés parmi ceux affichés (filtres et recherche compris).
+  const [messageWa, setMessageWa] = useState<{ texte: string; nombre: number } | null>(null);
+  const preparerMessageWhatsApp = () => {
+    const liste = ateliersPourReseaux(filtered, aujourdhuiIso());
     if (liste.length === 0) {
       toast.info("Aucun atelier à venir publié parmi ceux affichés.");
       return;
     }
+    setMessageWa({ texte: messageWhatsApp(liste), nombre: liste.length });
+  };
+  const ouvrirWhatsApp = () => {
+    if (!messageWa) return;
+    window.open(lienWhatsAppMessage(messageWa.texte), "_blank", "noopener,noreferrer");
+    logAction("atelier.message_whatsapp", "ateliers", null, { ateliers: messageWa.nombre });
+  };
+  const copierMessageWa = async () => {
+    if (!messageWa) return;
     try {
-      const nom = nomFichierReseaux(jour);
-      telecharger(await fichierExcel([feuilleReseaux(liste)]), nom);
-      logAction("atelier.export_reseaux", "ateliers", null, { ateliers: liste.length });
-      toast.success(`« ${nom} » est téléchargé (${liste.length} atelier${liste.length > 1 ? "s" : ""}).`);
-    } catch (err) {
-      console.error("[Ateliers.exporterReseaux] error:", err);
-      toast.error("L'export a échoué, réessaie.");
+      await navigator.clipboard.writeText(messageWa.texte);
+      toast.success("Message copié : colle-le dans WhatsApp, Instagram ou Facebook.");
+    } catch {
+      toast.error("La copie n'a pas marché : sélectionne le texte et copie-le à la main.");
     }
   };
 
@@ -586,10 +591,10 @@ const Ateliers = () => {
               </button>
             ))}
           </div>
-          <button onClick={exporterReseaux}
-            title="Télécharger le nom, la date, l'heure, le lieu et le lien d'inscription des ateliers à venir affichés"
+          <button onClick={preparerMessageWhatsApp}
+            title="Préparer un message WhatsApp avec le nom, la date, l'heure, le lieu et le lien d'inscription des ateliers à venir affichés"
             className="flex items-center gap-2 border bg-card px-4 py-2 rounded-full text-sm font-medium hover:bg-muted transition-colors">
-            <Share2 className="w-4 h-4" /> Exporter pour les réseaux
+            <MessageCircle className="w-4 h-4" /> Message WhatsApp
           </button>
           <button onClick={() => openAdd()}
             className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium hover:opacity-90 transition-opacity">
@@ -1080,6 +1085,33 @@ const Ateliers = () => {
               <button onClick={handleSave} disabled={saving || !form.titre || !form.date_atelier || !form.heure_debut || !form.espace_id}
                 className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-full hover:opacity-90 transition-opacity disabled:opacity-50">
                 {saving ? "Enregistrement..." : "Enregistrer"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ── Message WhatsApp des ateliers à venir ── */}
+      {messageWa && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setMessageWa(null)}>
+          <div role="dialog" aria-modal="true" aria-labelledby="titre-message-wa"
+            className="bg-card rounded-2xl border w-full max-w-lg shadow-xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-5 border-b">
+              <div>
+                <h2 id="titre-message-wa" className="font-semibold text-lg">Message WhatsApp</h2>
+                <p className="text-xs text-muted-foreground">{messageWa.nombre} atelier{messageWa.nombre > 1 ? "s" : ""} à venir · tu peux modifier le texte avant de l'envoyer</p>
+              </div>
+              <button onClick={() => setMessageWa(null)} aria-label="Fermer" className="p-1.5 rounded-lg hover:bg-muted"><X className="w-4 h-4" /></button>
+            </div>
+            <div className="p-5 flex-1 min-h-0">
+              <label htmlFor="texte-message-wa" className="sr-only">Texte du message</label>
+              <textarea id="texte-message-wa" value={messageWa.texte} onChange={e => setMessageWa({ ...messageWa, texte: e.target.value })}
+                className="w-full h-[45vh] min-h-[14rem] border rounded-xl px-3 py-2.5 text-sm bg-background font-body leading-relaxed focus:outline-none focus:ring-2 focus:ring-primary" />
+            </div>
+            <div className="flex flex-wrap justify-end gap-2 p-5 border-t">
+              <button onClick={copierMessageWa} className="px-4 py-2 border rounded-full text-sm hover:bg-muted">Copier le message</button>
+              <button onClick={ouvrirWhatsApp}
+                className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium hover:opacity-90">
+                <MessageCircle className="w-4 h-4" /> Ouvrir dans WhatsApp
               </button>
             </div>
           </div>

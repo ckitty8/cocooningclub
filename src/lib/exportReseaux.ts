@@ -1,7 +1,6 @@
-// Export « réseaux sociaux » de l'écran Ateliers : nom, date, heure, lieu et lien d'inscription de chaque
-// atelier à venir publié (ou complet), pour préparer les publications Instagram / Facebook / WhatsApp.
+// Message WhatsApp des ateliers à venir (écran Ateliers, bouton « Message WhatsApp ») : nom, date, heure, lieu et
+// lien d'inscription de chaque atelier publié qui a encore de la place, prêt à envoyer dans un groupe ou à une personne.
 // Le lien est toujours celui du site en ligne (jamais celui de la preview ou de l'ordinateur).
-import type { FeuilleMiseEnForme } from "./exportMembres";
 
 export const SITE_PUBLIC = "https://www.lecocooningclub.fr";
 
@@ -15,10 +14,13 @@ export interface AtelierReseaux {
   statut: string;
 }
 
-/** Ateliers à mettre en avant : date d'aujourd'hui ou plus tard, publiés ou complets ; triés par date puis heure. */
+/**
+ * Ateliers à annoncer : date d'aujourd'hui ou plus tard, publiés (pas les complets : plus de place ; pas les
+ * brouillons : leur lien ne marche pas pour le public) ; triés par date puis heure.
+ */
 export const ateliersPourReseaux = <A extends AtelierReseaux>(ateliers: A[], aujourdhui: string): A[] =>
   ateliers
-    .filter(a => a.date_atelier >= aujourdhui && (a.statut === "publie" || a.statut === "complet"))
+    .filter(a => a.date_atelier >= aujourdhui && a.statut === "publie")
     .sort((a, b) => a.date_atelier.localeCompare(b.date_atelier) || (a.heure_debut ?? "").localeCompare(b.heure_debut ?? ""));
 
 export const lienPublicInscription = (id: string) => `${SITE_PUBLIC}/inscription/${id}`;
@@ -35,26 +37,27 @@ export const heureReseaux = (debut: string | null, fin?: string | null) => {
   return debut ? `${h(debut)}${fin ? ` – ${h(fin)}` : ""}` : "";
 };
 
-/** Feuille Excel : en-tête en gras, une ligne par atelier, lien cliquable. */
-export const feuilleReseaux = (ateliers: AtelierReseaux[]): FeuilleMiseEnForme => ({
-  nom: "Réseaux sociaux",
-  orientation: "landscape",
-  impression: { ligneRepetee: 1 }, // imprimable : une page en largeur, en-tête répété
-  largeurs: [38, 28, 16, 24, 62],
-  cellules: [
-    ["Atelier", "Date", "Heure", "Lieu", "Lien d'inscription"].map(value => ({ value, fontWeight: "bold", backgroundColor: "#f6dfd2" })),
-    ...ateliers.map(a => {
-      const lien = lienPublicInscription(a.id);
-      return [
-        { value: a.titre },
-        { value: dateLongueReseaux(a.date_atelier) },
-        { value: heureReseaux(a.heure_debut, a.heure_fin) },
-        { value: a.lieu ?? "" },
-        { type: "Formula", value: `HYPERLINK("${lien}","${lien}")`, textColor: "#1d4ed8" },
-      ];
-    }),
-  ],
-});
+/**
+ * Texte du message (mise en forme WhatsApp : *gras*) :
+ *   ✨ *Nos prochains ateliers* ✨
+ *
+ *   *Papotages - Animal Totem*
+ *   📅 Dimanche 6 décembre 2026 · 14h30 – 16h30
+ *   📍 Le flamboyant
+ *   👉 Inscription : https://www.lecocooningclub.fr/inscription/…
+ */
+export const messageWhatsApp = (ateliers: AtelierReseaux[]): string => {
+  const blocs = ateliers.map(a => {
+    const heure = heureReseaux(a.heure_debut, a.heure_fin);
+    return [
+      `*${a.titre.trim()}*`,
+      `📅 ${dateLongueReseaux(a.date_atelier)}${heure ? ` · ${heure}` : ""}`,
+      ...(a.lieu?.trim() ? [`📍 ${a.lieu.trim()}`] : []),
+      `👉 Inscription : ${lienPublicInscription(a.id)}`,
+    ].join("\n");
+  });
+  return [`✨ *Nos prochains ateliers* ✨`, ...blocs, "À très vite au Cocooning Club 💛"].join("\n\n");
+};
 
-/** « ateliers-reseaux-sociaux-2026-11-06.xlsx » */
-export const nomFichierReseaux = (aujourdhui: string) => `ateliers-reseaux-sociaux-${aujourdhui}.xlsx`;
+/** Ouvre WhatsApp (application ou WhatsApp Web) avec le message prêt : on choisit ensuite le groupe ou la personne. */
+export const lienWhatsAppMessage = (texte: string) => `https://wa.me/?text=${encodeURIComponent(texte)}`;

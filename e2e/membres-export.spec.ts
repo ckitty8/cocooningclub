@@ -89,7 +89,8 @@ test("Pré-inscriptions : les deux boutons coexistent et la feuille d'émargemen
   expect(textes).not.toContain("ZED"); // en attente : pas sur la feuille d'émargement
 });
 
-test("Ateliers : « Exporter pour les réseaux » télécharge les ateliers à venir avec leur lien d'inscription", async ({ page }) => {
+test("Ateliers : « Message WhatsApp » prépare le texte des ateliers à venir et ouvre WhatsApp", async ({ page, context }) => {
+  await context.route("https://wa.me/**", route => route.fulfill({ status: 200, body: "WhatsApp" }));
   const admin = profilTest();
   await mockSupabase(page, {
     profil: admin,
@@ -100,16 +101,16 @@ test("Ateliers : « Exporter pour les réseaux » télécharge les ateliers à v
   });
   await connecterEn(page, admin);
   await page.goto("/admin/ateliers");
-  const [telechargement] = await Promise.all([
-    page.waitForEvent("download"),
-    page.getByRole("button", { name: "Exporter pour les réseaux" }).click(),
-  ]);
-  expect(telechargement.suggestedFilename()).toMatch(/^ateliers-reseaux-sociaux-\d{4}-\d{2}-\d{2}\.xlsx$/);
-  const chemin = await telechargement.path();
-  const textes = execSync(`unzip -p "${chemin}" xl/sharedStrings.xml`).toString();
-  const feuille = execSync(`unzip -p "${chemin}" xl/worksheets/sheet1.xml`).toString();
-  expect(textes).toContain(ATELIER_TEST.titre);
-  expect(textes).toContain("14h00 – 16h00");
-  expect(textes).not.toContain("Atelier brouillon");
-  expect(feuille).toContain(`HYPERLINK("https://www.lecocooningclub.fr/inscription/${ATELIER_TEST.id}"`);
+  await page.getByRole("button", { name: "Message WhatsApp" }).click();
+  const fenetre = page.getByRole("dialog", { name: "Message WhatsApp" });
+  const texte = fenetre.getByLabel("Texte du message");
+  await expect(texte).toHaveValue(/Nos prochains ateliers/);
+  await expect(texte).toHaveValue(new RegExp(`\\*${ATELIER_TEST.titre}\\*`));
+  await expect(texte).toHaveValue(/14h00 – 16h00/);
+  await expect(texte).toHaveValue(new RegExp(`https://www\\.lecocooningclub\\.fr/inscription/${ATELIER_TEST.id}`));
+  await expect(texte).not.toHaveValue(/Atelier brouillon/);
+  await texte.fill("Message modifié à la main");
+  const [whatsapp] = await Promise.all([page.waitForEvent("popup"), fenetre.getByRole("button", { name: "Ouvrir dans WhatsApp" }).click()]);
+  await whatsapp.waitForLoadState();
+  expect(decodeURIComponent(whatsapp.url())).toContain("wa.me/?text=Message modifié à la main");
 });
