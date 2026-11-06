@@ -54,6 +54,13 @@ export const preInscriptionMembreSchema = schemaAvecIdentite(z.string(), z.strin
 
 export type PreInscriptionData = z.infer<typeof preInscriptionSchema>;
 
+/**
+ * Le bloc « Paiement » du formulaire n'est affiché que si l'atelier a un prix (06/11) : il est masqué quand le
+ * tarif est vide ou à 0 €. Atelier inconnu ou sans détails (lien partagé hors ligne) : affiché, par prudence.
+ */
+export const afficherBlocPaiement = (atelier: { tarif_standard?: number | null; date_atelier?: string | null } | null | undefined): boolean =>
+  !atelier || !atelier.date_atelier || (atelier.tarif_standard ?? 0) > 0;
+
 /** Valeurs du formulaire à l'ouverture, pré-remplies pour un membre connecté. */
 export const valeursInitiales = (atelierTitre = "", profil?: Profile | null): PreInscriptionData => ({
   prenom: profil?.prenom ?? "",

@@ -50,3 +50,15 @@ test("Pré-inscriptions : le compte Instagram est affiché avec le lien du profi
   await page.getByText("Sophie Allain").first().click();
   await expect(page.getByRole("link", { name: "@sophie.allain" })).toHaveAttribute("href", "https://www.instagram.com/sophie.allain/");
 });
+
+test("bloc « Paiement » : affiché pour un atelier payant, masqué pour un atelier sans prix", async ({ page }) => {
+  await mockSupabase(page);
+  await page.goto(`/inscription/${ATELIER_TEST.id}`);
+  await expect(page.getByRole("region", { name: "Paiement" })).toBeVisible();
+
+  const gratuit = { ...ATELIER_TEST, tarif_standard: 0, tarif_affichage: null };
+  await mockSupabase(page, { ateliers: [gratuit] });
+  await page.goto(`/inscription/${gratuit.id}`);
+  await expect(page.getByRole("textbox", { name: "Instagram (facultatif)" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Paiement" })).toHaveCount(0);
+});

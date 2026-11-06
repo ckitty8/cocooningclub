@@ -94,3 +94,14 @@ describe("valeursInitiales", () => {
     expect(valeursInitiales("Atelier X", profil)).toMatchObject({ prenom: "Marie", nom: "Dupont", email: "marie@exemple.fr", phone: "0601020304" });
   });
 });
+
+describe("bloc Paiement du formulaire", () => {
+  it("affiché seulement si l'atelier a un prix (ou s'il est inconnu)", async () => {
+    const { afficherBlocPaiement } = await import("./preInscription");
+    expect(afficherBlocPaiement({ tarif_standard: 15, date_atelier: "2026-11-20" })).toBe(true);
+    expect(afficherBlocPaiement({ tarif_standard: 0, date_atelier: "2026-11-20" })).toBe(false);
+    expect(afficherBlocPaiement({ tarif_standard: null, date_atelier: "2026-11-20" })).toBe(false);
+    expect(afficherBlocPaiement(null)).toBe(true);
+    expect(afficherBlocPaiement({ tarif_standard: 0, date_atelier: "" })).toBe(true);
+  });
+});

@@ -9,6 +9,7 @@ import { useAntiSpam } from "@/hooks/useAntiSpam";
 import { formatDateFr, formatTimeFr, type Workshop } from "@/data/workshops";
 import {
   ATELIER_AVEC_DATE_NAISSANCE,
+  afficherBlocPaiement,
   preInscriptionMembreSchema,
   preInscriptionSchema,
   valeursInitiales,
@@ -334,6 +335,7 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer, atelierId, en
                 </p>
               </DeuxCases>
 
+              {afficherBlocPaiement(atelierChoisi) && (
               <section aria-label="Paiement" className="rounded-xl border bg-muted/30 p-4">
                 <p className="mb-2 text-sm font-medium text-foreground">Paiement</p>
                 <ul className="list-disc space-y-1.5 pl-5 text-xs leading-relaxed text-muted-foreground">
@@ -343,6 +345,7 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer, atelierId, en
                   <li>L’atelier est maintenu à partir de 5 participants minimum. En cas d’annulation faute de participants, vous serez intégralement remboursé(e).</li>
                 </ul>
               </section>
+              )}
 
               <div>
                 <label className="flex items-start gap-2.5 text-xs text-muted-foreground leading-relaxed cursor-pointer">
