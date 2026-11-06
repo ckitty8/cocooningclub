@@ -3,7 +3,9 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { withTimeout } from "@/utils/withTimeout";
-import { Plus, Pencil, Trash2, X, GripVertical, Copy, ArrowLeft, Check, Mail, MailOpen, ChevronDown, ChevronUp } from "lucide-react";
+import { logAction } from "@/utils/logAction";
+import { lienGmailReponse } from "@/lib/reponseContact";
+import { Plus, Pencil, Trash2, X, GripVertical, Copy, ArrowLeft, Check, Mail, MailOpen, ChevronDown, ChevronUp, Reply } from "lucide-react";
 
 interface ContactMessage {
   id: string;
@@ -248,6 +250,15 @@ const Formulaire = () => {
     setTimeout(() => setMetaSaved(false), 2000);
   };
 
+  // Ouvre Gmail avec la réponse prête (destinataire, sujet, message cité) ; le message passe « lu ».
+  const repondreGmail = (msg: ContactMessage) => {
+    const lien = lienGmailReponse(msg);
+    if (!lien) return;
+    window.open(lien, "_blank", "noopener,noreferrer");
+    void logAction("contact.reponse_gmail", "contact_messages", msg.id);
+    if (!msg.lu) void toggleLu(msg);
+  };
+
   const backToList = () => {
     setView("list");
     setEditingForm(null);
@@ -434,6 +445,17 @@ const Formulaire = () => {
                             : <p className="text-sm text-foreground whitespace-pre-wrap">{msg.message}</p>
                           }
                         </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                        {lienGmailReponse(msg) ? (
+                          <button
+                            onClick={() => repondreGmail(msg)}
+                            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+                          >
+                            <Reply className="w-3 h-3" /> Répondre dans Gmail
+                          </button>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Pas d'adresse e-mail : réponse par téléphone.</span>
+                        )}
                         <button
                           onClick={() => toggleLu(msg)}
                           className="flex items-center gap-1.5 text-xs px-3 py-1.5 border rounded-full hover:bg-muted transition-colors"
@@ -441,6 +463,7 @@ const Formulaire = () => {
                           {msg.lu ? <Mail className="w-3 h-3" /> : <MailOpen className="w-3 h-3" />}
                           {msg.lu ? "Marquer non lu" : "Marquer comme lu"}
                         </button>
+                        </div>
                       </div>
                     )}
                   </div>
