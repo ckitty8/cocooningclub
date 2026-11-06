@@ -114,3 +114,18 @@ test("Ateliers : « Message WhatsApp » prépare le texte des ateliers à venir 
   await whatsapp.waitForLoadState();
   expect(decodeURIComponent(whatsapp.url())).toContain("wa.me/?text=Message modifié à la main");
 });
+
+test("Ateliers : « Ajouter à mon agenda » donne le lien d'abonnement au calendrier des ateliers", async ({ page }) => {
+  const admin = profilTest();
+  await mockSupabase(page, { profil: admin });
+  await connecterEn(page, admin);
+  await page.goto("/admin/ateliers");
+  await page.getByRole("button", { name: "Ajouter à mon agenda" }).click();
+  const fenetre = page.getByRole("dialog", { name: "Tous les ateliers dans mon agenda" });
+  await expect(fenetre.getByRole("link", { name: "Ajouter à Google Agenda" }))
+    .toHaveAttribute("href", "https://calendar.google.com/calendar/render?cid=webcal%3A%2F%2Fwww.lecocooningclub.fr%2Fapi%2Fcalendrier-ateliers");
+  await expect(fenetre.getByRole("link", { name: /iPhone/ })).toHaveAttribute("href", "webcal://www.lecocooningclub.fr/api/calendrier-ateliers");
+  await expect(fenetre.getByLabel("Ou copie le lien d'abonnement")).toHaveValue("https://www.lecocooningclub.fr/api/calendrier-ateliers");
+  await fenetre.getByRole("button", { name: "Fermer" }).click();
+  await expect(fenetre).toBeHidden();
+});

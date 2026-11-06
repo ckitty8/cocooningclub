@@ -57,8 +57,17 @@ describe("référencement des pages", () => {
     for (const page of pagesAGenerer()) {
       const regle = vercel.rewrites.find(r => r.source === page.chemin);
       expect(regle, `règle de ${page.chemin}`).toEqual({ source: page.chemin, destination: `${page.chemin}/index.html` });
-      expect(sources.indexOf(page.chemin)).toBeLessThan(sources.indexOf("/(.*)"));
+      expect(sources.indexOf(page.chemin)).toBeLessThan(sources.indexOf("/((?!api/).*)"));
     }
+  });
+
+  it("la redirection générale vers l'accueil laisse passer les fonctions /api (calendrier d'abonnement)", () => {
+    const generale = vercel.rewrites[vercel.rewrites.length - 1];
+    expect(generale).toEqual({ source: "/((?!api/).*)", destination: "/index.html" });
+    const motif = new RegExp(`^${generale.source}$`);
+    expect(motif.test("/api/calendrier-ateliers")).toBe(false);
+    expect(motif.test("/espace-membre/ateliers")).toBe(true);
+    expect(motif.test("/inscription/abc")).toBe(true);
   });
 
   it("le sitemap liste exactement les pages publiques à indexer", () => {

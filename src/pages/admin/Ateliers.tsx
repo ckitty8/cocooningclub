@@ -18,7 +18,8 @@ import { chiffresAteliers } from "@/lib/calendrierAteliers";
 import { useVacancesScolaires } from "@/hooks/useVacancesScolaires";
 import { aujourdhuiIso } from "@/lib/adhesions";
 import { compressImage } from "@/utils/compressImage";
-import { Plus, Pencil, Trash2, Copy, Link2, X, MapPin, Clock, Users, Euro, Search, Image as ImageIcon, LayoutGrid, List, CalendarDays, MessageCircle } from "lucide-react";
+import { Plus, Pencil, Trash2, Copy, Link2, X, MapPin, Clock, Users, Euro, Search, Image as ImageIcon, LayoutGrid, List, CalendarDays, MessageCircle, CalendarPlus } from "lucide-react";
+import { lienGoogleAgenda, URL_CALENDRIER_ATELIERS, webcalCalendrier } from "@/lib/abonnementCalendrier";
 import { ateliersPourReseaux, lienWhatsAppMessage, messageWhatsApp } from "@/lib/exportReseaux";
 import EditeurTexteRiche from "@/components/texte/EditeurTexteRiche";
 import { htmlAEnregistrer } from "@/lib/nettoyerHtml";
@@ -541,6 +542,17 @@ const Ateliers = () => {
     if (imageInputRef.current) imageInputRef.current.value = "";
   };
 
+  // Abonnement de l'agenda aux ateliers publiés (adresse du site en ligne, mise à jour automatique).
+  const [abonnementOuvert, setAbonnementOuvert] = useState(false);
+  const copierLienAgenda = async () => {
+    try {
+      await navigator.clipboard.writeText(URL_CALENDRIER_ATELIERS);
+      toast.success("Lien copié : colle-le dans ton agenda (« S'abonner à un agenda » / « À partir de l'URL »).");
+    } catch {
+      toast.error("La copie n'a pas marché : sélectionne le lien et copie-le à la main.");
+    }
+  };
+
   // Message WhatsApp des ateliers à venir publiés parmi ceux affichés (filtres et recherche compris).
   const [messageWa, setMessageWa] = useState<{ texte: string; nombre: number } | null>(null);
   const preparerMessageWhatsApp = () => {
@@ -591,6 +603,11 @@ const Ateliers = () => {
               </button>
             ))}
           </div>
+          <button onClick={() => setAbonnementOuvert(true)}
+            title="Recevoir automatiquement tous les ateliers publiés dans ton agenda (Google, iPhone, Outlook)"
+            className="flex items-center gap-2 border bg-card px-4 py-2 rounded-full text-sm font-medium hover:bg-muted transition-colors">
+            <CalendarPlus className="w-4 h-4" /> Ajouter à mon agenda
+          </button>
           <button onClick={preparerMessageWhatsApp}
             title="Préparer un message WhatsApp avec le nom, la date, l'heure, le lieu et le lien d'inscription des ateliers à venir affichés"
             className="flex items-center gap-2 border bg-card px-4 py-2 rounded-full text-sm font-medium hover:bg-muted transition-colors">
@@ -1090,6 +1107,45 @@ const Ateliers = () => {
           </div>
         </div>
       )}
+      {/* ── Abonnement de l'agenda ── */}
+      {abonnementOuvert && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setAbonnementOuvert(false)}>
+          <div role="dialog" aria-modal="true" aria-labelledby="titre-agenda"
+            className="bg-card rounded-2xl border w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-5 border-b">
+              <h2 id="titre-agenda" className="font-semibold text-lg">Tous les ateliers dans mon agenda</h2>
+              <button onClick={() => setAbonnementOuvert(false)} aria-label="Fermer" className="p-1.5 rounded-lg hover:bg-muted"><X className="w-4 h-4" /></button>
+            </div>
+            <div className="p-5 space-y-4 text-sm">
+              <p className="text-muted-foreground">
+                Abonne-toi une seule fois : ensuite, chaque atelier publié apparaît tout seul dans ton agenda, et les changements
+                (date, heure, lieu, atelier retiré) suivent. Les brouillons n'y sont pas.
+              </p>
+              <a href={lienGoogleAgenda()} target="_blank" rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 bg-primary text-primary-foreground px-4 py-2.5 rounded-full font-medium hover:opacity-90">
+                <CalendarPlus className="w-4 h-4" /> Ajouter à Google Agenda
+              </a>
+              <a href={webcalCalendrier()}
+                className="flex items-center justify-center gap-2 border px-4 py-2.5 rounded-full font-medium hover:bg-muted">
+                Ajouter à l'agenda de l'iPhone, du Mac ou d'Outlook
+              </a>
+              <div>
+                <label htmlFor="lien-agenda" className="block text-xs font-medium text-muted-foreground mb-1">Ou copie le lien d'abonnement</label>
+                <div className="flex gap-2">
+                  <input id="lien-agenda" readOnly value={URL_CALENDRIER_ATELIERS} onFocus={e => e.currentTarget.select()}
+                    className="flex-1 min-w-0 border rounded-xl px-3 py-2 text-xs bg-background" />
+                  <button onClick={copierLienAgenda} className="px-3 py-2 border rounded-full text-xs hover:bg-muted whitespace-nowrap">Copier</button>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Google Agenda relit le calendrier lui-même, en général plusieurs fois par jour (parfois jusqu'à 24 h) :
+                un atelier qui vient d'être publié peut mettre un peu de temps à apparaître.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Message WhatsApp des ateliers à venir ── */}
       {messageWa && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setMessageWa(null)}>
