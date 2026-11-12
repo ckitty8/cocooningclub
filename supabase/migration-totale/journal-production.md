@@ -3,6 +3,12 @@
 Ces actions ont été faites sur la base partagée (preview + production) avec l'accord de l'équipe. Elles ne sont
 **pas** à rejouer ; elles sont notées pour la traçabilité et pour pouvoir les annuler.
 
+## 12/11/2026
+
+| Acte | Détail | Retour arrière |
+|---|---|---|
+| Migration `20261112000000_creneaux_proposes.sql` appliquée par Claude (outil Supabase `apply_migration`, projet `rakqbuxgzuwrnjangqcy`) avec l'accord de l'utilisatrice (« ok base ») | Colonne `ateliers.creneaux_proposes` (TEXT[]) + contrainte `ateliers_creneaux_proposes_valeurs`. Contrôle après : colonne et contrainte présentes, lisible par le public, 12 ateliers inchangés (aucun réglage : les trois choix restent proposés). | Bloc « Choix « Je serai présente » proposés » de `retour-arriere.sql` (réglages perdus). |
+
 ## 06/11/2026
 
 | Action | Détail | Retour arrière |
