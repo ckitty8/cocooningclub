@@ -783,7 +783,7 @@ const Ateliers = () => {
                           />
                         </div>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
+                      <td className="px-4 py-3 min-w-[7rem] max-w-[14rem] text-xs leading-snug">
                         {a.tarif_affichage ?? (a.tarif_standard != null ? `${a.tarif_standard}€` : "—")}
                       </td>
                       <td className="px-4 py-3">

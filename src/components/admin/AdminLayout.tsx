@@ -306,7 +306,7 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
           <span className="font-brand text-base text-terracotta">Le Cocooning Club</span>
         </header>
 
-        <main className="flex-1 p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-6 lg:p-8 max-w-screen-2xl w-full mx-auto">
           {children}
         </main>
       </div>
