@@ -260,6 +260,7 @@ export type Database = {
           lieu: string | null
           matin: string | null
           apres_midi: string | null
+          creneaux_proposes: string[] | null
           modele_id: string | null
           modifie_le: string
           niveau: Database["public"]["Enums"]["niveau_atelier"]
@@ -291,6 +292,7 @@ export type Database = {
           lieu?: string | null
           matin?: string | null
           apres_midi?: string | null
+          creneaux_proposes?: string[] | null
           modele_id?: string | null
           modifie_le?: string
           niveau?: Database["public"]["Enums"]["niveau_atelier"]
@@ -322,6 +324,7 @@ export type Database = {
           lieu?: string | null
           matin?: string | null
           apres_midi?: string | null
+          creneaux_proposes?: string[] | null
           modele_id?: string | null
           modifie_le?: string
           niveau?: Database["public"]["Enums"]["niveau_atelier"]

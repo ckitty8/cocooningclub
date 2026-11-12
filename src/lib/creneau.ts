@@ -16,3 +16,19 @@ export const libelleCreneau = (v: string | null | undefined): string => CRENEAUX
 
 /** L'atelier est-il de l'espace Business (seul espace où la question est posée) ? */
 export const atelierAvecCreneau = (slugEspace: string | null | undefined): boolean => slugEspace === "business";
+
+export const TOUS_CRENEAUX: Creneau[] = CRENEAUX.map(c => c.valeur);
+
+/**
+ * Choix proposés par le formulaire pour cet atelier (réglage de l'atelier, colonne ateliers.creneaux_proposes,
+ * migration 20261112000000) : aucun hors Business ; NULL / absent = les trois ; liste vide = question non posée.
+ */
+export const creneauxProposes = (slugEspace: string | null | undefined, reglage: readonly string[] | null | undefined): Creneau[] => {
+  if (!atelierAvecCreneau(slugEspace)) return [];
+  if (reglage == null) return TOUS_CRENEAUX;
+  return TOUS_CRENEAUX.filter(c => reglage.includes(c));
+};
+
+/** Valeur à enregistrer pour le réglage : null quand les trois sont proposés (comportement par défaut). */
+export const reglageCreneaux = (choisis: readonly Creneau[]): Creneau[] | null =>
+  TOUS_CRENEAUX.every(c => choisis.includes(c)) ? null : TOUS_CRENEAUX.filter(c => choisis.includes(c));

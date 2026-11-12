@@ -25,7 +25,8 @@
     "20261103000000_nos_offres.sql",
     "20261106000000_espace_coworking.sql",
     "20261106000001_creneau_business.sql",
-    "20261106000002_instagram_pre_inscription.sql"
+    "20261106000002_instagram_pre_inscription.sql",
+    "20261112000000_creneaux_proposes.sql"
   ],
   "migrationsAuDeploiement": [
     "20261024000002_minimisation_date_naissance.sql",

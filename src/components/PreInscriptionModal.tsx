@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { useForm, type FieldError } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,7 +20,8 @@ import { suivrePreInscription } from "@/lib/analytics";
 import AjouterAgenda from "@/components/AjouterAgenda";
 import RappelAtelier from "@/components/RappelAtelier";
 import Requis from "@/components/Requis";
-import { atelierAvecCreneau, CRENEAUX, estCreneau } from "@/lib/creneau";
+import { CRENEAUX, creneauxProposes, type Creneau } from "@/lib/creneau";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PreInscriptionModalProps {
   /** Ateliers proposés dans la liste déroulante. */
@@ -91,18 +92,43 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer, atelierId, en
   // Atelier dont la fiche rappelle la date, l'heure et le lieu (imposé par le lien, ou choisi dans la liste).
   const titreChoisi = watch("workshop");
   const atelierChoisi = (atelierId ? ateliers.find(a => a.id === atelierId) : ateliers.find(a => a.titre === titreChoisi)) ?? null;
-  // Ateliers Business : la participante dit si elle vient toute la journée, le matin ou l'après-midi.
-  const demandeCreneau = atelierAvecCreneau(atelierChoisi?.espaces?.slug);
+  // Ateliers Business : la participante dit si elle vient toute la journée, le matin ou l'après-midi, parmi les
+  // choix que l'équipe a gardés pour cet atelier (réglage lu à part : si la colonne manque, les trois sont proposés).
+  const [reglagesCreneaux, setReglagesCreneaux] = useState<Record<string, string[] | null>>({});
+  const idChoisi = atelierChoisi?.espaces?.slug === "business" ? atelierChoisi.id : null;
+  useEffect(() => {
+    if (!idChoisi || idChoisi in reglagesCreneaux) return;
+    let annule = false;
+    supabase.from("ateliers").select("creneaux_proposes").eq("id", idChoisi).maybeSingle().then(({ data, error }) => {
+      if (annule) return;
+      const reglage = !error && data && Array.isArray(data.creneaux_proposes) ? data.creneaux_proposes : null;
+      setReglagesCreneaux(r => ({ ...r, [idChoisi]: reglage }));
+    }, () => { if (!annule) setReglagesCreneaux(r => ({ ...r, [idChoisi]: null })); });
+    return () => { annule = true; };
+  }, [idChoisi, reglagesCreneaux]);
+  const choixDe = (a: Workshop | null): Creneau[] =>
+    creneauxProposes(a?.espaces?.slug, a && a.id in reglagesCreneaux ? reglagesCreneaux[a.id] : null);
+  // Tant que le réglage n'est pas lu, la question attend (évite d'afficher un choix qui disparaît ensuite).
+  const reglageCharge = !idChoisi || idChoisi in reglagesCreneaux;
+  const choixCreneaux = reglageCharge ? choixDe(atelierChoisi) : [];
+  const demandeCreneau = choixCreneaux.length > 0;
+  // Un seul choix proposé : il est coché d'office.
+  const creneauSaisi = watch("creneau");
+  const choixUnique = choixCreneaux.length === 1 ? choixCreneaux[0] : null;
+  useEffect(() => {
+    if (choixUnique && creneauSaisi !== choixUnique) setValue("creneau", choixUnique);
+  }, [choixUnique, creneauSaisi, setValue]);
 
   const onSubmit = async (data: PreInscriptionData) => {
     const trouve = (atelierId ? ateliers.find(a => a.id === atelierId) : ateliers.find(a => a.titre === data.workshop)) ?? null;
-    if (atelierAvecCreneau(trouve?.espaces?.slug)) {
-      if (!estCreneau(data.creneau)) {
+    const choixTrouve = choixDe(trouve);
+    if (choixTrouve.length > 0) {
+      if (!choixTrouve.includes(data.creneau as Creneau)) {
         setError("creneau", { type: "required", message: "Merci de choisir une réponse." });
         return;
       }
     } else {
-      data = { ...data, creneau: "" }; // autre espace : pas de créneau, même si l'atelier choisi a changé
+      data = { ...data, creneau: "" }; // autre espace ou question non posée : pas de créneau, même si l'atelier choisi a changé
     }
     // Atelier de remplacement (détails indisponibles) : utilisable pour l'envoi, pas pour l'affichage.
     const atelier = trouve && trouve.date_atelier ? trouve : null;
@@ -283,7 +309,7 @@ const PreInscriptionModal = ({ ateliers, atelierInitial, onFermer, atelierId, en
                 <fieldset className="rounded-xl border bg-muted/30 p-4">
                   <legend className="px-1 text-sm font-medium text-foreground">Je serai présente<Requis /></legend>
                   <div className="flex flex-wrap gap-x-6 gap-y-2">
-                    {CRENEAUX.map(c => (
+                    {CRENEAUX.filter(c => choixCreneaux.includes(c.valeur)).map(c => (
                       <label key={c.valeur} className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
                         <input
                           type="checkbox"

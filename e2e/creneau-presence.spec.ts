@@ -52,3 +52,42 @@ test("Pré-inscriptions : la case « Présente » d'une inscription validée s'e
   await expect.poll(() => mock.updates.inscriptions?.[0]).toEqual({ present: true });
   await expect(caseP).toBeChecked();
 });
+
+const reglerCreneaux = (page: import("@playwright/test").Page, reglage: string[] | null) =>
+  page.route("**/rest/v1/ateliers?select=creneaux_proposes*", r => r.fulfill({ json: { creneaux_proposes: reglage } }));
+
+test("atelier Business : seuls les choix gardés par l'équipe sont proposés", async ({ page }) => {
+  const mock = await mockSupabase(page, { ateliers: [BUSINESS] });
+  await reglerCreneaux(page, ["matin", "apres_midi"]);
+  await page.goto(`/inscription/${BUSINESS.id}`);
+  const question = page.getByRole("group", { name: /Je serai présente/ });
+  await expect(question.getByRole("checkbox")).toHaveCount(2);
+  await expect(question.getByRole("checkbox", { name: "Toute la journée" })).toHaveCount(0);
+  await remplir(page);
+  await question.getByRole("checkbox", { name: "Le matin", exact: true }).check();
+  await envoyer(page);
+  await expect(page.getByRole("heading", { name: TITRE_MERCI })).toBeVisible();
+  expect(mock.inserts.inscriptions?.[0]).toEqual(expect.objectContaining({ creneau: "matin" }));
+});
+
+test("atelier Business : un seul choix est coché d'office, aucun choix = pas de question", async ({ page }) => {
+  const mock = await mockSupabase(page, { ateliers: [BUSINESS] });
+  await reglerCreneaux(page, ["apres_midi"]);
+  await page.goto(`/inscription/${BUSINESS.id}`);
+  await expect(page.getByRole("checkbox", { name: "L'après-midi", exact: true })).toBeChecked();
+  await remplir(page);
+  await envoyer(page);
+  await expect(page.getByRole("heading", { name: TITRE_MERCI })).toBeVisible();
+  expect(mock.inserts.inscriptions?.[0]).toEqual(expect.objectContaining({ creneau: "apres_midi" }));
+
+  const page2 = await page.context().newPage();
+  const mock2 = await mockSupabase(page2, { ateliers: [BUSINESS] });
+  await reglerCreneaux(page2, []);
+  await page2.goto(`/inscription/${BUSINESS.id}`);
+  await expect(page2.getByRole("textbox", { name: "Instagram (facultatif)" })).toBeVisible();
+  await expect(page2.getByRole("group", { name: /Je serai présente/ })).toHaveCount(0);
+  await remplir(page2);
+  await page2.getByRole("button", { name: /Envoyer ma pré-inscription/ }).click();
+  await expect(page2.getByRole("heading", { name: TITRE_MERCI })).toBeVisible();
+  expect(mock2.inserts.inscriptions?.[0]).not.toHaveProperty("creneau");
+});

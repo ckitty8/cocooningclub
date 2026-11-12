@@ -24,6 +24,7 @@ import { ateliersPourReseaux, lienWhatsAppMessage, messageWhatsApp } from "@/lib
 import EditeurTexteRiche from "@/components/texte/EditeurTexteRiche";
 import { htmlAEnregistrer } from "@/lib/nettoyerHtml";
 import Requis from "@/components/Requis";
+import { CRENEAUX, TOUS_CRENEAUX, creneauxProposes, reglageCreneaux, type Creneau } from "@/lib/creneau";
 
 type Statut = "brouillon" | "publie" | "complet" | "annule" | "termine";
 type Niveau = "debutant" | "intermediaire" | "avance";
@@ -57,6 +58,8 @@ interface Atelier {
   /** Colonnes ajoutées par la migration « matin / après-midi » : absentes avant. */
   matin?: string | null;
   apres_midi?: string | null;
+  /** Choix « Je serai présente » proposés (migration 20261112000000) : null = les trois, [] = question non posée. */
+  creneaux_proposes?: string[] | null;
 }
 
 interface Espace {
@@ -71,6 +74,7 @@ const emptyForm = {
   places_max: 10 as number | string, tarif_standard: "", tarif_adherent: "", tarif_affichage: "",
   lien_paypal: "", niveau: "" as Niveau | "", statut: "brouillon" as Statut,
   espace_id: "", matin: "", apres_midi: "",
+  creneaux: TOUS_CRENEAUX as Creneau[],
 };
 
 // Brouillon persistant : si l'onglet est déchargé par le navigateur (mise en
@@ -98,6 +102,7 @@ const Ateliers = () => {
   const [ateliers, setAteliers] = useState<Atelier[]>([]);
   const colonneTarifAdherent = ateliers.some(a => "tarif_adherent" in a);
   const colonneMatinApresMidi = ateliers.some(a => "matin" in a);
+  const colonneCreneaux = ateliers.some(a => "creneaux_proposes" in a);
   const [espaces, setEspaces] = useState<Espace[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<{ open: boolean; atelier: Atelier | null }>({ open: false, atelier: null });
@@ -272,6 +277,7 @@ const Ateliers = () => {
       niveau: a.niveau ?? "", statut: a.statut,
       espace_id: a.espace_id,
       matin: a.matin ?? "", apres_midi: a.apres_midi ?? "",
+      creneaux: creneauxProposes("business", a.creneaux_proposes),
     });
     setModal({ open: true, atelier: a });
   };
@@ -293,6 +299,7 @@ const Ateliers = () => {
       niveau: a.niveau ?? "", statut: "brouillon",
       espace_id: a.espace_id,
       matin: a.matin ?? "", apres_midi: a.apres_midi ?? "",
+      creneaux: creneauxProposes("business", a.creneaux_proposes),
     });
     setModal({ open: true, atelier: null });
   };
@@ -366,6 +373,10 @@ const Ateliers = () => {
       // Matin / après-midi : propres aux ateliers Business ; écrits seulement si la colonne existe (migration appliquée) ou si saisis.
       ...(colonneMatinApresMidi || form.matin.trim() || form.apres_midi.trim()
         ? { matin: espaceBusiness ? form.matin.trim() || null : null, apres_midi: espaceBusiness ? form.apres_midi.trim() || null : null }
+        : {}),
+      // Choix « Je serai présente » : écrits seulement si la colonne existe ou si l'équipe a retiré un choix.
+      ...(colonneCreneaux || (espaceBusiness && reglageCreneaux(form.creneaux ?? TOUS_CRENEAUX) !== null)
+        ? { creneaux_proposes: espaceBusiness ? reglageCreneaux(form.creneaux ?? TOUS_CRENEAUX) : null }
         : {}),
     };
     if (modal.atelier) {
@@ -962,6 +973,28 @@ const Ateliers = () => {
                       className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                   </div>
                   <p className="sm:col-span-2 text-xs text-muted-foreground -mt-2">Saisie libre. Les deux lignes s'affichent sur la tuile de l'atelier, sur la page d'accueil.</p>
+                  <fieldset className="sm:col-span-2 rounded-xl border bg-muted/30 p-3">
+                    <legend className="px-1 text-sm font-medium">Pré-inscription : « Je serai présente »</legend>
+                    <div className="flex flex-wrap gap-x-5 gap-y-2">
+                      {CRENEAUX.map(c => {
+                        const choisis = form.creneaux ?? TOUS_CRENEAUX;
+                        return (
+                          <label key={c.valeur} className="flex cursor-pointer items-center gap-2 text-sm">
+                            <input type="checkbox" checked={choisis.includes(c.valeur)} className="h-6 w-6 shrink-0 accent-primary"
+                              onChange={e => setForm(prev => {
+                                const avant = prev.creneaux ?? TOUS_CRENEAUX;
+                                return { ...prev, creneaux: e.target.checked ? [...avant, c.valeur] : avant.filter(v => v !== c.valeur) };
+                              })} />
+                            {c.libelle}
+                          </label>
+                        );
+                      })}
+                    </div>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Seuls les choix cochés sont proposés sur le formulaire de pré-inscription (un seul choix : il est coché d'office).
+                      Aucune case cochée : la question n'est pas posée.
+                    </p>
+                  </fieldset>
                 </div>
               )}
               <div>

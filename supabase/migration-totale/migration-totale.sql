@@ -2,7 +2,7 @@
 -- MIGRATION TOTALE DU SITE : à coller dans le SQL Editor de Supabase.
 -- Fichier généré par `npm run migration:build` : ne pas le modifier à la main.
 -- Tout est exécuté dans une seule transaction : en cas d'erreur, rien n'est appliqué.
--- Contient : 20261023000002_supprime_membre_et_compte.sql, 20261023000003_offre_et_adhesions.sql, 20261023000004_retire_role_membre_premium.sql, 20261023000005_droits_par_offre.sql, 20261023000006_bloque_validation_impayee.sql, 20261023000007_tarif_adherente.sql, 20261023000008_supprime_tables_de_sauvegarde.sql, 20261023000009_reserve_admin_dispo_aux_admins.sql, 20261023000010_supprime_decrement_atelier_spots.sql, 20261024000000_nettoyage_premium_et_mot_de_passe_hash.sql, 20261024000001_conservation_des_donnees.sql, 20261025000000_pre_inscriptions_secours.sql, 20261025000001_consentements_pre_inscription.sql, 20261026000000_membre_exige_adhesion.sql, 20261026000001_date_naissance_adhesion.sql, 20261026000002_fiche_reliee_au_compte_en_cascade.sql, 20261026000003_documents_admins.sql, 20261027000000_hobby_profil.sql, 20261027000001_types_documents.sql, 20261031000000_ateliers_matin_apres_midi.sql, 20261031000001_places_illimitees.sql, 20261103000000_nos_offres.sql, 20261106000000_espace_coworking.sql, 20261106000001_creneau_business.sql, 20261106000002_instagram_pre_inscription.sql
+-- Contient : 20261023000002_supprime_membre_et_compte.sql, 20261023000003_offre_et_adhesions.sql, 20261023000004_retire_role_membre_premium.sql, 20261023000005_droits_par_offre.sql, 20261023000006_bloque_validation_impayee.sql, 20261023000007_tarif_adherente.sql, 20261023000008_supprime_tables_de_sauvegarde.sql, 20261023000009_reserve_admin_dispo_aux_admins.sql, 20261023000010_supprime_decrement_atelier_spots.sql, 20261024000000_nettoyage_premium_et_mot_de_passe_hash.sql, 20261024000001_conservation_des_donnees.sql, 20261025000000_pre_inscriptions_secours.sql, 20261025000001_consentements_pre_inscription.sql, 20261026000000_membre_exige_adhesion.sql, 20261026000001_date_naissance_adhesion.sql, 20261026000002_fiche_reliee_au_compte_en_cascade.sql, 20261026000003_documents_admins.sql, 20261027000000_hobby_profil.sql, 20261027000001_types_documents.sql, 20261031000000_ateliers_matin_apres_midi.sql, 20261031000001_places_illimitees.sql, 20261103000000_nos_offres.sql, 20261106000000_espace_coworking.sql, 20261106000001_creneau_business.sql, 20261106000002_instagram_pre_inscription.sql, 20261112000000_creneaux_proposes.sql
 -- Lancer ensuite verifications.sql (tout doit afficher ok = true).
 -- =====================================================================
 
@@ -1591,5 +1591,30 @@ COMMENT ON COLUMN public.inscriptions.instagram IS
 -- Filet de sécurité des pré-inscriptions : la réponse est gardée telle quelle (aucune contrainte qui refuse).
 ALTER TABLE public.pre_inscriptions_secours
   ADD COLUMN IF NOT EXISTS instagram TEXT;
+
+-- ---------------------------------------------------------------------
+-- 20261112000000_creneaux_proposes.sql
+-- ---------------------------------------------------------------------
+-- Ateliers Business : choix « Je serai présente » proposés par le formulaire de pré-inscription (12/11).
+-- L'équipe coche, dans la fiche de l'atelier, les choix gardés parmi journee / matin / apres_midi.
+-- NULL = les trois (comportement d'avant) ; tableau vide = la question n'est pas posée.
+-- Lisible par les visiteuses comme les autres colonnes de l'atelier (aucune politique modifiée).
+-- Rejouable sans risque.
+
+ALTER TABLE public.ateliers
+  ADD COLUMN IF NOT EXISTS creneaux_proposes TEXT[];
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'ateliers_creneaux_proposes_valeurs') THEN
+    ALTER TABLE public.ateliers
+      ADD CONSTRAINT ateliers_creneaux_proposes_valeurs
+      CHECK (creneaux_proposes IS NULL OR creneaux_proposes <@ ARRAY['journee', 'matin', 'apres_midi']::TEXT[]);
+  END IF;
+END
+$$;
+
+COMMENT ON COLUMN public.ateliers.creneaux_proposes IS
+  'Choix « Je serai présente » proposés (journee, matin, apres_midi) ; NULL = les trois ; vide = question non posée.';
 
 COMMIT;
