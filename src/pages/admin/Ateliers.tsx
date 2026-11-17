@@ -75,6 +75,8 @@ const emptyForm = {
   lien_paypal: "", niveau: "" as Niveau | "", statut: "brouillon" as Statut,
   espace_id: "", matin: "", apres_midi: "",
   creneaux: TOUS_CRENEAUX as Creneau[],
+  /** « Pour les non-adhérentes » : gratuit (prix 0) ou payant (prix obligatoire). */
+  gratuit_non_adherente: null as boolean | null,
 };
 
 // Brouillon persistant : si l'onglet est déchargé par le navigateur (mise en
@@ -271,6 +273,7 @@ const Ateliers = () => {
       lieu: a.lieu ?? "", adresse: a.adresse ?? "", url_image: a.url_image ?? "",
       places_max: a.places_max ?? "",
       tarif_standard: a.tarif_standard?.toString() ?? "",
+      gratuit_non_adherente: !(Number(a.tarif_standard) > 0),
       tarif_adherent: a.tarif_adherent?.toString() ?? "",
       tarif_affichage: a.tarif_affichage ?? "",
       lien_paypal: a.lien_paypal ?? "",
@@ -293,6 +296,7 @@ const Ateliers = () => {
       lieu: a.lieu ?? "", adresse: a.adresse ?? "", url_image: a.url_image ?? "",
       places_max: a.places_max ?? "",
       tarif_standard: a.tarif_standard?.toString() ?? "",
+      gratuit_non_adherente: !(Number(a.tarif_standard) > 0),
       tarif_adherent: a.tarif_adherent?.toString() ?? "",
       tarif_affichage: a.tarif_affichage ?? "",
       lien_paypal: a.lien_paypal ?? "",
@@ -343,6 +347,18 @@ const Ateliers = () => {
       return;
     }
 
+    if (form.gratuit_non_adherente === null) {
+      toast.error("Pour les non-adhérentes : choisis « Gratuit » ou « Payant »");
+      setSaving(false);
+      return;
+    }
+
+    if (!form.gratuit_non_adherente && !(Number(form.tarif_standard) > 0)) {
+      toast.error("Atelier payant : indique le tarif non-adhérente, ou choisis « Gratuit »");
+      setSaving(false);
+      return;
+    }
+
     if (!form.heure_debut) {
       toast.error("L'heure de début est obligatoire");
       setSaving(false);
@@ -362,10 +378,10 @@ const Ateliers = () => {
       adresse: form.adresse || null,
       url_image: form.url_image || null,
       places_max: form.places_max === "" ? null : Number(form.places_max),
-      tarif_standard: form.tarif_standard ? Number(form.tarif_standard) : 0,
+      tarif_standard: form.gratuit_non_adherente ? 0 : Number(form.tarif_standard),
       // Écrit seulement si la colonne existe (migration appliquée) ou si un tarif adhérente est saisi.
       ...(colonneTarifAdherent || form.tarif_adherent !== "" ? { tarif_adherent: form.tarif_adherent !== "" ? Number(form.tarif_adherent) : null } : {}),
-      tarif_affichage: form.tarif_affichage || null,
+      tarif_affichage: form.gratuit_non_adherente ? null : form.tarif_affichage || null,
       lien_paypal: form.lien_paypal || null,
       niveau: (form.niveau as Niveau) || "debutant",
       statut: form.statut,
@@ -1111,23 +1127,43 @@ const Ateliers = () => {
                   Le lieu sera cliquable et ouvrira cette adresse dans Google Maps.
                 </p>
               </div>
+              <fieldset>
+                <legend className="block text-sm font-medium mb-1.5">Pour les non-adhérentes<Requis /></legend>
+                <div className="flex flex-wrap gap-x-6 gap-y-2">
+                  {([[true, "Gratuit"], [false, "Payant"]] as const).map(([gratuit, libelle]) => (
+                    <label key={libelle} className="flex cursor-pointer items-center gap-2 text-sm">
+                      <input type="radio" name="gratuit_non_adherente" checked={form.gratuit_non_adherente === gratuit}
+                        onChange={() => setForm(prev => ({ ...prev, gratuit_non_adherente: gratuit }))} className="h-5 w-5 accent-primary" />
+                      {libelle}
+                    </label>
+                  ))}
+                </div>
+                {form.gratuit_non_adherente !== null && (
+                  <p className="text-xs text-muted-foreground mt-1">Affiché au public : « {form.gratuit_non_adherente ? "Gratuit" : "Payant pour les non-adhérentes"} ».</p>
+                )}
+              </fieldset>
               <div className="grid grid-cols-2 gap-4">
+                {form.gratuit_non_adherente === false && (
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Tarif non-adhérente (€)</label>
+                  <label className="block text-sm font-medium mb-1.5">Tarif non-adhérente (€)<Requis /></label>
                   <input type="number" min={0} step={0.01} value={form.tarif_standard} onChange={e => f("tarif_standard", e.target.value)}
                     placeholder="25" className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>
+                )}
                 <div>
                   <label className="block text-sm font-medium mb-1.5">Tarif adhérente (€)</label>
                   <input type="number" min={0} step={0.01} value={form.tarif_adherent} onChange={e => f("tarif_adherent", e.target.value)}
                     placeholder="Identique si vide" className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                   <p className="text-xs text-muted-foreground mt-1">Prix payé par une adhérente pour un atelier d'un espace que sa formule ne couvre pas.</p>
                 </div>
+                {form.gratuit_non_adherente === false && (
                 <div className="col-span-2">
                   <label className="block text-sm font-medium mb-1.5">Tarif affiché</label>
                   <input value={form.tarif_affichage} onChange={e => f("tarif_affichage", e.target.value)}
                     placeholder="ex: À partir de 20€" className="w-full border rounded-xl px-3 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
+                  <p className="text-xs text-muted-foreground mt-1">Facultatif : remplace le prix dans « Payant pour les non-adhérentes : … ».</p>
                 </div>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Lien PayPal</label>

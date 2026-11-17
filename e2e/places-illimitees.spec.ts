@@ -24,10 +24,11 @@ test("« Places max » laissé vide : l'atelier s'enregistre avec des places ill
   const champ = fenetre.locator("label", { hasText: "Places max" }).locator("xpath=following-sibling::input");
   await champ.fill("");
   await expect(fenetre.getByText("Laisser vide : places illimitées")).toBeVisible();
+  await fenetre.getByRole("radio", { name: "Gratuit", exact: true }).check();
   await fenetre.getByRole("button", { name: "Enregistrer", exact: true }).click();
 
   await expect.poll(() => mock.inserts.ateliers?.[0]).toMatchObject({
-    titre: "Papotages - Sans limite", places_max: null, places_disponibles: null,
+    titre: "Papotages - Sans limite", places_max: null, places_disponibles: null, tarif_standard: 0,
   });
 });
 
@@ -40,9 +41,15 @@ test("une capacité renseignée reste enregistrée avec ses places libres", asyn
 
   const fenetre = await remplirAtelier(page);
   await fenetre.locator("label", { hasText: "Places max" }).locator("xpath=following-sibling::input").fill("12");
+  // Atelier payant : le prix non-adhérente devient obligatoire.
+  await fenetre.getByRole("radio", { name: "Payant", exact: true }).check();
   await fenetre.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page.getByText("Atelier payant : indique le tarif non-adhérente")).toBeVisible();
+  await fenetre.locator("label", { hasText: "Tarif non-adhérente (€)" }).locator("xpath=following-sibling::input").fill("15");
+  // Le message d'erreur précédent peut encore recouvrir le bouton.
+  await fenetre.getByRole("button", { name: "Enregistrer", exact: true }).dispatchEvent("click");
 
-  await expect.poll(() => mock.inserts.ateliers?.[0]).toMatchObject({ places_max: 12, places_disponibles: 12 });
+  await expect.poll(() => mock.inserts.ateliers?.[0]).toMatchObject({ places_max: 12, places_disponibles: 12, tarif_standard: 15 });
 });
 
 test("l'accueil n'affiche aucun nombre de places pour un atelier illimité, et il reste ouvert aux inscriptions", async ({ page }) => {

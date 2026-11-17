@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { Calendar, Clock, MapPin } from "lucide-react";
+import { Calendar, Clock, Euro, MapPin } from "lucide-react";
 import SiteHeader from "@/components/SiteHeader";
 import Footer from "@/components/Footer";
 import PreInscriptionModal from "@/components/PreInscriptionModal";
@@ -8,6 +8,7 @@ import { Bouton, Surtitre } from "@/components/vitrine";
 import { formatDateFr, formatTimeFr, type Workshop } from "@/data/workshops";
 import { usePublicAteliers } from "@/hooks/usePublicAteliers";
 import { trackVisit } from "@/utils/trackVisit";
+import { mentionTarif } from "@/lib/tarifAtelier";
 
 const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription, espaces(slug)";
 
@@ -58,6 +59,7 @@ const Inscription = () => {
                     <li className="flex items-center gap-1.5"><Calendar className="h-4 w-4" aria-hidden="true" />{formatDateFr(atelier.date_atelier)}</li>
                     <li className="flex items-center gap-1.5"><Clock className="h-4 w-4" aria-hidden="true" />{formatTimeFr(atelier.heure_debut)}</li>
                     {atelier.lieu && <li className="flex items-center gap-1.5"><MapPin className="h-4 w-4" aria-hidden="true" />{atelier.lieu}</li>}
+                    <li className="flex items-center gap-1.5"><Euro className="h-4 w-4" aria-hidden="true" />{mentionTarif(atelier)}</li>
                   </ul>
                 )}
                 {error && !atelier && (

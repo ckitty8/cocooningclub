@@ -18,6 +18,7 @@ import { estComplet } from "@/lib/placesAtelier";
 import AjouterAgenda from "@/components/AjouterAgenda";
 import EvenementsJsonLd from "@/components/EvenementsJsonLd";
 import DescriptionAtelier from "@/components/texte/DescriptionAtelier";
+import { mentionTarif } from "@/lib/tarifAtelier";
 
 const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription, espaces(slug)";
 
@@ -214,11 +215,9 @@ const Calendrier = () => {
                                     <Users className="w-3.5 h-3.5" /> {ws.places_max} places
                                   </span>
                                 )}
-                                {ws.tarif_affichage && (
-                                  <span className="inline-flex items-center gap-1.5">
-                                    <Euro className="w-3.5 h-3.5" /> {ws.tarif_affichage}
-                                  </span>
-                                )}
+                                <span className="inline-flex items-center gap-1.5">
+                                  <Euro className="w-3.5 h-3.5" /> {mentionTarif(ws)}
+                                </span>
                               </div>
                             </div>
 
@@ -322,7 +321,7 @@ const Calendrier = () => {
                 )}
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <Euro className="w-4 h-4 text-terracotta flex-shrink-0" />
-                  <span>{popinWorkshop.tarif_affichage}</span>
+                  <span>{mentionTarif(popinWorkshop)}</span>
                 </div>
                 {popinWorkshop.date_fin_inscription && (
                   <div className="flex items-center gap-2 text-sm text-foreground col-span-2">

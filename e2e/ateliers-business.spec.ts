@@ -33,6 +33,7 @@ test("les champs Matin et Après-midi n'existent que pour un atelier Business", 
   await fenetre.locator("label", { hasText: "Titre (obligatoire)" }).locator("xpath=following-sibling::input").fill("Business - Journée");
   await fenetre.locator("label", { hasText: "Date (obligatoire)" }).locator("xpath=following-sibling::input").fill("2027-03-10");
   await fenetre.locator("label", { hasText: "Heure début (obligatoire)" }).locator("xpath=following-sibling::input").fill("09:30");
+  await fenetre.getByRole("radio", { name: "Gratuit", exact: true }).check();
   await fenetre.getByRole("button", { name: "Enregistrer", exact: true }).click();
 
   await expect.poll(() => mock.inserts.ateliers?.[0]).toMatchObject({

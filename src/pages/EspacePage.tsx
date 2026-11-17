@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Clock, MapPin } from "lucide-react";
+import { Clock, Euro, MapPin } from "lucide-react";
 import SiteHeader from "@/components/SiteHeader";
 import Footer from "@/components/Footer";
 import EvenementsJsonLd from "@/components/EvenementsJsonLd";
@@ -10,8 +10,9 @@ import { ORDRE_ESPACES, PAGES_ESPACES, type SlugEspace } from "@/data/pagesEspac
 import { formatDateFr, formatTimeFr } from "@/data/workshops";
 import { usePublicAteliers } from "@/hooks/usePublicAteliers";
 import { trackVisit } from "@/utils/trackVisit";
+import { mentionTarif } from "@/lib/tarifAtelier";
 
-const COLONNES = "id, titre, date_atelier, heure_debut, duree, description, lieu, adresse, tarif_standard, statut, espaces(slug)";
+const COLONNES = "id, titre, date_atelier, heure_debut, duree, description, lieu, adresse, tarif_standard, tarif_affichage, statut, espaces(slug)";
 
 const ETAPES = [
   "Choisis un atelier dans le calendrier.",
@@ -95,6 +96,9 @@ const EspacePage = ({ slug }: { slug: SlugEspace }) => {
                           <MapPin className="h-3.5 w-3.5" aria-hidden="true" /> {a.lieu}
                         </span>
                       )}
+                      <span className="inline-flex items-center gap-1.5">
+                        <Euro className="h-3.5 w-3.5" aria-hidden="true" /> {mentionTarif(a)}
+                      </span>
                     </p>
                     <Link
                       to={`/calendrier?atelier=${a.id}`}

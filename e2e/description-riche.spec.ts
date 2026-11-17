@@ -33,6 +33,7 @@ test("la description complète se met en forme dans l'éditeur et s'enregistre e
   await page.keyboard.type("Vidéos");
   await expect(editeur.getByRole("heading", { name: "Au programme" })).toBeVisible();
 
+  await fenetre.getByRole("radio", { name: "Gratuit", exact: true }).check();
   await fenetre.getByRole("button", { name: "Enregistrer", exact: true }).click();
   await expect.poll(() => (mock.inserts.ateliers?.[0] as { description?: string } | undefined)?.description).toBe(
     "<h2>Au programme</h2><p>Une matinée <strong>coworking</strong></p><ul><li><p>Photos</p></li><li><p>Vidéos</p></li></ul>",
