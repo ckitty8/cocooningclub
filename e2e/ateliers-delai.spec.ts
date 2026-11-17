@@ -15,3 +15,16 @@ test("calendrier : une requête restée sans réponse est relancée et les ateli
   await expect(page.getByText(ATELIER_TEST.titre).first()).toBeVisible({ timeout: 20000 });
   expect(appels).toBeGreaterThanOrEqual(2);
 });
+
+test("calendrier : sans réponse du serveur, la dernière liste reçue reste affichée", async ({ page }) => {
+  test.setTimeout(60000);
+  await mockSupabase(page);
+  await page.goto("/calendrier");
+  await expect(page.getByText(ATELIER_TEST.titre).first()).toBeVisible();
+
+  // Le serveur tombe en panne (comme le 17/11 : erreurs 503) : la liste gardée en mémoire s'affiche quand même.
+  await page.route("**/rest/v1/ateliers?select=*", route => route.fulfill({ status: 503, json: { code: "PGRST002", message: "Could not query the database for the schema cache. Retrying." } }));
+  await page.reload();
+  await expect(page.getByText(ATELIER_TEST.titre).first()).toBeVisible({ timeout: 5000 });
+  await expect(page.getByText("Chargement des ateliers")).toHaveCount(0);
+});
