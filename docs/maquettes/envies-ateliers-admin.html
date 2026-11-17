@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maquette : administration « Envies d'ateliers »</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=DM+Sans:wght@400;500;600&display=swap">
+<style>
+  :root{--creme:#fbf5f1;--fond:#f5e6dc;--texte:#5a3a2e;--texte2:#6b4a40;--bord:#e8dad1;--primary:#b95b43;--terracotta:#9a4936;--papotages:#ce8f7e;--creatifs:#82947a;--business:#9e6678}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'DM Sans',sans-serif;color:var(--texte);background:var(--fond);display:flex;min-height:100vh}
+  aside{width:250px;background:var(--creme);border-right:1px solid var(--bord);padding:22px 16px;flex:none}
+  .logo{font-family:'Playfair Display',serif;color:var(--terracotta);font-size:22px;margin:0 8px}
+  .adm{font-size:11px;letter-spacing:.2em;color:var(--terracotta);font-weight:600;margin:8px 8px 18px}
+  .menu a{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-radius:12px;color:var(--texte2);font-size:14px;text-decoration:none}
+  .menu a.actif{background:var(--primary);color:#fff}
+  .badge{background:#fff;color:var(--terracotta);font-size:11px;font-weight:600;border-radius:999px;padding:1px 8px}
+  .nouveau{background:#fde68a;color:#7a4b00;font-size:10px;border-radius:6px;padding:1px 6px}
+  main{flex:1;padding:30px 36px}
+  h1{font-family:'Playfair Display',serif;font-size:30px;margin:0}
+  .sous{color:var(--texte2);margin:4px 0 18px}
+  .lien{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--creme);border:1px solid var(--bord);border-radius:16px;padding:12px 16px;margin-bottom:16px;font-size:14px}
+  .lien code{background:#fff;border:1px solid var(--bord);border-radius:8px;padding:5px 10px;font-size:13px}
+  .btn{border:1px solid var(--bord);background:#fff;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:500;color:var(--texte)}
+  .btn.p{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+  .stat{background:var(--creme);border:1px solid var(--bord);border-radius:16px;padding:14px 16px}
+  .stat b{font-family:'Playfair Display',serif;font-size:26px;color:var(--terracotta)}
+  .stat div{font-size:13px;color:var(--texte2)}
+  .filtres{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .filtres span{background:var(--creme);border:1px solid var(--bord);border-radius:999px;padding:6px 14px;font-size:13px}
+  .filtres span.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .carte{background:var(--creme);border:1px solid var(--bord);border-radius:18px;padding:16px 18px;margin-bottom:12px;display:grid;grid-template-columns:1fr auto;gap:10px}
+  .titre{font-weight:600;font-size:16px}
+  .meta{font-size:13px;color:var(--texte2);margin-top:3px}
+  .tag{display:inline-block;border-radius:999px;padding:1px 10px;font-size:12px;color:#fff;margin-right:6px}
+  .texte{font-size:14px;line-height:1.5;margin-top:8px}
+  .det{font-size:13px;color:var(--texte2);margin-top:8px;display:flex;gap:16px;flex-wrap:wrap}
+  .det b{color:var(--texte)}
+  .droite{display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+  select{border:1px solid var(--bord);border-radius:10px;padding:6px 10px;font:inherit;font-size:13px;background:#fff}
+  .reglage{font-size:13px;color:var(--texte2);display:flex;align-items:center;gap:8px}
+  .reglage input{width:70px;border:1px solid var(--bord);border-radius:8px;padding:4px 8px;font:inherit}
+</style>
+</head>
+<body>
+  <aside>
+    <div class="logo">Le Cocooning Club</div>
+    <div class="adm">ADMINISTRATION</div>
+    <nav class="menu">
+      <a>Tableau de bord</a><a>Ateliers</a><a>Pré-inscriptions</a><a>Boîte à idées</a>
+      <a class="actif">Envies d'ateliers <span class="badge">3</span></a>
+      <a>Témoignages</a><a>Documents</a><a>Formulaire de contact</a><a>Membres</a><a>Offre &amp; adhésions</a>
+    </nav>
+  </aside>
+  <main>
+    <h1>Envies d'ateliers <span class="nouveau">nouveau</span></h1>
+    <p class="sous">Les idées envoyées depuis le formulaire « Tes envies d'ateliers ».</p>
+
+    <div class="lien">🔗 Lien du formulaire (page cachée) : <code>www.lecocooningclub.fr/envies-ateliers</code>
+      <span class="btn">Copier le lien</span><span class="btn">Message WhatsApp</span>
+      <span class="reglage" style="margin-left:auto">Matériel pris en charge jusqu'à <input value="50"> € par atelier</span>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><b>12</b><div>envies reçues</div></div>
+      <div class="stat"><b>3</b><div>nouvelles (pas encore lues)</div></div>
+      <div class="stat"><b>5</b><div>proposent d'animer</div></div>
+      <div class="stat"><b>2</b><div>déjà programmées</div></div>
+    </div>
+
+    <div class="filtres">
+      <span class="on">Toutes (12)</span><span>Nouvelles (3)</span><span>À étudier (4)</span><span>Retenues (3)</span><span>Programmées (2)</span>
+      <span>Tous les espaces ▾</span><span>🔍 Rechercher…</span><span class="btn">Exporter en Excel</span>
+    </div>
+
+    <div class="carte">
+      <div>
+        <div class="titre">Atelier couronnes de Noël</div>
+        <div class="meta">Lucie D. · lucie@exemple.fr · reçue le 16 nov. 2026</div>
+        <div style="margin-top:8px"><span class="tag" style="background:var(--creatifs)">Créatif</span><span class="tag" style="background:var(--primary)">Veut l'animer</span></div>
+        <div class="texte">Fabriquer une couronne avec des branches de sapin et des décorations naturelles, environ 2 h.</div>
+        <div class="det"><span>Matériel : <b>couronnes en osier, sapin, rubans</b></span><span>Budget : <b>25 €</b> (sous la limite)</span><span>Moments : <b>week-end, après-midi</b></span></div>
+      </div>
+      <div class="droite"><select><option>Nouvelle</option></select><span class="btn p">Créer l'atelier</span><span class="btn">Répondre dans Gmail</span></div>
+    </div>
+
+    <div class="carte">
+      <div>
+        <div class="titre">Prendre la parole en public</div>
+        <div class="meta">Sophie A. · 06 00 00 00 00 · reçue le 14 nov. 2026</div>
+        <div style="margin-top:8px"><span class="tag" style="background:var(--business)">Business</span><span class="tag" style="background:#8a6a60">Veut participer</span></div>
+        <div class="texte">J'aimerais un atelier pour gagner en confiance quand je présente mon activité.</div>
+        <div class="det"><span>Moments : <b>en semaine, le soir</b></span></div>
+      </div>
+      <div class="droite"><select><option>À étudier</option></select><span class="btn p">Créer l'atelier</span><span class="btn">WhatsApp</span></div>
+    </div>
+  </main>
+</body>
+</html>
