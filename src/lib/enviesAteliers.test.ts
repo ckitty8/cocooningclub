@@ -4,15 +4,15 @@ const insert = vi.fn();
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { from: () => ({ insert }) } }));
 
 import {
-  HEURES, compterParStatut, enregistrerEnvoi, enviesEnAttente, filtrerEnvies, ideeVide, lienCreerAtelier, lienGmailEnvie,
-  lienWhatsappEnvie, lignesEnvoi, montantPlafond, numeroWhatsapp, phraseMateriel, plageLisible, plagesLisibles,
+  compterParStatut, enregistrerEnvoi, enviesEnAttente, filtrerEnvies, ideeVide, lienCreerAtelier, lienGmailEnvie,
+  lienWhatsappEnvie, lignesEnvoi, montantPlafond, numeroWhatsapp, phraseMateriel, plagesLisibles, plagesRemplies,
   rejouerEnvies, tableauEnvies, validerEnvoi, type Envie, type EnvoiEnvies,
 } from "./enviesAteliers";
 
 const envie = (p: Partial<Envie> = {}): Envie => ({
   id: "1", cree_le: "2026-11-14T10:00:00Z", statut: "nouvelle", groupe_id: "g1", prenom: "Lucie", nom: "Durand",
   contact: "lucie@exemple.fr", espace: "creatifs", idee: "Couronnes de Noël", details: "Avec du sapin", souhait: "animer",
-  materiel: "osier", budget: "25 €", jours: ["mercredi", "samedi"], plages: ["14:00-17:30", "19:00-21:00"], ...p,
+  materiel: "osier", budget: "25 €", jours: ["mercredi", "samedi"], plages: ["14 h – 17 h 30", "après 19 h"], ...p,
 });
 
 const idee = (p: Partial<ReturnType<typeof ideeVide>> = {}) => ({ ...ideeVide(), espace: "creatifs" as const, idee: "Bougies", souhait: "participer" as const, ...p });
@@ -22,30 +22,23 @@ describe("validerEnvoi", () => {
     expect(Object.keys(validerEnvoi({ idees: [ideeVide(), ideeVide()] }))).toEqual([
       "prenom", "idee-0-espace", "idee-0-idee", "idee-0-souhait", "idee-1-espace", "idee-1-idee", "idee-1-souhait", "consentement",
     ]);
-    expect(validerEnvoi({ prenom: "Lucie", idees: [idee(), idee({ idee: "Tricot" })], plages: [{}], consentement: true })).toEqual({});
+    expect(validerEnvoi({ prenom: "Lucie", idees: [idee(), idee({ idee: "Tricot" })], plages: ["", "n'importe quoi"], consentement: true })).toEqual({});
   });
   it("refuse une idée trop longue", () => {
     expect(validerEnvoi({ prenom: "L", idees: [idee({ idee: "x".repeat(301) })], consentement: true })["idee-0-idee"]).toMatch(/300/);
   });
-  it("contrôle chaque plage horaire (ligne vide ignorée)", () => {
-    const base = { prenom: "L", idees: [idee()], consentement: true };
-    const e = validerEnvoi({ ...base, plages: [{ debut: "09:00", fin: "12:00" }, {}, { debut: "14:00", fin: "12:00" }, { debut: "18:00" }] });
-    expect(e).toEqual({
-      "plage-2": "L'heure de fin doit être après l'heure de début",
-      "plage-3": "Choisis l'heure de début et l'heure de fin",
-    });
-  });
 });
 
-describe("plages horaires", () => {
-  it("propose les heures de 8 h à 22 h par demi-heure", () => {
-    expect(HEURES[0]).toBe("08:00");
-    expect(HEURES[1]).toBe("08:30");
-    expect(HEURES.at(-1)).toBe("22:00");
+describe("plages horaires saisies librement", () => {
+  it("retire les espaces superflus, les lignes vides et les doublons", () => {
+    expect(plagesRemplies(["  14 h   – 17 h ", "", "après 18 h", "14 h – 17 h", "  "])).toEqual(["14 h – 17 h", "après 18 h"]);
   });
-  it("écrit les plages en clair", () => {
-    expect(plageLisible("09:00-12:30")).toBe("de 9 h à 12 h 30");
-    expect(plagesLisibles(["09:00-12:00", "18:00-20:00"])).toBe("de 9 h à 12 h, de 18 h à 20 h");
+  it("garde 5 plages de 100 caractères au plus", () => {
+    expect(plagesRemplies(["a", "b", "c", "d", "e", "f"])).toHaveLength(5);
+    expect(plagesRemplies(["x".repeat(150)])[0]).toHaveLength(100);
+  });
+  it("écrit les plages à la suite", () => {
+    expect(plagesLisibles(["14 h – 17 h", "après 18 h"])).toBe("14 h – 17 h ; après 18 h");
     expect(plagesLisibles([])).toBe("");
   });
 });
@@ -66,13 +59,13 @@ describe("lignesEnvoi", () => {
   it("fait une ligne par idée, avec la personne, les jours triés et les plages complètes, reliées par le même groupe", () => {
     const envoi: EnvoiEnvies = {
       prenom: " Lucie ", nom: " ", contact: "", jours: ["samedi", "lundi"],
-      plages: [{ debut: "18:00", fin: "20:00" }, {}, { debut: "09:00", fin: "12:00" }, { debut: "18:00", fin: "20:00" }],
+      plages: [" après 18 h ", "", "le matin", "après 18 h"],
       idees: [idee({ idee: " Tricot ", espace: "papotages" }), idee({ details: " Cire de soja ", budget: "20 €" })],
     };
     const lignes = lignesEnvoi(envoi, "g1");
     expect(lignes).toHaveLength(2);
     expect(lignes[0]).toMatchObject({
-      groupe_id: "g1", prenom: "Lucie", nom: null, contact: null, jours: ["lundi", "samedi"], plages: ["18:00-20:00", "09:00-12:00"],
+      groupe_id: "g1", prenom: "Lucie", nom: null, contact: null, jours: ["lundi", "samedi"], plages: ["après 18 h", "le matin"],
       espace: "papotages", idee: "Tricot", details: null, materiel: null, budget: null,
     });
     expect(lignes[1]).toMatchObject({ groupe_id: "g1", idee: "Bougies", details: "Cire de soja", budget: "20 €" });
@@ -108,7 +101,7 @@ describe("écran admin", () => {
   it("exporte en clair", () => {
     const t = tableauEnvies([envie()]);
     expect(t[1]).toEqual(["14/11/2026", "Lucie", "Durand", "lucie@exemple.fr", "Créatif", "Couronnes de Noël", "Avec du sapin",
-      "L'animer moi-même, bénévolement", "osier", "25 €", "Mercredi, Samedi", "de 14 h à 17 h 30, de 19 h à 21 h", "Nouvelle"]);
+      "L'animer moi-même, bénévolement", "osier", "25 €", "Mercredi, Samedi", "14 h – 17 h 30 ; après 19 h", "Nouvelle"]);
   });
   it("prépare la création d'un atelier", () => {
     const url = new URL(lienCreerAtelier(envie()), "https://x");

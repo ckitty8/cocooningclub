@@ -42,14 +42,9 @@ test("Envies d'ateliers : page cachée accessible par le pied de page, sans conn
   // Plusieurs jours et plusieurs plages horaires.
   await page.getByRole("checkbox", { name: "Samedi" }).check();
   await page.getByRole("checkbox", { name: "Mercredi" }).check();
-  await page.getByLabel("Plage 1 : heure de début").selectOption("14:00");
-  await page.getByLabel("Plage 1 : heure de fin").selectOption("12:00");
+  await page.getByLabel("Plage horaire 1").fill("14 h – 17 h 30");
   await page.getByRole("button", { name: "Ajouter une plage horaire" }).click();
-  await page.getByLabel("Plage 2 : heure de début").selectOption("19:00");
-  await page.getByLabel("Plage 2 : heure de fin").selectOption("21:00");
-  await page.getByRole("button", { name: "Envoyer mes 2 idées" }).click();
-  await expect(page.getByText("L'heure de fin doit être après l'heure de début")).toBeVisible();
-  await page.getByLabel("Plage 1 : heure de fin").selectOption("17:30");
+  await page.getByLabel("Plage horaire 2").fill("après 19 h");
   await page.getByRole("checkbox", { name: /J'accepte que l'équipe/ }).check();
   await page.getByRole("button", { name: "Envoyer mes 2 idées" }).click();
 
@@ -57,7 +52,7 @@ test("Envies d'ateliers : page cachée accessible par le pied de page, sans conn
   // Les deux idées partent en un seul envoi, reliées par le même groupe.
   const lignes = mock.inserts.envies_ateliers?.[0] as Record<string, unknown>[];
   expect(lignes).toHaveLength(2);
-  const commun = { prenom: "Lucie", contact: "lucie@exemple.fr", jours: ["mercredi", "samedi"], plages: ["14:00-17:30", "19:00-21:00"] };
+  const commun = { prenom: "Lucie", contact: "lucie@exemple.fr", jours: ["mercredi", "samedi"], plages: ["14 h – 17 h 30", "après 19 h"] };
   expect(lignes[0]).toMatchObject({ ...commun, espace: "creatifs", idee: "Couronnes de Noël", souhait: "animer", materiel: "osier, rubans", budget: "25 €" });
   expect(lignes[1]).toMatchObject({ ...commun, espace: "papotages", idee: "Tricot et papotages", souhait: "participer", materiel: null });
   expect(lignes[0].groupe_id).toBeTruthy();
@@ -73,7 +68,7 @@ test("Envies d'ateliers : l'administration liste, filtre, change le statut, règ
     envies: [
       { id: "11111111-0000-4000-8000-000000000001", cree_le: "2026-11-14T10:00:00Z", statut: "nouvelle", prenom: "Lucie", nom: "D.",
         contact: "lucie@exemple.fr", espace: "creatifs", idee: "Couronnes de Noël", details: "Avec du sapin", souhait: "animer",
-        materiel: "osier", budget: "25 €", jours: ["samedi"], plages: ["14:00-17:00"], groupe_id: "g1" },
+        materiel: "osier", budget: "25 €", jours: ["samedi"], plages: ["14 h – 17 h"], groupe_id: "g1" },
       { id: "11111111-0000-4000-8000-000000000002", cree_le: "2026-11-13T10:00:00Z", statut: "a_etudier", prenom: "Sophie", nom: null,
         contact: "06 00 00 00 00", espace: "papotages", idee: "Jeux de société", details: null, souhait: "participer",
         materiel: null, budget: null, jours: [], plages: [], groupe_id: "g2" },
@@ -90,7 +85,7 @@ test("Envies d'ateliers : l'administration liste, filtre, change le statut, règ
   await expect(page.getByRole("heading", { name: "Couronnes de Noël" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "WhatsApp" }).last()).toHaveAttribute("href", /wa\.me\/33600000000/);
   await page.getByRole("button", { name: "Toutes (2)" }).click();
-  await expect(page.getByText("de 14 h à 17 h")).toBeVisible();
+  await expect(page.getByText("14 h – 17 h", { exact: true })).toBeVisible();
 
   await page.getByLabel("Statut de l'envie « Couronnes de Noël »").selectOption("retenue");
   await expect.poll(() => mock.updates.envies_ateliers?.[0]).toEqual({ statut: "retenue" });

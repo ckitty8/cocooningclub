@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS public.envies_ateliers (
   materiel        TEXT,
   budget          TEXT,             -- texte libre (« 25 € », « une trentaine d'euros »)
   jours           TEXT[] NOT NULL DEFAULT '{}',  -- lundi … dimanche
-  plages          TEXT[] NOT NULL DEFAULT '{}',  -- plages horaires « HH:MM-HH:MM » (5 au plus)
+  plages          TEXT[] NOT NULL DEFAULT '{}',  -- plages horaires saisies librement (5 au plus, 100 caractères chacune)
   groupe_id       UUID,             -- idées envoyées ensemble (même personne, même formulaire)
   consentement_le TIMESTAMPTZ,
   statut          TEXT NOT NULL DEFAULT 'nouvelle',
@@ -69,13 +69,14 @@ BEGIN
     ARRAY(SELECT j FROM unnest(ARRAY['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']) WITH ORDINALITY AS s(j, n)
           WHERE j = ANY (COALESCE(NEW.jours, '{}')) ORDER BY n),
     '{}');
-  -- Plages horaires « HH:MM-HH:MM » valides (fin après le début), sans doublon, 5 au plus, dans l'ordre saisi.
+  -- Plages horaires saisies librement : espaces superflus retirés, vides et doublons retirés, 100 caractères
+  -- et 5 plages au plus, dans l'ordre saisi.
   NEW.plages := COALESCE(
     ARRAY(SELECT p FROM (
-            SELECT p, min(n) AS n FROM unnest(COALESCE(NEW.plages, '{}')) WITH ORDINALITY AS s(p, n)
-            WHERE p ~ '^([01][0-9]|2[0-3]):[0-5][0-9]-([01][0-9]|2[0-3]):[0-5][0-9]$'
-              AND split_part(p, '-', 2) > split_part(p, '-', 1)
-            GROUP BY p) AS v
+            SELECT left(regexp_replace(btrim(p), '\s+', ' ', 'g'), 100) AS p, min(n) AS n
+            FROM unnest(COALESCE(NEW.plages, '{}')) WITH ORDINALITY AS s(p, n)
+            WHERE btrim(COALESCE(p, '')) <> ''
+            GROUP BY 1) AS v
           ORDER BY n LIMIT 5),
     '{}');
   NEW.modifie_le := now();

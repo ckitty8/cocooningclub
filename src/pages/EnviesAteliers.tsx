@@ -8,8 +8,8 @@ import { Surtitre } from "@/components/vitrine";
 import { useAntiSpam } from "@/hooks/useAntiSpam";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  ESPACES_ENVIE, HEURES, JOURS, MAX_IDEES, MAX_PLAGES, SOUHAITS, enregistrerEnvoi, heureLisible, ideeVide, montantPlafond,
-  phraseMateriel, validerEnvoi, type IdeeEnvie, type Jour, type Plage,
+  ESPACES_ENVIE, JOURS, MAX_IDEES, MAX_LONGUEUR_PLAGE, MAX_PLAGES, SOUHAITS, enregistrerEnvoi, ideeVide, montantPlafond,
+  phraseMateriel, validerEnvoi, type IdeeEnvie, type Jour,
 } from "@/lib/enviesAteliers";
 
 // Boîte à envies (17/11) : page publique sans connexion, ni dans le menu ni sur Google (noindex, absente
@@ -17,7 +17,6 @@ import {
 // Admin → Envies d'ateliers.
 
 const champ = "w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
-const selectHeure = "min-w-0 flex-1 rounded-xl border bg-background px-2 py-2.5 sm:w-28 sm:flex-none sm:px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring";
 const libelleCls = "mb-1.5 block text-sm font-medium text-foreground";
 const facultatif = <span className="font-normal text-muted-foreground"> (facultatif)</span>;
 const erreurCls = "mt-1 text-xs text-destructive";
@@ -40,7 +39,7 @@ const EnviesAteliers = () => {
   const [contact, setContact] = useState("");
   const [idees, setIdees] = useState<IdeeEnvie[]>([ideeVide()]);
   const [jours, setJours] = useState<Jour[]>([]);
-  const [plages, setPlages] = useState<Partial<Plage>[]>([{}]);
+  const [plages, setPlages] = useState<string[]>([""]);
   const [consentement, setConsentement] = useState(false);
   const [erreurs, setErreurs] = useState<Record<string, string>>({});
   const [envoi, setEnvoi] = useState(false);
@@ -62,13 +61,16 @@ const EnviesAteliers = () => {
     setTimeout(() => document.getElementById(`envie-idee-${idees.length}-espace`)?.focus(), 0);
   };
   const retirerIdee = (i: number) => { setIdees(prev => prev.filter((_, n) => n !== i)); setErreurs({}); };
-  const modifierPlage = (i: number, champs: Partial<Plage>) =>
-    setPlages(prev => prev.map((p, n) => (n === i ? { ...p, ...champs } : p)));
-  const retirerPlage = (i: number) => { setPlages(prev => (prev.length > 1 ? prev.filter((_, n) => n !== i) : [{}])); setErreurs({}); };
+  const modifierPlage = (i: number, texte: string) => setPlages(prev => prev.map((p, n) => (n === i ? texte : p)));
+  const retirerPlage = (i: number) => setPlages(prev => (prev.length > 1 ? prev.filter((_, n) => n !== i) : [""]));
+  const ajouterPlage = () => {
+    setPlages(prev => [...prev, ""]);
+    setTimeout(() => document.getElementById(`envie-plage-${plages.length}`)?.focus(), 0);
+  };
 
   const envoyer = async (ev: FormEvent) => {
     ev.preventDefault();
-    const e = validerEnvoi({ prenom, idees, plages, consentement });
+    const e = validerEnvoi({ prenom, idees, consentement });
     setErreurs(e);
     if (Object.keys(e).length) {
       document.getElementById(`envie-${Object.keys(e)[0]}`)?.focus();
@@ -85,7 +87,7 @@ const EnviesAteliers = () => {
   };
 
   const recommencer = () => {
-    setIdees([ideeVide()]); setJours([]); setPlages([{}]);
+    setIdees([ideeVide()]); setJours([]); setPlages([""]);
     setErreurs({}); setEnvoyees(0); antiSpam.reset();
   };
 
@@ -250,32 +252,23 @@ const EnviesAteliers = () => {
                   <p className="mb-2 mt-5 text-sm font-medium">Plages horaires <span className="font-normal text-muted-foreground">(plusieurs possibles)</span></p>
                   <ul className="space-y-3">
                     {plages.map((p, i) => (
-                      <li key={i}>
-                        <div className="flex items-center gap-2 text-sm sm:gap-3">
-                          <label htmlFor={`envie-plage-${i}`} className="sr-only">Plage {i + 1} : heure de début</label>
-                          <span aria-hidden="true">De</span>
-                          <select id={`envie-plage-${i}`} value={p.debut ?? ""} onChange={e => modifierPlage(i, { debut: e.target.value || undefined })} className={selectHeure} aria-invalid={!!erreurs[`plage-${i}`]}>
-                            <option value="">—</option>
-                            {HEURES.slice(0, -1).map(h => <option key={h} value={h}>{heureLisible(h)}</option>)}
-                          </select>
-                          <label htmlFor={`envie-plage-${i}-fin`} className="sr-only">Plage {i + 1} : heure de fin</label>
-                          <span aria-hidden="true">à</span>
-                          <select id={`envie-plage-${i}-fin`} value={p.fin ?? ""} onChange={e => modifierPlage(i, { fin: e.target.value || undefined })} className={selectHeure} aria-invalid={!!erreurs[`plage-${i}`]}>
-                            <option value="">—</option>
-                            {HEURES.slice(1).map(h => <option key={h} value={h}>{heureLisible(h)}</option>)}
-                          </select>
-                          {(plages.length > 1 || p.debut || p.fin) && (
-                            <button type="button" onClick={() => retirerPlage(i)} aria-label={`Retirer la plage ${i + 1}`} className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border hover:bg-muted">
-                              <X className="h-4 w-4" aria-hidden="true" />
-                            </button>
-                          )}
-                        </div>
-                        {erreurs[`plage-${i}`] && <p className={erreurCls}>{erreurs[`plage-${i}`]}</p>}
+                      <li key={i} className="flex items-center gap-2">
+                        <label htmlFor={`envie-plage-${i}`} className="sr-only">Plage horaire {i + 1}</label>
+                        <input
+                          id={`envie-plage-${i}`} className={champ} value={p} maxLength={MAX_LONGUEUR_PLAGE}
+                          onChange={e => modifierPlage(i, e.target.value)}
+                          placeholder={i === 0 ? "Ex. : 14 h – 17 h 30, ou après 18 h" : "Ex. : le matin avant 12 h"}
+                        />
+                        {(plages.length > 1 || p) && (
+                          <button type="button" onClick={() => retirerPlage(i)} aria-label={`Retirer la plage ${i + 1}`} className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border hover:bg-muted">
+                            <X className="h-4 w-4" aria-hidden="true" />
+                          </button>
+                        )}
                       </li>
                     ))}
                   </ul>
                   {plages.length < MAX_PLAGES && (
-                    <button type="button" onClick={() => setPlages(prev => [...prev, {}])} className="mt-3 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium hover:bg-muted">
+                    <button type="button" onClick={ajouterPlage} className="mt-3 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium hover:bg-muted">
                       <Plus className="h-3.5 w-3.5" aria-hidden="true" />Ajouter une plage horaire
                     </button>
                   )}

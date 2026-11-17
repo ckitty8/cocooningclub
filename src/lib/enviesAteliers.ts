@@ -29,37 +29,17 @@ export const JOURS = [
 ] as const;
 export type Jour = (typeof JOURS)[number]["valeur"];
 
-/** Heures proposées pour la plage horaire : de 8 h à 22 h, toutes les demi-heures (« 08:00 » … « 22:00 »). */
-export const HEURES: string[] = Array.from({ length: 29 }, (_, i) => {
-  const minutes = 8 * 60 + i * 30;
-  return `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
-});
-
-/** « 09:30 » → « 9 h 30 », « 14:00 » → « 14 h ». */
-export const heureLisible = (h: string | null | undefined): string => {
-  if (!h) return "";
-  const [hh, mm] = h.split(":");
-  return `${Number(hh)} h${mm && mm !== "00" ? ` ${mm}` : ""}`;
-};
-
-/** Une plage horaire : début et fin (« 09:00 », « 12:30 »). */
-export interface Plage { debut: string; fin: string }
-
-/** Nombre maximal d'idées et de plages horaires dans un même envoi. */
+/** Nombre maximal d'idées et de plages horaires dans un même envoi ; longueur maximale d'une plage saisie. */
 export const MAX_IDEES = 5;
 export const MAX_PLAGES = 5;
+export const MAX_LONGUEUR_PLAGE = 100;
 
-/** « 09:00-12:30 » (forme enregistrée en base). */
-export const plageEnTexte = (p: Plage) => `${p.debut}-${p.fin}`;
+/** Plages horaires saisies librement (« 14 h – 17 h 30 », « après 18 h ») : nettoyées, vides et doublons retirés. */
+export const plagesRemplies = (plages: readonly string[]) =>
+  [...new Set(plages.map(p => p.trim().replace(/\s+/g, " ").slice(0, MAX_LONGUEUR_PLAGE)).filter(Boolean))].slice(0, MAX_PLAGES);
 
-/** « 09:00-12:30 » → « de 9 h à 12 h 30 » ; texte inconnu rendu tel quel. */
-export const plageLisible = (plage: string): string => {
-  const [debut, fin] = plage.split("-");
-  return debut && fin ? `de ${heureLisible(debut)} à ${heureLisible(fin)}` : plage;
-};
-
-/** « de 9 h à 12 h, de 18 h à 20 h ». */
-export const plagesLisibles = (plages: readonly string[] | null | undefined) => (plages ?? []).map(plageLisible).join(", ");
+/** « 14 h – 17 h ; après 18 h ». */
+export const plagesLisibles = (plages: readonly string[] | null | undefined) => (plages ?? []).join(" ; ");
 
 /** Jours remis dans l'ordre de la semaine. */
 export const trierJours = (jours: readonly string[]) => JOURS.map(j => j.valeur).filter(j => jours.includes(j));
@@ -92,8 +72,8 @@ export interface EnvoiEnvies {
   contact?: string;
   idees: IdeeEnvie[];
   jours: Jour[];
-  /** Plages saisies ; une ligne laissée entièrement vide est ignorée. */
-  plages: Partial<Plage>[];
+  /** Plages horaires saisies librement ; une ligne vide est ignorée. */
+  plages: string[];
 }
 
 /** Une envie telle que la lit l'administration (une ligne par idée). */
@@ -133,13 +113,9 @@ export const phraseMateriel = (plafond: number | null | undefined): string => {
     : "le matériel peut être fourni par l'association, dans la limite d'un budget fixé par l'équipe.";
 };
 
-/** Plages complètes (début et fin), lignes vides retirées, sans doublon. */
-const plagesRemplies = (plages: Partial<Plage>[]) =>
-  [...new Set(plages.filter(p => p.debut && p.fin).map(p => plageEnTexte(p as Plage)))];
-
 /**
- * Erreurs du formulaire. Clés : prenom, consentement, idee-<n>-espace, idee-<n>-idee, idee-<n>-souhait, plage-<n>
- * (n = rang de l'idée ou de la plage, à partir de 0).
+ * Erreurs du formulaire. Clés : prenom, consentement, idee-<n>-espace, idee-<n>-idee, idee-<n>-souhait
+ * (n = rang de l'idée, à partir de 0).
  */
 export const validerEnvoi = (e: Partial<EnvoiEnvies> & { consentement?: boolean }): Record<string, string> => {
   const erreurs: Record<string, string> = {};
@@ -150,11 +126,6 @@ export const validerEnvoi = (e: Partial<EnvoiEnvies> & { consentement?: boolean 
     if (!idee.idee?.trim()) erreurs[`idee-${i}-idee`] = "Décris ton idée en quelques mots";
     else if (idee.idee.trim().length > 300) erreurs[`idee-${i}-idee`] = "300 caractères au maximum";
     if (!idee.souhait) erreurs[`idee-${i}-souhait`] = "Choisis une réponse";
-  });
-  (e.plages ?? []).forEach((p, i) => {
-    if (!p.debut && !p.fin) return;
-    if (!p.debut || !p.fin) erreurs[`plage-${i}`] = "Choisis l'heure de début et l'heure de fin";
-    else if (p.fin <= p.debut) erreurs[`plage-${i}`] = "L'heure de fin doit être après l'heure de début";
   });
   if (!e.consentement) erreurs.consentement = "Merci de cocher cette case";
   return erreurs;
