@@ -77,6 +77,7 @@ const Confidentialite = () => {
               <li>pré-inscriptions sans compte : anonymisées 3 ans après la date de l'atelier (avec vos réponses sur le droit à l'image et le groupe WhatsApp) ;</li>
               <li>pré-inscriptions que le site n'a pas pu enregistrer normalement (copie de secours de vos coordonnées, le temps de vous recontacter) : supprimées après 6 mois ;</li>
               <li>messages envoyés via le formulaire de contact : supprimés après 3 ans ;</li>
+              <li>envies d'ateliers déposées dans la boîte à envies : supprimées après 3 ans ;</li>
               <li>statistiques de fréquentation du site : supprimées après 13 mois ;</li>
               <li>journal des actions de l'équipe : supprimé après 12 mois ;</li>
               <li>compte membre : conservé jusqu'à votre demande de suppression.</li>

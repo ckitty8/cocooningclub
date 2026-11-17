@@ -6,6 +6,7 @@ import { DESCRIPTION_PAR_DEFAUT, PAGES_PUBLIQUES, PAGE_INTROUVABLE, SITE_URL, ty
 const metaFor = (pathname: string): PageSeo => {
   const path = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
   if (PAGES_PUBLIQUES[path]) return PAGES_PUBLIQUES[path];
+  if (path === "/envies-ateliers") return { title: "Tes envies d'ateliers · Le Cocooning Club", index: false };
   if (path.startsWith("/inscription/")) return { title: "Pré-inscription · Le Cocooning Club", index: false };
   if (path.startsWith("/espace-membre")) return { title: "Espace membre · Le Cocooning Club", index: false };
   if (path.startsWith("/admin")) return { title: "Administration · Le Cocooning Club", index: false };

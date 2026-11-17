@@ -39,7 +39,7 @@
       ]
     },
     {
-      "source": "/(admin|espace-membre|login|forgot-password|reset-password)(.*)",
+      "source": "/(admin|espace-membre|login|forgot-password|reset-password|envies-ateliers)(.*)",
       "headers": [
         {
           "key": "X-Robots-Tag",

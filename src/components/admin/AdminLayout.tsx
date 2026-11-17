@@ -4,10 +4,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import {
   LayoutDashboard, Users, CalendarDays, FileText,
-  FormInput, LogOut, Menu, ChevronRight, ChevronDown, UserCheck, MessageSquare, CalendarClock, Lightbulb, Star, Eye, Table2, BadgeEuro, Scale, Calculator
+  FormInput, LogOut, Menu, ChevronRight, ChevronDown, UserCheck, MessageSquare, CalendarClock, Lightbulb, Star, Eye, Table2, BadgeEuro, Scale, Calculator, Sparkles
 } from "lucide-react";
 
-type BadgeKey = "preinscriptions" | "idees" | "avis";
+type BadgeKey = "preinscriptions" | "idees" | "avis" | "envies";
 interface SousMenu { href: string; label: string }
 interface ElementMenu {
   href: string;
@@ -32,6 +32,7 @@ const navItems: ElementMenu[] = [
   { href: "/admin/pre-inscriptions",   label: "Pré-inscriptions",         icon: UserCheck, badgeKey: "preinscriptions" },
   { href: "/admin/disponibilites",     label: "Gestion des dispo des admins",           icon: CalendarClock },
   { href: "/admin/boite-a-idees",      label: "Boîte à idées",            icon: Lightbulb, badgeKey: "idees" },
+  { href: "/admin/envies-ateliers",    label: "Envies d'ateliers",        icon: Sparkles, badgeKey: "envies" },
   { href: "/admin/avis",               label: "Témoignages",              icon: Star, badgeKey: "avis" },
   { href: "/admin/documents",          label: "Documents",                icon: FileText },
   { href: "/admin/formulaire",         label: "Formulaire de contact",    icon: FormInput },
@@ -60,6 +61,7 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
   const [ideesNouvelles, setIdeesNouvelles] = useState(0);
   const [preInscEnAttente, setPreInscEnAttente] = useState(0);
   const [avisEnAttente, setAvisEnAttente] = useState(0);
+  const [enviesNouvelles, setEnviesNouvelles] = useState(0);
   // Groupes du menu repliés par l'administratrice (mémorisé dans le navigateur) ; ouverts par défaut.
   const [replies, setReplies] = useState<Record<string, boolean>>(() => {
     try { return JSON.parse(localStorage.getItem("admin.menu.replies") ?? "{}"); } catch { return {}; }
@@ -103,6 +105,21 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
         if (cancelled) return;
         if (error) console.error("[AdminLayout.preInsc count]", error);
         else setPreInscEnAttente(count ?? 0);
+      });
+    return () => { cancelled = true; };
+  }, [profile?.id, location.pathname]);
+
+  // Envies d'ateliers au statut « Nouvelle » (backlog : la pastille reste tant qu'elles ne sont pas traitées).
+  // Sans la table (migration pas encore appliquée), pas de pastille.
+  useEffect(() => {
+    if (!profile?.id) return;
+    let cancelled = false;
+    supabase
+      .from("envies_ateliers")
+      .select("id", { count: "exact", head: true })
+      .eq("statut", "nouvelle")
+      .then(({ count, error }) => {
+        if (!cancelled) setEnviesNouvelles(error ? 0 : count ?? 0);
       });
     return () => { cancelled = true; };
   }, [profile?.id, location.pathname]);
@@ -187,6 +204,7 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
             badgeKey === "idees" ? ideesNouvelles :
             badgeKey === "preinscriptions" ? preInscEnAttente :
             badgeKey === "avis" ? avisEnAttente :
+            badgeKey === "envies" ? enviesNouvelles :
             0;
           return (
             <Link

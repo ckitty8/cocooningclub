@@ -50,7 +50,7 @@ DirectoryIndex index.html
 
   # Espaces connectés : jamais dans les moteurs de recherche.
   # (THE_REQUEST = adresse demandée par le navigateur, avant le renvoi interne vers index.html.)
-  <If "%{THE_REQUEST} =~ m#^\S+ /(admin|espace-membre|login|forgot-password|reset-password)#">
+  <If "%{THE_REQUEST} =~ m#^\S+ /(admin|espace-membre|login|forgot-password|reset-password|envies-ateliers)#">
     Header always set X-Robots-Tag "noindex, nofollow"
   </If>
 </IfModule>

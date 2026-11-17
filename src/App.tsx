@@ -9,6 +9,7 @@ import Index from "./pages/Index.tsx";
 import SimulationBanner from "@/components/SimulationBanner";
 import { ACCES } from "@/lib/roles";
 import { rejouerFile } from "@/lib/preInscriptionSecours";
+import { rejouerEnvies } from "@/lib/enviesAteliers";
 import NotFound from "./pages/NotFound.tsx";
 
 // Pages chargées à la demande : un visiteur de l'accueil ne télécharge ni l'administration ni l'espace membre
@@ -21,6 +22,8 @@ const MentionsLegales = lazy(() => import("./pages/MentionsLegales.tsx"));
 const NotreHistoire = lazy(() => import("./pages/NotreHistoire.tsx"));
 const EspacePage = lazy(() => import("./pages/EspacePage.tsx"));
 const NosOffres = lazy(() => import("./pages/NosOffres.tsx"));
+const EnviesAteliers = lazy(() => import("./pages/EnviesAteliers.tsx"));
+const EnviesAdmin = lazy(() => import("./pages/admin/Envies.tsx"));
 const Simulateur = lazy(() => import("./pages/createur/Simulateur.tsx"));
 const DroitsParOffre = lazy(() => import("./pages/createur/DroitsParOffre.tsx"));
 const MatriceRoles = lazy(() => import("./pages/createur/MatriceRoles.tsx"));
@@ -104,11 +107,11 @@ const RecoveryRedirect = () => {
   return null;
 };
 
-// Renvoie les pré-inscriptions gardées dans le navigateur quand le réseau ou le serveur était
+// Renvoie les pré-inscriptions (et les envies d'ateliers) gardées dans le navigateur quand le réseau ou le serveur était
 // indisponible (voir src/lib/preInscriptionSecours.ts) : au chargement du site et au retour de la connexion.
 const RenvoiPreInscriptions = () => {
   useEffect(() => {
-    const renvoyer = () => { void rejouerFile(); };
+    const renvoyer = () => { void rejouerFile(); void rejouerEnvies(); };
     renvoyer();
     window.addEventListener("online", renvoyer);
     return () => window.removeEventListener("online", renvoyer);
@@ -135,6 +138,8 @@ const App = () => (
           <Route path="/inscription/:id" element={<Inscription />} />
           <Route path="/notre-histoire" element={<NotreHistoire />} />
           <Route path="/nos-offres" element={<NosOffres />} />
+          {/* Page cachée : pas dans le menu ni sur Google, lien discret dans le pied de page */}
+          <Route path="/envies-ateliers" element={<EnviesAteliers />} />
           <Route path="/papotages" element={<EspacePage slug="papotages" />} />
           <Route path="/creatifs" element={<EspacePage slug="creatifs" />} />
           <Route path="/business" element={<EspacePage slug="business" />} />
@@ -168,6 +173,7 @@ const App = () => (
           <Route path="/admin/messages-templates" element={<RoleGuard allowedRoles={ACCES.admin}><TemplatesMessages /></RoleGuard>} />
           <Route path="/admin/disponibilites"     element={<RoleGuard allowedRoles={ACCES.admin}><Disponibilites /></RoleGuard>} />
           <Route path="/admin/boite-a-idees"      element={<RoleGuard allowedRoles={ACCES.admin}><BoiteAIdees /></RoleGuard>} />
+          <Route path="/admin/envies-ateliers"    element={<RoleGuard allowedRoles={ACCES.admin}><EnviesAdmin /></RoleGuard>} />
           <Route path="/admin/avis"               element={<RoleGuard allowedRoles={ACCES.admin}><AvisAdmin /></RoleGuard>} />
           <Route path="/admin/mon-compte"         element={<RoleGuard allowedRoles={ACCES.admin}><MonCompte /></RoleGuard>} />
 

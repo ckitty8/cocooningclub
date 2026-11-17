@@ -101,6 +101,10 @@ const Footer = () => {
             <Link to="/confidentialite" className="inline-block py-1 hover:text-terracotta transition-colors">
               Paramètres de confidentialité
             </Link>
+            {/* Page cachée (noindex, hors menu et plan du site) : seul ce lien discret y mène. */}
+            <Link to="/envies-ateliers" rel="nofollow" className="inline-block py-1 hover:text-terracotta transition-colors">
+              Une envie d'atelier ?
+            </Link>
             <p>Gagny · Chelles · Le Raincy</p>
           </div>
         </div>

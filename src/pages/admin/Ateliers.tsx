@@ -441,6 +441,22 @@ const Ateliers = () => {
     setSaving(false);
   };
 
+  // Arrivée depuis Envies d'ateliers : /admin/ateliers?nouveau=1&titre=…&description=…&espace=<slug>
+  // ouvre le formulaire d'un nouvel atelier prérempli (brouillon, rien n'est enregistré sans « Enregistrer »).
+  const aCreer = searchParams.get("nouveau");
+  useEffect(() => {
+    if (!aCreer || loading || !espaces.length) return;
+    const slug = searchParams.get("espace");
+    setForm({
+      ...emptyForm,
+      titre: searchParams.get("titre") ?? "",
+      description: searchParams.get("description") ?? "",
+      espace_id: espaces.find(e => e.slug === slug)?.id ?? "",
+    });
+    setModal({ open: true, atelier: null });
+    setSearchParams({}, { replace: true });
+  }, [aCreer, loading, espaces]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Arrivée depuis la fiche d'un atelier : /admin/ateliers?modifier=<id> ouvre directement le formulaire.
   const aModifier = searchParams.get("modifier");
   useEffect(() => {

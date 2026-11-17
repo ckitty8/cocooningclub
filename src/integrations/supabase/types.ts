@@ -182,6 +182,78 @@ export type Database = {
         }
         Relationships: []
       }
+      envies_ateliers: {
+        Row: {
+          id: string
+          cree_le: string
+          modifie_le: string
+          prenom: string
+          nom: string | null
+          contact: string | null
+          espace: string | null
+          idee: string
+          details: string | null
+          souhait: string | null
+          materiel: string | null
+          budget: string | null
+          moments: string[]
+          consentement_le: string | null
+          statut: string
+        }
+        Insert: {
+          id?: string
+          cree_le?: string
+          modifie_le?: string
+          prenom: string
+          nom?: string | null
+          contact?: string | null
+          espace?: string | null
+          idee: string
+          details?: string | null
+          souhait?: string | null
+          materiel?: string | null
+          budget?: string | null
+          moments?: string[]
+          consentement_le?: string | null
+          statut?: string
+        }
+        Update: {
+          id?: string
+          cree_le?: string
+          modifie_le?: string
+          prenom?: string
+          nom?: string | null
+          contact?: string | null
+          espace?: string | null
+          idee?: string
+          details?: string | null
+          souhait?: string | null
+          materiel?: string | null
+          budget?: string | null
+          moments?: string[]
+          consentement_le?: string | null
+          statut?: string
+        }
+        Relationships: []
+      }
+      parametres_envies: {
+        Row: {
+          id: boolean
+          plafond_materiel: number | null
+          modifie_le: string
+        }
+        Insert: {
+          id?: boolean
+          plafond_materiel?: number | null
+          modifie_le?: string
+        }
+        Update: {
+          id?: boolean
+          plafond_materiel?: number | null
+          modifie_le?: string
+        }
+        Relationships: []
+      }
       formule_espaces: {
         Row: {
           espace_id: string

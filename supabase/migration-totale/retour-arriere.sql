@@ -18,6 +18,9 @@ BEGIN
 END
 $$;
 DROP FUNCTION IF EXISTS private.purger_donnees_anciennes();
+-- Envies d'ateliers (20261117000000) : les envies reçues et le plafond du matériel sont perdus.
+DROP TABLE IF EXISTS public.envies_ateliers, public.parametres_envies;
+DROP FUNCTION IF EXISTS private.preparer_envie_atelier();
 -- Choix « Je serai présente » proposés par atelier (20261112000000) : les réglages sont perdus (les trois choix reviennent partout).
 ALTER TABLE public.ateliers DROP CONSTRAINT IF EXISTS ateliers_creneaux_proposes_valeurs, DROP COLUMN IF EXISTS creneaux_proposes;
 -- Instagram de la pré-inscription (20261106000002) : les comptes donnés sont perdus.
