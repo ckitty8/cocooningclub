@@ -8,7 +8,7 @@ Quand l'utilisateur demande ce qu'il reste à faire, lui rappeler en premier les
 
 Terminer le message à l'utilisatrice par ces deux phrases (avec le vrai hash du dernier commit) : « C'est la branche de la preview Vercel : le dernier commit dessus est `<hash>`. Rien n'a été poussé sur `main`. » Si quelque chose a été poussé sur `main` à sa demande, le dire à la place de la 2e phrase.
 
-À chaque livraison, donner aussi le lien de la preview Vercel de la branche : `https://cocooningclub-git-<branche avec « / » remplacés par « - »>-ckitty8s-projects.vercel.app` (pour `claude/sharp-fermat-zch983` : `https://cocooningclub-git-claude-sharp-fermat-zch983-ckitty8s-projects.vercel.app`). Claude ne peut pas ouvrir ce domaine depuis son environnement : préciser que la preview met une à deux minutes à se mettre à jour après le push.
+À chaque livraison, donner aussi le lien de la preview Vercel de la branche : `https://cocooningclub-git-<branche avec « / » remplacés par « - »>-ckitty8s-projects.vercel.app` (pour `claude/sharp-fermat-zch983` : `https://cocooningclub-git-claude-sharp-fermat-zch983-ckitty8s-projects.vercel.app`). Claude ne peut pas ouvrir ce domaine depuis son environnement : préciser que la preview met une à deux minutes à se mettre à jour après le push. ATTENTION : le nom avant « .vercel.app » ne doit pas dépasser 63 caractères, sinon Vercel le raccourcit avec un code imprévisible et le lien donné ne marche pas (arrivé le 17/11 avec `claude/peaceful-goldberg-cj1o8l`, 67 caractères). Dans ce cas, pousser AUSSI le même travail sur une branche au nom court (le 17/11 : `claude/envies` → `https://cocooningclub-git-claude-envies-ckitty8s-projects.vercel.app`) et donner ce lien-là.
 
 ## Avant chaque push sur `main`
 
