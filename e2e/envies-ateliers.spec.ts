@@ -27,14 +27,20 @@ test("Envies d'ateliers : page cachée accessible par le pied de page, sans conn
   await page.getByRole("radio", { name: "L'animer moi-même, bénévolement" }).check();
   await page.getByLabel("Matériel nécessaire").fill("osier, rubans");
   await page.getByLabel("Budget estimé").fill("25 €");
-  await page.getByRole("checkbox", { name: "Le week-end" }).check();
+  await page.getByRole("checkbox", { name: "Samedi" }).check();
+  await page.getByRole("checkbox", { name: "Mercredi" }).check();
+  await page.getByLabel("Heure de début").selectOption("14:00");
+  await page.getByLabel("Heure de fin").selectOption("12:00");
+  await page.getByRole("button", { name: "Envoyer mon envie" }).click();
+  await expect(page.getByText("L'heure de fin doit être après l'heure de début")).toBeVisible();
+  await page.getByLabel("Heure de fin").selectOption("17:30");
   await page.getByRole("checkbox", { name: /J'accepte que l'équipe/ }).check();
   await page.getByRole("button", { name: "Envoyer mon envie" }).click();
 
   await expect(page.getByText("Merci pour ton idée 💛")).toBeVisible();
   expect(mock.inserts.envies_ateliers?.[0]).toMatchObject({
     prenom: "Lucie", contact: "lucie@exemple.fr", espace: "creatifs", idee: "Couronnes de Noël",
-    souhait: "animer", materiel: "osier, rubans", budget: "25 €", moments: ["week_end"],
+    souhait: "animer", materiel: "osier, rubans", budget: "25 €", jours: ["mercredi", "samedi"], heure_debut: "14:00", heure_fin: "17:30",
   });
 });
 
@@ -47,10 +53,10 @@ test("Envies d'ateliers : l'administration liste, filtre, change le statut, règ
     envies: [
       { id: "11111111-0000-4000-8000-000000000001", cree_le: "2026-11-14T10:00:00Z", statut: "nouvelle", prenom: "Lucie", nom: "D.",
         contact: "lucie@exemple.fr", espace: "creatifs", idee: "Couronnes de Noël", details: "Avec du sapin", souhait: "animer",
-        materiel: "osier", budget: "25 €", moments: ["week_end"] },
+        materiel: "osier", budget: "25 €", jours: ["samedi"], heure_debut: "14:00", heure_fin: "17:00" },
       { id: "11111111-0000-4000-8000-000000000002", cree_le: "2026-11-13T10:00:00Z", statut: "a_etudier", prenom: "Sophie", nom: null,
         contact: "06 00 00 00 00", espace: "papotages", idee: "Jeux de société", details: null, souhait: "participer",
-        materiel: null, budget: null, moments: [] },
+        materiel: null, budget: null, jours: [], heure_debut: null, heure_fin: null },
     ],
   });
   await page.setViewportSize({ width: 1280, height: 900 });
@@ -64,6 +70,7 @@ test("Envies d'ateliers : l'administration liste, filtre, change le statut, règ
   await expect(page.getByRole("heading", { name: "Couronnes de Noël" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "WhatsApp" }).last()).toHaveAttribute("href", /wa\.me\/33600000000/);
   await page.getByRole("button", { name: "Toutes (2)" }).click();
+  await expect(page.getByText("de 14 h à 17 h")).toBeVisible();
 
   await page.getByLabel("Statut de l'envie « Couronnes de Noël »").selectOption("retenue");
   await expect.poll(() => mock.updates.envies_ateliers?.[0]).toEqual({ statut: "retenue" });

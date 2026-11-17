@@ -4,14 +4,14 @@ const insert = vi.fn();
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { from: () => ({ insert }) } }));
 
 import {
-  compterParStatut, enregistrerEnvie, enviesEnAttente, rejouerEnvies, filtrerEnvies, lienCreerAtelier, lienGmailEnvie, lienWhatsappEnvie, ligneEnvie, montantPlafond,
+  HEURES, compterParStatut, enregistrerEnvie, enviesEnAttente, plageLisible, rejouerEnvies, filtrerEnvies, lienCreerAtelier, lienGmailEnvie, lienWhatsappEnvie, ligneEnvie, montantPlafond,
   numeroWhatsapp, phraseMateriel, tableauEnvies, validerEnvie, type Envie,
 } from "./enviesAteliers";
 
 const envie = (p: Partial<Envie> = {}): Envie => ({
   id: "1", cree_le: "2026-11-14T10:00:00Z", statut: "nouvelle", prenom: "Lucie", nom: "Durand", contact: "lucie@exemple.fr",
   espace: "creatifs", idee: "Couronnes de Noël", details: "Avec du sapin", souhait: "animer", materiel: "osier", budget: "25 €",
-  moments: ["week_end", "apres_midi"], ...p,
+  jours: ["mercredi", "samedi"], heure_debut: "14:00", heure_fin: "17:30", ...p,
 });
 
 describe("validerEnvie", () => {
@@ -21,6 +21,25 @@ describe("validerEnvie", () => {
   });
   it("refuse une idée trop longue", () => {
     expect(validerEnvie({ prenom: "L", espace: "creatifs", idee: "x".repeat(301), souhait: "animer", consentement: true }).idee).toMatch(/300/);
+  });
+});
+
+describe("jours et plage horaire", () => {
+  it("propose les heures de 8 h à 22 h par demi-heure", () => {
+    expect(HEURES[0]).toBe("08:00");
+    expect(HEURES[1]).toBe("08:30");
+    expect(HEURES.at(-1)).toBe("22:00");
+  });
+  it("écrit la plage en clair", () => {
+    expect(plageLisible("09:00", "12:30")).toBe("De 9 h à 12 h 30");
+    expect(plageLisible("18:00", "")).toBe("À partir de 18 h");
+    expect(plageLisible(null, "12:00")).toBe("Jusqu'à 12 h");
+    expect(plageLisible(null, null)).toBe("");
+  });
+  it("refuse une fin avant le début", () => {
+    const base = { prenom: "L", espace: "creatifs" as const, idee: "x", souhait: "animer" as const, consentement: true };
+    expect(validerEnvie({ ...base, heure_debut: "14:00", heure_fin: "12:00" }).plage).toMatch(/après l'heure de début/);
+    expect(validerEnvie({ ...base, heure_debut: "14:00", heure_fin: "16:00" })).toEqual({});
   });
 });
 
@@ -38,8 +57,8 @@ describe("plafond du matériel", () => {
 
 describe("ligneEnvie", () => {
   it("retire les champs vides et ajoute la date du consentement", () => {
-    const l = ligneEnvie({ prenom: " Lucie ", nom: " ", contact: "", espace: "papotages", idee: " Tricot ", souhait: "participer", moments: [] });
-    expect(l).toMatchObject({ prenom: "Lucie", nom: null, contact: null, idee: "Tricot", details: null, materiel: null, budget: null });
+    const l = ligneEnvie({ prenom: " Lucie ", nom: " ", contact: "", espace: "papotages", idee: " Tricot ", souhait: "participer", jours: ["samedi", "lundi"] });
+    expect(l).toMatchObject({ jours: ["lundi", "samedi"], heure_debut: null, heure_fin: null, prenom: "Lucie", nom: null, contact: null, idee: "Tricot", details: null, materiel: null, budget: null });
     expect(l.consentement_le).toMatch(/^\d{4}-/);
   });
 });
@@ -72,7 +91,7 @@ describe("écran admin", () => {
   it("exporte en clair", () => {
     const t = tableauEnvies([envie()]);
     expect(t[1]).toEqual(["14/11/2026", "Lucie", "Durand", "lucie@exemple.fr", "Créatif", "Couronnes de Noël", "Avec du sapin",
-      "L'animer moi-même, bénévolement", "osier", "25 €", "Le week-end, L'après-midi", "Nouvelle"]);
+      "L'animer moi-même, bénévolement", "osier", "25 €", "Mercredi, Samedi", "De 14 h à 17 h 30", "Nouvelle"]);
   });
   it("prépare la création d'un atelier", () => {
     const url = new URL(lienCreerAtelier(envie()), "https://x");
@@ -83,7 +102,7 @@ describe("écran admin", () => {
 });
 
 describe("aucune envie perdue", () => {
-  const nouvelle = { prenom: "Lucie", espace: "creatifs" as const, idee: "Bougies", souhait: "participer" as const, moments: [] };
+  const nouvelle = { prenom: "Lucie", espace: "creatifs" as const, idee: "Bougies", souhait: "participer" as const, jours: [] };
   beforeEach(() => { localStorage.clear(); insert.mockReset(); });
 
   it("enregistre directement quand le serveur répond", async () => {

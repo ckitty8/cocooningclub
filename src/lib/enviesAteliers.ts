@@ -18,14 +18,40 @@ export const SOUHAITS = [
 ] as const;
 export type Souhait = (typeof SOUHAITS)[number]["valeur"];
 
-export const MOMENTS = [
-  { valeur: "semaine", libelle: "En semaine" },
-  { valeur: "week_end", libelle: "Le week-end" },
-  { valeur: "matin", libelle: "Le matin" },
-  { valeur: "apres_midi", libelle: "L'après-midi" },
-  { valeur: "soir", libelle: "Le soir" },
+export const JOURS = [
+  { valeur: "lundi", libelle: "Lundi" },
+  { valeur: "mardi", libelle: "Mardi" },
+  { valeur: "mercredi", libelle: "Mercredi" },
+  { valeur: "jeudi", libelle: "Jeudi" },
+  { valeur: "vendredi", libelle: "Vendredi" },
+  { valeur: "samedi", libelle: "Samedi" },
+  { valeur: "dimanche", libelle: "Dimanche" },
 ] as const;
-export type Moment = (typeof MOMENTS)[number]["valeur"];
+export type Jour = (typeof JOURS)[number]["valeur"];
+
+/** Heures proposées pour la plage horaire : de 8 h à 22 h, toutes les demi-heures (« 08:00 » … « 22:00 »). */
+export const HEURES: string[] = Array.from({ length: 29 }, (_, i) => {
+  const minutes = 8 * 60 + i * 30;
+  return `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
+});
+
+/** « 09:30 » → « 9 h 30 », « 14:00 » → « 14 h ». */
+export const heureLisible = (h: string | null | undefined): string => {
+  if (!h) return "";
+  const [hh, mm] = h.split(":");
+  return `${Number(hh)} h${mm && mm !== "00" ? ` ${mm}` : ""}`;
+};
+
+/** « De 9 h à 12 h », « À partir de 18 h », « Jusqu'à 12 h », ou vide. */
+export const plageLisible = (debut?: string | null, fin?: string | null): string => {
+  if (debut && fin) return `De ${heureLisible(debut)} à ${heureLisible(fin)}`;
+  if (debut) return `À partir de ${heureLisible(debut)}`;
+  if (fin) return `Jusqu'à ${heureLisible(fin)}`;
+  return "";
+};
+
+/** Jours remis dans l'ordre de la semaine. */
+export const trierJours = (jours: readonly string[]) => JOURS.map(j => j.valeur).filter(j => jours.includes(j));
 
 export const STATUTS_ENVIE = [
   { valeur: "nouvelle", libelle: "Nouvelle", pluriel: "Nouvelles" },
@@ -46,7 +72,9 @@ export interface NouvelleEnvie {
   souhait: Souhait;
   materiel?: string;
   budget?: string;
-  moments: Moment[];
+  jours: Jour[];
+  heure_debut?: string;
+  heure_fin?: string;
 }
 
 export interface Envie extends NouvelleEnvie {
@@ -85,6 +113,7 @@ export const validerEnvie = (e: Partial<NouvelleEnvie> & { consentement?: boolea
   if (!e.idee?.trim()) erreurs.idee = "Décris ton idée en quelques mots";
   else if (e.idee.trim().length > 300) erreurs.idee = "300 caractères au maximum";
   if (!e.souhait) erreurs.souhait = "Choisis une réponse";
+  if (e.heure_debut && e.heure_fin && e.heure_fin <= e.heure_debut) erreurs.plage = "L'heure de fin doit être après l'heure de début";
   if (!e.consentement) erreurs.consentement = "Merci de cocher cette case";
   return erreurs;
 };
@@ -102,7 +131,9 @@ export const ligneEnvie = (e: NouvelleEnvie) => {
     souhait: e.souhait,
     materiel: t(e.materiel),
     budget: t(e.budget),
-    moments: e.moments,
+    jours: trierJours(e.jours),
+    heure_debut: e.heure_debut || null,
+    heure_fin: e.heure_fin || null,
     consentement_le: new Date().toISOString(),
   };
 };
@@ -159,13 +190,13 @@ const dateCourte = (iso: string) => {
   return a && m && j ? `${j}/${m}/${a}` : "";
 };
 
-export const COLONNES_ENVIES = ["Reçue le", "Prénom", "Nom", "Contact", "Espace", "Idée", "Détails", "Souhait", "Matériel", "Budget", "Moments", "Statut"];
+export const COLONNES_ENVIES = ["Reçue le", "Prénom", "Nom", "Contact", "Espace", "Idée", "Détails", "Souhait", "Matériel", "Budget", "Jours", "Plage horaire", "Statut"];
 
 export const tableauEnvies = (envies: Envie[]): string[][] => [
   COLONNES_ENVIES,
   ...envies.map(e => [
     dateCourte(e.cree_le), e.prenom, e.nom ?? "", e.contact ?? "", libelle(ESPACES_ENVIE, e.espace), e.idee, e.details ?? "",
-    libelle(SOUHAITS, e.souhait), e.materiel ?? "", e.budget ?? "", e.moments.map(m => libelle(MOMENTS, m)).join(", "),
+    libelle(SOUHAITS, e.souhait), e.materiel ?? "", e.budget ?? "", e.jours.map(j => libelle(JOURS, j)).join(", "), plageLisible(e.heure_debut, e.heure_fin),
     libelle(STATUTS_ENVIE, e.statut),
   ]),
 ];

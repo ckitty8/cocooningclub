@@ -6,7 +6,7 @@ import { logAction } from "@/utils/logAction";
 import { toast } from "sonner";
 import { Copy, Download, ExternalLink, Filter, Loader2, Mail, MessageCircle, Plus, Search, Sparkles, Trash2 } from "lucide-react";
 import {
-  ESPACES_ENVIE, LIEN_ENVIES, MOMENTS, SOUHAITS, STATUTS_ENVIE, compterParStatut, filtrerEnvies, libelle,
+  ESPACES_ENVIE, JOURS, LIEN_ENVIES, SOUHAITS, plageLisible, STATUTS_ENVIE, compterParStatut, filtrerEnvies, libelle,
   lienCreerAtelier, lienGmailEnvie, lienWhatsappEnvie, lienWhatsappPartage, nomFichierEnvies, tableauEnvies,
   type Envie, type EspaceEnvie, type StatutEnvie,
 } from "@/lib/enviesAteliers";
@@ -49,7 +49,7 @@ const Envies = () => {
         : r.error.message);
     } else {
       setErreur(null);
-      setEnvies((r.data ?? []).map(e => ({ ...e, moments: e.moments ?? [] })) as Envie[]);
+      setEnvies((r.data ?? []).map(e => ({ ...e, jours: e.jours ?? [] })) as Envie[]);
     }
     const v = p.data?.plafond_materiel != null ? String(p.data.plafond_materiel).replace(/\.00$/, "") : "";
     setPlafond(v);
@@ -208,11 +208,12 @@ const Envies = () => {
                     {e.souhait && <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium">{libelle(SOUHAITS, e.souhait)}</span>}
                   </div>
                   {e.details && <p className="whitespace-pre-line text-sm">{e.details}</p>}
-                  {(e.materiel || e.budget || e.moments.length > 0) && (
+                  {(e.materiel || e.budget || e.jours.length > 0 || e.heure_debut || e.heure_fin) && (
                     <dl className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted-foreground">
                       {e.materiel && <div><dt className="inline">Matériel : </dt><dd className="inline font-medium text-foreground">{e.materiel}</dd></div>}
                       {e.budget && <div><dt className="inline">Budget : </dt><dd className="inline font-medium text-foreground">{e.budget}</dd></div>}
-                      {e.moments.length > 0 && <div><dt className="inline">Moments : </dt><dd className="inline font-medium text-foreground">{e.moments.map(m => libelle(MOMENTS, m).toLowerCase()).join(", ")}</dd></div>}
+                      {e.jours.length > 0 && <div><dt className="inline">Jours : </dt><dd className="inline font-medium text-foreground">{e.jours.map(j => libelle(JOURS, j).toLowerCase()).join(", ")}</dd></div>}
+                      {(e.heure_debut || e.heure_fin) && <div><dt className="inline">Horaires : </dt><dd className="inline font-medium text-foreground">{plageLisible(e.heure_debut, e.heure_fin).toLowerCase()}</dd></div>}
                     </dl>
                   )}
                 </div>

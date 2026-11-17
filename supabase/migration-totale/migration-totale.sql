@@ -1650,7 +1650,9 @@ CREATE TABLE IF NOT EXISTS public.envies_ateliers (
   souhait         TEXT,             -- 'participer' | 'animer' | 'animer_ensemble'
   materiel        TEXT,
   budget          TEXT,             -- texte libre (« 25 € », « une trentaine d'euros »)
-  moments         TEXT[] NOT NULL DEFAULT '{}',
+  jours           TEXT[] NOT NULL DEFAULT '{}',  -- lundi … dimanche
+  heure_debut     TEXT,             -- plage horaire souhaitée, « HH:MM »
+  heure_fin       TEXT,
   consentement_le TIMESTAMPTZ,
   statut          TEXT NOT NULL DEFAULT 'nouvelle',
   CONSTRAINT envies_ateliers_statut CHECK (statut IN ('nouvelle', 'a_etudier', 'retenue', 'programmee', 'classee'))
@@ -1683,10 +1685,17 @@ BEGIN
   IF NEW.souhait IS NOT NULL AND NEW.souhait NOT IN ('participer', 'animer', 'animer_ensemble') THEN
     NEW.souhait := NULL;
   END IF;
-  NEW.moments := COALESCE(
-    ARRAY(SELECT DISTINCT m FROM unnest(COALESCE(NEW.moments, '{}')) AS m
-          WHERE m IN ('semaine', 'week_end', 'matin', 'apres_midi', 'soir') ORDER BY m),
+  -- Jours gardés dans l'ordre de la semaine, sans doublon ni valeur inconnue.
+  NEW.jours := COALESCE(
+    ARRAY(SELECT j FROM unnest(ARRAY['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']) WITH ORDINALITY AS s(j, n)
+          WHERE j = ANY (COALESCE(NEW.jours, '{}')) ORDER BY n),
     '{}');
+  IF NEW.heure_debut IS NOT NULL AND NEW.heure_debut !~ '^([01][0-9]|2[0-3]):[0-5][0-9]$' THEN
+    NEW.heure_debut := NULL;
+  END IF;
+  IF NEW.heure_fin IS NOT NULL AND NEW.heure_fin !~ '^([01][0-9]|2[0-3]):[0-5][0-9]$' THEN
+    NEW.heure_fin := NULL;
+  END IF;
   NEW.modifie_le := now();
 
   IF TG_OP = 'INSERT' AND private.est_client_non_admin() THEN

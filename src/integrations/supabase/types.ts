@@ -196,7 +196,9 @@ export type Database = {
           souhait: string | null
           materiel: string | null
           budget: string | null
-          moments: string[]
+          jours: string[]
+          heure_debut: string | null
+          heure_fin: string | null
           consentement_le: string | null
           statut: string
         }
@@ -213,7 +215,9 @@ export type Database = {
           souhait?: string | null
           materiel?: string | null
           budget?: string | null
-          moments?: string[]
+          jours?: string[]
+          heure_debut?: string | null
+          heure_fin?: string | null
           consentement_le?: string | null
           statut?: string
         }
@@ -230,7 +234,9 @@ export type Database = {
           souhait?: string | null
           materiel?: string | null
           budget?: string | null
-          moments?: string[]
+          jours?: string[]
+          heure_debut?: string | null
+          heure_fin?: string | null
           consentement_le?: string | null
           statut?: string
         }

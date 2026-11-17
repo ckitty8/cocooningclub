@@ -3,12 +3,12 @@
 -- puis 20261117000000_envies_ateliers.sql.
 \set ON_ERROR_STOP 0
 \set VERBOSITY terse
-\echo '== 1. Une visiteuse dépose une envie : acceptée, textes tronqués, valeurs inconnues vidées (attendu : 100, 300, nouvelle, creatifs, NULL, {apres_midi,week_end})'
+\echo '== 1. Une visiteuse dépose une envie : acceptée, textes tronqués, valeurs inconnues vidées (attendu : 100, 300, nouvelle, creatifs, NULL, {lundi,samedi}, 18:30, NULL)'
 BEGIN; SET LOCAL ROLE anon;
-INSERT INTO envies_ateliers (prenom, idee, espace, souhait, moments, statut)
-VALUES (repeat('p', 500), repeat('i', 900), 'creatifs', 'n_importe_quoi', '{week_end,apres_midi,lune,week_end}', 'programmee');
+INSERT INTO envies_ateliers (prenom, idee, espace, souhait, jours, heure_debut, heure_fin, statut)
+VALUES (repeat('p', 500), repeat('i', 900), 'creatifs', 'n_importe_quoi', '{samedi,lundi,lune,samedi}', '18:30', '25h', 'programmee');
 RESET ROLE;
-SELECT length(prenom) AS prenom, length(idee) AS idee, statut, espace, souhait, moments FROM envies_ateliers;
+SELECT length(prenom) AS prenom, length(idee) AS idee, statut, espace, souhait, jours, heure_debut, heure_fin FROM envies_ateliers;
 ROLLBACK;
 
 \echo '== 2. Sans prénom : acceptée avec « Sans prénom » ; espace business refusé en douceur (attendu : Sans prénom, NULL)'

@@ -7,8 +7,8 @@ import { Surtitre } from "@/components/vitrine";
 import { useAntiSpam } from "@/hooks/useAntiSpam";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  ESPACES_ENVIE, MOMENTS, SOUHAITS, enregistrerEnvie, montantPlafond, phraseMateriel, validerEnvie,
-  type EspaceEnvie, type Moment, type Souhait,
+  ESPACES_ENVIE, HEURES, JOURS, SOUHAITS, heureLisible, enregistrerEnvie, montantPlafond, phraseMateriel, validerEnvie,
+  type EspaceEnvie, type Jour, type Souhait,
 } from "@/lib/enviesAteliers";
 
 // Boîte à envies (17/11) : page publique sans connexion, ni dans le menu ni sur Google (noindex, absente
@@ -16,6 +16,7 @@ import {
 // Admin → Envies d'ateliers.
 
 const champ = "w-full rounded-xl border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
+const selectHeure = "w-28 rounded-xl border bg-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring";
 const libelleCls = "mb-1.5 block text-sm font-medium text-foreground";
 const facultatif = <span className="font-normal text-muted-foreground"> (facultatif)</span>;
 const erreurCls = "mt-1 text-xs text-destructive";
@@ -42,7 +43,9 @@ const EnviesAteliers = () => {
   const [souhait, setSouhait] = useState<Souhait | "">("");
   const [materiel, setMateriel] = useState("");
   const [budget, setBudget] = useState("");
-  const [moments, setMoments] = useState<Moment[]>([]);
+  const [jours, setJours] = useState<Jour[]>([]);
+  const [heureDebut, setHeureDebut] = useState("");
+  const [heureFin, setHeureFin] = useState("");
   const [consentement, setConsentement] = useState(false);
   const [erreurs, setErreurs] = useState<Record<string, string>>({});
   const [envoi, setEnvoi] = useState(false);
@@ -55,11 +58,11 @@ const EnviesAteliers = () => {
     });
   }, []);
 
-  const basculerMoment = (m: Moment) => setMoments(prev => (prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m]));
+  const basculerJour = (j: Jour) => setJours(prev => (prev.includes(j) ? prev.filter(x => x !== j) : [...prev, j]));
 
   const envoyer = async (ev: FormEvent) => {
     ev.preventDefault();
-    const e = validerEnvie({ prenom, espace: espace || undefined, idee, souhait: souhait || undefined, consentement });
+    const e = validerEnvie({ prenom, espace: espace || undefined, idee, souhait: souhait || undefined, heure_debut: heureDebut, heure_fin: heureFin, consentement });
     setErreurs(e);
     if (Object.keys(e).length) {
       document.getElementById(`envie-${Object.keys(e)[0]}`)?.focus();
@@ -71,7 +74,7 @@ const EnviesAteliers = () => {
     await antiSpam.attendreDelai();
     await enregistrerEnvie({
       prenom, nom, contact, espace: espace as EspaceEnvie, idee, details, souhait: souhait as Souhait,
-      materiel, budget, moments,
+      materiel, budget, jours, heure_debut: heureDebut, heure_fin: heureFin,
     });
     setEnvoi(false);
     setEnvoyee(true);
@@ -79,7 +82,7 @@ const EnviesAteliers = () => {
   };
 
   const recommencer = () => {
-    setEspace(""); setIdee(""); setDetails(""); setSouhait(""); setMateriel(""); setBudget(""); setMoments([]);
+    setEspace(""); setIdee(""); setDetails(""); setSouhait(""); setMateriel(""); setBudget(""); setJours([]); setHeureDebut(""); setHeureFin("");
     setErreurs({}); setEnvoyee(false); antiSpam.reset();
   };
 
@@ -207,14 +210,30 @@ const EnviesAteliers = () => {
                   )}
                 </fieldset>
 
-                <Groupe legende={<>Les moments qui t'arrangent{facultatif}</>}>
-                  <div className="flex flex-wrap gap-x-6 gap-y-2.5">
-                    {MOMENTS.map(m => (
-                      <label key={m.valeur} className="flex cursor-pointer items-center gap-2 text-sm">
-                        <input type="checkbox" checked={moments.includes(m.valeur)} onChange={() => basculerMoment(m.valeur)} className="h-6 w-6 shrink-0 accent-primary" />
-                        {m.libelle}
+                <Groupe legende={<>Les moments qui t'arrangent{facultatif}</>} erreur={erreurs.plage}>
+                  <p className="mb-2 text-sm font-medium">Jours</p>
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-2.5 sm:grid-cols-4">
+                    {JOURS.map(j => (
+                      <label key={j.valeur} className="flex cursor-pointer items-center gap-2 text-sm">
+                        <input type="checkbox" checked={jours.includes(j.valeur)} onChange={() => basculerJour(j.valeur)} className="h-6 w-6 shrink-0 accent-primary" />
+                        {j.libelle}
                       </label>
                     ))}
+                  </div>
+                  <p className="mb-2 mt-5 text-sm font-medium">Plage horaire</p>
+                  <div className="flex items-center gap-2 text-sm sm:gap-3">
+                    <label htmlFor="envie-plage" className="sr-only">Heure de début</label>
+                    <span aria-hidden="true">De</span>
+                    <select id="envie-plage" value={heureDebut} onChange={e => setHeureDebut(e.target.value)} className={selectHeure} aria-invalid={!!erreurs.plage}>
+                      <option value="">—</option>
+                      {HEURES.slice(0, -1).map(h => <option key={h} value={h}>{heureLisible(h)}</option>)}
+                    </select>
+                    <label htmlFor="envie-heure-fin" className="sr-only">Heure de fin</label>
+                    <span aria-hidden="true">à</span>
+                    <select id="envie-heure-fin" value={heureFin} onChange={e => setHeureFin(e.target.value)} className={selectHeure} aria-invalid={!!erreurs.plage}>
+                      <option value="">—</option>
+                      {HEURES.slice(1).map(h => <option key={h} value={h}>{heureLisible(h)}</option>)}
+                    </select>
                   </div>
                 </Groupe>
 
