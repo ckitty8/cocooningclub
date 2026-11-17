@@ -8,6 +8,9 @@ import {
   calculerCout, niveauxDeRemplissage, positif, scenariosDeRemplissage,
   type LigneCout, type ModeCout, type ParametresCout,
 } from "@/lib/coutAtelier";
+import {
+  ESPACES_SIMULES, EXEMPLES_ABONNEMENT, calculerAbonnement, type EspaceSimule, type ParametresAbonnement,
+} from "@/lib/abonnementAnnuel";
 
 const CLE_STOCKAGE = "cc_cout_atelier_v1";
 
@@ -59,6 +62,119 @@ const ChampNombre = ({ id, libelle, valeur, onChange, unite, pas = 1 }: ChampNom
   </div>
 );
 
+const CLE_ABONNEMENT = "cc_abonnement_annuel_v1";
+
+const lireAbonnements = (): Record<EspaceSimule, ParametresAbonnement> => {
+  try {
+    const lu = JSON.parse(window.localStorage.getItem(CLE_ABONNEMENT) ?? "{}") as Partial<Record<EspaceSimule, Partial<ParametresAbonnement>>>;
+    return Object.fromEntries(ESPACES_SIMULES.map(({ valeur }) => [valeur, { ...EXEMPLES_ABONNEMENT[valeur], ...(lu[valeur] ?? {}) }])) as Record<EspaceSimule, ParametresAbonnement>;
+  } catch {
+    return EXEMPLES_ABONNEMENT;
+  }
+};
+
+const Ligne = ({ libelle, valeur, fort, couleur }: { libelle: string; valeur: string; fort?: boolean; couleur?: string }) => (
+  <div className={`flex justify-between gap-3 ${fort ? "border-t pt-2 font-semibold" : ""} ${couleur ?? ""}`}>
+    <dt className={fort ? "" : "text-muted-foreground"}>{libelle}</dt><dd className="shrink-0">{valeur}</dd>
+  </div>
+);
+
+/** « Abonnement à l'année ou ateliers à l'unité ? » : un onglet par espace (17/11). */
+const AbonnementAnnuel = () => {
+  const [tous, setTous] = useState(lireAbonnements);
+  const [onglet, setOnglet] = useState<EspaceSimule>("business");
+  useEffect(() => {
+    try { window.localStorage.setItem(CLE_ABONNEMENT, JSON.stringify(tous)); } catch { /* stockage indisponible */ }
+  }, [tous]);
+
+  const p = tous[onglet];
+  const maj = (partiel: Partial<ParametresAbonnement>) => setTous(t => ({ ...t, [onglet]: { ...t[onglet], ...partiel } }));
+  const r = useMemo(() => calculerAbonnement(p), [p]);
+  const business = onglet === "business";
+  const id = (c: string) => `abo-${onglet}-${c}`;
+
+  return (
+    <section className="mb-8 rounded-2xl border bg-card p-5" aria-labelledby="titre-abonnement">
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 id="titre-abonnement" className="text-lg font-semibold">Abonnement à l'année ou ateliers à l'unité ?</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Ce que coûte une année à une adhérente et à une non-adhérente, et ce qu'il reste à l'association après la salle.</p>
+        </div>
+        <button onClick={() => maj(EXEMPLES_ABONNEMENT[onglet])} className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs hover:bg-muted">
+          <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" /> Exemple
+        </button>
+      </div>
+
+      <div role="tablist" aria-label="Espace" className="mb-5 flex flex-wrap gap-2">
+        {ESPACES_SIMULES.map(e => (
+          <button key={e.valeur} role="tab" id={`onglet-${e.valeur}`} aria-selected={onglet === e.valeur} aria-controls="panneau-abonnement"
+            onClick={() => setOnglet(e.valeur)}
+            className={`rounded-full border px-4 py-2 text-sm font-medium ${onglet === e.valeur ? "border-primary bg-primary text-primary-foreground" : "hover:bg-muted"}`}>
+            {e.libelle}
+          </button>
+        ))}
+      </div>
+
+      <div id="panneau-abonnement" role="tabpanel" aria-labelledby={`onglet-${onglet}`} className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="grid content-start gap-4 sm:grid-cols-2">
+          <ChampNombre id={id("abonnement")} libelle="Abonnement à l'année" valeur={p.abonnement} onChange={n => maj({ abonnement: n })} unite="€" />
+          <ChampNombre id={id("prix")} libelle="Prix d'un atelier à l'unité" valeur={p.prixAtelier} onChange={n => maj({ prixAtelier: n })} unite="€" pas={0.5} />
+          <ChampNombre id={id("ateliers")} libelle="Ateliers dans l'année" valeur={p.ateliersParAn} onChange={n => maj({ ateliersParAn: Math.floor(n) })} />
+          <ChampNombre id={id("conso")} libelle="Consommation obligatoire (par venue)" valeur={p.consommation} onChange={n => maj({ consommation: n })} unite="€" pas={0.5} />
+          {business && (
+            <ChampNombre id={id("coworking")} libelle="Coworking gratuit (séances par an)" valeur={p.coworkingParAn} onChange={n => maj({ coworkingParAn: Math.floor(n) })} />
+          )}
+          <ChampNombre id={id("salle")} libelle="Salle, par atelier" valeur={p.salleParAtelier} onChange={n => maj({ salleParAtelier: n })} unite="€" />
+          {business && (
+            <ChampNombre id={id("salle-cowork")} libelle="Salle, par séance de coworking" valeur={p.salleParCoworking} onChange={n => maj({ salleParCoworking: n })} unite="€" />
+          )}
+          <ChampNombre id={id("adherentes")} libelle="Adhérentes (abonnements)" valeur={p.adherentes} onChange={n => maj({ adherentes: Math.floor(n) })} />
+          <ChampNombre id={id("non-adh")} libelle="Non-adhérentes par atelier" valeur={p.nonAdherentesParAtelier} onChange={n => maj({ nonAdherentesParAtelier: Math.floor(n) })} />
+        </div>
+
+        <div className="space-y-4" aria-live="polite">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-xl border p-4">
+              <h3 className="mb-2 text-sm font-semibold">Adhérente, sur l'année</h3>
+              <dl className="space-y-1.5 text-sm">
+                <Ligne libelle="Abonnement" valeur={euros(p.abonnement)} />
+                <Ligne libelle={`Consommations (${p.ateliersParAn + (business ? p.coworkingParAn : 0)} venues)`} valeur={euros(r.adherenteConsommations)} />
+                <Ligne libelle="Total" valeur={euros(r.adherenteTotal)} fort />
+              </dl>
+              {business && p.coworkingParAn > 0 && <p className="mt-2 text-xs text-muted-foreground">Dont {p.coworkingParAn} séances de coworking gratuites.</p>}
+            </div>
+            <div className="rounded-xl border p-4">
+              <h3 className="mb-2 text-sm font-semibold">Non-adhérente, mêmes ateliers</h3>
+              <dl className="space-y-1.5 text-sm">
+                <Ligne libelle={`${p.ateliersParAn} ateliers × ${euros(p.prixAtelier)}`} valeur={euros(r.nonAdherenteAteliers)} />
+                <Ligne libelle="Consommations" valeur={euros(r.nonAdherenteConsommations)} />
+                <Ligne libelle="Total" valeur={euros(r.nonAdherenteTotal)} fort />
+              </dl>
+              {business && p.coworkingParAn > 0 && <p className="mt-2 text-xs text-muted-foreground">Sans le coworking, réservé aux adhérentes.</p>}
+            </div>
+          </div>
+          <p className={`rounded-xl p-3 text-sm ${r.economie >= 0 ? "bg-green-50 text-green-900" : "bg-amber-50 text-amber-900"}`}>
+            {r.economie >= 0
+              ? <>Avec l'abonnement, l'adhérente économise <b>{euros(r.economie)}</b> sur ces {p.ateliersParAn} ateliers{business && p.coworkingParAn > 0 ? " et profite du coworking en plus" : ""}.</>
+              : <>Sur {p.ateliersParAn} ateliers, l'abonnement coûte <b>{euros(-r.economie)}</b> de plus que l'unité{business && p.coworkingParAn > 0 ? " (mais il donne le coworking)" : ""}.</>}
+            {r.seuilAteliers !== null && <> L'abonnement devient avantageux à partir de <b>{r.seuilAteliers} ateliers</b> dans l'année.</>}
+          </p>
+          <div className="rounded-xl border p-4">
+            <h3 className="mb-2 text-sm font-semibold">Association, sur l'année</h3>
+            <dl className="space-y-1.5 text-sm">
+              <Ligne libelle={`Abonnements (${p.adherentes} × ${euros(p.abonnement)})`} valeur={euros(r.recettesAbonnements)} />
+              <Ligne libelle={`Ateliers à l'unité (${p.nonAdherentesParAtelier} × ${euros(p.prixAtelier)} × ${p.ateliersParAn})`} valeur={euros(r.recettesUnite)} />
+              <Ligne libelle="Salle" valeur={`− ${euros(r.coutSalle)}`} />
+              <Ligne libelle={r.solde >= 0 ? "Excédent" : "Déficit"} valeur={euros(r.solde)} fort couleur={r.solde >= 0 ? "text-green-800" : "text-red-800"} />
+            </dl>
+            <p className="mt-2 text-xs text-muted-foreground">La consommation est réglée par chaque participante au lieu d'accueil : elle n'entre pas dans les recettes de l'association.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 interface AtelierLu {
   id: string;
   titre: string;
@@ -104,8 +220,17 @@ const CoutAtelier = () => {
     <AdminLayout>
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">Simulateur de coût d'un atelier</h1>
-          <p className="mt-1 text-muted-foreground">Lieu, matériel, animation… : combien coûte un atelier, et à partir de combien de participantes il s'équilibre.</p>
+          <h1 className="text-2xl font-semibold text-foreground">Simulateur</h1>
+          <p className="mt-1 text-muted-foreground">Abonnement à l'année contre ateliers à l'unité, puis coût détaillé d'un atelier.</p>
+        </div>
+      </div>
+
+      <AbonnementAnnuel />
+
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">Coût d'un atelier</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Lieu, matériel, animation… : combien coûte un atelier, et à partir de combien de participantes il s'équilibre.</p>
         </div>
         <button onClick={() => setP(EXEMPLE)} className="inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm hover:bg-muted">
           <RotateCcw className="h-4 w-4" aria-hidden="true" /> Revenir à l'exemple

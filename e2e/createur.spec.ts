@@ -70,7 +70,8 @@ test("le simulateur de coût d'atelier calcule coûts, recettes et seuil, et gar
   await page.goto("/admin/dashboard");
   const menu = page.getByRole("navigation").filter({ hasText: "Espace créateur" });
   await menu.getByRole("link", { name: "Coût d'un atelier" }).click();
-  await expect(page.getByRole("heading", { level: 1, name: "Simulateur de coût d'un atelier" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Simulateur" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Coût d'un atelier" })).toBeVisible();
 
   // Exemple de départ : coûts 190 € par atelier + 6 € × 10 participantes = 250 € ; recettes 4 × 25 + 4 × 18 = 172 € → déficit de 78 €.
   const resultat = page.getByRole("heading", { name: /^Résultat pour 10 participantes/ }).locator("xpath=..");
@@ -93,6 +94,30 @@ test("le simulateur de coût d'atelier calcule coûts, recettes et seuil, et gar
   await page.reload();
   await expect(page.getByLabel("Tarif non-adhérente")).toHaveValue("40");
   await expect(page.getByLabel("Libellé du coût 6")).toHaveValue("Sacs cadeaux");
+});
+
+test("simulateur : un onglet par espace, abonnement à l'année contre ateliers à l'unité", async ({ page }) => {
+  await ouvrirEnCreatrice(page);
+  await page.goto("/admin/createur/cout-atelier");
+  const bloc = page.getByRole("region", { name: "Abonnement à l'année ou ateliers à l'unité ?" });
+  await expect(bloc.getByRole("tab", { name: "Business" })).toHaveAttribute("aria-selected", "true");
+  // Exemple Business : 80 € l'année, 15 € l'atelier, 12 ateliers, 12 coworkings gratuits, 5 € de consommation, salle 40 €.
+  await expect(bloc.getByText("Non-adhérente, mêmes ateliers").locator("xpath=..")).toContainText(/240,00\s€/);
+  await expect(bloc.getByText("Adhérente, sur l'année").locator("xpath=..")).toContainText(/200,00\s€/);
+  await expect(bloc).toContainText("à partir de 6 ateliers");
+  await expect(bloc.getByText("Association, sur l'année").locator("xpath=..")).toContainText(/860,00\s€/);
+
+  // Chaque espace a ses propres réglages ; le coworking n'existe que pour Business.
+  await bloc.getByRole("tab", { name: "Créatifs" }).click();
+  await expect(bloc.getByLabel("Coworking gratuit (séances par an)")).toHaveCount(0);
+  await bloc.getByLabel("Abonnement à l'année", { exact: true }).fill("100");
+  await bloc.getByRole("tab", { name: "Business" }).click();
+  await expect(bloc.getByLabel("Abonnement à l'année", { exact: true })).toHaveValue("80");
+
+  // Gardé dans le navigateur.
+  await page.reload();
+  await page.getByRole("tab", { name: "Créatifs" }).click();
+  await expect(page.getByLabel("Abonnement à l'année", { exact: true })).toHaveValue("100");
 });
 
 test("une administratrice qui n'est pas créatrice n'ouvre pas le simulateur de coût d'atelier", async ({ page }) => {
