@@ -3,17 +3,25 @@
 -- puis 20261117000000_envies_ateliers.sql.
 \set ON_ERROR_STOP 0
 \set VERBOSITY terse
-\echo '== 1. Une visiteuse dépose une envie : acceptée, textes tronqués, valeurs inconnues vidées (attendu : 100, 300, nouvelle, creatifs, NULL, {lundi,samedi}, 18:30, NULL)'
+\echo '== 1. Une visiteuse dépose une envie : acceptée, textes tronqués, valeurs inconnues vidées (attendu : 100, 300, nouvelle, creatifs, NULL, {lundi,samedi}, {18:30-20:00,09:00-12:00})'
 BEGIN; SET LOCAL ROLE anon;
-INSERT INTO envies_ateliers (prenom, idee, espace, souhait, jours, heure_debut, heure_fin, statut)
-VALUES (repeat('p', 500), repeat('i', 900), 'creatifs', 'n_importe_quoi', '{samedi,lundi,lune,samedi}', '18:30', '25h', 'programmee');
+INSERT INTO envies_ateliers (prenom, idee, espace, souhait, jours, plages, statut)
+VALUES (repeat('p', 500), repeat('i', 900), 'creatifs', 'n_importe_quoi', '{samedi,lundi,lune,samedi}', '{18:30-20:00,25h,14:00-12:00,09:00-12:00,18:30-20:00}', 'programmee');
 RESET ROLE;
-SELECT length(prenom) AS prenom, length(idee) AS idee, statut, espace, souhait, jours, heure_debut, heure_fin FROM envies_ateliers;
+SELECT length(prenom) AS prenom, length(idee) AS idee, statut, espace, souhait, jours, plages FROM envies_ateliers;
 ROLLBACK;
 
 \echo '== 2. Sans prénom : acceptée avec « Sans prénom » ; espace business refusé en douceur (attendu : Sans prénom, NULL)'
 BEGIN; SET LOCAL ROLE anon; INSERT INTO envies_ateliers (prenom, espace) VALUES (NULL, 'business') \g /dev/null
 RESET ROLE; SELECT prenom, espace FROM envies_ateliers; ROLLBACK;
+
+\echo '== 2b. Plusieurs idées d''un même envoi en une seule fois, reliées par groupe_id (attendu : 3 lignes, 1 groupe)'
+BEGIN; SET LOCAL ROLE anon;
+INSERT INTO envies_ateliers (groupe_id, prenom, idee, espace) VALUES
+  ('aaaaaaaa-0000-4000-8000-000000000001', 'Lucie', 'Couronnes', 'creatifs'),
+  ('aaaaaaaa-0000-4000-8000-000000000001', 'Lucie', 'Tricot', 'papotages'),
+  ('aaaaaaaa-0000-4000-8000-000000000001', 'Lucie', 'Bougies', 'creatifs');
+RESET ROLE; SELECT count(*) AS lignes, count(DISTINCT groupe_id) AS groupes FROM envies_ateliers; ROLLBACK;
 
 \echo '== 3. Une visiteuse ne relit pas les envies (doit échouer)'
 BEGIN; SET LOCAL ROLE anon; SELECT count(*) FROM envies_ateliers; ROLLBACK;

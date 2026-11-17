@@ -6,7 +6,7 @@ import { logAction } from "@/utils/logAction";
 import { toast } from "sonner";
 import { Copy, Download, ExternalLink, Filter, Loader2, Mail, MessageCircle, Plus, Search, Sparkles, Trash2 } from "lucide-react";
 import {
-  ESPACES_ENVIE, JOURS, LIEN_ENVIES, SOUHAITS, plageLisible, STATUTS_ENVIE, compterParStatut, filtrerEnvies, libelle,
+  ESPACES_ENVIE, JOURS, LIEN_ENVIES, SOUHAITS, plagesLisibles, STATUTS_ENVIE, compterParStatut, filtrerEnvies, libelle,
   lienCreerAtelier, lienGmailEnvie, lienWhatsappEnvie, lienWhatsappPartage, nomFichierEnvies, tableauEnvies,
   type Envie, type EspaceEnvie, type StatutEnvie,
 } from "@/lib/enviesAteliers";
@@ -49,7 +49,7 @@ const Envies = () => {
         : r.error.message);
     } else {
       setErreur(null);
-      setEnvies((r.data ?? []).map(e => ({ ...e, jours: e.jours ?? [] })) as Envie[]);
+      setEnvies((r.data ?? []).map(e => ({ ...e, jours: e.jours ?? [], plages: e.plages ?? [] })) as Envie[]);
     }
     const v = p.data?.plafond_materiel != null ? String(p.data.plafond_materiel).replace(/\.00$/, "") : "";
     setPlafond(v);
@@ -61,6 +61,12 @@ const Envies = () => {
 
   const affichees = useMemo(() => filtrerEnvies(envies, { statut, espace, recherche }), [envies, statut, espace, recherche]);
   const parStatut = useMemo(() => compterParStatut(envies), [envies]);
+  // Idées envoyées ensemble (même formulaire) : « 1 des 3 idées envoyées ensemble ».
+  const tailleGroupe = useMemo(() => {
+    const n = new Map<string, number>();
+    for (const e of envies) if (e.groupe_id) n.set(e.groupe_id, (n.get(e.groupe_id) ?? 0) + 1);
+    return n;
+  }, [envies]);
   const animatrices = envies.filter(e => e.souhait === "animer" || e.souhait === "animer_ensemble").length;
 
   const changerStatut = async (e: Envie, s: StatutEnvie) => {
@@ -201,19 +207,20 @@ const Envies = () => {
                     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${COULEUR_STATUT[e.statut]}`}>{libelle(STATUTS_ENVIE, e.statut)}</span>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {[e.prenom + (e.nom ? ` ${e.nom}` : ""), e.contact, `reçue le ${dateLongue(e.cree_le)}`].filter(Boolean).join(" · ")}
+                    {[e.prenom + (e.nom ? ` ${e.nom}` : ""), e.contact, `reçue le ${dateLongue(e.cree_le)}`,
+                      e.groupe_id && (tailleGroupe.get(e.groupe_id) ?? 0) > 1 ? `envoyée avec ${(tailleGroupe.get(e.groupe_id) ?? 1) - 1} autre${(tailleGroupe.get(e.groupe_id) ?? 0) > 2 ? "s" : ""} idée${(tailleGroupe.get(e.groupe_id) ?? 0) > 2 ? "s" : ""}` : null].filter(Boolean).join(" · ")}
                   </p>
                   <div className="flex flex-wrap gap-1.5">
                     {e.espace && <span className={`rounded-full px-2 py-0.5 text-xs font-medium text-white ${COULEUR_ESPACE[e.espace] ?? "bg-[#6b5a54]"}`}>{libelle(ESPACES_ENVIE, e.espace)}</span>}
                     {e.souhait && <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium">{libelle(SOUHAITS, e.souhait)}</span>}
                   </div>
                   {e.details && <p className="whitespace-pre-line text-sm">{e.details}</p>}
-                  {(e.materiel || e.budget || e.jours.length > 0 || e.heure_debut || e.heure_fin) && (
+                  {(e.materiel || e.budget || e.jours.length > 0 || e.plages.length > 0) && (
                     <dl className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted-foreground">
                       {e.materiel && <div><dt className="inline">Matériel : </dt><dd className="inline font-medium text-foreground">{e.materiel}</dd></div>}
                       {e.budget && <div><dt className="inline">Budget : </dt><dd className="inline font-medium text-foreground">{e.budget}</dd></div>}
                       {e.jours.length > 0 && <div><dt className="inline">Jours : </dt><dd className="inline font-medium text-foreground">{e.jours.map(j => libelle(JOURS, j).toLowerCase()).join(", ")}</dd></div>}
-                      {(e.heure_debut || e.heure_fin) && <div><dt className="inline">Horaires : </dt><dd className="inline font-medium text-foreground">{plageLisible(e.heure_debut, e.heure_fin).toLowerCase()}</dd></div>}
+                      {e.plages.length > 0 && <div><dt className="inline">Horaires : </dt><dd className="inline font-medium text-foreground">{plagesLisibles(e.plages)}</dd></div>}
                     </dl>
                   )}
                 </div>

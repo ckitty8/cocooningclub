@@ -42,13 +42,24 @@ export const heureLisible = (h: string | null | undefined): string => {
   return `${Number(hh)} h${mm && mm !== "00" ? ` ${mm}` : ""}`;
 };
 
-/** « De 9 h à 12 h », « À partir de 18 h », « Jusqu'à 12 h », ou vide. */
-export const plageLisible = (debut?: string | null, fin?: string | null): string => {
-  if (debut && fin) return `De ${heureLisible(debut)} à ${heureLisible(fin)}`;
-  if (debut) return `À partir de ${heureLisible(debut)}`;
-  if (fin) return `Jusqu'à ${heureLisible(fin)}`;
-  return "";
+/** Une plage horaire : début et fin (« 09:00 », « 12:30 »). */
+export interface Plage { debut: string; fin: string }
+
+/** Nombre maximal d'idées et de plages horaires dans un même envoi. */
+export const MAX_IDEES = 5;
+export const MAX_PLAGES = 5;
+
+/** « 09:00-12:30 » (forme enregistrée en base). */
+export const plageEnTexte = (p: Plage) => `${p.debut}-${p.fin}`;
+
+/** « 09:00-12:30 » → « de 9 h à 12 h 30 » ; texte inconnu rendu tel quel. */
+export const plageLisible = (plage: string): string => {
+  const [debut, fin] = plage.split("-");
+  return debut && fin ? `de ${heureLisible(debut)} à ${heureLisible(fin)}` : plage;
 };
+
+/** « de 9 h à 12 h, de 18 h à 20 h ». */
+export const plagesLisibles = (plages: readonly string[] | null | undefined) => (plages ?? []).map(plageLisible).join(", ");
 
 /** Jours remis dans l'ordre de la semaine. */
 export const trierJours = (jours: readonly string[]) => JOURS.map(j => j.valeur).filter(j => jours.includes(j));
@@ -62,32 +73,50 @@ export const STATUTS_ENVIE = [
 ] as const;
 export type StatutEnvie = (typeof STATUTS_ENVIE)[number]["valeur"];
 
-export interface NouvelleEnvie {
+/** Une idée du formulaire (on peut en proposer plusieurs dans le même envoi). */
+export interface IdeeEnvie {
+  espace: EspaceEnvie | "";
+  idee: string;
+  details?: string;
+  souhait: Souhait | "";
+  materiel?: string;
+  budget?: string;
+}
+
+export const ideeVide = (): IdeeEnvie => ({ espace: "", idee: "", details: "", souhait: "", materiel: "", budget: "" });
+
+/** Un envoi du formulaire : la personne, ses idées et ses disponibilités (communes à toutes ses idées). */
+export interface EnvoiEnvies {
   prenom: string;
   nom?: string;
   contact?: string;
-  espace: EspaceEnvie;
-  idee: string;
-  details?: string;
-  souhait: Souhait;
-  materiel?: string;
-  budget?: string;
+  idees: IdeeEnvie[];
   jours: Jour[];
-  heure_debut?: string;
-  heure_fin?: string;
+  /** Plages saisies ; une ligne laissée entièrement vide est ignorée. */
+  plages: Partial<Plage>[];
 }
 
-export interface Envie extends NouvelleEnvie {
+/** Une envie telle que la lit l'administration (une ligne par idée). */
+export interface Envie {
   id: string;
   cree_le: string;
   statut: StatutEnvie;
+  groupe_id: string | null;
+  prenom: string;
+  nom?: string | null;
+  contact?: string | null;
+  espace: EspaceEnvie | null;
+  idee: string;
+  details?: string | null;
+  souhait: Souhait | null;
+  materiel?: string | null;
+  budget?: string | null;
+  jours: Jour[];
+  plages: string[];
 }
 
 export const libelle = <T extends { valeur: string; libelle: string }>(liste: readonly T[], v: string | null | undefined) =>
   liste.find(e => e.valeur === v)?.libelle ?? "";
-
-/** Le bloc « Matériel » ne concerne que Papotages et Créatif (et « Je ne sais pas », par prudence). */
-export const demandeMateriel = (espace: EspaceEnvie | "" | null | undefined) => !!espace;
 
 /** « 50 € », « 37,50 € » ; vide si aucun plafond n'est réglé. */
 export const montantPlafond = (plafond: number | null | undefined): string => {
@@ -104,38 +133,54 @@ export const phraseMateriel = (plafond: number | null | undefined): string => {
     : "le matériel peut être fourni par l'association, dans la limite d'un budget fixé par l'équipe.";
 };
 
-/** Erreurs du formulaire (clé = champ). */
-export const validerEnvie = (e: Partial<NouvelleEnvie> & { consentement?: boolean }): Record<string, string> => {
+/** Plages complètes (début et fin), lignes vides retirées, sans doublon. */
+const plagesRemplies = (plages: Partial<Plage>[]) =>
+  [...new Set(plages.filter(p => p.debut && p.fin).map(p => plageEnTexte(p as Plage)))];
+
+/**
+ * Erreurs du formulaire. Clés : prenom, consentement, idee-<n>-espace, idee-<n>-idee, idee-<n>-souhait, plage-<n>
+ * (n = rang de l'idée ou de la plage, à partir de 0).
+ */
+export const validerEnvoi = (e: Partial<EnvoiEnvies> & { consentement?: boolean }): Record<string, string> => {
   const erreurs: Record<string, string> = {};
   if (!e.prenom?.trim()) erreurs.prenom = "Ton prénom est obligatoire";
   else if (e.prenom.trim().length > 100) erreurs.prenom = "100 caractères au maximum";
-  if (!e.espace) erreurs.espace = "Choisis un espace";
-  if (!e.idee?.trim()) erreurs.idee = "Décris ton idée en quelques mots";
-  else if (e.idee.trim().length > 300) erreurs.idee = "300 caractères au maximum";
-  if (!e.souhait) erreurs.souhait = "Choisis une réponse";
-  if (e.heure_debut && e.heure_fin && e.heure_fin <= e.heure_debut) erreurs.plage = "L'heure de fin doit être après l'heure de début";
+  (e.idees ?? []).forEach((idee, i) => {
+    if (!idee.espace) erreurs[`idee-${i}-espace`] = "Choisis un espace";
+    if (!idee.idee?.trim()) erreurs[`idee-${i}-idee`] = "Décris ton idée en quelques mots";
+    else if (idee.idee.trim().length > 300) erreurs[`idee-${i}-idee`] = "300 caractères au maximum";
+    if (!idee.souhait) erreurs[`idee-${i}-souhait`] = "Choisis une réponse";
+  });
+  (e.plages ?? []).forEach((p, i) => {
+    if (!p.debut && !p.fin) return;
+    if (!p.debut || !p.fin) erreurs[`plage-${i}`] = "Choisis l'heure de début et l'heure de fin";
+    else if (p.fin <= p.debut) erreurs[`plage-${i}`] = "L'heure de fin doit être après l'heure de début";
+  });
   if (!e.consentement) erreurs.consentement = "Merci de cocher cette case";
   return erreurs;
 };
 
-/** Ligne envoyée à la base (champs vides retirés). */
-export const ligneEnvie = (e: NouvelleEnvie) => {
+/** Lignes envoyées à la base : une par idée, avec la personne et ses disponibilités, reliées par groupe_id. */
+export const lignesEnvoi = (e: EnvoiEnvies, groupeId: string = crypto.randomUUID()) => {
   const t = (v?: string) => v?.trim() || null;
-  return {
+  const commun = {
+    groupe_id: groupeId,
     prenom: e.prenom.trim(),
     nom: t(e.nom),
     contact: t(e.contact),
-    espace: e.espace,
-    idee: e.idee.trim(),
-    details: t(e.details),
-    souhait: e.souhait,
-    materiel: t(e.materiel),
-    budget: t(e.budget),
     jours: trierJours(e.jours),
-    heure_debut: e.heure_debut || null,
-    heure_fin: e.heure_fin || null,
+    plages: plagesRemplies(e.plages),
     consentement_le: new Date().toISOString(),
   };
+  return e.idees.map(idee => ({
+    ...commun,
+    espace: idee.espace || null,
+    idee: idee.idee.trim(),
+    details: t(idee.details),
+    souhait: idee.souhait || null,
+    materiel: t(idee.materiel),
+    budget: t(idee.budget),
+  }));
 };
 
 // ─── Contact : e-mail ou téléphone ────────────────────────────────────────────
@@ -190,13 +235,13 @@ const dateCourte = (iso: string) => {
   return a && m && j ? `${j}/${m}/${a}` : "";
 };
 
-export const COLONNES_ENVIES = ["Reçue le", "Prénom", "Nom", "Contact", "Espace", "Idée", "Détails", "Souhait", "Matériel", "Budget", "Jours", "Plage horaire", "Statut"];
+export const COLONNES_ENVIES = ["Reçue le", "Prénom", "Nom", "Contact", "Espace", "Idée", "Détails", "Souhait", "Matériel", "Budget", "Jours", "Plages horaires", "Statut"];
 
 export const tableauEnvies = (envies: Envie[]): string[][] => [
   COLONNES_ENVIES,
   ...envies.map(e => [
     dateCourte(e.cree_le), e.prenom, e.nom ?? "", e.contact ?? "", libelle(ESPACES_ENVIE, e.espace), e.idee, e.details ?? "",
-    libelle(SOUHAITS, e.souhait), e.materiel ?? "", e.budget ?? "", e.jours.map(j => libelle(JOURS, j)).join(", "), plageLisible(e.heure_debut, e.heure_fin),
+    libelle(SOUHAITS, e.souhait), e.materiel ?? "", e.budget ?? "", e.jours.map(j => libelle(JOURS, j)).join(", "), plagesLisibles(e.plages),
     libelle(STATUTS_ENVIE, e.statut),
   ]),
 ];
@@ -217,7 +262,7 @@ export const lienCreerAtelier = (e: Pick<Envie, "idee" | "details" | "espace">) 
 // ─── Enregistrement sans perte ───────────────────────────────────────────────
 
 const CLE_FILE = "cc_envies_en_attente";
-type LigneEnvie = ReturnType<typeof ligneEnvie>;
+type LigneEnvie = ReturnType<typeof lignesEnvoi>[number];
 
 const lireFile = (): LigneEnvie[] => {
   try {
@@ -229,7 +274,7 @@ const lireFile = (): LigneEnvie[] => {
 };
 const ecrireFile = (file: LigneEnvie[]) => {
   try {
-    if (file.length) localStorage.setItem(CLE_FILE, JSON.stringify(file.slice(-20)));
+    if (file.length) localStorage.setItem(CLE_FILE, JSON.stringify(file.slice(-50)));
     else localStorage.removeItem(CLE_FILE);
   } catch { /* stockage indisponible */ }
 };
@@ -238,19 +283,20 @@ export const enviesEnAttente = () => lireFile().length;
 
 export type IssueEnvie = "enregistree" | "locale";
 
-const envoyer = async (ligne: LigneEnvie) => {
+const envoyer = async (lignes: LigneEnvie[]) => {
   // Pas de .select() : une visiteuse n'a pas le droit de relire les envies.
-  const { error } = await supabase.from("envies_ateliers").insert(ligne);
+  const { error } = await supabase.from("envies_ateliers").insert(lignes);
   return error;
 };
 
-export const enregistrerEnvie = async (e: NouvelleEnvie): Promise<IssueEnvie> => {
-  const ligne = ligneEnvie(e);
+/** Enregistre toutes les idées d'un envoi ; à défaut, les garde dans le navigateur (renvoyées plus tard). */
+export const enregistrerEnvoi = async (e: EnvoiEnvies): Promise<IssueEnvie> => {
+  const lignes = lignesEnvoi(e);
   try {
-    const error = await envoyer(ligne);
+    const error = await envoyer(lignes);
     if (!error) return "enregistree";
   } catch { /* réseau coupé */ }
-  ecrireFile([...lireFile(), ligne]);
+  ecrireFile([...lireFile(), ...lignes]);
   return "locale";
 };
 
@@ -261,7 +307,7 @@ export const rejouerEnvies = async (): Promise<number> => {
   const restantes: LigneEnvie[] = [];
   for (const ligne of file) {
     try {
-      const error = await envoyer(ligne);
+      const error = await envoyer([ligne]);
       if (error) restantes.push(ligne);
     } catch {
       restantes.push(ligne);

@@ -29,8 +29,8 @@ CREATE TABLE IF NOT EXISTS public.envies_ateliers (
   materiel        TEXT,
   budget          TEXT,             -- texte libre (« 25 € », « une trentaine d'euros »)
   jours           TEXT[] NOT NULL DEFAULT '{}',  -- lundi … dimanche
-  heure_debut     TEXT,             -- plage horaire souhaitée, « HH:MM »
-  heure_fin       TEXT,
+  plages          TEXT[] NOT NULL DEFAULT '{}',  -- plages horaires « HH:MM-HH:MM » (5 au plus)
+  groupe_id       UUID,             -- idées envoyées ensemble (même personne, même formulaire)
   consentement_le TIMESTAMPTZ,
   statut          TEXT NOT NULL DEFAULT 'nouvelle',
   CONSTRAINT envies_ateliers_statut CHECK (statut IN ('nouvelle', 'a_etudier', 'retenue', 'programmee', 'classee'))
@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS public.envies_ateliers (
 
 CREATE INDEX IF NOT EXISTS idx_envies_ateliers_cree_le ON public.envies_ateliers (cree_le);
 CREATE INDEX IF NOT EXISTS idx_envies_ateliers_statut ON public.envies_ateliers (statut);
+CREATE INDEX IF NOT EXISTS idx_envies_ateliers_groupe ON public.envies_ateliers (groupe_id);
 
 COMMENT ON TABLE public.envies_ateliers IS
   'Envies d''ateliers déposées par le formulaire caché /envies-ateliers ; lues par les administratrices.';
@@ -68,12 +69,15 @@ BEGIN
     ARRAY(SELECT j FROM unnest(ARRAY['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']) WITH ORDINALITY AS s(j, n)
           WHERE j = ANY (COALESCE(NEW.jours, '{}')) ORDER BY n),
     '{}');
-  IF NEW.heure_debut IS NOT NULL AND NEW.heure_debut !~ '^([01][0-9]|2[0-3]):[0-5][0-9]$' THEN
-    NEW.heure_debut := NULL;
-  END IF;
-  IF NEW.heure_fin IS NOT NULL AND NEW.heure_fin !~ '^([01][0-9]|2[0-3]):[0-5][0-9]$' THEN
-    NEW.heure_fin := NULL;
-  END IF;
+  -- Plages horaires « HH:MM-HH:MM » valides (fin après le début), sans doublon, 5 au plus, dans l'ordre saisi.
+  NEW.plages := COALESCE(
+    ARRAY(SELECT p FROM (
+            SELECT p, min(n) AS n FROM unnest(COALESCE(NEW.plages, '{}')) WITH ORDINALITY AS s(p, n)
+            WHERE p ~ '^([01][0-9]|2[0-3]):[0-5][0-9]-([01][0-9]|2[0-3]):[0-5][0-9]$'
+              AND split_part(p, '-', 2) > split_part(p, '-', 1)
+            GROUP BY p) AS v
+          ORDER BY n LIMIT 5),
+    '{}');
   NEW.modifie_le := now();
 
   IF TG_OP = 'INSERT' AND private.est_client_non_admin() THEN

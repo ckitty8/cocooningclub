@@ -22,26 +22,46 @@ test("Envies d'ateliers : page cachée accessible par le pied de page, sans conn
 
   await page.getByLabel("Prénom (obligatoire)").fill("Lucie");
   await page.getByLabel("E-mail ou téléphone (facultatif)").fill("lucie@exemple.fr");
-  await page.getByRole("radio", { name: /^Créatif/ }).check();
-  await page.getByLabel("Ton idée d'atelier en quelques mots (obligatoire)").fill("Couronnes de Noël");
-  await page.getByRole("radio", { name: "L'animer moi-même, bénévolement" }).check();
-  await page.getByLabel("Matériel nécessaire").fill("osier, rubans");
-  await page.getByLabel("Budget estimé").fill("25 €");
+
+  // Première idée.
+  const idee1 = page.getByRole("region", { name: "Ton idée" });
+  await idee1.getByRole("radio", { name: /^Créatif/ }).check();
+  await idee1.getByLabel("Ton idée d'atelier en quelques mots (obligatoire)").fill("Couronnes de Noël");
+  await idee1.getByRole("radio", { name: "L'animer moi-même, bénévolement" }).check();
+  await idee1.getByLabel("Matériel nécessaire").fill("osier, rubans");
+  await idee1.getByLabel("Budget estimé").fill("25 €");
+
+  // Deuxième idée.
+  await page.getByRole("button", { name: "Ajouter une autre idée" }).click();
+  const idee2 = page.getByRole("region", { name: "Idée 2" });
+  await expect(page.getByRole("region", { name: "Idée 1" })).toBeVisible();
+  await idee2.getByRole("radio", { name: /^Papotages/ }).check();
+  await idee2.getByLabel("Ton idée d'atelier en quelques mots (obligatoire)").fill("Tricot et papotages");
+  await idee2.getByRole("radio", { name: "Y participer" }).check();
+
+  // Plusieurs jours et plusieurs plages horaires.
   await page.getByRole("checkbox", { name: "Samedi" }).check();
   await page.getByRole("checkbox", { name: "Mercredi" }).check();
-  await page.getByLabel("Heure de début").selectOption("14:00");
-  await page.getByLabel("Heure de fin").selectOption("12:00");
-  await page.getByRole("button", { name: "Envoyer mon envie" }).click();
+  await page.getByLabel("Plage 1 : heure de début").selectOption("14:00");
+  await page.getByLabel("Plage 1 : heure de fin").selectOption("12:00");
+  await page.getByRole("button", { name: "Ajouter une plage horaire" }).click();
+  await page.getByLabel("Plage 2 : heure de début").selectOption("19:00");
+  await page.getByLabel("Plage 2 : heure de fin").selectOption("21:00");
+  await page.getByRole("button", { name: "Envoyer mes 2 idées" }).click();
   await expect(page.getByText("L'heure de fin doit être après l'heure de début")).toBeVisible();
-  await page.getByLabel("Heure de fin").selectOption("17:30");
+  await page.getByLabel("Plage 1 : heure de fin").selectOption("17:30");
   await page.getByRole("checkbox", { name: /J'accepte que l'équipe/ }).check();
-  await page.getByRole("button", { name: "Envoyer mon envie" }).click();
+  await page.getByRole("button", { name: "Envoyer mes 2 idées" }).click();
 
-  await expect(page.getByText("Merci pour ton idée 💛")).toBeVisible();
-  expect(mock.inserts.envies_ateliers?.[0]).toMatchObject({
-    prenom: "Lucie", contact: "lucie@exemple.fr", espace: "creatifs", idee: "Couronnes de Noël",
-    souhait: "animer", materiel: "osier, rubans", budget: "25 €", jours: ["mercredi", "samedi"], heure_debut: "14:00", heure_fin: "17:30",
-  });
+  await expect(page.getByText("Merci pour tes idées 💛")).toBeVisible();
+  // Les deux idées partent en un seul envoi, reliées par le même groupe.
+  const lignes = mock.inserts.envies_ateliers?.[0] as Record<string, unknown>[];
+  expect(lignes).toHaveLength(2);
+  const commun = { prenom: "Lucie", contact: "lucie@exemple.fr", jours: ["mercredi", "samedi"], plages: ["14:00-17:30", "19:00-21:00"] };
+  expect(lignes[0]).toMatchObject({ ...commun, espace: "creatifs", idee: "Couronnes de Noël", souhait: "animer", materiel: "osier, rubans", budget: "25 €" });
+  expect(lignes[1]).toMatchObject({ ...commun, espace: "papotages", idee: "Tricot et papotages", souhait: "participer", materiel: null });
+  expect(lignes[0].groupe_id).toBeTruthy();
+  expect(lignes[1].groupe_id).toBe(lignes[0].groupe_id);
 });
 
 test("Envies d'ateliers : l'administration liste, filtre, change le statut, règle le plafond et prépare l'atelier", async ({ page }) => {
@@ -53,10 +73,10 @@ test("Envies d'ateliers : l'administration liste, filtre, change le statut, règ
     envies: [
       { id: "11111111-0000-4000-8000-000000000001", cree_le: "2026-11-14T10:00:00Z", statut: "nouvelle", prenom: "Lucie", nom: "D.",
         contact: "lucie@exemple.fr", espace: "creatifs", idee: "Couronnes de Noël", details: "Avec du sapin", souhait: "animer",
-        materiel: "osier", budget: "25 €", jours: ["samedi"], heure_debut: "14:00", heure_fin: "17:00" },
+        materiel: "osier", budget: "25 €", jours: ["samedi"], plages: ["14:00-17:00"], groupe_id: "g1" },
       { id: "11111111-0000-4000-8000-000000000002", cree_le: "2026-11-13T10:00:00Z", statut: "a_etudier", prenom: "Sophie", nom: null,
         contact: "06 00 00 00 00", espace: "papotages", idee: "Jeux de société", details: null, souhait: "participer",
-        materiel: null, budget: null, jours: [], heure_debut: null, heure_fin: null },
+        materiel: null, budget: null, jours: [], plages: [], groupe_id: "g2" },
     ],
   });
   await page.setViewportSize({ width: 1280, height: 900 });

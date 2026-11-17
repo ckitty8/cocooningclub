@@ -197,8 +197,8 @@ export type Database = {
           materiel: string | null
           budget: string | null
           jours: string[]
-          heure_debut: string | null
-          heure_fin: string | null
+          plages: string[]
+          groupe_id: string | null
           consentement_le: string | null
           statut: string
         }
@@ -216,8 +216,8 @@ export type Database = {
           materiel?: string | null
           budget?: string | null
           jours?: string[]
-          heure_debut?: string | null
-          heure_fin?: string | null
+          plages?: string[]
+          groupe_id?: string | null
           consentement_le?: string | null
           statut?: string
         }
@@ -235,8 +235,8 @@ export type Database = {
           materiel?: string | null
           budget?: string | null
           jours?: string[]
-          heure_debut?: string | null
-          heure_fin?: string | null
+          plages?: string[]
+          groupe_id?: string | null
           consentement_le?: string | null
           statut?: string
         }
