@@ -23,21 +23,19 @@ test("Envies d'ateliers : page cachée accessible par le pied de page, sans conn
   await page.getByLabel("Prénom (obligatoire)").fill("Lucie");
   await page.getByLabel("E-mail ou téléphone (facultatif)").fill("lucie@exemple.fr");
 
-  // Première idée.
-  const idee1 = page.getByRole("region", { name: "Ton idée" });
-  await idee1.getByRole("radio", { name: /^Créatif/ }).check();
-  await idee1.getByLabel("Ton idée d'atelier en quelques mots (obligatoire)").fill("Couronnes de Noël");
-  await idee1.getByRole("radio", { name: "L'animer moi-même, bénévolement" }).check();
-  await idee1.getByLabel("Matériel nécessaire").fill("osier, rubans");
-  await idee1.getByLabel("Budget estimé").fill("25 €");
-
-  // Deuxième idée.
-  await page.getByRole("button", { name: "Ajouter une autre idée" }).click();
-  const idee2 = page.getByRole("region", { name: "Idée 2" });
-  await expect(page.getByRole("region", { name: "Idée 1" })).toBeVisible();
-  await idee2.getByRole("radio", { name: /^Papotages/ }).check();
-  await idee2.getByLabel("Ton idée d'atelier en quelques mots (obligatoire)").fill("Tricot et papotages");
-  await idee2.getByRole("radio", { name: "Y participer" }).check();
+  await page.getByRole("radio", { name: /^Créatif/ }).check();
+  // Plusieurs idées, saisies librement.
+  await page.getByLabel("Idée 1", { exact: true }).fill("Couronnes de Noël");
+  await page.getByRole("button", { name: "Ajouter une idée" }).click();
+  await page.getByLabel("Idée 2", { exact: true }).fill("Bougies parfumées");
+  await page.getByRole("button", { name: "Ajouter une idée" }).click();
+  await page.getByLabel("Idée 3", { exact: true }).fill("Calendrier de l'avent");
+  await page.getByRole("button", { name: "Retirer l'idée 3" }).click();
+  await expect(page.getByLabel("Idée 3", { exact: true })).toHaveCount(0);
+  await page.getByLabel("Raconte-nous (facultatif)").fill("Pour les fêtes");
+  await page.getByRole("radio", { name: "L'animer moi-même, bénévolement" }).check();
+  await page.getByLabel("Matériel nécessaire").fill("osier, rubans");
+  await page.getByLabel("Budget estimé").fill("25 €");
 
   // Plusieurs jours et plusieurs plages horaires.
   await page.getByRole("checkbox", { name: "Samedi" }).check();
@@ -52,9 +50,12 @@ test("Envies d'ateliers : page cachée accessible par le pied de page, sans conn
   // Les deux idées partent en un seul envoi, reliées par le même groupe.
   const lignes = mock.inserts.envies_ateliers?.[0] as Record<string, unknown>[];
   expect(lignes).toHaveLength(2);
-  const commun = { prenom: "Lucie", contact: "lucie@exemple.fr", jours: ["mercredi", "samedi"], plages: ["14 h – 17 h 30", "après 19 h"] };
-  expect(lignes[0]).toMatchObject({ ...commun, espace: "creatifs", idee: "Couronnes de Noël", souhait: "animer", materiel: "osier, rubans", budget: "25 €" });
-  expect(lignes[1]).toMatchObject({ ...commun, espace: "papotages", idee: "Tricot et papotages", souhait: "participer", materiel: null });
+  const commun = {
+    prenom: "Lucie", contact: "lucie@exemple.fr", espace: "creatifs", souhait: "animer", details: "Pour les fêtes",
+    materiel: "osier, rubans", budget: "25 €", jours: ["mercredi", "samedi"], plages: ["14 h – 17 h 30", "après 19 h"],
+  };
+  expect(lignes[0]).toMatchObject({ ...commun, idee: "Couronnes de Noël" });
+  expect(lignes[1]).toMatchObject({ ...commun, idee: "Bougies parfumées" });
   expect(lignes[0].groupe_id).toBeTruthy();
   expect(lignes[1].groupe_id).toBe(lignes[0].groupe_id);
 });

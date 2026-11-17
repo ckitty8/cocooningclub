@@ -3,6 +3,13 @@
 Ces actions ont été faites sur la base partagée (preview + production) avec l'accord de l'équipe. Elles ne sont
 **pas** à rejouer ; elles sont notées pour la traçabilité et pour pouvoir les annuler.
 
+## 17/11/2026
+
+| Acte | Détail | Retour arrière |
+|---|---|---|
+| Migration `20261117000000_envies_ateliers.sql` appliquée par Claude (outil Supabase `apply_migration`, projet `rakqbuxgzuwrnjangqcy`) avec l'accord de l'utilisatrice (« ok base ») | Tables `envies_ateliers` (colonnes `jours`, `plages`, `groupe_id`) et `parametres_envies` (1 ligne, plafond vide), déclencheur `trg_preparer_envie_atelier`, purge RGPD mise à jour (envies 3 ans). Contrôle après : RLS active sur les deux tables, une visiteuse dépose mais ne lit pas les envies, lit le réglage sans pouvoir le modifier, déclencheur présent, purge à jour. Aucune donnée existante touchée. | Bloc « Envies d'ateliers » de `retour-arriere.sql` (envies et réglage perdus). |
+| Relance de l'API Supabase (PostgREST) par Claude : `NOTIFY pgrst, 'reload schema'` et `'reload config'` | L'API était figée depuis 11 h 27 (« Thread killed by timeout manager », plus aucune requête du site) ; reconnectée à 14 h 13, connexions revenues à 14 h 15. Aucune donnée touchée. | Sans objet. |
+
 ## 12/11/2026
 
 | Acte | Détail | Retour arrière |

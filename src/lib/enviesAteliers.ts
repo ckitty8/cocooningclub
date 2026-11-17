@@ -30,7 +30,7 @@ export const JOURS = [
 export type Jour = (typeof JOURS)[number]["valeur"];
 
 /** Nombre maximal d'idées et de plages horaires dans un même envoi ; longueur maximale d'une plage saisie. */
-export const MAX_IDEES = 5;
+export const MAX_IDEES = 10;
 export const MAX_PLAGES = 5;
 export const MAX_LONGUEUR_PLAGE = 100;
 
@@ -53,24 +53,18 @@ export const STATUTS_ENVIE = [
 ] as const;
 export type StatutEnvie = (typeof STATUTS_ENVIE)[number]["valeur"];
 
-/** Une idée du formulaire (on peut en proposer plusieurs dans le même envoi). */
-export interface IdeeEnvie {
-  espace: EspaceEnvie | "";
-  idee: string;
-  details?: string;
-  souhait: Souhait | "";
-  materiel?: string;
-  budget?: string;
-}
-
-export const ideeVide = (): IdeeEnvie => ({ espace: "", idee: "", details: "", souhait: "", materiel: "", budget: "" });
-
-/** Un envoi du formulaire : la personne, ses idées et ses disponibilités (communes à toutes ses idées). */
+/** Un envoi du formulaire : la personne, ses idées (saisies librement, une par ligne) et les réponses communes. */
 export interface EnvoiEnvies {
   prenom: string;
   nom?: string;
   contact?: string;
-  idees: IdeeEnvie[];
+  espace: EspaceEnvie | "";
+  /** Idées saisies ; une ligne vide est ignorée. */
+  idees: string[];
+  details?: string;
+  souhait: Souhait | "";
+  materiel?: string;
+  budget?: string;
   jours: Jour[];
   /** Plages horaires saisies librement ; une ligne vide est ignorée. */
   plages: string[];
@@ -113,25 +107,25 @@ export const phraseMateriel = (plafond: number | null | undefined): string => {
     : "le matériel peut être fourni par l'association, dans la limite d'un budget fixé par l'équipe.";
 };
 
-/**
- * Erreurs du formulaire. Clés : prenom, consentement, idee-<n>-espace, idee-<n>-idee, idee-<n>-souhait
- * (n = rang de l'idée, à partir de 0).
- */
+/** Idées remplies : espaces superflus retirés, lignes vides et doublons retirés. */
+export const ideesRemplies = (idees: readonly string[]) =>
+  [...new Set(idees.map(i => i.trim().replace(/\s+/g, " ")).filter(Boolean))].slice(0, MAX_IDEES);
+
+/** Erreurs du formulaire. Clés : prenom, espace, idee-<n> (n = rang de la ligne, à partir de 0), souhait, consentement. */
 export const validerEnvoi = (e: Partial<EnvoiEnvies> & { consentement?: boolean }): Record<string, string> => {
   const erreurs: Record<string, string> = {};
   if (!e.prenom?.trim()) erreurs.prenom = "Ton prénom est obligatoire";
   else if (e.prenom.trim().length > 100) erreurs.prenom = "100 caractères au maximum";
-  (e.idees ?? []).forEach((idee, i) => {
-    if (!idee.espace) erreurs[`idee-${i}-espace`] = "Choisis un espace";
-    if (!idee.idee?.trim()) erreurs[`idee-${i}-idee`] = "Décris ton idée en quelques mots";
-    else if (idee.idee.trim().length > 300) erreurs[`idee-${i}-idee`] = "300 caractères au maximum";
-    if (!idee.souhait) erreurs[`idee-${i}-souhait`] = "Choisis une réponse";
-  });
+  if (!e.espace) erreurs.espace = "Choisis un espace";
+  const idees = e.idees ?? [];
+  if (!idees.some(i => i.trim())) erreurs["idee-0"] = "Écris au moins une idée";
+  idees.forEach((i, n) => { if (i.trim().length > 300) erreurs[`idee-${n}`] = "300 caractères au maximum"; });
+  if (!e.souhait) erreurs.souhait = "Choisis une réponse";
   if (!e.consentement) erreurs.consentement = "Merci de cocher cette case";
   return erreurs;
 };
 
-/** Lignes envoyées à la base : une par idée, avec la personne et ses disponibilités, reliées par groupe_id. */
+/** Lignes envoyées à la base : une par idée (pour suivre chacune), avec les mêmes réponses, reliées par groupe_id. */
 export const lignesEnvoi = (e: EnvoiEnvies, groupeId: string = crypto.randomUUID()) => {
   const t = (v?: string) => v?.trim() || null;
   const commun = {
@@ -139,19 +133,16 @@ export const lignesEnvoi = (e: EnvoiEnvies, groupeId: string = crypto.randomUUID
     prenom: e.prenom.trim(),
     nom: t(e.nom),
     contact: t(e.contact),
+    espace: e.espace || null,
+    details: t(e.details),
+    souhait: e.souhait || null,
+    materiel: t(e.materiel),
+    budget: t(e.budget),
     jours: trierJours(e.jours),
     plages: plagesRemplies(e.plages),
     consentement_le: new Date().toISOString(),
   };
-  return e.idees.map(idee => ({
-    ...commun,
-    espace: idee.espace || null,
-    idee: idee.idee.trim(),
-    details: t(idee.details),
-    souhait: idee.souhait || null,
-    materiel: t(idee.materiel),
-    budget: t(idee.budget),
-  }));
+  return ideesRemplies(e.idees).map(idee => ({ ...commun, idee }));
 };
 
 // ─── Contact : e-mail ou téléphone ────────────────────────────────────────────

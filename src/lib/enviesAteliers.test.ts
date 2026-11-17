@@ -4,7 +4,7 @@ const insert = vi.fn();
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { from: () => ({ insert }) } }));
 
 import {
-  compterParStatut, enregistrerEnvoi, enviesEnAttente, filtrerEnvies, ideeVide, lienCreerAtelier, lienGmailEnvie,
+  compterParStatut, enregistrerEnvoi, enviesEnAttente, filtrerEnvies, ideesRemplies, lienCreerAtelier, lienGmailEnvie,
   lienWhatsappEnvie, lignesEnvoi, montantPlafond, numeroWhatsapp, phraseMateriel, plagesLisibles, plagesRemplies,
   rejouerEnvies, tableauEnvies, validerEnvoi, type Envie, type EnvoiEnvies,
 } from "./enviesAteliers";
@@ -15,17 +15,21 @@ const envie = (p: Partial<Envie> = {}): Envie => ({
   materiel: "osier", budget: "25 €", jours: ["mercredi", "samedi"], plages: ["14 h – 17 h 30", "après 19 h"], ...p,
 });
 
-const idee = (p: Partial<ReturnType<typeof ideeVide>> = {}) => ({ ...ideeVide(), espace: "creatifs" as const, idee: "Bougies", souhait: "participer" as const, ...p });
+const base = { prenom: "Lucie", espace: "creatifs" as const, idees: ["Bougies"], souhait: "participer" as const, consentement: true };
 
 describe("validerEnvoi", () => {
-  it("exige le prénom, le consentement et, pour chaque idée, l'espace, l'idée et le souhait", () => {
-    expect(Object.keys(validerEnvoi({ idees: [ideeVide(), ideeVide()] }))).toEqual([
-      "prenom", "idee-0-espace", "idee-0-idee", "idee-0-souhait", "idee-1-espace", "idee-1-idee", "idee-1-souhait", "consentement",
-    ]);
-    expect(validerEnvoi({ prenom: "Lucie", idees: [idee(), idee({ idee: "Tricot" })], plages: ["", "n'importe quoi"], consentement: true })).toEqual({});
+  it("exige le prénom, l'espace, au moins une idée, le souhait et le consentement", () => {
+    expect(Object.keys(validerEnvoi({ idees: ["", "  "] }))).toEqual(["prenom", "espace", "idee-0", "souhait", "consentement"]);
+    expect(validerEnvoi({ ...base, idees: ["", "Tricot"] })).toEqual({});
   });
-  it("refuse une idée trop longue", () => {
-    expect(validerEnvoi({ prenom: "L", idees: [idee({ idee: "x".repeat(301) })], consentement: true })["idee-0-idee"]).toMatch(/300/);
+  it("refuse une idée trop longue, sur sa ligne", () => {
+    expect(validerEnvoi({ ...base, idees: ["Tricot", "x".repeat(301)] })).toEqual({ "idee-1": "300 caractères au maximum" });
+  });
+});
+
+describe("idées saisies librement", () => {
+  it("retire les lignes vides, les espaces superflus et les doublons", () => {
+    expect(ideesRemplies([" Tricot ", "", "Couronnes  de Noël", "Tricot"])).toEqual(["Tricot", "Couronnes de Noël"]);
   });
 });
 
@@ -56,19 +60,19 @@ describe("plafond du matériel", () => {
 });
 
 describe("lignesEnvoi", () => {
-  it("fait une ligne par idée, avec la personne, les jours triés et les plages complètes, reliées par le même groupe", () => {
+  it("fait une ligne par idée, avec les mêmes réponses, reliées par le même groupe", () => {
     const envoi: EnvoiEnvies = {
-      prenom: " Lucie ", nom: " ", contact: "", jours: ["samedi", "lundi"],
-      plages: [" après 18 h ", "", "le matin", "après 18 h"],
-      idees: [idee({ idee: " Tricot ", espace: "papotages" }), idee({ details: " Cire de soja ", budget: "20 €" })],
+      prenom: " Lucie ", nom: " ", contact: "", espace: "creatifs", souhait: "animer", details: " Pour Noël ", materiel: "osier", budget: "",
+      idees: ["Couronnes", "", "Bougies"], jours: ["samedi", "lundi"], plages: [" après 18 h ", "", "le matin", "après 18 h"],
     };
     const lignes = lignesEnvoi(envoi, "g1");
     expect(lignes).toHaveLength(2);
-    expect(lignes[0]).toMatchObject({
-      groupe_id: "g1", prenom: "Lucie", nom: null, contact: null, jours: ["lundi", "samedi"], plages: ["après 18 h", "le matin"],
-      espace: "papotages", idee: "Tricot", details: null, materiel: null, budget: null,
-    });
-    expect(lignes[1]).toMatchObject({ groupe_id: "g1", idee: "Bougies", details: "Cire de soja", budget: "20 €" });
+    const commun = {
+      groupe_id: "g1", prenom: "Lucie", nom: null, contact: null, espace: "creatifs", souhait: "animer", details: "Pour Noël",
+      materiel: "osier", budget: null, jours: ["lundi", "samedi"], plages: ["après 18 h", "le matin"],
+    };
+    expect(lignes[0]).toMatchObject({ ...commun, idee: "Couronnes" });
+    expect(lignes[1]).toMatchObject({ ...commun, idee: "Bougies" });
     expect(lignes[0].consentement_le).toMatch(/^\d{4}-/);
   });
 });
@@ -112,7 +116,7 @@ describe("écran admin", () => {
 });
 
 describe("aucune envie perdue", () => {
-  const envoi: EnvoiEnvies = { prenom: "Lucie", idees: [idee(), idee({ idee: "Tricot" })], jours: [], plages: [] };
+  const envoi: EnvoiEnvies = { prenom: "Lucie", espace: "creatifs", souhait: "participer", idees: ["Bougies", "Tricot"], jours: [], plages: [] };
   beforeEach(() => { localStorage.clear(); insert.mockReset(); });
 
   it("enregistre toutes les idées en une fois quand le serveur répond", async () => {
@@ -127,7 +131,7 @@ describe("aucune envie perdue", () => {
     insert.mockResolvedValueOnce({ error: { message: 'relation "envies_ateliers" does not exist' } });
     expect(await enregistrerEnvoi(envoi)).toBe("locale");
     insert.mockRejectedValueOnce(new Error("Failed to fetch"));
-    expect(await enregistrerEnvoi({ ...envoi, idees: [idee()] })).toBe("locale");
+    expect(await enregistrerEnvoi({ ...envoi, idees: ["Bougies"] })).toBe("locale");
     expect(enviesEnAttente()).toBe(3);
 
     insert.mockResolvedValueOnce({ error: null }).mockResolvedValueOnce({ error: { message: "panne" } }).mockResolvedValueOnce({ error: null });
