@@ -200,10 +200,10 @@ test("les mentions légales sont accessibles depuis le pied de page et nomment l
   await expect(page.getByText(/Supabase Inc\./)).toBeVisible();
 });
 
-test("le public voit le nombre de places total, jamais les places restantes", async ({ page }) => {
+test("l'accueil n'affiche aucun nombre de places ; le calendrier montre le total, jamais les places restantes", async ({ page }) => {
   await page.goto("/");
-  const carte = page.locator("#ateliers").getByText(`${ATELIER_TEST.places_max} places`, { exact: true }).first();
-  await expect(carte).toBeVisible();
+  await expect(page.locator("#ateliers").getByText(ATELIER_TEST.titre).first()).toBeVisible();
+  await expect(page.locator("#ateliers").getByText(/\d+ places/)).toHaveCount(0);
   await expect(page.getByText(/places restantes/)).toHaveCount(0);
 
   await page.goto("/calendrier");

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, ChevronLeft, ChevronRight, Link2, MapPin, Users, Euro, AlarmClock, Sunrise, Sunset } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Link2, MapPin, Euro, AlarmClock, Sunrise, Sunset } from "lucide-react";
 import type { Workshop } from "@/data/workshops";
 import { formatDateFr, formatTimeFr } from "@/data/workshops";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
@@ -97,13 +97,6 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
                     ) : (
                       <span>{ws.lieu}</span>
                     )}
-                  </div>
-                )}
-
-                {ws.places_max !== null && (
-                  <div className="flex items-center gap-2 text-sm text-foreground">
-                    <Users className="w-4 h-4 text-terracotta flex-shrink-0" />
-                    <span>{ws.places_max} places</span>
                   </div>
                 )}
 
