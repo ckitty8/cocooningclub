@@ -19,6 +19,7 @@ import AjouterAgenda from "@/components/AjouterAgenda";
 import EvenementsJsonLd from "@/components/EvenementsJsonLd";
 import DescriptionAtelier from "@/components/texte/DescriptionAtelier";
 import { mentionTarif } from "@/lib/tarifAtelier";
+import { useAffichagePublic } from "@/hooks/useAffichagePublic";
 
 const ATELIERS_COLUMNS = "id, titre, date_atelier, heure_debut, duree, places_disponibles, places_max, description, lieu, adresse, tarif_affichage, tarif_standard, statut, date_fin_inscription, espaces(slug)";
 
@@ -31,6 +32,8 @@ const Calendrier = () => {
     usePublicAteliers(ATELIERS_COLUMNS);
   // Titre de l'atelier en cours de pré-inscription, ou null si la fenêtre est fermée.
   const [preInscription, setPreInscription] = useState<string | null>(null);
+  // Informations choisies dans Admin → Ateliers → « Affichage public » (calendrier : carte et fenêtre).
+  const voir = useAffichagePublic().calendrier;
 
   useEffect(() => {
     trackVisit("/calendrier");
@@ -171,7 +174,7 @@ const Calendrier = () => {
                             {/* Contenu */}
                             <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
                               {/* Sur téléphone, le logo passe au-dessus du titre pour lui laisser la largeur. */}
-                              {espace && (
+                              {espace && voir.has("logo") && (
                                 <img
                                   src={espace.logo}
                                   alt={`Espace ${espace.nom}`}
@@ -191,10 +194,12 @@ const Calendrier = () => {
                                 )}
                               </div>
                               <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
-                                <span className="inline-flex items-center gap-1.5">
-                                  <Clock className="w-3.5 h-3.5" /> {formatTimeFr(ws.heure_debut)} · {ws.duree}
-                                </span>
-                                {ws.lieu && (
+                                {voir.has("heure") && (
+                                  <span className="inline-flex items-center gap-1.5">
+                                    <Clock className="w-3.5 h-3.5" /> {formatTimeFr(ws.heure_debut)} · {ws.duree}
+                                  </span>
+                                )}
+                                {ws.lieu && voir.has("lieu") && (
                                   <span className="inline-flex items-center gap-1.5">
                                     <MapPin className="w-3.5 h-3.5" />
                                     {ws.adresse ? (
@@ -210,18 +215,20 @@ const Calendrier = () => {
                                     ) : ws.lieu}
                                   </span>
                                 )}
-                                {ws.places_max !== null && (
+                                {ws.places_max !== null && voir.has("places") && (
                                   <span className="inline-flex items-center gap-1.5">
                                     <Users className="w-3.5 h-3.5" /> {ws.places_max} places
                                   </span>
                                 )}
-                                <span className="inline-flex items-center gap-1.5">
-                                  <Euro className="w-3.5 h-3.5" /> {mentionTarif(ws)}
-                                </span>
+                                {voir.has("tarif") && (
+                                  <span className="inline-flex items-center gap-1.5">
+                                    <Euro className="w-3.5 h-3.5" /> {mentionTarif(ws)}
+                                  </span>
+                                )}
                               </div>
                             </div>
 
-                            {espace && (
+                            {espace && voir.has("logo") && (
                               <img
                                 src={espace.logo}
                                 alt={`Espace ${espace.nom}`}
@@ -292,8 +299,11 @@ const Calendrier = () => {
 
             {/* Body */}
             <div className="px-6 py-5 space-y-4">
-              <DescriptionAtelier texte={popinWorkshop.description} className="text-muted-foreground text-sm leading-relaxed" />
+              {voir.has("description") && (
+                <DescriptionAtelier texte={popinWorkshop.description} className="text-muted-foreground text-sm leading-relaxed" />
+              )}
               <div className="grid grid-cols-2 gap-3">
+                {popinWorkshop.lieu && voir.has("lieu") && (
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <MapPin className="w-4 h-4 text-terracotta flex-shrink-0" />
                   {popinWorkshop.adresse ? (
@@ -309,21 +319,26 @@ const Calendrier = () => {
                     <span>{popinWorkshop.lieu}</span>
                   )}
                 </div>
-                <div className="flex items-center gap-2 text-sm text-foreground">
-                  <Clock className="w-4 h-4 text-terracotta flex-shrink-0" />
-                  <span>{formatTimeFr(popinWorkshop.heure_debut)}</span>
-                </div>
-                {popinWorkshop.places_max !== null && (
+                )}
+                {voir.has("heure") && (
+                  <div className="flex items-center gap-2 text-sm text-foreground">
+                    <Clock className="w-4 h-4 text-terracotta flex-shrink-0" />
+                    <span>{formatTimeFr(popinWorkshop.heure_debut)}</span>
+                  </div>
+                )}
+                {popinWorkshop.places_max !== null && voir.has("places") && (
                   <div className="flex items-center gap-2 text-sm text-foreground">
                     <Users className="w-4 h-4 text-terracotta flex-shrink-0" />
                     <span>{popinWorkshop.places_max} places</span>
                   </div>
                 )}
-                <div className="flex items-center gap-2 text-sm text-foreground">
-                  <Euro className="w-4 h-4 text-terracotta flex-shrink-0" />
-                  <span>{mentionTarif(popinWorkshop)}</span>
-                </div>
-                {popinWorkshop.date_fin_inscription && (
+                {voir.has("tarif") && (
+                  <div className="flex items-center gap-2 text-sm text-foreground">
+                    <Euro className="w-4 h-4 text-terracotta flex-shrink-0" />
+                    <span>{mentionTarif(popinWorkshop)}</span>
+                  </div>
+                )}
+                {popinWorkshop.date_fin_inscription && voir.has("date_limite") && (
                   <div className="flex items-center gap-2 text-sm text-foreground col-span-2">
                     <CalendarPlus className="w-4 h-4 text-terracotta flex-shrink-0" />
                     <span>Inscriptions jusqu'au {formatDateFr(popinWorkshop.date_fin_inscription)}</span>
@@ -342,7 +357,9 @@ const Calendrier = () => {
                   Pré-inscription
                 </button>
               )}
-              <AjouterAgenda atelier={popinWorkshop} />
+              {voir.has("agenda") && <AjouterAgenda atelier={popinWorkshop} />}
+              {voir.has("partage") && (
+              <>
               <button
                 onClick={() => copyWorkshopLink(popinWorkshop)}
                 className="w-full flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -357,6 +374,8 @@ const Calendrier = () => {
                 <Link2 className="w-4 h-4" />
                 Copier le lien d'inscription
               </button>
+              </>
+              )}
             </div>
           </div>
         </div>

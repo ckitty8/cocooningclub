@@ -14,11 +14,12 @@ import { ESPACES_PAR_SLUG } from "@/lib/espaces";
 import { Link, useSearchParams } from "react-router-dom";
 import { copierLienInscription } from "@/utils/copierLienInscription";
 import VueCalendrier from "@/components/admin/ateliers/VueCalendrier";
+import AffichagePublic from "@/components/admin/ateliers/AffichagePublic";
 import { chiffresAteliers } from "@/lib/calendrierAteliers";
 import { useVacancesScolaires } from "@/hooks/useVacancesScolaires";
 import { aujourdhuiIso } from "@/lib/adhesions";
 import { compressImage } from "@/utils/compressImage";
-import { Plus, Pencil, Trash2, Copy, Link2, X, MapPin, Clock, Users, Euro, Search, Image as ImageIcon, LayoutGrid, List, CalendarDays, MessageCircle, CalendarPlus } from "lucide-react";
+import { Plus, Pencil, Trash2, Copy, Link2, X, MapPin, Clock, Users, Euro, Search, Image as ImageIcon, LayoutGrid, List, CalendarDays, MessageCircle, CalendarPlus, Eye } from "lucide-react";
 import { lienGoogleAgenda, URL_CALENDRIER_ATELIERS, webcalCalendrier } from "@/lib/abonnementCalendrier";
 import { ateliersPourReseaux, lienWhatsAppMessage, messageWhatsApp } from "@/lib/exportReseaux";
 import EditeurTexteRiche from "@/components/texte/EditeurTexteRiche";
@@ -588,6 +589,7 @@ const Ateliers = () => {
 
   // Abonnement de l'agenda aux ateliers publiés (adresse du site en ligne, mise à jour automatique).
   const [abonnementOuvert, setAbonnementOuvert] = useState(false);
+  const [affichageOuvert, setAffichageOuvert] = useState(false);
   const copierLienAgenda = async () => {
     try {
       await navigator.clipboard.writeText(URL_CALENDRIER_ATELIERS);
@@ -647,6 +649,11 @@ const Ateliers = () => {
               </button>
             ))}
           </div>
+          <button onClick={() => setAffichageOuvert(true)}
+            title="Choisir les informations des ateliers montrées sur l'accueil et le calendrier"
+            className="flex items-center gap-2 border bg-card px-4 py-2 rounded-full text-sm font-medium hover:bg-muted transition-colors">
+            <Eye className="w-4 h-4" /> Affichage public
+          </button>
           <button onClick={() => setAbonnementOuvert(true)}
             title="Recevoir automatiquement tous les ateliers publiés dans ton agenda (Google, iPhone, Outlook)"
             className="flex items-center gap-2 border bg-card px-4 py-2 rounded-full text-sm font-medium hover:bg-muted transition-colors">
@@ -1231,6 +1238,8 @@ const Ateliers = () => {
           </div>
         </div>
       )}
+
+      {affichageOuvert && <AffichagePublic onFermer={() => setAffichageOuvert(false)} />}
 
       {/* ── Message WhatsApp des ateliers à venir ── */}
       {messageWa && (

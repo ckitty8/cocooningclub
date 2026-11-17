@@ -18,6 +18,8 @@ BEGIN
 END
 $$;
 DROP FUNCTION IF EXISTS private.purger_donnees_anciennes();
+-- Affichage public des ateliers (20261117000001) : le réglage est perdu (le site revient à l'affichage par défaut).
+DROP TABLE IF EXISTS public.parametres_affichage_ateliers;
 -- Envies d'ateliers (20261117000000) : les envies reçues et le plafond du matériel sont perdus.
 DROP TABLE IF EXISTS public.envies_ateliers, public.parametres_envies;
 DROP FUNCTION IF EXISTS private.preparer_envie_atelier();

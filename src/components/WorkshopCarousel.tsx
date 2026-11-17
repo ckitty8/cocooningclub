@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, ChevronLeft, ChevronRight, Link2, MapPin, Euro, AlarmClock, Sunrise, Sunset } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Link2, MapPin, Euro, AlarmClock, Sunrise, Sunset, Users } from "lucide-react";
 import type { Workshop } from "@/data/workshops";
 import { formatDateFr, formatTimeFr } from "@/data/workshops";
 import { googleMapsSearchUrl } from "@/utils/googleMaps";
@@ -9,6 +9,7 @@ import AjouterAgenda from "@/components/AjouterAgenda";
 import { copierLienInscription } from "@/utils/copierLienInscription";
 import { versTexteBrut } from "@/lib/texteRiche";
 import { mentionTarif } from "@/lib/tarifAtelier";
+import { useAffichagePublic } from "@/hooks/useAffichagePublic";
 
 interface WorkshopCarouselProps {
   workshops: Workshop[];
@@ -20,6 +21,8 @@ const ITEMS_PER_PAGE = 3;
 
 const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarouselProps) => {
   const navigate = useNavigate();
+  // Informations choisies dans Admin → Ateliers → « Affichage public » (accueil).
+  const voir = useAffichagePublic().accueil;
   const [page, setPage] = useState(0);
   const totalPages = Math.ceil(workshops.length / ITEMS_PER_PAGE);
   const visible = workshops.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
@@ -48,7 +51,7 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
               className="bg-card rounded-2xl border overflow-hidden flex flex-col cursor-pointer transition-all hover:shadow-lg hover:ring-2 hover:ring-primary/30"
             >
               <div className="flex items-center gap-4 p-6 border-b bg-primary/5">
-                {espace && (
+                {espace && voir.has("logo") && (
                   <img
                     src={espace.logo}
                     alt={`Espace ${espace.nom}`}
@@ -60,28 +63,32 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
                 <h3 className="font-brand text-xl text-foreground">{ws.titre}</h3>
               </div>
               <div className="p-6 space-y-3 flex-1 flex flex-col">
-                <p className="text-muted-foreground text-sm leading-relaxed mb-2">{ws.description_courte || versTexteBrut(ws.description)}</p>
+                {voir.has("description") && (
+                  <p className="text-muted-foreground text-sm leading-relaxed mb-2">{ws.description_courte || versTexteBrut(ws.description)}</p>
+                )}
 
-                <div className="flex items-center gap-2 text-sm text-foreground">
-                  <Calendar className="w-4 h-4 text-terracotta flex-shrink-0" />
-                  <span>{formatDateFr(ws.date_atelier)} · {formatTimeFr(ws.heure_debut)}</span>
-                </div>
+                {voir.has("date") && (
+                  <div className="flex items-center gap-2 text-sm text-foreground">
+                    <Calendar className="w-4 h-4 text-terracotta flex-shrink-0" />
+                    <span>{formatDateFr(ws.date_atelier)} · {formatTimeFr(ws.heure_debut)}</span>
+                  </div>
+                )}
 
-                {ws.matin && (
+                {ws.matin && voir.has("matin_apres_midi") && (
                   <div className="flex items-start gap-2 text-sm text-foreground">
                     <Sunrise className="mt-0.5 w-4 h-4 text-terracotta flex-shrink-0" aria-hidden="true" />
                     <span><span className="font-medium">Matin :</span> {ws.matin}</span>
                   </div>
                 )}
 
-                {ws.apres_midi && (
+                {ws.apres_midi && voir.has("matin_apres_midi") && (
                   <div className="flex items-start gap-2 text-sm text-foreground">
                     <Sunset className="mt-0.5 w-4 h-4 text-terracotta flex-shrink-0" aria-hidden="true" />
                     <span><span className="font-medium">Après-midi :</span> {ws.apres_midi}</span>
                   </div>
                 )}
 
-                {ws.lieu && (
+                {ws.lieu && voir.has("lieu") && (
                   <div className="flex items-center gap-2 text-sm text-foreground">
                     <MapPin className="w-4 h-4 text-terracotta flex-shrink-0" />
                     {ws.adresse ? (
@@ -100,12 +107,21 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
                   </div>
                 )}
 
-                <div className="flex items-center gap-2 text-sm text-foreground">
-                  <Euro className="w-4 h-4 text-terracotta flex-shrink-0" />
-                  <span>{mentionTarif(ws)}</span>
-                </div>
+                {ws.places_max !== null && voir.has("places") && (
+                  <div className="flex items-center gap-2 text-sm text-foreground">
+                    <Users className="w-4 h-4 text-terracotta flex-shrink-0" />
+                    <span>{ws.places_max} places</span>
+                  </div>
+                )}
 
-                {ws.date_fin_inscription && (
+                {voir.has("tarif") && (
+                  <div className="flex items-center gap-2 text-sm text-foreground">
+                    <Euro className="w-4 h-4 text-terracotta flex-shrink-0" />
+                    <span>{mentionTarif(ws)}</span>
+                  </div>
+                )}
+
+                {ws.date_fin_inscription && voir.has("date_limite") && (
                   <div className="flex items-center gap-2 text-sm text-foreground">
                     <AlarmClock className="w-4 h-4 text-terracotta flex-shrink-0" />
                     <span>Inscriptions jusqu'au {formatDateFr(ws.date_fin_inscription)}</span>
@@ -129,8 +145,8 @@ const WorkshopCarousel = ({ workshops, onReserve, selectedIndex }: WorkshopCarou
                       Pré-inscription
                     </button>
                   )}
-                  <AjouterAgenda atelier={ws} variante="menu" />
-                  {!closed && (
+                  {voir.has("agenda") && <AjouterAgenda atelier={ws} variante="menu" />}
+                  {!closed && voir.has("partage") && (
                     <button
                       onClick={(e) => { e.stopPropagation(); void copierLienInscription(ws.id); }}
                       className="flex min-h-11 w-full items-center justify-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"

@@ -163,6 +163,8 @@ export interface OptionsMock {
   /** Envies d'ateliers (table `envies_ateliers`, page admin) et plafond du matériel (`parametres_envies`). */
   envies?: Record<string, unknown>[];
   plafondMateriel?: number | null;
+  /** Réglage « Affichage public » des ateliers (`parametres_affichage_ateliers`) ; absent = ligne vide (réglage par défaut). */
+  affichage?: { accueil: string[] | null; calendrier: string[] | null };
 }
 
 export const mockSupabase = async (page: Page, options: OptionsMock = {}): Promise<MockSupabase> => {
@@ -247,6 +249,10 @@ export const mockSupabase = async (page: Page, options: OptionsMock = {}): Promi
     if (table === "bon_a_savoir") return route.fulfill({ json: options.bonASavoir ?? [] });
     if (table === "contact_messages" && options.messagesContact && req.method() === "GET") return route.fulfill({ json: options.messagesContact });
     if (table === "envies_ateliers") return route.fulfill({ json: options.envies ?? [] });
+    if (table?.startsWith("parametres_affichage_ateliers")) {
+      const ligne = options.affichage ?? { accueil: null, calendrier: null };
+      return route.fulfill({ json: veutUnObjet ? ligne : [ligne] });
+    }
     if (table?.startsWith("parametres_envies")) {
       const ligne = { plafond_materiel: options.plafondMateriel ?? null };
       return route.fulfill({ json: veutUnObjet ? ligne : [ligne] });

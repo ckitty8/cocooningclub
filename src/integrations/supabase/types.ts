@@ -242,6 +242,27 @@ export type Database = {
         }
         Relationships: []
       }
+      parametres_affichage_ateliers: {
+        Row: {
+          id: boolean
+          accueil: string[] | null
+          calendrier: string[] | null
+          modifie_le: string
+        }
+        Insert: {
+          id?: boolean
+          accueil?: string[] | null
+          calendrier?: string[] | null
+          modifie_le?: string
+        }
+        Update: {
+          id?: boolean
+          accueil?: string[] | null
+          calendrier?: string[] | null
+          modifie_le?: string
+        }
+        Relationships: []
+      }
       parametres_envies: {
         Row: {
           id: boolean
