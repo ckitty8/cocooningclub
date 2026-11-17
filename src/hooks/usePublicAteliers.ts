@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Workshop } from "@/data/workshops";
 
 const MAX_ATTEMPTS = 3;
+/** Délai maximal d'une tentative : une réponse qui ne revient jamais ne doit pas bloquer « Chargement… » (17/11). */
+export const DELAI_TENTATIVE_MS = 8000;
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 // Charge les ateliers publics à venir. Réessaie automatiquement en cas
@@ -23,12 +25,20 @@ export const usePublicAteliers = (columns: string) => {
       let lastError = "";
       for (let i = 0; i < MAX_ATTEMPTS; i++) {
         try {
-          const { data, error: err } = await supabase
+          // Requête annulée au bout de DELAI_TENTATIVE_MS (réseau ou session bloqués), puis nouvel essai.
+          const controle = new AbortController();
+          let minuteur: ReturnType<typeof setTimeout> | undefined;
+          const delai = new Promise<never>((_, rejeter) => {
+            minuteur = setTimeout(() => { controle.abort(); rejeter(new Error("Délai dépassé")); }, DELAI_TENTATIVE_MS);
+          });
+          const requete = supabase
             .from("ateliers")
             .select(columns)
             .in("statut", ["publie", "complet"])
             .gte("date_atelier", today)
-            .order("date_atelier");
+            .order("date_atelier")
+            .abortSignal(controle.signal);
+          const { data, error: err } = await Promise.race([requete, delai]).finally(() => clearTimeout(minuteur));
           if (cancelled) return;
           if (!err) {
             setAteliers((data ?? []) as unknown as Workshop[]);
