@@ -36,6 +36,8 @@
   .case i.rond{border-radius:50%}
   .case i.oui{background:var(--primary);border-color:var(--primary);position:relative}
   .case i.oui::after{content:"✓";color:#fff;font-size:15px;position:absolute;left:4px;top:0}
+  .case.desc{flex-basis:100%;align-items:flex-start}
+  .case small{display:block;font-size:12.5px;color:var(--texte2);margin-top:2px}
   .pastille{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:2px}
   .materiel{border:1px dashed var(--primary);background:#fff7f2}
   .rgpd{display:flex;gap:10px;font-size:12.5px;line-height:1.5;color:var(--texte2);margin:6px 0 18px}
@@ -70,8 +72,8 @@
       <fieldset>
         <legend>Ton envie concerne<span class="req"> *</span></legend>
         <div class="cases">
-          <span class="case"><i></i><span class="pastille" style="background:var(--papotages)"></span>Papotages</span>
-          <span class="case"><i class="oui"></i><span class="pastille" style="background:var(--creatifs)"></span>Créatif</span>
+          <span class="case desc"><i></i><span><span class="pastille" style="background:var(--papotages)"></span>Papotages<small>Une idée, une activité simple à faire tout en discutant.</small></span></span>
+          <span class="case desc"><i class="oui"></i><span><span class="pastille" style="background:var(--creatifs)"></span>Créatif<small>Un atelier posé, en salle, où l'on se concentre pour vraiment profiter du moment.</small></span></span>
           <span class="case"><i></i><span class="pastille" style="background:var(--business)"></span>Business</span>
           <span class="case"><i></i>Je ne sais pas</span>
         </div>
